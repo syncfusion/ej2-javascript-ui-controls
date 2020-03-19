@@ -1447,8 +1447,8 @@ let Tooltip = class Tooltip extends Component {
             }
         }
         if (this.header !== '') {
-            let headerSize = measureText(this.header, this.textStyle).height + (this.marginY * 2) +
-                (isBottom ? this.arrowPadding : 0); //header padding;
+            let headerSize = measureText(this.isWrap ? this.wrappedText : this.header, this.textStyle).height +
+                (this.marginY * 2) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : 0); //header padding;
             let xLength = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
             let direction = 'M ' + xLength + ' ' + headerSize +
                 'L ' + (rect.width + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0) - (this.marginX * 2)) +
@@ -1509,21 +1509,31 @@ let Tooltip = class Tooltip extends Component {
         }
         this.formattedText = this.formattedText.concat(this.content);
     }
+    // tslint:disable-next-line:max-func-body-length
     renderText(isRender) {
         let height = 0;
         let width = 0; // Padding for text;
         let subWidth = 0;
-        let size;
         let lines;
         let key = 'properties';
+        let size;
         let font = extend({}, this.textStyle, null, true)[key];
         let groupElement = getElement(this.element.id + '_group');
         let tspanElement;
+        let textCollection;
         let tspanStyle = '';
         let line;
         let tspanOption;
         this.findFormattedText();
+        let isHeader;
+        this.leftSpace = this.areaBounds.x + this.location.x;
+        this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
         let headerContent = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
+        let isBoldTag = this.header.indexOf('<b>') > -1 && this.header.indexOf('</b>') > -1;
+        let headerWidth = measureText(this.formattedText[0], font).width + (2 * this.marginX) + this.arrowPadding;
+        let isLeftSpace = (this.location.x - headerWidth) < this.location.x;
+        let isRightSpace = (this.areaBounds.x + this.areaBounds.width) < (this.location.x + headerWidth);
+        let header;
         let headerSpace = (headerContent !== '') ? this.marginY : 0;
         let isRow = true;
         let isColumn = true;
@@ -1531,6 +1541,7 @@ let Tooltip = class Tooltip extends Component {
         let markerSize = (this.shapes.length > 0) ? 10 : 0;
         let markerPadding = (this.shapes.length > 0) ? 5 : 0;
         let spaceWidth = 4;
+        let subStringLength;
         let fontSize = '13px';
         let fontWeight = 'Normal';
         let labelColor = this.themeStyle.tooltipLightLabel;
@@ -1543,14 +1554,25 @@ let Tooltip = class Tooltip extends Component {
         }
         let options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), 'start', '');
         let parentElement = textElement(options, font, null, groupElement);
+        let withoutHeader = this.formattedText.length === 1 && this.formattedText[0].indexOf(' : <b>') > -1;
+        isHeader = this.header !== '';
+        size = isHeader && isBoldTag ? 16 : 13;
         for (let k = 0, pointsLength = this.formattedText.length; k < pointsLength; k++) {
-            let textCollection = this.formattedText[k].replace(/<(b|strong)>/g, '<b>')
+            textCollection = this.formattedText[k].replace(/<(b|strong)>/g, '<b>')
                 .replace(/<\/(b|strong)>/g, '</b>')
                 .split(/<br.*?>/g);
+            if (k === 0 && !withoutHeader && this.isTextWrap &&
+                (this.leftSpace < headerWidth || isLeftSpace) &&
+                (this.rightSpace < headerWidth || isRightSpace)) {
+                subStringLength = Math.round(this.leftSpace > this.rightSpace ? (this.leftSpace / size) : (this.rightSpace / size));
+                header = headerContent !== '' ? headerContent : this.formattedText[k];
+                textCollection = header.match(new RegExp('.{1,' + subStringLength + '}', 'g'));
+                this.wrappedText = isBoldTag ? '<b>' + textCollection.join('<br>') + '</b>' : textCollection.join('<br>');
+                this.isWrap = textCollection.length > 1;
+            }
             if (textCollection[0] === '') {
                 continue;
             }
-            size = measureText(this.formattedText[k], font);
             if ((k !== 0) || (headerContent === '')) {
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
@@ -1560,8 +1582,8 @@ let Tooltip = class Tooltip extends Component {
                 subWidth = 0;
                 isColumn = true;
                 height += dy;
-                for (let k = 0, len = lines.length; k < len; k++) {
-                    line = lines[k];
+                for (let j = 0, len = lines.length; j < len; j++) {
+                    line = lines[j];
                     if (!/\S/.test(line) && line !== '') {
                         line = ' '; //to trim multiple white spaces to single white space
                     }
@@ -1574,8 +1596,10 @@ let Tooltip = class Tooltip extends Component {
                         }
                         else {
                             if (isRow && isColumn) {
-                                tspanOption = { x: (headerContent === '') ? ((this.marginX * 2) + (markerSize + markerPadding))
-                                        : (this.marginX * 2) };
+                                tspanOption = {
+                                    x: (headerContent === '') ? ((this.marginX * 2) + (markerSize + markerPadding))
+                                        : (this.marginX * 2) + (this.isWrap ? (markerSize + markerPadding) : 0)
+                                };
                             }
                             else {
                                 tspanOption = {};
@@ -1584,7 +1608,7 @@ let Tooltip = class Tooltip extends Component {
                         isColumn = false;
                         tspanElement = this.renderer.createTSpan(tspanOption, '');
                         parentElement.appendChild(tspanElement);
-                        if (line.indexOf('<b>') > -1) {
+                        if (line.indexOf('<b>') > -1 || ((isBoldTag && j === 0 && k === 0) && (isHeader || this.isWrap))) {
                             fontWeight = 'bold';
                             labelColor = this.themeStyle.tooltipBoldLabel;
                             tspanStyle = 'font-weight:' + fontWeight;
@@ -1596,7 +1620,7 @@ let Tooltip = class Tooltip extends Component {
                             font.fontWeight = fontWeight;
                             (tspanElement).setAttribute('fill', this.textStyle.color || labelColor);
                         }
-                        if (line.indexOf('</b>') > -1) {
+                        if (line.indexOf('</b>') > -1 || ((isBoldTag && j === len - 1 && k === 0) && (isHeader || this.isWrap))) {
                             fontWeight = 'Normal';
                             labelColor = this.themeStyle.tooltipLightLabel;
                         }
@@ -1615,7 +1639,7 @@ let Tooltip = class Tooltip extends Component {
         this.elementSize = new Size(width + (width > 0 ? (2 * this.marginX) : 0), height);
         this.elementSize.width += (markerSize + markerPadding); // marker size + marker Spacing
         let element = (parentElement.childNodes[0]);
-        if (headerContent !== '' && element) {
+        if (headerContent !== '' && element && !this.isWrap) {
             font.fontWeight = 'bold';
             let width = (this.elementSize.width + (2 * this.padding)) / 2 - measureText(headerContent, font).width / 2;
             element.setAttribute('x', width.toString());
@@ -1699,12 +1723,28 @@ let Tooltip = class Tooltip extends Component {
             if (position === 'Bottom') {
                 location.y = symbolLocation.y + clipY + markerHeight;
             }
+            if (bounds.x + bounds.width < location.x + width) {
+                location.x = (bounds.width > width) ? ((bounds.x + bounds.width) - width + 6) : bounds.x;
+                arrowLocation.x = tipLocation.x = (bounds.width > width) ? (bounds.x + symbolLocation.x - location.x) : symbolLocation.x;
+            }
+            else if (bounds.x > location.x) {
+                location.x = bounds.x;
+                arrowLocation.x = tipLocation.x = symbolLocation.x;
+            }
         }
         else {
             location = new TooltipLocation(location.x + clipX + markerHeight, location.y + clipY - this.elementSize.height / 2 - (this.padding));
             arrowLocation.y = tipLocation.y = height / 2;
             if (position === 'Left') {
                 location.x = symbolLocation.x + clipX - markerHeight - (width + this.arrowPadding);
+            }
+            if (bounds.y + bounds.height < location.y + height) {
+                location.y = (bounds.height > height) ? ((bounds.y + bounds.height) - height + 6) : bounds.y;
+                arrowLocation.y = tipLocation.y = (bounds.height > height) ? (bounds.y + symbolLocation.y - location.y) : symbolLocation.y;
+            }
+            else if (bounds.y > location.y) {
+                location.y = bounds.y;
+                arrowLocation.y = tipLocation.y = symbolLocation.y;
             }
         }
         return new Rect(location.x, location.y, width, height);
@@ -1992,6 +2032,9 @@ __decorate([
 __decorate([
     Property(false)
 ], Tooltip.prototype, "isCanvas", void 0);
+__decorate([
+    Property(false)
+], Tooltip.prototype, "isTextWrap", void 0);
 __decorate([
     Property(null)
 ], Tooltip.prototype, "tooltipPlacement", void 0);

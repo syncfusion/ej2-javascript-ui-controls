@@ -1,0 +1,474 @@
+import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
+import { createElement, remove, getInstance } from '@syncfusion/ej2-base';
+import { pivot_dataset } from '../base/datasource.spec';
+import { IDataSet } from '../../src/base/engine';
+import { PivotCommon } from '../../src/common/base/pivot-common';
+import { EventHandler } from '@syncfusion/ej2-base';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
+import * as util from '../utils.spec';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
+describe('Date Filter', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+    describe('Check Date Filter Actions', () => {
+        let fieldListObj: PivotFieldList;
+        let pivotCommon: PivotCommon;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            fieldListObj = new PivotFieldList(
+                {
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        enableSorting: true,
+                        allowLabelFilter: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        formatSettings: [{ name: 'balance', format: 'C' },
+                        { name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
+                        drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                        filterSettings: [
+                            { name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') }
+                        ],
+                        rows: [{ name: 'date', caption: 'TimeLine' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: []
+                    },
+                    renderMode: 'Fixed'
+                });
+            fieldListObj.appendTo('#PivotFieldList');
+            pivotCommon = fieldListObj.pivotCommon;
+        });
+        it('check Date type filtering at code-behind', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(fieldListObj.element.classList.contains('e-pivotfieldlist')).toEqual(true);
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('open filter popup', (done: Function) => {
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check on member filter type change', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect([].slice.call(dialogElement.querySelectorAll('.e-toolbar-item')).length).toEqual(2);
+            let headerElement: HTMLElement[] = [].slice.call(dialogElement.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[1].classList.contains('e-active')).toBeTruthy;
+            headerElement[0].click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(headerElement[0].textContent).toBe('Member');
+                expect(headerElement[0].classList.contains('e-active')).toBeTruthy;
+                headerElement[1].click();
+                done();
+            }, 1000);
+        });
+        it('Check clear filter option', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            expect([].slice.call(dialogElement.querySelectorAll('.e-toolbar-item')).length).toEqual(2);
+            let headerElement: HTMLElement[] = [].slice.call(dialogElement.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[1].textContent).toBe('Date');
+            expect(headerElement[1].classList.contains('e-active')).toBeTruthy;
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            (dialogElement.querySelector('.e-clear-filter-button') as HTMLElement).click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).not.toBeTruthy;
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('check on date filter type change', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect([].slice.call(dialogElement.querySelectorAll('.e-toolbar-item')).length).toEqual(2);
+            let headerElement: HTMLElement[] = [].slice.call(dialogElement.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[0].classList.contains('e-active')).toBeTruthy;
+            headerElement[1].click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(headerElement[1].textContent).toBe('Date');
+                expect(headerElement[1].classList.contains('e-active')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check date filter options', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_contition_option_wrapper') as HTMLElement, DropDownList);
+            expect(dropdownlist).toBeTruthy;
+            dropdownlist.value = "NotBetween";
+            let input1: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_input_option_1') as HTMLElement, DateTimePicker);
+            let input2: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_input_option_2') as HTMLElement, DateTimePicker);
+            expect(input1).toBeTruthy;
+            expect(input2).toBeTruthy;
+            input1.setProperties({ value: new Date('02/15/2000') });
+            input1.change({ value: input1.value });
+            input2.setProperties({ value: new Date('02/15/2002') });
+            input2.change({ value: input2.value });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(input1.value.toDateString() === 'Tue Feb 15 2000').toBeTruthy;
+                expect(input2.value.toDateString() === 'Fri Feb 15 2002').toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check update filter using ok', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_contition_option_wrapper') as HTMLElement, DropDownList);
+            dropdownlist.value = 'GreaterThan';
+            setTimeout(() => {
+                (dialogElement.querySelector('.e-ok-btn') as HTMLElement).click();
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('check with sort order change', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+            expect(true).toBe(true);
+            setTimeout(() => {
+                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('drag/drop pivot button from axis field to same axis field', (done: Function) => {
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotButton.length).toEqual(1);
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            let mousedown: any =
+                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = util.setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+            expect(pivotButton.length).toEqual(1);
+            setTimeout(() => {
+                expect((pivotButton[pivotButton.length - 1]).querySelector('.e-descend')).toBeTruthy;
+                expect((pivotButton[pivotButton.length - 1]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('set rtl property', (done: Function) => {
+            fieldListObj.enableRtl = true;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(document.getElementById('PivotFieldList').classList.contains('e-rtl')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('open filter popup', (done: Function) => {
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('close filter popup by cancel', (done: Function) => {
+            let dialogElement: HTMLElement = document.getElementById(fieldListObj.element.id + '_EditorTreeView');
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            (dialogElement.querySelector('.e-cancel-btn') as HTMLElement).click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(dialogElement).toBeUndefined;
+                done();
+            }, 1000);
+        });
+    });
+    describe('Check Date Filter Actions with string values', () => {
+        let fieldListObj: PivotFieldList;
+        let pivotCommon: PivotCommon;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            fieldListObj = new PivotFieldList(
+                {
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        enableSorting: true,
+                        allowLabelFilter: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        formatSettings: [{ name: 'balance', format: 'C' },
+                        { name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
+                        drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                        filterSettings: [
+                            { name: 'date', type: 'Date', condition: 'Between', value1: '2000-02-16', value2: '2002-02-16' }
+                        ],
+                        rows: [{ name: 'date', caption: 'TimeLine' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: []
+                    },
+                    renderMode: 'Fixed'
+                });
+            fieldListObj.appendTo('#PivotFieldList');
+            pivotCommon = fieldListObj.pivotCommon;
+        });
+        it('check Date type filtering at code-behind', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(fieldListObj.element.classList.contains('e-pivotfieldlist')).toEqual(true);
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('open filter popup', (done: Function) => {
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check on member filter type change', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect([].slice.call(dialogElement.querySelectorAll('.e-toolbar-item')).length).toEqual(2);
+            let headerElement: HTMLElement[] = [].slice.call(dialogElement.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[1].classList.contains('e-active')).toBeTruthy;
+            headerElement[0].click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(headerElement[0].textContent).toBe('Member');
+                expect(headerElement[0].classList.contains('e-active')).toBeTruthy;
+                headerElement[1].click();
+                done();
+            }, 1000);
+        });
+        it('Check clear filter option', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            expect([].slice.call(dialogElement.querySelectorAll('.e-toolbar-item')).length).toEqual(2);
+            let headerElement: HTMLElement[] = [].slice.call(dialogElement.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[1].textContent).toBe('Date');
+            expect(headerElement[1].classList.contains('e-active')).toBeTruthy;
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            (dialogElement.querySelector('.e-clear-filter-button') as HTMLElement).click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).not.toBeTruthy;
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('check on date filter type change', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect([].slice.call(dialogElement.querySelectorAll('.e-toolbar-item')).length).toEqual(2);
+            let headerElement: HTMLElement[] = [].slice.call(dialogElement.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[0].classList.contains('e-active')).toBeTruthy;
+            headerElement[1].click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(headerElement[1].textContent).toBe('Date');
+                expect(headerElement[1].classList.contains('e-active')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check date filter options', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_contition_option_wrapper') as HTMLElement, DropDownList);
+            expect(dropdownlist).toBeTruthy;
+            dropdownlist.value = "NotBetween";
+            let input1: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_input_option_1') as HTMLElement, DateTimePicker);
+            let input2: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_input_option_2') as HTMLElement, DateTimePicker);
+            expect(input1).toBeTruthy;
+            expect(input2).toBeTruthy;
+            input1.setProperties({ value: new Date('02/15/2000') });
+            input1.change({ value: input1.value });
+            input2.setProperties({ value: new Date('02/15/2002') });
+            input2.change({ value: input2.value });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(input1.value.toDateString() === 'Tue Feb 15 2000').toBeTruthy;
+                expect(input2.value.toDateString() === 'Fri Feb 15 2002').toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check update filter using ok', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_date_contition_option_wrapper') as HTMLElement, DropDownList);
+            dropdownlist.value = 'GreaterThan';
+            setTimeout(() => {
+                (dialogElement.querySelector('.e-ok-btn') as HTMLElement).click();
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('check with sort order change', (done: Function) => {
+            let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+            expect(true).toBe(true);
+            setTimeout(() => {
+                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('drag/drop pivot button from axis field to same axis field', (done: Function) => {
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotButton.length).toEqual(1);
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            let mousedown: any =
+                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = util.setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+            expect(pivotButton.length).toEqual(1);
+            setTimeout(() => {
+                expect((pivotButton[pivotButton.length - 1]).querySelector('.e-descend')).toBeTruthy;
+                expect((pivotButton[pivotButton.length - 1]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('set rtl property', (done: Function) => {
+            fieldListObj.enableRtl = true;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(document.getElementById('PivotFieldList').classList.contains('e-rtl')).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('open filter popup', (done: Function) => {
+            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+            let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+            let pivotButtons: HTMLElement[] = [].slice.call(rowAxiscontent.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('close filter popup by cancel', (done: Function) => {
+            let dialogElement: HTMLElement = document.getElementById(fieldListObj.element.id + '_EditorTreeView');
+            expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
+            (dialogElement.querySelector('.e-cancel-btn') as HTMLElement).click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(dialogElement).toBeUndefined;
+                done();
+            }, 1000);
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+});

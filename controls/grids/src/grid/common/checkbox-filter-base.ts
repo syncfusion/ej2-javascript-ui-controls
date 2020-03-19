@@ -19,6 +19,8 @@ import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCbox
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel } from '../base/grid-model';
 import { IXLFilter } from '../common/filter-interface';
+import { DataResult } from '../base/interface';
+
 /**
  * @hidden
  * `CheckBoxFilterBase` module is used to handle filtering action.
@@ -539,8 +541,10 @@ export class CheckBoxFilterBase {
         showSpinner(this.spinner);
         this.renderEmpty = false;
         if (this.isForeignColumn(column) && val.length) {
+            let colData: DataManager = ('result' in column.dataSource) ? new DataManager((column.dataSource as DataResult).result) :
+            column.dataSource as DataManager;
             // tslint:disable-next-line:no-any
-            (column.dataSource as DataManager).executeQuery(query).then((e: any) => {
+            colData.executeQuery(query).then((e: any) => {
                 let columnData: Object[] = this.options.column.columnData;
                 this.options.column.columnData = e.result;
                 this.parent.notify(events.generateQuery, { predicate: fPredicate, column: column });
@@ -657,7 +661,10 @@ export class CheckBoxFilterBase {
         let allPromise: Promise<Object>[] = [];
         let runArray: Function[] = [];
         if (this.isForeignColumn(this.options.column as Column) && isInitial) {
-            allPromise.push((<DataManager>this.options.column.dataSource).executeQuery(this.foreignKeyQuery));
+            let colData: DataManager = ('result' in this.options.column.dataSource) ?
+            new DataManager((this.options.column.dataSource as DataResult).result) :
+            this.options.column.dataSource as DataManager;
+            allPromise.push(colData.executeQuery(this.foreignKeyQuery));
             runArray.push((data: Object[]) => this.foreignKeyData = data);
         }
         allPromise.push(
@@ -974,7 +981,7 @@ export class CheckBoxFilterBase {
     }
     private static getCaseValue(filter: PredicateModel): boolean {
         if (isNullOrUndefined(filter.matchCase)) {
-            return false;
+            return true;
         } else {
             return filter.matchCase;
         }

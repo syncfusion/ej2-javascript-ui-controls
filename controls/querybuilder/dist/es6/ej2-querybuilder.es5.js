@@ -762,26 +762,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         format = this.getFormat(column.format);
         var valueColl = [];
         for (var i = 0, iLen = tempColl.length; i < iLen; i++) {
-            if (tempColl[i].nextElementSibling) {
-                if (tempColl[i].nextElementSibling.className.indexOf('e-check') > -1) {
-                    valueColl.push(tempColl[i].textContent);
-                }
-                else {
-                    if (column.type === 'date' && value[i] instanceof Date) {
-                        valueColl.push(this.intl.formatDate(value[i], format));
-                    }
-                    else {
-                        valueColl.push(value[i]);
-                    }
-                }
+            if (column.type === 'date' && value[i] instanceof Date) {
+                valueColl.push(this.intl.formatDate(value[i], format));
             }
             else {
-                if (column.type === 'date' && value[i] instanceof Date) {
-                    valueColl.push(this.intl.formatDate(value[i], format));
-                }
-                else {
-                    valueColl.push(value[i]);
-                }
+                valueColl = value;
             }
         }
         if (column.type === 'date') {
@@ -1574,7 +1559,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     parentElem.style.width = '100%';
                 }
                 else {
-                    parentElem.style.minWidth = '200px';
+                    parentElem.style.width = '200px';
                 }
             }
             else {
@@ -1722,12 +1707,15 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (this.allowValidation && rule.rules[index].operator && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
             }
-            if (inputElem.length > 1) {
+            if (inputElem.length > 1 && !(inputElem[0].className.indexOf('e-template') > -1)) {
                 rule.rules[index].value = [];
             }
             for (var i_2 = 0; i_2 < inputElem.length; i_2++) {
                 if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
                     rule.rules[index].value = null;
+                    continue;
+                }
+                else if (inputElem[i_2].classList.contains('e-template')) {
                     continue;
                 }
                 this.updateValues(inputElem[i_2], rule.rules[index]);
@@ -1759,7 +1747,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (rule.rules[index].operator) {
                 oper = rule.rules[index].operator.toLowerCase();
             }
-            if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number') {
+            if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number' &&
+                !(target.className.indexOf('e-template') > -1)) {
                 var selVal = [];
                 var dupSelectedValue = selectedValue;
                 for (var k = 0, kLen = dupSelectedValue.length; k < kLen; k++) {
@@ -1772,17 +1761,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (target.className.indexOf('e-template') > -1) {
-                if (selectedValue instanceof Array) {
-                    if (arrOperator.indexOf(oper) > -1) {
-                        rule.rules[index].value = selectedValue;
-                    }
-                    else {
-                        rule.rules[index].value = selectedValue[0];
-                    }
-                }
-                else {
-                    rule.rules[index].value = selectedValue;
-                }
+                rule.rules[index].value = selectedValue;
                 eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value, type: 'value' };
                 if (!this.isImportRules) {
                     this.trigger('change', eventsArgs);
@@ -1998,8 +1977,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.element.style.width = '100%';
                 this.element.classList.add('e-device');
             }
-            removeClass(document.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-            addClass(document.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
+            removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
+            addClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
             this.displayMode = 'Vertical';
         }
         else {
@@ -2023,7 +2002,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
             this.notGroupRtl();
-            var buttons = document.querySelectorAll('label.e-btn');
+            var buttons = this.element.querySelectorAll('label.e-btn');
             var button = void 0;
             for (var i = 0; i < buttons.length; i++) {
                 button = buttons.item(i);
@@ -2638,7 +2617,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var predicate = this.getPredicate(this.getValidRules(this.rule));
         var dataManagerQuery;
         dataManagerQuery = isNullOrUndefined(predicate) ? new Query() : new Query().where(predicate);
-        if (this.isBlazor()) {
+        if (isBlazor()) {
             var adaptr = new UrlAdaptor();
             var dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
             var state = adaptr.processQuery(dm, dataManagerQuery);

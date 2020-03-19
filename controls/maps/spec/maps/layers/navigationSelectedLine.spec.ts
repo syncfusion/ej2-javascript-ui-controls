@@ -4,7 +4,7 @@
 import { Maps, ILoadedEventArgs, NavigationLine } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, } from '../data/data.spec';
-import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 Maps.Inject(NavigationLine);
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
@@ -415,7 +415,7 @@ describe('Map navigation properties tesing', () => {
             map.layers[0].navigationLineSettings = [
                 {
                     visible: true,
-                    latitude: [ 21.0000,  -15.7833],
+                    latitude: [21.0000, -15.7833],
                     longitude: [78.0000, -47.8667],
                     angle: 0,
                     width: 5,
@@ -457,9 +457,9 @@ describe('Map navigation properties tesing', () => {
         });
         it('Navigation line selected arrow position start, angle -0.5 and offSet', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-               let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
-               let markerEnd: string = spec.getAttribute('marker-end');
-               expect(markerEnd).toEqual('url(#triangle0)');
+                let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
+                let markerEnd: string = spec.getAttribute('marker-end');
+                expect(markerEnd).toEqual('url(#triangle0)');
             };
             map.layers[0].navigationLineSettings = [
                 {
@@ -476,7 +476,7 @@ describe('Map navigation properties tesing', () => {
                         offSet: 5
                     }
                 },
-                ];
+            ];
             map.refresh();
         });
     });
@@ -514,28 +514,27 @@ describe('Map navigation properties tesing', () => {
         });
         it('Navigation line selected arrow position start, angle -0.5 and offSet', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-               let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
-              // let markerEnd: string = spec.getAttribute('marker-end');
-              // expect(markerEnd).toEqual('url(#triangle0)');
+                let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
+                // let markerEnd: string = spec.getAttribute('marker-end');
+                // expect(markerEnd).toEqual('url(#triangle0)');
             };
             map.layers[0].navigationLineSettings = [
-              {
-                visible: true,
-                latitude: [38.8833, 21.0000],
-                longitude: [-77.0167, 78.0000],
-                angle: 0,
-                arrowSettings: {
-                   showArrow: true,
-                   size: 5,
-                   position: 'Start',
-                   offSet: 5
-               }
-             },
+                {
+                    visible: true,
+                    latitude: [38.8833, 21.0000],
+                    longitude: [-77.0167, 78.0000],
+                    angle: 0,
+                    arrowSettings: {
+                        showArrow: true,
+                        size: 5,
+                        position: 'Start',
+                        offSet: 5
+                    }
+                },
             ];
-            debugger;
             map.theme = 'MaterialDark';
             map.refresh();
-});
+        });
     });
 });
 

@@ -32,3 +32,5 @@ export * from './tooltip-settings';
 export * from './tooltip-settings-model';
 export * from './sort-settings';
 export * from './sort-settings-model';
+export * from './resource-fields';
+export * from './resource-fields-model';

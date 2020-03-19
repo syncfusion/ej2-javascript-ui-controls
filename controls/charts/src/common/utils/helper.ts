@@ -16,6 +16,7 @@ import { IAxisLabelRenderEventArgs } from '../../chart/model/chart-interface';
 import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { BulletChart } from '../../bullet-chart/bullet-chart';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -200,7 +201,6 @@ export function degreeToLocation(degree: number, radius: number, center: ChartLo
     let radian: number = (degree * Math.PI) / 180;
     return new ChartLocation(Math.cos(radian) * radius + center.x, Math.sin(radian) * radius + center.y);
 }
-
 /** @private */
 export function degreeToRadian(degree: number): number {
     return degree * (Math.PI / 180);
@@ -289,7 +289,6 @@ export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): 
     }
     return true;
 }
-
 function getAccumulationLegend(locX: number, locY: number, r: number, height: number, width: number, mode: string): string {
     let cartesianlarge: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX, locY));
     let cartesiansmall: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX + (width / 10), locY));
@@ -830,21 +829,29 @@ export function templateAnimate(
 }
 
 /** @private */
-export function drawSymbol(location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string,
-                           renderer ?: SvgRenderer | CanvasRenderer, clipRect ?: Rect): Element {
+export function drawSymbol(
+location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string,
+renderer?: SvgRenderer | CanvasRenderer, clipRect?: Rect, isChartControl?: boolean, control?: BulletChart
+): Element {
     let chartRenderer: SvgRenderer | CanvasRenderer = renderer ? renderer : new SvgRenderer('');
-    let shapeOption: IShapes = calculateShapes(location, size, shape, options, url);
+    let shapeOption: IShapes = calculateShapes(location, size, shape, options, url, isChartControl, control);
     let drawElement: Element =
-     chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null);
+    chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null);
     //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
 /** @private */
-export function calculateShapes(location: ChartLocation, size: Size, shape: string, options: PathOption, url: string): IShapes {
+// tslint:disable-next-line:max-func-body-length
+export function calculateShapes(
+    location: ChartLocation, size: Size, shape: string, options: PathOption, url: string, isChart?: boolean,
+    control?: BulletChart
+): IShapes {
     let dir: string;
     let functionName: string = 'Path';
-    let width: number = size.width;
-    let height: number = size.height;
+    let isBulletChart: boolean = isChart;
+    let width: number = (isBulletChart && shape === 'Circle') ? (size.width - 2) : size.width;
+    let height: number = (isBulletChart && shape === 'Circle') ? (size.height - 2) : size.height;
+    let sizeBullet: number = (isBulletChart) ? control.targetWidth : 0;
     let lx: number = location.x;
     let ly: number = location.y;
     let y: number = location.y + (-height / 2);
@@ -859,7 +866,13 @@ export function calculateShapes(location: ChartLocation, size: Size, shape: stri
             dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' +
                 (ly + (-height / 2));
-            merge(options, { 'd': dir, stroke : options.fill });
+            merge(options, { 'd': dir, stroke: options.fill });
+            break;
+        case 'Multiply':
+            dir = 'M ' + (lx - sizeBullet) + ' ' + (ly - sizeBullet) + ' L ' +
+                (lx + sizeBullet) + ' ' + (ly + sizeBullet) + ' M ' +
+                (lx - sizeBullet) + ' ' + (ly + sizeBullet) + ' L ' + (lx + sizeBullet) + ' ' + (ly - sizeBullet);
+            merge(options, { 'd': dir, stroke: options.fill });
             break;
         case 'HorizontalLine':
             dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
@@ -875,6 +888,22 @@ export function calculateShapes(location: ChartLocation, size: Size, shape: stri
                 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + x + ' ' + ly + ' z';
+            merge(options, { 'd': dir });
+            break;
+        case 'ActualRect':
+            dir = 'M' + ' ' + x + ' ' + (ly + (-height / 8)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (-height / 8)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (height / 8)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (height / 8)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (-height / 8)) + ' z';
+            merge(options, { 'd': dir });
+            break;
+        case 'TargetRect':
+            dir = 'M' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' z';
             merge(options, { 'd': dir });
             break;
         case 'Rectangle':

@@ -1,8 +1,7 @@
-import {
-    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, removeClass, closest
-} from '@syncfusion/ej2-base';
+import { append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser } from '@syncfusion/ej2-base';
+import { removeClass, closest } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
-import { CardRenderedEventArgs, ColumnRenderedEventArgs, HeaderArgs } from '../base/interface';
+import { CardRenderedEventArgs, QueryCellInfoEventArgs, HeaderArgs } from '../base/interface';
 import { ColumnsModel, StackedHeadersModel } from '../models/index';
 import { MobileLayout } from './mobile-layout';
 import * as events from '../base/constant';
@@ -35,30 +34,34 @@ export class LayoutRender extends MobileLayout {
     }
 
     private initRender(): void {
-        if (this.parent.columns.length === 0) {
-            return;
+        if (!this.parent.isBlazorRender()) {
+            if (this.parent.columns.length === 0) {
+                return;
+            }
+            this.columnData = this.getColumnCards();
+            this.kanbanRows = this.getRows();
+            this.swimlaneData = this.getSwimlaneCards();
         }
-        this.columnData = this.getColumnCards();
-        this.kanbanRows = this.getRows();
-        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             let parent: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
             if (parent) {
                 this.scrollLeft = parent.scrollLeft;
             }
         }
-        this.destroy();
-        this.parent.on(events.dataReady, this.initRender, this);
-        this.parent.on(events.contentReady, this.scrollUiUpdate, this);
-        if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
-            this.renderSwimlaneHeader();
+        if (!this.parent.isBlazorRender()) {
+            this.destroy();
+            this.parent.on(events.dataReady, this.initRender, this);
+            this.parent.on(events.contentReady, this.scrollUiUpdate, this);
+            if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
+                this.renderSwimlaneHeader();
+            }
+            let header: HTMLElement = createElement('div', { className: cls.HEADER_CLASS });
+            this.parent.element.appendChild(header);
+            this.renderHeader(header);
+            this.renderContent();
+            this.renderCards();
+            this.renderValidation();
         }
-        let header: HTMLElement = createElement('div', { className: cls.HEADER_CLASS });
-        this.parent.element.appendChild(header);
-        this.renderHeader(header);
-        this.renderContent();
-        this.renderCards();
-        this.renderValidation();
         this.parent.notify(events.contentReady, {});
         this.wireEvents();
     }
@@ -66,7 +69,10 @@ export class LayoutRender extends MobileLayout {
     private renderHeader(header: HTMLElement): void {
         let headerWrap: HTMLElement = createElement('div', { className: this.parent.swimlaneSettings.keyField ? cls.SWIMLANE_CLASS : '' });
         header.appendChild(headerWrap);
-        let headerTable: HTMLElement = createElement('table', { className: cls.TABLE_CLASS + ' ' + cls.HEADER_TABLE_CLASS });
+        let headerTable: HTMLElement = createElement('table', {
+            className: cls.TABLE_CLASS + ' ' + cls.HEADER_TABLE_CLASS,
+            attrs: { 'role': 'presentation' }
+        });
         headerWrap.appendChild(headerTable);
         this.renderColGroup(headerTable);
         let tableHead: HTMLElement = createElement('thead');
@@ -116,16 +122,19 @@ export class LayoutRender extends MobileLayout {
                     }
                 }
                 if (column.allowToggle) {
-                    let name: string = (column.isExpanded && index === -1) ? cls.COLUMN_EXPAND_CLASS : cls.COLUMN_COLLAPSE_CLASS;
+                    let isExpand: boolean = (column.isExpanded && index === -1) ? true : false;
+                    let name: string = (isExpand) ? cls.COLUMN_EXPAND_CLASS : cls.COLUMN_COLLAPSE_CLASS;
                     let icon: HTMLElement = createElement('div', {
                         className: cls.HEADER_ICON_CLASS + ' ' + cls.ICON_CLASS + ' ' + name,
                         attrs: { 'tabindex': '0' }
                     });
+                    icon.setAttribute('aria-label', isExpand ? column.keyField + ' Expand' : column.keyField + ' Collapse');
+                    th.setAttribute('aria-expanded', isExpand.toString());
                     headerWrapper.appendChild(icon);
                 }
-                let dataObj: HeaderArgs[] = [{ keyField: column.keyField, textField: column.headerText }];
-                let args: ColumnRenderedEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
-                this.parent.trigger(events.columnRendered, args, (columnArgs: ColumnRenderedEventArgs) => {
+                let dataObj: HeaderArgs[] = [{ keyField: column.keyField, textField: column.headerText, count: noOfCard }];
+                let args: QueryCellInfoEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
+                this.parent.trigger(events.queryCellInfo, args, (columnArgs: QueryCellInfoEventArgs) => {
                     if (!columnArgs.cancel) {
                         tr.appendChild(th);
                     }
@@ -139,7 +148,10 @@ export class LayoutRender extends MobileLayout {
         this.parent.element.appendChild(content);
         let contentWrap: HTMLElement = createElement('div', { className: this.parent.swimlaneSettings.keyField ? cls.SWIMLANE_CLASS : '' });
         content.appendChild(contentWrap);
-        let contentTable: HTMLElement = createElement('table', { className: cls.TABLE_CLASS + ' ' + cls.CONTENT_TABLE_CLASS });
+        let contentTable: HTMLElement = createElement('table', {
+            className: cls.TABLE_CLASS + ' ' + cls.CONTENT_TABLE_CLASS,
+            attrs: { 'role': 'presentation' }
+        });
         contentWrap.appendChild(contentTable);
         this.renderColGroup(contentTable);
         let tBody: HTMLElement = createElement('tbody');
@@ -158,7 +170,7 @@ export class LayoutRender extends MobileLayout {
                 isCollaspsed = index !== -1;
             }
             className = isCollaspsed ? cls.CONTENT_ROW_CLASS + ' ' + cls.COLLAPSED_CLASS : cls.CONTENT_ROW_CLASS;
-            let tr: HTMLElement = createElement('tr', { className: className });
+            let tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
             if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
                 this.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
@@ -167,16 +179,18 @@ export class LayoutRender extends MobileLayout {
                     let index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField);
                     let className: string = index === -1 ? cls.CONTENT_CELLS_CLASS : cls.CONTENT_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS;
                     let td: HTMLElement = createElement('td', {
-                        className: className, attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
+                        className: className,
+                        attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true' }
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], cls.COLLAPSED_CLASS);
                         td.appendChild(createElement('div', { className: cls.COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
+                        td.setAttribute('aria-expanded', 'false');
                     }
                     tr.appendChild(td);
-                    let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField }];
-                    let args: ColumnRenderedEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
-                    this.parent.trigger(events.columnRendered, args, (columnArgs: ColumnRenderedEventArgs) => {
+                    let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
+                    let args: QueryCellInfoEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
+                    this.parent.trigger(events.queryCellInfo, args, (columnArgs: QueryCellInfoEventArgs) => {
                         if (!columnArgs.cancel) {
                             tBody.appendChild(tr);
                         }
@@ -189,7 +203,12 @@ export class LayoutRender extends MobileLayout {
     private renderSwimlaneRow(tBody: HTMLElement, row: HeaderArgs, isCollapsed: boolean): void {
         let name: string = cls.CONTENT_ROW_CLASS + ' ' + cls.SWIMLANE_ROW_CLASS;
         let className: string = isCollapsed ? ' ' + cls.COLLAPSED_CLASS : '';
-        let tr: HTMLElement = createElement('tr', { className: name + className, attrs: { 'data-key': row.keyField } });
+        let tr: HTMLElement = createElement('tr', {
+            className: name + className, attrs: {
+                'data-key': row.keyField,
+                'aria-expanded': (!isCollapsed).toString()
+            }
+        });
         let col: number = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         let td: HTMLElement = createElement('td', {
             className: cls.CONTENT_CELLS_CLASS,
@@ -198,7 +217,12 @@ export class LayoutRender extends MobileLayout {
         let swimlaneHeader: HTMLElement = createElement('div', { className: cls.SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
         let iconClass: string = isCollapsed ? cls.SWIMLANE_ROW_COLLAPSE_CLASS : cls.SWIMLANE_ROW_EXPAND_CLASS;
-        let iconDiv: HTMLElement = createElement('div', { className: cls.ICON_CLASS + ' ' + iconClass, attrs: { 'tabindex': '0' } });
+        let iconDiv: HTMLElement = createElement('div', {
+            className: cls.ICON_CLASS + ' ' + iconClass, attrs: {
+                'tabindex': '0',
+                'aria-label': isCollapsed ? row.keyField + ' Collapse' : row.keyField + ' Expand'
+            }
+        });
         swimlaneHeader.appendChild(iconDiv);
         let headerWrap: HTMLElement = createElement('div', { className: cls.HEADER_WRAP_CLASS });
         swimlaneHeader.appendChild(headerWrap);
@@ -222,9 +246,9 @@ export class LayoutRender extends MobileLayout {
             }));
         }
         tr.appendChild(td);
-        let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField }];
-        let args: ColumnRenderedEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'swimlaneRow' };
-        this.parent.trigger(events.columnRendered, args, (columnArgs: ColumnRenderedEventArgs) => {
+        let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
+        let args: QueryCellInfoEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'swimlaneRow' };
+        this.parent.trigger(events.queryCellInfo, args, (columnArgs: QueryCellInfoEventArgs) => {
             if (!columnArgs.cancel) {
                 tBody.appendChild(tr);
             }
@@ -252,8 +276,14 @@ export class LayoutRender extends MobileLayout {
                         let className: string = cardIndex === -1 ? '' : ' ' + cls.CARD_SELECTION_CLASS;
                         let cardElement: HTMLElement = createElement('div', {
                             className: cls.CARD_CLASS + className,
-                            attrs: { 'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField] }
+                            attrs: {
+                                'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
+                                'aria-selected': 'false'
+                            }
                         });
+                        if (cardIndex !== -1) {
+                            cardElement.setAttribute('aria-selected', 'true');
+                        }
                         if (this.parent.cardSettings.template) {
                             addClass([cardElement], cls.TEMPLATE_CLASS);
                             let cardTemplate: HTMLElement[] = this.parent.templateParser(this.parent.cardSettings.template)(data);
@@ -341,6 +371,11 @@ export class LayoutRender extends MobileLayout {
             if (this.parent.swimlaneSettings.sortBy === 'Descending') {
                 kanbanRows.reverse();
             }
+            kanbanRows.forEach((row: HeaderArgs) => {
+                row.count = this.parent.kanbanData.filter((obj: { [key: string]: Object }) =>
+                    this.columnKeys.indexOf(<string>obj[this.parent.keyField]) > -1 &&
+                    obj[this.parent.swimlaneSettings.keyField] === row.keyField).length;
+            });
         } else {
             kanbanRows.push({ keyField: '', textField: '' });
         }
@@ -449,7 +484,7 @@ export class LayoutRender extends MobileLayout {
             }));
         }
         if (limits.childElementCount > 0) {
-            if (target.firstElementChild.classList.contains(cls.CARD_WRAPPER_CLASS)) {
+            if (target.querySelector('.' + cls.CARD_WRAPPER_CLASS)) {
                 target.insertBefore(limits, target.firstElementChild);
             } else {
                 target.appendChild(limits);
@@ -515,6 +550,17 @@ export class LayoutRender extends MobileLayout {
         }
         let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(`.${cls.CARD_CLASS}.${cls.CARD_SELECTION_CLASS}`));
         removeClass(cards, cls.CARD_SELECTION_CLASS);
+        this.disableAttributeSelection(cards);
+    }
+
+    public disableAttributeSelection(cards: HTMLElement[] | Element): void {
+        if (cards instanceof Element) {
+            cards.setAttribute('aria-selected', 'false');
+        } else {
+            cards.forEach((card: HTMLElement) => {
+                card.setAttribute('aria-selected', 'false');
+            });
+        }
     }
 
     public getColumnCards(data?: Object[]): { [key: string]: Object[] } {

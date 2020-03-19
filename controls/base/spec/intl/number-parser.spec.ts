@@ -227,11 +227,11 @@ describe('numberParser', () => {
         });
         it('C2 format with de culture', () => {
             let result: string = IntlBase.getActualNumberFormat('de', { format: 'C2', currency: 'USD' }, cldrData);
-            expect(result).toBe('###0,00 $');
+            expect(result).toBe('###0.00 $');
         });
         it('C2 format with de culture and EUR code', () => {
             let result: string = IntlBase.getActualNumberFormat('de', { format: 'C2', currency: 'EUR' }, cldrData);
-            expect(result).toBe('###0,00 €');
+            expect(result).toBe('###0.00 €');
         });
         it('C2 format currency $', () => {
             let result: string = IntlBase.getActualNumberFormat('en', { format: 'C2', currency: '$' });

@@ -50,6 +50,7 @@ export class AxisTableRenderer {
             });
             let axisTitle: HTMLElement = createElement('div', {
                 className: cls.AXIS_HEADER_CLASS,
+                attrs: { title: this.parent.localeObj.getConstant(fieldLabels[len]) },
                 innerHTML: this.parent.localeObj.getConstant(fieldLabels[len])
             });
             axisTitleWrapper.appendChild(this.getIconupdate(fieldLabels[len]));

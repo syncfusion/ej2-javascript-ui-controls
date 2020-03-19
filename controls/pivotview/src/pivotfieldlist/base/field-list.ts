@@ -7,11 +7,13 @@ import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../.
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
+import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
 import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';
-import { Mode } from '../../common/base/enum';
+import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';
+import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';
+import { Mode, AggregateTypes } from '../../common/base/enum';
 import { PivotCommon } from '../../common/base/pivot-common';
-import { CommonArgs, MemberFilteringEventArgs } from '../../common/base/interface';
 import { Render } from '../renderer/renderer';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { TreeViewRenderer } from '../renderer/tree-renderer';
@@ -75,6 +77,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public lastAggregationInfo: IFieldOptions = {};
     /** @hidden */
     public lastCalcFieldInfo: ICalculatedFields = {};
+    /** @hidden */
+    public isPopupView: boolean = false;
     private defaultLocale: Object;
     private captionData: FieldOptionsModel[][];
 
@@ -99,7 +103,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public calculatedFieldModule: CalculatedField;
     /** @hidden */
     public contextMenuModule: PivotContextMenu;
-
+    /** @hidden */
+    private staticPivotGridModule: PivotView;
     //Property Declarations
 
     /** 
@@ -178,6 +183,17 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     @Property()
     public spinnerTemplate: string;
 
+    /**
+     * It allows to customize the aggregate items to be displayed in dropdowm menu of fieldList,groupingBar,contextmenu and CalculatedField.
+     * @default ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index', 'PopulationVar', 'SampleVar',
+     * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
+     * 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom',
+     * 'PercentageOfParentTotal']
+     */
+    /* tslint:disable-next-line:max-line-length */
+    @Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
+    public aggregateTypes: AggregateTypes[];
+
     //Event Declarations
     /**
      * This allows any customization of Pivot Field List properties before rendering.
@@ -227,12 +243,52 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public fieldDrop: EmitType<FieldDropEventArgs>;
 
     /**
+     * Triggers when a field drag (move) starts.
+     * @event
+     * @blazorproperty 'FieldDragStart'
+     */
+    @Event()
+    public fieldDragStart: EmitType<FieldDragStartEventArgs>;
+
+    /**
      * This allows to change the cell value.
      * @event
      * @deprecated
      */
     @Event()
     public aggregateCellInfo: EmitType<AggregateEventArgs>;
+
+    /**
+     * Triggers before member editor dialog opens.
+     * @event
+     * @blazorproperty 'MemberEditorOpen'
+     */
+    @Event()
+    public memberEditorOpen: EmitType<MemberEditorOpenEventArgs>;
+
+    /**
+     * Triggers before calculated field created.
+     * @event
+     * @blazorproperty 'CalculatedFieldCreate'
+     */
+    @Event()
+    public calculatedFieldCreate: EmitType<CalculatedFieldCreateEventArgs>;
+
+    /**
+     * Triggers before aggregate type context menu opened.
+     * @event
+     * @blazorproperty 'AggregateMenuOpen'
+     */
+    @Event()
+    public aggregateMenuOpen: EmitType<AggregateMenuOpenEventArgs>;
+
+    /**
+     * Triggers before removing the field.
+     * @event
+     * @blazorproperty 'FieldRemove'
+     */
+    @Event()
+    public fieldRemove: EmitType<FieldRemoveEventArgs>;
 
     /** 
      * Triggers when data source is populated in the Pivot Field List.
@@ -277,6 +333,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         return modules;
     }
 
+    /**
+     * @hidden
+     */
+    public getAllSummaryType(): AggregateTypes[] {
+        return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index',
+            'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal',
+            'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal',
+            'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
+    }
     /**
      * For internal use only - Initialize the event handler;
      * @private
@@ -335,6 +400,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             format: 'Summaries values by',
             edit: 'Edit',
             clear: 'Clear',
+            clearCalculatedField: 'Clear edited field info',
+            editCalculatedField: 'Edit calculated field',
+            sortAscending: 'Sort ascending order',
+            sortDescending: 'Sort descending order',
+            sortNone: 'Sort data order',
             formulaField: 'Drag and drop fields to formula',
             dragField: 'Drag field to formula',
             clearFilter: 'Clear',
@@ -400,13 +470,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             Minutes: 'Minutes',
             Seconds: 'Seconds',
             /* tslint:enable */
-            apply: 'APPLY',
+            apply: 'Apply',
             valueFieldSettings: 'Value field settings',
             sourceName: 'Field name :',
-            sourceCaption: 'Field caption :',
-            summarizeValuesBy: 'Summarize values by :',
-            baseField: 'Base field :',
-            baseItem: 'Base item :',
+            sourceCaption: 'Field caption',
+            summarizeValuesBy: 'Summarize values by',
+            baseField: 'Base field',
+            baseItem: 'Base item',
             example: 'e.g:',
             editorDataLimitMsg: ' more items. Search to refine further.',
             deferLayoutUpdate: 'Defer Layout Update',
@@ -416,10 +486,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             fieldDropErrorAction: 'The field you are moving cannot be placed in that area of the report',
             memberType: 'Field Type',
             selectedHierarchy: 'Parent Hierarchy',
-            formatString: 'Format String',
+            formatString: 'Format',
             expressionField: 'Expression',
             olapDropText: 'Example: [Measures].[Order Quantity] + ([Measures].[Order Quantity] * 0.10)',
             customFormat: 'Enter custom format string',
+            numberFormatString: 'Example: C, P, 0000 %, ###0.##0#, etc.',
             Measure: 'Measure',
             Dimension: 'Dimension',
             Standard: 'Standard',
@@ -428,7 +499,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             Custom: 'Custom',
             blank: '(Blank)',
             fieldTooltip: 'Drag and drop fields to create an expression. ' +
-                'And, if you want to edit the existing the calculated fields! ' +
+                'And, if you want to edit the existing calculated fields! ' +
                 'You can achieve it by simply selecting the field under "Calculated Members".',
             fieldTitle: 'Field Name',
             QuarterYear: 'Quarter Year',
@@ -556,6 +627,50 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 case 'locale':
                     this.refresh();
                     break;
+                case 'dataSourceSettings':
+                    if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
+                        if (this.isPopupView && this.pivotGridModule &&
+                            this.pivotGridModule.showGroupingBar && this.pivotGridModule.groupingBarModule) {
+                            let filters: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.filters);
+                            let values: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.values);
+                            let rows: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.rows);
+                            let columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.columns);
+                            /* tslint:disable-next-line:max-line-length */
+                            this.pivotGridModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values, filters: filters } }, true);
+                            this.pivotGridModule.axisFieldModule.render();
+                        } else if (!this.isPopupView && this.staticPivotGridModule && !this.staticPivotGridModule.isDestroyed) {
+                            let pivot: PivotView = this.staticPivotGridModule;
+                            if (pivot.showGroupingBar && pivot.groupingBarModule) {
+                                pivot.axisFieldModule.render();
+                            }
+                            if (pivot.showFieldList && pivot.pivotFieldListModule) {
+                                let rows: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.rows);
+                                let columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.columns);
+                                let values: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.values);
+                                let filters: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.filters);
+                                /* tslint:disable-next-line:max-line-length */
+                                pivot.pivotFieldListModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values, filters: filters } }, true);
+                                pivot.pivotFieldListModule.axisFieldModule.render();
+                                if (pivot.pivotFieldListModule.treeViewModule.fieldTable && !pivot.isAdaptive) {
+                                    pivot.pivotFieldListModule.notify(events.treeViewUpdate, {});
+                                }
+                            }
+                        }
+                        this.axisFieldModule.render();
+                        if (this.treeViewModule.fieldTable && !this.isAdaptive) {
+                            this.notify(events.treeViewUpdate, {});
+                        }
+                    }
+                    break;
+                case 'aggregateTypes':
+                    if (this.axisFieldModule) {
+                        this.axisFieldModule.render();
+                    }
+                    if (this.pivotGridModule && this.pivotGridModule.axisFieldModule) {
+                        this.pivotGridModule.setProperties({ aggregateTypes: newProp.aggregateTypes }, true);
+                        this.pivotGridModule.axisFieldModule.render();
+                    }
+                    break;
                 case 'enableRtl':
                     if (this.enableRtl) {
                         addClass([this.element], cls.RTL);
@@ -575,11 +690,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         let args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
         };
-        this.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
+        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        control.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
             PivotUtil.updateDataSourceSettings(this, observedArgs.dataSourceSettings);
-            if (isBlazor()) {
-                this.dataSourceSettings.dataSource = this.engineModule.data as IDataSet[];
-            }
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
                     let pivotDataSet: IDataSet[];
@@ -589,9 +702,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         pivotDataSet = this.dataSourceSettings.dataSource as IDataSet[];
                     }
                     this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet)) as IDataSet[];
-                    this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
-                    this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
-                    this.setProperties({ dataSourceSettings: { dataSource: pivotDataSet } }, true);
+                    if (isBlazor()) {
+                        this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+                    } else {
+                        this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
+                        this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+                        this.setProperties({ dataSourceSettings: { dataSource: pivotDataSet } }, true);
+                    }
                 }
                 this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, this.frameCustomProperties(), this.getValueCellInfo.bind(this));
                 this.pivotFieldList = this.engineModule.fieldList;
@@ -600,7 +717,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivotValues: this.engineModule.pivotValues
                 };
                 const this$: PivotFieldList = this;
-                this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+                control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
                     this$.engineModule.pivotValues = isBlazor() ? this.engineModule.pivotValues : observedArgs.pivotValues;
                     this$.notify(events.dataReady, {});
@@ -615,7 +732,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivotValues: this.olapEngineModule.pivotValues
                 };
                 const this$: PivotFieldList = this;
-                this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+                control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
                     this$.olapEngineModule.pivotValues = isBlazor() ? this.engineModule.pivotValues : observedArgs.pivotValues;
                     this$.notify(events.dataReady, {});
@@ -626,7 +743,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
     /* tslint:enable */
 
-    /* tslint:enable */
     private generateData(): void {
         this.pivotFieldList = {};
         if (this.dataSourceSettings && (this.dataSourceSettings.dataSource || this.dataSourceSettings.url)) {
@@ -639,6 +755,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             } else if (this.dataSourceSettings.dataSource instanceof DataManager) {
                 setTimeout(this.getData.bind(this), 100);
             }
+        } else if (isBlazor() && this.dataType === 'pivot' &&
+            this.engineModule.data && this.engineModule.data.length > 0) {
+            this.initEngine();
         } else {
             this.notify(events.dataReady, {});
             this.trigger(events.dataBound);
@@ -736,6 +855,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         showSpinner(this.fieldListSpinnerElement as HTMLElement);
         let pivot: PivotFieldList = this;
+        let control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
         //setTimeout(() => {
         let isOlapDataRefreshed: boolean = false;
         let pageSettings: IPageSettings = pivot.pivotGridModule && pivot.pivotGridModule.enableVirtualization ?
@@ -752,7 +872,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         let args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(pivot.dataSourceSettings)
         };
-        pivot.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
+        control.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
             if (!(pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange))) {
                 PivotUtil.updateDataSourceSettings(pivot, observedArgs.dataSourceSettings);
                 PivotUtil.updateDataSourceSettings(pivot.pivotGridModule, observedArgs.dataSourceSettings);
@@ -774,7 +894,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         if (isFiltered) {
                             if (isBlazor()) {
                                 let dataArgs: any =
-                                    (window as any)['ejsInterop'].copyWithoutCircularReferences(
+                                    (window as any)['sfBlazor'].copyWithoutCircularReferences(
                                         [pivot.dataSourceSettings.filterSettings], pivot.dataSourceSettings.filterSettings);
                                 interopArguments = {
                                     'key': 'onFilter',
@@ -809,7 +929,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             pivot.lastCalcFieldInfo = {};
                         }
                         if (isBlazor()) {
-                            let args: any = (window as any)['ejsInterop'].copyWithoutCircularReferences([interopArguments['arg']],
+                            let args: any = (window as any)['sfBlazor'].copyWithoutCircularReferences([interopArguments['arg']],
                                 interopArguments['arg']);
                             (pivot.pivotGridModule as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod",
                                 interopArguments['key'], args
@@ -826,7 +946,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         }
                     } else {
                         if (isBlazor() && pageSettings) {
-                            let dataArgs: any = (window as any)['ejsInterop'].copyWithoutCircularReferences(
+                            let dataArgs: any = (window as any)['sfBlazor'].copyWithoutCircularReferences(
                                 [(pivot.dataSourceSettings as any).properties], (pivot.dataSourceSettings as any).properties);
                             (pivot.pivotGridModule as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'renderEngine',
                                 { 'dataSourceSettings': dataArgs, 'customProperties': customProperties }).then(
@@ -836,7 +956,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                                         pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
                                     });
                         } else {
-                            /* tslint:disable-next-line:max-line-length */
                             pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
                         }
                     }
@@ -856,14 +975,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         });
         //});
     }
-
+    /* tslint:enable */
     private enginePopulatedEventMethod(pivot: PivotFieldList, isTreeViewRefresh: boolean, isOlapDataRefreshed: boolean): void {
+        let control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
         let eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
             pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
             pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
         };
-        pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+        control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
             let dataSource: IDataSet[] | DataManager = pivot.dataSourceSettings.dataSource;
             if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
                 observedArgs.dataSourceSettings.dataSource = dataSource;
@@ -895,6 +1015,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 }, true);
                 pivot.pivotGridModule.notify(events.uiUpdate, pivot);
                 hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
+                /* tslint:enable:align */
             }
             if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
                 pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
@@ -909,7 +1030,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             }
         });
     }
-    /* tslint:enable */
 
     private updateOlapDataSource(pivot: PivotFieldList, isSorted: boolean, isCalcChange: boolean, isOlapDataRefreshed: boolean): boolean {
         let customProperties: IOlapCustomProperties =
@@ -948,7 +1068,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         if (control) {
             this.clonedDataSet = control.clonedDataSet;
-            this.setProperties({ dataSourceSettings: control.dataSourceSettings }, true);
+            if (isBlazor() && !this.isPopupView) {
+                PivotUtil.updateDataSourceSettings(this, PivotUtil.getClonedDataSourceSettings(control.dataSourceSettings));
+            } else {
+                this.setProperties({ dataSourceSettings: control.dataSourceSettings }, true);
+            }
             this.engineModule = control.engineModule;
             this.olapEngineModule = control.olapEngineModule;
             this.dataType = control.dataType;
@@ -967,6 +1091,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (this.renderMode === 'Fixed' && this.allowDeferLayoutUpdate) {
                 this.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
                 this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
+            }
+            if (!this.isPopupView) {
+                this.staticPivotGridModule = control;
             }
         }
     }
@@ -996,10 +1123,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             control.dataType = this.dataType;
             control.pivotValues = this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues;
             let eventArgs: FieldListRefreshedEventArgs = {
-                dataSourceSettings: control.dataSourceSettings,
+                dataSourceSettings: PivotUtil.getClonedDataSourceSettings(control.dataSourceSettings),
                 pivotValues: control.pivotValues
             };
             control.trigger(events.fieldListRefreshed, eventArgs);
+            if (!this.isPopupView) {
+                this.staticPivotGridModule = control;
+            }
             if (control.enableVirtualization && isBlazor()) {
                 control.renderPivotGrid();
             } else {
@@ -1013,12 +1143,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * @hidden
      */
     public triggerPopulateEvent(): void {
+        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
         let eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: this.dataSourceSettings as IDataOptions,
             pivotFieldList: this.dataType === 'olap' ? this.olapEngineModule.fieldList : this.engineModule.fieldList,
             pivotValues: this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues
         };
-        this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+        control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             this.pivotFieldList = observedArgs.pivotFieldList;
             if (this.dataType === 'olap') {

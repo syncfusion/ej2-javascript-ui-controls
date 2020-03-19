@@ -167,17 +167,67 @@ export type FlagType =
     /** Text type */
     'Text';
 
-/** @private */
-export type TooltipPosition =
-/** Defines the default tooltip placing inside the chart bounds */
-'None' |
-/** Defines the auto tooltip placing based on most available space */
-'Auto' |
-/** Defines the Left side tooltip placing */
-'Left' |
-/** Defines the Right side tooltip placing */
-'Right'|
-/** Defines the Top side tooltip placing */
-'Top' |
-/** Defines the Bottom side tooltip placing */
-'Bottom';
+/**
+ * Highlighting or selecting patterns in Chart, They are.
+ * * none -Sets none as highlighting or selecting pattern.
+ * * chessboard - Sets chess board as highlighting or selecting pattern.
+ * * dots - Set dots as highlighting or selecting pattern.
+ * * diagonalForward - Sets diagonal forward as highlighting or selecting pattern.
+ * * crosshatch -Sets crosshatch as highlighting or selecting pattern.
+ * * pacman - Sets pacman highlighting or selecting pattern.
+ * * diagonalbackward - Set diagonal backward as highlighting or selecting pattern.
+ * * grid - Set grid as highlighting or selecting pattern.
+ * * turquoise - Sets turquoise as highlighting or selecting pattern.
+ * * star - Sets star as highlighting or selecting pattern.
+ * * triangle - Sets triangle as highlighting or selecting pattern.
+ * * circle - Sets circle as highlighting or selecting pattern.
+ * * tile - Sets tile as highlighting or selecting pattern.
+ * * horizontaldash - Sets horizontal dash as highlighting or selecting pattern.
+ * * verticaldash - Sets vertical dash as highlighting or selecting pattern.
+ * * rectangle - Sets rectangle as highlighting or selecting pattern.
+ * * box - Sets box as highlighting or selecting pattern.
+ * * verticalstripe - Sets vertical stripe as highlighting or selecting pattern.
+ * * horizontalstripe - Sets horizontal stripe as highlighting or selecting pattern.
+ * * bubble - Sets bubble as highlighting or selecting pattern.
+ */
+export type SelectionPattern =
+    /** Sets none as highlighting or selecting pattern. */
+    'None' |
+    /** Sets chess board as highlighting or selecting pattern. */
+    'Chessboard' |
+    /** Set dots as highlighting or selecting pattern. */
+    'Dots' |
+    /** Sets diagonal forward as highlighting or selecting pattern. */
+    'DiagonalForward' |
+    /** Sets cross hatch as highlighting or selecting pattern. */
+    'Crosshatch' |
+    /** Sets pacman as highlighting or selecting pattern. */
+    'Pacman' |
+    /** Set diagonal backward as highlighting or selecting pattern. */
+    'DiagonalBackward' |
+    /** Set grid as highlighting or selecting pattern. */
+    'Grid' |
+    /** Set turquoise as highlighting or selecting pattern. */
+    'Turquoise' |
+    /** Set star as highlighting or selecting pattern. */
+    'Star' |
+    /** Set triangle as highlighting or selecting pattern. */
+    'Triangle' |
+    /** Set circle as highlighting or selecting pattern. */
+    'Circle' |
+    /** Set tile as highlighting or selecting pattern. */
+    'Tile' |
+    /** Set horizontal dash as highlighting or selecting pattern. */
+    'HorizontalDash' |
+    /** Set vertical dash as highlighting or selecting pattern. */
+    'VerticalDash' |
+    /** Set rectangle as highlighting or selecting pattern. */
+    'Rectangle' |
+    /** Set box as highlighting or selecting pattern. */
+    'Box' |
+    /** Set vertical stripe as highlighting or selecting pattern. */
+    'VerticalStripe' |
+    /** Set horizontal stripe as highlighting or selecting pattern. */
+    'HorizontalStripe' |
+    /** Set dots as bubble or selecting pattern. */
+    'Bubble';

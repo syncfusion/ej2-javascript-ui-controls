@@ -6,7 +6,7 @@ import { AutoComplete } from './../../../src/inplace-editor/modules/auto-complet
 
 InPlaceEditor.Inject(AutoComplete);
 
-let serviceUrl: string = 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData';
+let serviceUrl: string = 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData';
 
 let sportsData: string[] = ['Badminton', 'Basketball', 'Cricket', 'Football', 'Golf', 'Gymnastics', 'Tennis'];
 

@@ -98,7 +98,7 @@ export class HeaderRender implements IRenderer {
                     (gObj.element.querySelector('.e-reorderuparrow') as HTMLElement).style.display = 'none';
                     (gObj.element.querySelector('.e-reorderdownarrow') as HTMLElement).style.display = 'none';
                 }
-                if (!gObj.allowGroupReordering) {
+                if (!gObj.groupSettings.allowReordering) {
                     return;
                 }
             }
@@ -127,6 +127,7 @@ export class HeaderRender implements IRenderer {
             return;
         }
         gObj.notify(events.headerDrop, { target: e.target, uid: uid, droppedElement: e.droppedElement });
+
     }
 
     //Module declarations

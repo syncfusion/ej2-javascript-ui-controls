@@ -8,8 +8,8 @@ export class ColumnChooserSettings extends ChildProperty<ColumnChooserSettings> 
      * Defines the search operator for Column Chooser.
      * 
      * @default 'startsWith'
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.StartsWith
+     * @blazorType Syncfusion.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.Blazor.Operator.StartsWith
      */
     @Property('startsWith')
     public operator: string;

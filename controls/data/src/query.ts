@@ -230,7 +230,9 @@ export class Query {
             if (typeof fieldNames === 'string') {
                 fieldNames = [(fieldNames as string)];
             }
-            operator = operator || 'contains';
+            if (!operator || operator === 'none') {
+                operator = 'contains';
+            }
             let comparer: Function = (<{ [key: string]: Function }>DataUtil.fnOperators)[operator];
             this.queries.push({
                 fn: 'onSearch',

@@ -77,7 +77,7 @@ describe('Template Engine', () => {
         let templateStr: string = '<div class="   class1">blazor</div>';
         let result: any = [];
         let blazor: string = 'Blazor';
-        let ejsIntrop: string = 'ejsInterop';
+        let ejsIntrop: string = 'sfBlazor';
         Util.enableBlazorMode();
         window[ejsIntrop] = { updateTemplate: function () { } };
         result = (template.updateBlazorTemplate('template', 'Template'));
@@ -90,7 +90,7 @@ describe('Template Engine', () => {
         let templateStr: string = '<div class=" class1">blazor</div>';
         let result: any = [];
         let blazor: string = 'Blazor';
-        let ejsIntrop: string = 'ejsInterop';
+        let ejsIntrop: string = 'sfBlazor';
         let tempID: string = 'template';
         Util.enableBlazorMode();
         window[ejsIntrop] = { updateTemplate: function () { } };
@@ -106,7 +106,7 @@ describe('Template Engine', () => {
         let templateStr: string = '<div class="   class1">blazor</div>';
         let result: any = [];
         let blazor: string = 'Blazor';
-        let ejsIntrop: string = 'ejsInterop';
+        let ejsIntrop: string = 'sfBlazor';
         Util.enableBlazorMode();
         window[ejsIntrop] = { updateTemplate: function () { } };
         result = (template.updateBlazorTemplate('rowtemplate', 'RowTemplate', null, false));

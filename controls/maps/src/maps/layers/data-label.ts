@@ -39,13 +39,13 @@ export class DataLabel {
     }
     /**
      * To render label for maps
-     * @param layer 
-     * @param layerIndex 
-     * @param shape 
-     * @param layerData 
-     * @param group 
-     * @param labelTemplateElement 
-     * @param index 
+     * @param layer
+     * @param layerIndex
+     * @param shape
+     * @param layerData
+     * @param group
+     * @param labelTemplateElement
+     * @param index
      */
     public renderLabel(
         layer: LayerSettings, layerIndex: number, shape: object,
@@ -87,7 +87,7 @@ export class DataLabel {
         let zoomTransPoint : Point = this.maps.zoomTranslatePoint; let shapeWidth: number;
         let scaleZoomValue : number = !isNullOrUndefined(this.maps.scale)  ? Math.floor(this.maps.scale) : 1;
         let zoomLabelsPosition : Boolean = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
-        this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable;
+        this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable; this.maps.translateType = 'labels';
         for (let j: number = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
@@ -132,7 +132,8 @@ export class DataLabel {
                 }
             }
         }
-        text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath]
+        text = (!isNullOrUndefined(datasrcObj)) ? !isNullOrUndefined(datasrcObj[labelpath]) ?
+            datasrcObj[labelpath].toString() : datasrcObj[labelpath] : shapeData['properties'][labelpath];
         let dataLabelText : string = text;
         let projectionType : string = this.maps.projectionType;
         if (isPoint) {
@@ -144,7 +145,7 @@ export class DataLabel {
             };
         } else {
             location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
-        }   
+        }
         let firstLevelMapLocation : object = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
@@ -178,7 +179,7 @@ export class DataLabel {
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
             if (this.maps.isBlazor) {
-                const {maps, ...blazorEventArgs } : ILabelRenderingEventArgs = eventargs;
+                const {maps, datalabel, ...blazorEventArgs } : ILabelRenderingEventArgs = eventargs;
                 eventargs = blazorEventArgs;
             }
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs: ILabelRenderingEventArgs) => {
@@ -215,8 +216,8 @@ export class DataLabel {
                     locationX = location1['x'];
                     location['x'] = location1['x'];
                     width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
-                        && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
-                    (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
+                            && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
+                            (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
                 }
                 let xpositionEnds: number = ((location['x'] + transPoint['x']) * scale) + textSize['width'] / 2;
                 let xpositionStart: number = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
@@ -310,7 +311,7 @@ export class DataLabel {
                             } else {
                                 x = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
                                 y = ((location['y'] + transPoint['y'] )* scale)- textSize['height'] / 2;
-                            } 
+                            }
                             let rectOptions: RectOption = new RectOption(
                                 this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
                                 fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry
@@ -359,7 +360,7 @@ export class DataLabel {
     }
 
     /**
-     * To destroy the layers. 
+     * To destroy the layers.
      * @return {void}
      * @private
      */

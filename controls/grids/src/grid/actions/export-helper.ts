@@ -5,7 +5,7 @@ import { CellType } from '../base/enum';
 import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, createElement } from '@syncfusion/ej2-base';
 import { Cell } from '../models/cell';
 import { ValueFormatter } from './../services/value-formatter';
-import { Query, DataManager } from '@syncfusion/ej2-data';
+import { Query, DataManager, DataResult } from '@syncfusion/ej2-data';
 import { Data } from '../actions/data';
 import { getForeignData, measureColumnDepth, getUid } from '../base/util';
 import { ReturnType } from '../base/type';
@@ -79,7 +79,10 @@ export class ExportHelper {
         let fColumns: Column[] = gridObj.getForeignKeyColumns();
         if (fColumns.length) {
             for (let i: number = 0; i < fColumns.length; i++) {
-                columnPromise.push((<DataManager>fColumns[i].dataSource).executeQuery(new Query()));
+                let colData: DataManager = ('result' in fColumns[i].dataSource) ?
+                new DataManager((fColumns[i].dataSource as DataResult).result) :
+                fColumns[i].dataSource as DataManager;
+                columnPromise.push(colData.executeQuery(new Query()));
             }
             promise = Promise.all(columnPromise).then((e: ReturnType[]) => {
                 for (let j: number = 0; j < fColumns.length; j++) {

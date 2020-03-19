@@ -388,10 +388,12 @@ describe('CR ISSUE InPlace-Editor Control', () => {
         let ele: HTMLElement;
         let valueEle: HTMLElement;
         let valueWrapper: HTMLElement;
+        let count: number = 0;
         beforeAll((done: Function): void => {
             editorObj = renderEditor({
                 mode: 'Inline',
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancel = true
                 }
             });
@@ -410,6 +412,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
                 expect(document.querySelectorAll('.' + classes.INLINE).length > 0).toEqual(false);
+                expect(count).toEqual(1);
                 done()
             },1500);
         });
@@ -461,7 +464,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Empty');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 4000);
+            }, 500);
         });
         it('actionSuccess eventArgs cancel as false testing', (done: Function) => {
             editorObj = renderEditor({
@@ -493,7 +496,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Syncfusion');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 4000);
+            }, 500);
         });
         it('actionSuccess eventArgs cancel not configured with testing', (done: Function) => {
             editorObj = renderEditor({
@@ -727,4 +730,4 @@ describe('CR ISSUE InPlace-Editor Control', () => {
             }, 4000);
         });
     });
-})
+});

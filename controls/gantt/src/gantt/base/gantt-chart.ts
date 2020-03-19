@@ -557,7 +557,7 @@ export class GanttChart {
         let rows: HTMLElement[] = [];
         for (let i: number = 0; i < chartRows.length; i++) {
             if ((<HTMLElement>chartRows[i]).classList.contains('gridrowtaskId'
-                + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
+                + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
                 rows.push(<HTMLElement>chartRows[i]);
             }
         }

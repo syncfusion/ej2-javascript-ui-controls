@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';import { SheetModel, getRowsHeight, getColumnsWidth } from './index';import { CellStyleModel, CellStyle, HyperlinkModel } from '../common/index';import { getRow } from './row';import { RowModel } from './row-model';
+import { extend, Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { SheetModel, getRowsHeight, getColumnsWidth } from './index';import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';import { getRow } from './row';import { RowModel } from './row-model';import { Workbook } from './workbook';import { getSheet } from './sheet';
 
 /**
  * Interface for a class Cell
@@ -56,5 +56,17 @@ export interface CellModel {
      * @default ''
      */
     hyperlink?: string | HyperlinkModel;
+
+    /**
+     * Wraps the cell text to the next line, if the text width exceeds the column width.
+     * @default false
+     */
+    wrap?: boolean;
+
+    /**
+     * Specifies the validation of the cell.
+     * @default ''
+     */
+    validation?: ValidationModel;
 
 }

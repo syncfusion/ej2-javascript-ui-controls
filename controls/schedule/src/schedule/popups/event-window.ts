@@ -1,7 +1,7 @@
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
 import { cldrData, removeClass, getValue, getDefaultDateObject, closest, getElement, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
-import { DataManager, Query, Deferred } from '@syncfusion/ej2-data';
+import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import {
@@ -543,9 +543,9 @@ export class EventWindow {
                 let resObject: MultiSelect | DropDownList = this.createInstance(i);
                 let datasource: { [key: string]: Object }[] = [];
                 for (let j: number = 0; j < args.value.length; j++) {
-                    let resourceData: Object[] = resourceCollection[i + 1].dataSource as Object[];
-                    let query: Query = new Query().where(resourceCollection[i + 1].groupIDField, 'equal', args.value[j]);
-                    let filter: Object = new DataManager({ json: resourceData }).executeLocal(query)[0];
+                    let resourceModel: ResourcesModel = resourceCollection[i + 1];
+                    let filter: Object = (resourceModel.dataSource as Object[]).filter((data: { [key: string]: Object }) =>
+                        data[resourceModel.groupIDField] === args.value[j])[0];
                     let groupId: number = (<{ [key: string]: Object }>filter)[resourceCollection[i + 1].idField] as number;
                     let filterRes: { [key: string]: Object }[] = this.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
@@ -584,8 +584,8 @@ export class EventWindow {
 
     private filterDatasource(index: number, groupId: number | string): { [key: string]: Object }[] {
         let resourceData: ResourcesModel = this.parent.resourceBase.resourceCollection[index + 1];
-        let query: Query = new Query().where(resourceData.groupIDField as string, 'equal', groupId);
-        let filter: Object[] = new DataManager({ json: resourceData.dataSource as Object[] }).executeLocal(query);
+        let filter: Object[] = (resourceData.dataSource as Object[]).filter((data: { [key: string]: Object }) =>
+            data[resourceData.groupIDField] === groupId);
         return filter as { [key: string]: Object }[];
     }
 
@@ -1219,8 +1219,8 @@ export class EventWindow {
         let eventId: string = this.getEventIdFromForm();
         if (!isNullOrUndefined(eventId)) {
             let eveId: number | string = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
-            let editedData: { [key: string]: Object } = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
-                where(this.fields.id, 'equal', eveId))[0] as { [key: string]: Object };
+            let editedData: { [key: string]: Object } = this.parent.eventsData.filter((data: { [key: string]: Object }) =>
+                data[this.fields.id] === eveId)[0] as { [key: string]: Object };
             eventObj = extend({}, editedData, eventObj) as { [key: string]: Object };
             if (eventObj[this.fields.isReadonly]) {
                 return false;
@@ -1397,8 +1397,8 @@ export class EventWindow {
         : boolean {
         if (editData === void 0) { editData = this.eventData; }
         let recurColl: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.parent.getOccurrencesByID(eventId);
-        let excludedDatas: { [key: string]: Object }[] = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
-            where(this.fields.recurrenceID, 'equal', eventId)) as { [key: string]: Object }[];
+        let excludedDatas: { [key: string]: Object }[] = this.parent.eventsData.filter((data: { [key: string]: Object }) =>
+            data[this.fields.recurrenceID] === eventId) as { [key: string]: Object }[];
         excludedDatas.map((data: Object) => recurColl.push(extend({}, data) as { [key: string]: Object }));
         currentData = extend({}, currentData) as { [key: string]: Object };
         this.trimAllDay(currentData);

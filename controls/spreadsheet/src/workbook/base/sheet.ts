@@ -1,13 +1,15 @@
-import { Row } from './row';
-import { Column } from './column';
 import { Workbook } from './workbook';
 import { Query, DataManager } from '@syncfusion/ej2-data';
-import { Property, Collection, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { RangeSettingModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState } from '../common/index';
+import { SheetState, ProtectSettingsModel } from '../common/index';
+import { ProtectSettings } from '../common/index';
+import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
+import { Row } from './row';
+import { Column } from './column';
+import { WorkbookModel } from './workbook-model';
 
 /**
  * Configures the Range settings for the spreadsheet.
@@ -100,7 +102,7 @@ export class UsedRange extends ChildProperty<UsedRange> {
 /**
  * Configures the sheet behavior for the spreadsheet.
  */
-export class Sheet extends ChildProperty<Workbook> {
+export class Sheet extends ChildProperty<WorkbookModel> {
     /**
      * Represents sheet unique id.
      * @default 0
@@ -122,6 +124,13 @@ export class Sheet extends ChildProperty<Workbook> {
      */
     @Collection([], Column)
     public columns: ColumnModel[];
+
+    /**
+     * Configures protect and its options.
+     * @default { selectCells: false, formatCells: false, formatRows: false, formatColumns: false, insertLink: false  }
+     */
+    @Complex<ProtectSettingsModel>({}, ProtectSettings)
+    public protectSettings: ProtectSettingsModel;
 
     /**
      * Specifies the range settings for the sheet.
@@ -216,11 +225,26 @@ export class Sheet extends ChildProperty<Workbook> {
     public showGridLines: boolean;
 
     /**
+     * Specifies to  protect the cells in the sheet.
+     * @default false
+     */
+    @Property(false)
+    public isProtected: boolean;
+
+    /**
      * Specifies the sheet visibility state. There must be at least one visible sheet in Spreadsheet.
      * @default 'Visible'
      */
     @Property('Visible')
     public state: SheetState;
+
+    /**
+     * Represents the maximum row height collection.
+     * @default []
+     * @hidden
+     */
+    @Property([])
+    public maxHgts: object[];
 }
 
 /**
@@ -258,7 +282,7 @@ export function getSheetIndexFromId(context: Workbook, id: number): number {
  * @hidden
  */
 export function getSheetNameFromAddress(address: string): string {
-    return address.split('!')[0];
+    return address.split('!')[0].replace(/\'/gi, '');
 }
 
 /**
@@ -282,7 +306,6 @@ export function getSheetIndexByName
  */
 export function updateSelectedRange(context: Workbook, range: string, sheet: SheetModel = {}): void {
     sheet.selectedRange = range;
-    context.setProperties({ 'sheets': context.sheets }, true);
 }
 
 /**
@@ -332,17 +355,48 @@ export function getMaxSheetId(sheets: SheetModel[]): number {
 /**
  * @hidden
  */
-export function initSheet(context: Workbook): void {
-    context.sheets.forEach((sheet: SheetModel) => {
+export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
+    let sheets: SheetModel[] = sheet ? sheet : context.sheets;
+    sheets.forEach((sheet: SheetModel) => {
+        sheet.id = sheet.id || 0;
+        sheet.name = sheet.name || '';
+        sheet.rowCount = isUndefined(sheet.rowCount) ? 100 : sheet.rowCount;
+        sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
+        sheet.topLeftCell = sheet.topLeftCell || 'A1';
+        sheet.activeCell = sheet.activeCell || 'A1';
+        sheet.selectedRange = sheet.selectedRange || 'A1';
+        sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
+        sheet.rangeSettings = sheet.rangeSettings ? initRangeSettings(sheet.rangeSettings) : [];
+        sheet.rows = sheet.rows || [];
+        sheet.columns = sheet.columns || [];
+        sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
+        sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
+        sheet.state = sheet.state || 'Visible';
+        sheet.maxHgts = [];
+        sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
+            insertLink: false };
+        sheet.isProtected = sheet.isProtected || false;
         processIdx(sheet.columns);
         initRow(sheet.rows);
     });
-    processIdx(context.sheets, true, context);
+    processIdx(sheets, true, context);
+}
+
+function initRangeSettings(rangeSettings: RangeSettingModel[]): RangeSettingModel[] {
+    rangeSettings.forEach((rangeSetting: RangeSettingModel) => {
+        rangeSetting.startCell = rangeSetting.startCell || 'A1';
+        rangeSetting.range = rangeSetting.range || 'A1';
+        rangeSetting.template = rangeSetting.template || '';
+        rangeSetting.showFieldAsHeader = isUndefined(rangeSetting.showFieldAsHeader) ? true : rangeSetting.showFieldAsHeader;
+    });
+    return rangeSettings;
 }
 
 function initRow(rows: RowModel[]): void {
     rows.forEach((row: RowModel) => {
-        if (row.cells) { processIdx(row.cells); }
+        if (row && row.cells) {
+            processIdx(row.cells);
+        }
     });
     processIdx(rows);
 }

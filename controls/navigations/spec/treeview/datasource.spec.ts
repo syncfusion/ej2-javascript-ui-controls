@@ -784,7 +784,45 @@ export let remoteData1: { [key: string]: Object }[] = [
     { nodeId: '05-03', nodePid: '05',nodeText: 'Game.exe', icons: 'file' },
     { nodeId: '05-04', nodePid: '05',nodeText: 'TypeScript.7z', icons: 'file' },
 ];
-
+export let updatedAddNodes: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', hasChild: true,  nodeImage1: 'base/spec/images/Shooting.png' },
+    { nodeId: '01-01', nodePid: '01', nodeText: 'Gouttes.mp3', icons: 'file' },
+    { nodeId: 'a12', nodeText: 'Santa maria'},
+    { nodeId: '02', nodeText: 'Videos', icons: 'folder', image: 'base/spec/images/Shooting.png', nodeHtmlAttr: nodeAttr, hasChild: true, nodeImage1: 'base/spec/images/Shooting.png' },
+    { nodeId: '02-01', nodePid: '02',nodeText: 'Naturals.mp4', icons: 'file', image: 'base/spec/images/Shooting.png' },
+    { nodeId: '02-02', nodePid: '02',nodeText: 'Wild.mpeg', icons: 'file' },
+    { nodeId: '03', nodeText: 'Documents', icons: 'folder', hasChild: true },
+    { nodeId: '03-01', nodePid: '03',nodeText: 'Environment Pollution.docx', icons: 'file' },
+    { nodeId: '03-02', nodePid: '03',nodeText: 'Global Water, Sanitation, & Hygiene.docx', icons: 'file' },
+    { nodeId: '03-03', nodePid: '03',nodeText: 'Global Warming.ppt', icons: 'file' },
+    { nodeId: '03-04', nodePid: '03',nodeText: 'Social Network.pdf', icons: 'file' },
+    { nodeId: '03-05', nodePid: '03',nodeText: 'Youth Empowerment.pdf', icons: 'file' },
+    { nodeId: '04', nodeText: 'Pictures', icons: 'folder', hasChild: true, nodeExpanded: 'true', },
+    { nodeId: '04-01', nodePid: '04',nodeText: 'Camera Roll', icons: 'folder', hasChild: true, nodeExpanded: true },
+    { nodeId: '04-01-01', nodePid: '04-01',nodeText: 'WIN_20160726_094117.JPG', icons: 'file' },
+    { nodeId: '04-01-02', nodePid: '04-01',nodeText: 'WIN_20160726_094118.JPG', icons: 'file' },
+    { nodeId: '04-01-03', nodePid: '04-01',nodeText: 'WIN_20160726_094119.JPG', icons: 'file' },
+    { nodeId: '04-02', nodePid: '04',nodeText: 'Wind.jpg', icons: 'file' },
+    { nodeId: '04-03', nodePid: '04',nodeText: 'Stone.jpg', icons: 'file' },
+    { nodeId: '04-04', nodePid: '04',nodeText: 'Home.jpg', icons: 'file' },
+    { nodeId: '04-05', nodePid: '04',nodeText: 'Bridge.png', icons: 'file' },
+    { nodeId: '05', nodeText: 'Downloads', icons: 'folder', hasChild: true },
+    { nodeId: '05-01', nodePid: '05',nodeText: 'UI-Guide.pdf', icons: 'file' },
+    { nodeId: '05-02', nodePid: '05',nodeText: 'Tutorials.zip', icons: 'file' },
+    { nodeId: '05-03', nodePid: '05',nodeText: 'Game.exe', icons: 'file' },
+    { nodeId: '05-04', nodePid: '05',nodeText: 'TypeScript.7z', icons: 'file' },
+];
+export let updatedAddNodes1: { [key: string]: Object }[] = [
+    {
+        nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/',
+        subId: '21', subText: 'Pictures', subIcon: 'file', subImage: 'base/spec/images/Cricket.png', subTooltip: 'This is Pictures node', subHasChild: false, subUrl: 'http://ej2.syncfusion.com/demos/',
+    },
+    { nodeId: '03', nodeText: 'Rain', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/' },
+    {
+        nodeId: '02', nodeText: 'Downloads', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeHtmlAttr: nodeAttr, subSelected: true,
+        subId: '22', subText: 'Videos', subIcon: 'file', subImage: 'base/spec/images/Cricket.png', subHtmlAttr: subAttr
+    },
+];
 export let remoteData2: { [key: string]: Object }[] = [
     { nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png',  nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/',
       subId: '21', subText: 'Pictures', subIcon: 'file', subImage: 'base/spec/images/Cricket.png',  subTooltip: 'This is Pictures node', subHasChild: false, subUrl: 'http://ej2.syncfusion.com/demos/', },
@@ -792,11 +830,42 @@ export let remoteData2: { [key: string]: Object }[] = [
       subId: '22', subText: 'Videos', subIcon: 'file', subImage: 'base/spec/images/Cricket.png', subHtmlAttr: subAttr },
 ];
 
+export let deletedRemoteData: { [key: string]: Object }[] = [
+
+    { nodeId: '02', nodeText: 'Downloads', nodeIcon: 'folder',  nodeImage: 'base/spec/images/Shooting.png', nodeHtmlAttr: nodeAttr, subSelected: true,
+      subId: '22', subText: 'Videos', subIcon: 'file', subImage: 'base/spec/images/Cricket.png', subHtmlAttr: subAttr },
+];
+
+export let updatedremoteNode_1: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Rain', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png',  nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/'}
+];
+export let updatedremoteNode_2: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png',  nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/'}
+];
+export let updatedremoteNode_3: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Music node', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png',  nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/'}
+];
+
+export let updatedremoteNode_4: { [key: string]: Object }[] = [
+    { nodeId: '02', nodeText: 'Downloads1', nodeIcon: 'folder',  nodeImage: 'base/spec/images/Shooting.png', nodeHtmlAttr: nodeAttr, subSelected: true}
+];
+export let updatedremoteNode_5: { [key: string]: Object }[] = [
+    { nodeId: '02', nodeText: 'Downloads', nodeIcon: 'folder',  nodeImage: 'base/spec/images/Shooting.png', nodeHtmlAttr: nodeAttr, subSelected: true}
+];
+
 export let remoteData2_1: { [key: string]: Object }[] = [
     { nodeId: '02', nodeText: 'Downloads', nodeIcon: 'folder',  nodeImage: 'base/spec/images/Shooting.png', nodeHtmlAttr: nodeAttr, subSelected: true,
       subId: '22', subText: 'Videos', subIcon: 'file', subImage: 'base/spec/images/Cricket.png', subHtmlAttr: subAttr },
     { nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png',  nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true',
       subId: '21', subText: 'Pictures', subIcon: 'file', subImage: 'base/spec/images/Cricket.png',  subTooltip: 'This is Pictures node', subHasChild: false },
+];
+
+export let updatedremoteNode_6: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Music node', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png',  nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true'}
+];
+
+export let updatedremoteNode_7: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png',  nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true'}
 ];
 
 export let remoteData2_2: { [key: string]: Object }[] = [

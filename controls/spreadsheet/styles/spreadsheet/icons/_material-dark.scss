@@ -1,5 +1,32 @@
 @include export-module('spreadsheet-material-icons') {
   .e-spreadsheet {
+    & .e-findtool-dlg {
+
+      & .e-prev-icon {
+        &::before {
+          content: '\e910';
+        }
+      }
+
+      & .e-next-icon {
+        &::before {
+          content: '\e916';
+        }
+      }
+
+      & .e-option-icon {
+        &::before {
+          content: '\e984';
+        }
+      }
+
+      & .e-close {
+        &::before {
+          content: '\ec0f';
+        }
+      }
+    }
+
     & .e-ribbon {
       & .e-bold-icon {
         &::before {
@@ -35,6 +62,10 @@
         &::before {
           content: '\e35c';
         }
+      }
+
+      .e-wrap-icon::before {
+        content: '\e824';
       }
 
       & .e-hide-headers {
@@ -99,6 +130,14 @@
     }
   }
 
+  .e-spreadsheet-find-ddb {
+    & .e-search-icon {
+      &::before {
+        content: '\e993';
+      }
+    }
+  }
+
   .e-spreadsheet-contextmenu.e-contextmenu-wrapper {
     & .e-delete {
       &::before {
@@ -107,11 +146,74 @@
     }
   }
 
-  .e-dropdown-popup {
-    & .e-selected-icon,
-    &.e-numformat-ddb.e-dropdown-popup .e-active-item {
+  .e-popup {
+    &.e-dropdown-popup .e-selected-icon,
+    &.e-numformat-ddb.e-dropdown-popup .e-active-item,
+    &.e-menu-popup .e-selected-icon {
       &::before {
         content: '\e935';
+      }
+    }
+  }
+
+  .e-borders-ddb {
+    & .e-top-borders {
+      &::before {
+        content: '\e281';
+      }
+    }
+
+    & .e-left-borders {
+      &::before {
+        content: '\e291';
+      }
+    }
+
+    & .e-right-borders {
+      &::before {
+        content: '\e288';
+      }
+    }
+
+    & .e-bottom-borders {
+      &::before {
+        content: '\e298';
+      }
+    }
+
+    & .e-all-borders {
+      &::before {
+        content: '\eb95';
+      }
+    }
+
+    & .e-horizontal-borders {
+      &::before {
+        content: '\e276';
+      }
+    }
+
+    & .e-vertical-borders {
+      &::before {
+        content: '\e287';
+      }
+    }
+
+    & .e-outside-borders {
+      &::before {
+        content: '\eb66';
+      }
+    }
+
+    & .e-inside-borders {
+      &::before {
+        content: '\eb88';
+      }
+    }
+
+    & .e-no-borders {
+      &::before {
+        content: '\e195';
       }
     }
   }
@@ -150,6 +252,14 @@
     & .e-top-icon {
       &::before {
         content: '\eb49';
+      }
+    }
+  }
+
+  .e-datavalidation-ddb {
+    & .e-datavalidation-icon {
+      &::before {
+        content: '\e196';
       }
     }
   }
@@ -340,6 +450,12 @@
     & .e-filter-reapply {
       &::before {
         content: '\e74a';
+      }
+    }
+
+    & .e-protect-icon {
+      &::before {
+        content: '\e197';
       }
     }
 

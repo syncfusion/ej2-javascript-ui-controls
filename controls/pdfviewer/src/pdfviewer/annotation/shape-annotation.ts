@@ -386,7 +386,7 @@ export class ShapeAnnotation {
                 this.pdfViewer.drawingObject = {
                     strokeColor: this.polygonStrokeColor, fillColor: this.polygonFillColor,
                     opacity: this.polygonOpacity, thickness: this.polygonThickness, borderDashArray: '0',
-                    notes: '', author: author, subject: this.pdfViewer.lineSettings.subject,
+                    notes: '', author: author, subject: this.pdfViewer.polygonSettings.subject,
                     modifiedDate: modifiedDatePolygon, borderStyle: ''
                 };
                 this.pdfViewer.tool = 'Polygon';

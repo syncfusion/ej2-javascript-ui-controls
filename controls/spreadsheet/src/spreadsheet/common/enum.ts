@@ -10,3 +10,8 @@ export type PasteSpecialType = 'All' | 'Values' | 'Formats' | 'Formulas';
 
 /** @hidden */
 export type RefreshType = 'All' | 'Row' | 'Column' | 'RowPart' | 'ColumnPart';
+
+/**
+ * Defines find mode options.
+ */
+export type FindModeType = 'Sheet' | 'Workbook';

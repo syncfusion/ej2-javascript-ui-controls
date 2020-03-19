@@ -177,7 +177,7 @@ export interface DashboardLayoutModel extends ComponentModel{
     columns?: number;
 
     /**
-     * 
+     * Enables or disables the grid lines for the Dashboard Layout panels.
      * *
      * @default false
      */

@@ -47,6 +47,7 @@ export class ShowHide {
         let keys: string[] = this.getToggleFields(columnName);
         let columns: Column[] = this.getColumns(keys, hideBy);
         this.parent.notify(events.tooltipDestroy, { module: 'edit' });
+
         for (let i: number = 0; i < columns.length; i++) {
             columns[i].visible = false;
         }

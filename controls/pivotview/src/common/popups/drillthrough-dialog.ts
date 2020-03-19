@@ -74,6 +74,9 @@ export class DrillThroughDialog {
                             delete item['__index'];
                             addItems.push(item);
                         } else if (count > 0) {
+                            if (isBlazor() && this.parent.editSettings.allowCommandColumns) {
+                                this.parent.engineModule.data[Number(item['__index'])] = item;
+                            }
                             delete this.gridIndexObjects[item['__index'].toString()];
                             count--;
                         }
@@ -91,6 +94,7 @@ export class DrillThroughDialog {
                             currModule.isUpdated = false;
                             currModule.gridIndexObjects = {};
                         });
+                        /* tslint:enable:no-any */
                     } else {
                         let items: IDataSet[] = [];
                         let data: IDataSet[] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
@@ -196,6 +200,7 @@ export class DrillThroughDialog {
             allowResizing: true,
             allowReordering: true,
             showColumnChooser: true,
+            enableHover: false,
             toolbar: toolbarItems,
             columns: eventArgs.gridColumns,
             locale: this.parent.locale,
@@ -203,6 +208,10 @@ export class DrillThroughDialog {
             enableVirtualization: this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing
         });
+        if (isBlazor()) {
+            /* tslint:disable-next-line */
+            (this.drillThroughGrid as any)['isJsComponent'] = true;
+        }
         if (this.parent.dataType === 'olap') {
             this.formatData();
         }
@@ -260,8 +269,8 @@ export class DrillThroughDialog {
         return drillThroughBody;
     }
     /** @hidden */
-    public frameGridColumns(): ColumnModel[] {
-        let keys: string[] = this.parent.dataType === 'olap' ? this.gridData[0] ? Object.keys(this.gridData[0]) : [] :
+    public frameGridColumns(rawData: IDataSet[]): ColumnModel[] {
+        let keys: string[] = this.parent.dataType === 'olap' ? rawData[0] ? Object.keys(rawData[0]) : [] :
             Object.keys(this.engine.fieldList);
         let columns: ColumnModel[] = [];
         if (this.parent.dataType === 'olap') {

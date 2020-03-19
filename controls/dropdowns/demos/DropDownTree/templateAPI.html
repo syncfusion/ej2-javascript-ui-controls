@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Template</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="./styles/material.css" rel="stylesheet" />
+    <script data-main="templateAPI" src="../../node_modules/requirejs/require.js"></script>
+    <script src="./../require-config.js"></script>
+</head>
+
+<body>
+
+    <div style="margin: 0 auto; width:300px;">
+        <input type="text" tabindex="1" id="list" />
+    </div>
+
+    </table>
+
+    <style>
+        .head {
+            background-color: #a9a9a9;
+            height: 30px;
+            font-weight: bold;
+            padding: 14px 0 0 20px;
+        }
+
+        .Foot {
+            background-color: #dadada;
+            vertical-align: middle;
+            padding: 16px;
+            font-weight: bold;
+        }
+
+        .e-treeview .e-fullrow {
+            height: 72px;
+        }
+
+        .e-treeview .e-list-text {
+            line-height: normal;
+        }
+
+        .eimage {
+            float: left;
+            padding: 11px 16px 11px 0;
+            height: 48px;
+            width: 48px;
+            box-sizing: content-box;
+        }
+
+        .ename {
+            font-size: 16px;
+            padding: 14px 0 0;
+        }
+
+        .ejob {
+            font-size: 14px;
+            opacity: .87;
+        }
+
+        .e-treeview>.e-ul {
+            overflow: unset;
+        }
+
+        .e-treeview {
+            overflow: auto
+        }
+
+        .e-ddt.e-popup {
+            overflow: auto
+        }
+    </style>
+
+    <script id="nodeTemplate" type="text/x-template">
+        <img class="eimage" src="images/Employees/${eimg}.png" alt="${eimg}"/>
+        <div class="ename">${name}</div>
+        <div class="ejob">${job}</div>
+</script>
+
+    <script id="headerTemplate" type="text/x-template">
+    <div class="head">  Photo  <span style="padding-left:42px"> Contact Info </span></div>
+</script>
+
+    <script id="footerTemplate" type="text/x-template">
+    <div class="Foot"> Total Items Count: 10 </div>
+</script>
+
+</body>
+
+</html>

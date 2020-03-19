@@ -3,7 +3,7 @@ import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, isBlazor } from 
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
 import * as cls from '../base/css-constants';
-import { IGanttData, IQueryTaskbarInfoEventArgs, IParent, IIndicator } from '../base/interface';
+import { IGanttData, IQueryTaskbarInfoEventArgs, IParent, IIndicator, ITaskData } from '../base/interface';
 import { Row, Column } from '@syncfusion/ej2-grids';
 /**
  * To render the chart rows in Gantt
@@ -146,10 +146,12 @@ export class ChartRows {
             }
             let template: string = (data.ganttProperties.startDate && data.ganttProperties.endDate
                 && data.ganttProperties.duration) ? (
-                    '<div class="' + cls.childTaskBarInnerDiv + ' ' + cls.traceChildTaskBar + '"' +
+                    '<div class="' + cls.childTaskBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                        '' :  cls.manualChildTaskBar) + '"' +
                     'style="width:' + data.ganttProperties.width + 'px;height:' +
                     (this.taskBarHeight) + 'px;">' + '<div class="' + cls.childProgressBarInnerDiv + ' ' +
-                    cls.traceChildProgressBar + '"' +
+                    cls.traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                        '' : cls.manualChildProgressBar) + '"' +
                     ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                     'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
                     'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
@@ -159,15 +161,18 @@ export class ChartRows {
                     labelString + '</span></div></div>') :
                 (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? (
                     '<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
-                    cls.unscheduledTaskbarLeft + '"' +
+                    cls.unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
+                        '' :  cls.manualChildTaskBar) + '"' +
                     'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
                     (data.ganttProperties.endDate && !data.ganttProperties.startDate && !data.ganttProperties.duration) ?
                         ('<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
-                            cls.unscheduledTaskbarRight + '"' +
+                            cls.unscheduledTaskbarRight + ' ' + (data.ganttProperties.isAutoSchedule ?
+                                '' : cls.manualChildTaskBar) + '"' +
                             'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
                         (data.ganttProperties.duration && !data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
                             ('<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildTaskBar + ' ' +
-                                cls.unscheduledTaskbar + '"' +
+                                cls.unscheduledTaskbar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                                    '' : cls.manualChildTaskBar) + '"' +
                                 'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
                                 ' height:' + this.taskBarHeight + 'px;"></div>') : '';
 
@@ -312,6 +317,44 @@ export class ChartRows {
         return rightLabelNode;
     }
 
+    private getManualTaskbar(): NodeList {
+        let data: IGanttData = this.templateData;
+        let taskbarHeight: number = (this.taskBarHeight / 2 - 1);
+        let innerDiv: string = (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration) ?
+            ('<div class="' + cls.manualParentTaskBar + '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+            taskbarHeight / 5 + 'px;border-left-width:' + taskbarHeight / 5 +
+            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') :
+            (!data.ganttProperties.startDate && !data.ganttProperties.endDate && data.ganttProperties.duration) ?
+            ('<div class="' + cls.manualParentTaskBar + ' ' + cls.traceManualUnscheduledTask +
+            '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+            (taskbarHeight / 5 + 1) + 'px;border-left-width:' + taskbarHeight / 5 +
+            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') : ('<div class="' +
+            cls.manualParentTaskBar + ' ' + (data.ganttProperties.startDate ? cls.unscheduledTaskbarLeft : cls.unscheduledTaskbarRight) +
+            '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+            taskbarHeight * 2 + 'px;border-left-width:' + taskbarHeight / 5 +
+            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>');
+        let template: string = '<div class="' + cls.manualParentMainContainer + '"' +
+            'style=left:' + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
+            'width:' + data.ganttProperties.width + 'px;' +
+            'height:' + taskbarHeight + 'px;>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
+            data.ganttProperties.duration) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
+            '"height:' + taskbarHeight + 'px;border-left-width:' + taskbarHeight / 5 +
+            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
+            '<div class="e-gantt-manualparenttaskbar-right" style=' +
+            'left:' + (data.ganttProperties.width - taskbarHeight / 5) + 'px;height:' +
+            (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
+            taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
+        let milestoneTemplate: string = '<div class="' + cls.manualParentMilestone + '" style="position:absolute;left:' +
+            (data.ganttProperties.left - data.ganttProperties.autoLeft - (this.milestoneHeight / 2)) +
+            'px;width:' + (this.milesStoneRadius * 2) +
+            'px;">' + '<div class="' + cls.manualParentMilestoneTop + '" style="border-right-width:' +
+            this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
+            this.milesStoneRadius + 'px;"></div>' +
+            '<div class="' + cls.manualParentMilestoneBottom + '" style="top:' +
+            (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
+            this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
+        return this.createDivElement(data.ganttProperties.width === 0 ? milestoneTemplate : template);
+    }
     /**
      * To get parent taskbar node.
      * @return {NodeList}
@@ -337,9 +380,13 @@ export class ChartRows {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
+            let tHeight: number = this.taskBarHeight / 5;
             let template: string = '<div class="' + cls.parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + cls.traceParentTaskBar + '"' +
-                ' style="width:' + (data.ganttProperties.width) + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + (data.ganttProperties.isAutoSchedule ? data.ganttProperties.width :
+                     data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
+                        (tHeight * 3)) + 'px;margin-top:' + (data.ganttProperties.isAutoSchedule ? '' :
+                        (tHeight * 2)) + 'px;">' +
                 '<div class="' + cls.parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + cls.traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -355,7 +402,8 @@ export class ChartRows {
                 '<div class="' + cls.parentMilestoneBottom + '" style="top:' +
                 (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
                 this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
-            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ? milestoneTemplate : template);
+            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ?
+                 data.ganttProperties.isAutoSchedule ? milestoneTemplate : '' : template);
         }
         return parentTaskbarNode;
     }
@@ -497,14 +545,19 @@ export class ChartRows {
 
     private taskbarContainer(): NodeList {
         let data: IGanttData = this.templateData;
+        let manualParent: boolean = this.parent.editModule && this.parent.editSettings.allowTaskbarEditing &&
+        this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
+         true : false;
         let template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
-            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
+            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
+             ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
-                    (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-                        this.taskBarMarginTop + 'px;left:' + (data.ganttProperties.left) + 'px;height:' +
-                        this.taskBarHeight + 'px;')) + '"></div>';
+                    (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
+                     'px;margin-top:' + this.taskBarMarginTop + 'px;left:' + (!data.hasChildRecords || data.ganttProperties.isAutoSchedule ?
+                         data.ganttProperties.left : data.ganttProperties.autoLeft) + 'px;height:' +
+                        this.taskBarHeight + 'px;cursor:' + (data.ganttProperties.isAutoSchedule ? 'move;' : 'auto;'))) + '"></div>';
         return this.createDivElement(template);
     }
 
@@ -626,9 +679,17 @@ export class ChartRows {
 
     private taskNameWidth(ganttData: IGanttData): string {
         ganttData = this.templateData;
+        let ganttProp: ITaskData = ganttData.ganttProperties;
         let width: number;
         if (ganttData.ganttProperties.isMilestone) {
             width = (ganttData.ganttProperties.left - (this.parent.getTaskbarHeight() / 2));
+        } else if (ganttData.hasChildRecords && !ganttProp.isAutoSchedule) {
+            if (!this.parent.allowUnscheduledTasks) {
+            width = (ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime()) ?
+                ganttProp.autoLeft : ganttProp.left;
+            } else {
+                width = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
+            }
         } else {
             width = ganttData.ganttProperties.left;
         }
@@ -640,8 +701,24 @@ export class ChartRows {
 
     private getRightLabelLeft(ganttData: IGanttData): number {
         ganttData = this.templateData;
+        let ganttProp: ITaskData = ganttData.ganttProperties;
+        let left: number;
+        let endLeft: number;
+        let width: number;
         if (ganttData.ganttProperties.isMilestone) {
             return ganttData.ganttProperties.left + (this.parent.getTaskbarHeight() / 2);
+        } else if (ganttData.hasChildRecords && !ganttProp.isAutoSchedule) {
+            if (!this.parent.allowUnscheduledTasks) {
+                left = ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime() ? ganttProp.autoLeft : ganttProp.left;
+                endLeft = ganttProp.autoEndDate.getTime() < ganttProp.endDate.getTime() ?
+                    this.parent.dataOperation.getTaskLeft(ganttProp.endDate, ganttProp.isMilestone) :
+                    this.parent.dataOperation.getTaskLeft(ganttProp.autoEndDate, ganttProp.isMilestone);
+                width = endLeft - left;
+            } else {
+                left = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
+                width = ganttProp.autoWidth;
+            }
+            return left + width;
         } else {
             return ganttData.ganttProperties.left + ganttData.ganttProperties.width;
         }
@@ -668,10 +745,15 @@ export class ChartRows {
             let length: number = ganttData.ganttProperties.resourceInfo.length;
             if (length > 0) {
                 for (let i: number = 0; i < length; i++) {
+                    let resourceName: string = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.name];
+                    let resourceUnit: number = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.unit];
+                    if (resourceUnit !== 100) {
+                        resourceName += '[' + resourceUnit + '%' + ']';
+                    }
                     if (isNullOrUndefined(resource)) {
-                        resource = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceNameMapping];
+                        resource = resourceName;
                     } else {
-                        resource += ' , ' + ganttData.ganttProperties.resourceInfo[i][this.parent.resourceNameMapping];
+                        resource += ' , ' + resourceName;
                     }
                 }
                 return resource;
@@ -755,6 +837,10 @@ export class ChartRows {
         }
         if (this.templateData.hasChildRecords) {
             let parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i);
+            if (!this.templateData.ganttProperties.isAutoSchedule) {
+                let manualTaskbar: NodeList = this.getManualTaskbar();
+                taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
+            }
             if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
             }
@@ -1011,7 +1097,9 @@ export class ChartRows {
             let data: IGanttData = selectedItem;
             tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
             this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
-            this.parent.treeGrid.grid.setRowData(data.ganttProperties.taskId, data);
+            /* tslint:disable-next-line */
+            let dataId: number | string = this.parent.viewType === 'ProjectView' ? parseInt(data.ganttProperties.rowUniqueID) : data.ganttProperties.rowUniqueID;
+            this.parent.treeGrid.grid.setRowData(dataId, data);
             let row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                 this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));
             row.data = data;

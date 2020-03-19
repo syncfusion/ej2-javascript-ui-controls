@@ -1,7 +1,5 @@
-import {
-    withInRange, logBase,
-    markerAnimate, PolarArc, valueToCoefficient, firstToLowerCase
-} from '../../common/utils/helper';
+import { withInRange, logBase, markerAnimate, PolarArc, firstToLowerCase, ChartLocation } from '../../common/utils/helper';
+import { valueToCoefficient, CoefficientToVector, valueToPolarCoefficient } from '../../common/utils/helper';
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
@@ -242,6 +240,24 @@ export class PolarSeries extends PolarRadarPanel {
             }
         });
     }
+
+    // path calculation for isInversed polar area series
+
+    public getPolarIsInversedPath( xAxis: Axis, endPoint: string): string {
+        let vector: ChartLocation;
+        let x1: number;
+        let y1: number;
+        let chart: Chart = this.chart;
+        let radius: number = chart.radius;
+        let direction: string = endPoint;
+        let circleRotate: string = xAxis.isInversed ? '1 1 ' : '1 0 ';
+        vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
+        x1 = this.centerX + radius * vector.x;
+        y1 = this.centerY + radius * vector.y;
+        return direction += 'L ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate +
+            x1 + ' ' + (this.centerY + radius) + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate + x1 + ' ' + y1 + ' ';
+    }
+
     /**
      * Get module name.
      */

@@ -1518,6 +1518,38 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+
+        describe('Enter key press testing in list', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><ol><li id='firstli'>&#65279;&#65279;</li></ol><div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' enter key press after OL 1.', () => {
+                startNode = editNode.querySelector('#firstli');
+                expect(startNode.textContent.length === 2).toBe(true);
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('#firstli').textContent.length === 0).toBe(true);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+        
     });
 
     describe(' EJ2-29800 - Reactive form validation not working properly', () => {

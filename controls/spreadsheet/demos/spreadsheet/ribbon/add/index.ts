@@ -1,7 +1,7 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, MenuSelectArgs } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, MenuSelectEventArgs } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
@@ -51,7 +51,7 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
         spreadsheet.addFileMenuItems([{ text: 'Import', iconCss: 'e-open e-icons' }], 'Open', false);
     },
     fileMenuBeforeOpen: (): void => spreadsheet.hideFileMenuItems(['Save As', 'Open']),
-    fileItemSelect: (args: MenuSelectArgs): void => {
+    fileMenuItemSelect: (args: MenuSelectEventArgs): void => {
         switch (args.item.text) {
             case 'Import': (spreadsheet.element.querySelector('#' + spreadsheet.element.id + '_fileUpload') as HTMLElement).click();
                 break;

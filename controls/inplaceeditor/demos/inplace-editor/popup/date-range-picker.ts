@@ -6,7 +6,7 @@ import { DateRangePicker } from './../../../src/inplace-editor/modules/date-rang
 
 InPlaceEditor.Inject(DateRangePicker);
 
-let serviceUrl: string = 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData';
+let serviceUrl: string = 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData';
 
 let editObj: InPlaceEditor = new InPlaceEditor({
     type: 'DateRange',

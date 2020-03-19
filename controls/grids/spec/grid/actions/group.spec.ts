@@ -1439,51 +1439,6 @@ describe('Grouping module => ', () => {
             grid = actionComplete = null;
         });
     });
-    describe('EJ2-35816-Grouping with animation => ', () => {
-        let gridObj: Grid;
-        let actionComplete: () => void;
-        let allowGroupReordering:string = 'allowGroupReordering';
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: filterData,
-                    [allowGroupReordering]: true,
-                    groupSettings: { columns: ['OrderID', 'CustomerID'], [allowGroupReordering]: true },
-                    columns: [{ field: 'OrderID', headerText: 'Order ID' },
-                    { field: 'CustomerID', headerText: 'CustomerID' },
-                    { field: 'EmployeeID', headerText: 'Employee ID' },
-                    { field: 'Freight', headerText: 'Freight' },
-                    { field: 'ShipCity', headerText: 'Ship City' }],
-                    allowSorting: true,
-                    allowPaging: true,
-                    allowGrouping: true,
-                    actionComplete: actionComplete
-                }, done);
-        });
-        it('Check whether grouped columns added in the droparea', (done) => {
-            gridObj.actionComplete = (args?: Object): void => {
-                expect(gridObj.element.querySelectorAll('.e-group-animator').length).toBe(3);
-                expect(gridObj.element.querySelectorAll('.e-icon-drag').length).toBe(3);
-                expect(gridObj.element.querySelectorAll('.e-group-animator .e-icon-next').length).toBe(3);
-                done();
-            }
-            gridObj.groupColumn('EmployeeID');
-        });
-        it('Check whether ungroup is working', (done) => {
-            gridObj.actionComplete = (args?: Object): void => {
-                expect(gridObj.element.querySelectorAll('.e-group-animator').length).toBe(2);
-                expect(gridObj.element.querySelectorAll('.e-icon-drag').length).toBe(2);
-                expect(gridObj.element.querySelectorAll('.e-group-animator .e-icon-next').length).toBe(2);
-                done();
-            };
-            gridObj.ungroupColumn('EmployeeID');
-        });
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
-        });
-    });
-
     //focus strategy script error
     // describe('expand and collapse on enter => ', () => {
     //     let gridObj: Grid;
@@ -1532,5 +1487,48 @@ describe('Grouping module => ', () => {
     //      }, 1000);    
     //  });
     // });
+     describe('EJ2-35816-Grouping with animation => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        let allowGroupReordering:string = 'allowGroupReordering';
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    groupSettings: { columns: ['OrderID', 'CustomerID'], allowReordering: true },
+                    columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'Freight', headerText: 'Freight' },
+                    { field: 'ShipCity', headerText: 'Ship City' }],
+                    allowSorting: true,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('Check whether grouped columns added in the droparea', (done) => {
+            gridObj.actionComplete = (args?: Object): void => {
+                expect(gridObj.element.querySelectorAll('.e-group-animator').length).toBe(3);
+                expect(gridObj.element.querySelectorAll('.e-icon-drag').length).toBe(3);
+                expect(gridObj.element.querySelectorAll('.e-group-animator .e-icon-next').length).toBe(3);
+                done();
+            }
+            gridObj.groupColumn('EmployeeID');
+        });
+        it('Check whether ungroup is working', (done) => {
+            gridObj.actionComplete = (args?: Object): void => {
+                expect(gridObj.element.querySelectorAll('.e-group-animator').length).toBe(2);
+                expect(gridObj.element.querySelectorAll('.e-icon-drag').length).toBe(2);
+                expect(gridObj.element.querySelectorAll('.e-group-animator .e-icon-next').length).toBe(2);
+                done();
+            };
+            gridObj.ungroupColumn('EmployeeID');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 
 });

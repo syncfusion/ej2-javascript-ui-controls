@@ -4,6 +4,7 @@
 import { Toolbar } from '../../src/toolbar/index';
 
     let toolbarObj: Toolbar = new Toolbar({
+        width: '1000px',
         items: [
             {
                 prefixIcon: 'e-add-icon', text: 'Add to FaceBook', tooltipText: 'FaceBook', align: 'Center' },

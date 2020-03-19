@@ -12,7 +12,7 @@ import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Point, getTranslate, convertGeoToPoint, clusterTemplate, marker, markerTemplate, getZoomTranslate } from '../utils/helper';
 import {
     getElementByID, mergeSeparateCluster, clusterSeparate, removeElement, getElement,
-    markerColorChoose, markerShapeChoose, calculateZoomLevel, compareZoomFactor
+    markerColorChoose, markerShapeChoose, calculateZoomLevel, compareZoomFactor, getValueFromObject
 } from '../utils/helper';
 
 /**
@@ -39,10 +39,11 @@ export class Marker {
         let templateFn: Function;
         let markerCount: number = 0;
         let nullCount: number = 0;
-        let markerTemplateCount: number = 0;
+        let markerTemplateCount: number = 0; this.maps.translateType = 'marker';
         let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         this.markerSVGObject = this.maps.renderer.createGroup({
             id: this.maps.element.id + '_Markers_Group',
+            class: 'GroupElement',
             style: 'pointer-events: auto;'
         });
         let markerTemplateEle: HTMLElement = createElement('div', {
@@ -79,8 +80,10 @@ export class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
-                    let lat: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
+                    let lng: number = (!isNullOrUndefined(data[markerSettings.longitudeValuePath])) ?
+                    Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
+                    let lat: number = (!isNullOrUndefined(data[markerSettings.latitudeValuePath])) ?
+                    Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
                     if (this.maps.isBlazor) {
                         let data1: Object = {};
                         let text: string[] = [];
@@ -112,7 +115,7 @@ export class Marker {
                                 getTranslate(this.maps, currentLayer, animate);
                         let scale: number = type === 'AddMarker' ? this.maps.scale : translate['scale'];
                         let transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
-                        if (eventArgs.template &&  (!isNullOrUndefined(location.x) && !isNullOrUndefined(location.y))) {
+                        if (eventArgs.template &&  (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
                                 scale, offset, this.maps);
@@ -122,11 +125,10 @@ export class Marker {
                                 location, transPoint, markerID, offset, scale, this.maps, this.markerSVGObject);
                         }
                     }
-                    nullCount += (!isNullOrUndefined(lat) && !isNullOrUndefined(lng)) ? 0 : 1;
+                    nullCount += (!isNaN(lat) && !isNaN(lng)) ? 0 : 1;
                     markerTemplateCount += (eventArgs.cancel) ? 1 : 0;
                     markerCount += (eventArgs.cancel) ? 1 : 0;
-                    this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat))
-                        ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
+                    this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat)) ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
                     let markerDataLength: number = markerData.length - this.maps.markerNullCount;
                     if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount - nullCount) && (type !== 'Template')) {
                         layerElement.appendChild(this.markerSVGObject);
@@ -178,6 +180,8 @@ export class Marker {
             let mapWidth: number = this.maps.mapAreaRect.width;
             let mapHeight: number = this.maps.mapAreaRect.height; 
             let scaleFactor : number;
+            this.maps.markerZoomedState = this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor);
+            this.maps.defaultState = this.maps.markerZoomedState ? !this.maps.markerZoomedState : this.maps.defaultState;
             Array.prototype.forEach.call(layersCollection, (currentLayer: LayerSettings, layerIndex: number) => {
                 let isMarker: boolean = currentLayer.markerSettings.length !== 0;
                 if (isMarker) {
@@ -217,6 +221,12 @@ export class Marker {
                 centerLong = (minLong + maxLong) / 2;
                 this.maps.markerCenterLatitude = centerLat;
                 this.maps.markerCenterLongitude = centerLong;
+                if (isNullOrUndefined(this.maps.markerZoomCenterPoint) || this.maps.markerZoomedState) {
+                    this.maps.markerZoomCenterPoint = {
+                        latitude: centerLat,
+                        longitude: centerLong
+                    };
+                }
                 let markerFactor: number;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
                     zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, this.maps);
@@ -247,6 +257,7 @@ export class Marker {
                 this.maps.markerZoomFactor = markerFactor;
             }
         } else {
+            this.maps.markerZoomedState = false;
             if(this.maps.markerZoomFactor > 1) {
                 this.maps.markerCenterLatitude = null;
                 this.maps.markerCenterLongitude = null;
@@ -319,7 +330,7 @@ export class Marker {
             latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
         };
         if (this.maps.isBlazor) {
-            const { maps, data, ...blazorEventArgs }: IMarkerClusterClickEventArgs = eventArgs;
+            const { maps, data, latitude, longitude, ...blazorEventArgs }: IMarkerClusterClickEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClusterClick, eventArgs);

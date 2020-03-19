@@ -151,6 +151,8 @@ export class Annotation {
      */
     public annotationPageIndex: number = null;
     private previousIndex: number = null;
+    // tslint:disable-next-line
+    private overlappedAnnotations: any = [];
 
     /**
      * @private
@@ -1632,11 +1634,43 @@ export class Annotation {
         let clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
         let redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
         redoClonedObject.fontSize = currentValue;
-        this.pdfViewer.nodePropertyChange(currentAnnotation, { fontSize: currentValue });
+        let freeTextAnnotation: FreeTextAnnotation = this.freeTextAnnotationModule;
+        let x: number = currentAnnotation.bounds.x;
+        let y: number = currentAnnotation.bounds.y;
+        currentAnnotation.fontSize = currentValue;
+        freeTextAnnotation.addInuptElemet({x: x, y: y}, currentAnnotation);
+        if (currentAnnotation) {
+            if (currentAnnotation.previousFontSize > currentValue) {
+                freeTextAnnotation.inputBoxElement.style.height = 'auto';
+                freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
+            }
+            let inputEleHeight: number = parseFloat(freeTextAnnotation.inputBoxElement.style.height);
+            let inputEleWidth: number = parseFloat(freeTextAnnotation.inputBoxElement.style.width);
+            let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+            inputEleWidth = ((inputEleWidth - 1) / zoomFactor);
+            inputEleHeight = ((inputEleHeight - 1) / zoomFactor);
+            let heightDiff: number = (inputEleHeight - currentAnnotation.bounds.height);
+            let y: number = undefined;
+            if (heightDiff > 0) {
+                y = currentAnnotation.wrapper.offsetY + (heightDiff / 2);
+                y = y > 0 ? y : undefined;
+            } else {
+                heightDiff = Math.abs(heightDiff);
+                y = currentAnnotation.wrapper.offsetY - (heightDiff / 2);
+                y = y > 0 ? y : undefined;
+            }
+            currentAnnotation.bounds.width = inputEleWidth;
+            currentAnnotation.bounds.height = inputEleHeight;
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewer.nodePropertyChange(currentAnnotation, { fontSize: currentValue, bounds: {width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height, y: y}});
+            this.pdfViewer.renderSelector(currentAnnotation.pageIndex, this.pdfViewer.annotationSelectorSettings);
+            currentAnnotation.previousFontSize = currentValue;
+        }
         this.triggerAnnotationPropChange(currentAnnotation, false, false, false, true);
         // tslint:disable-next-line:max-line-length
         this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'fontSize', '', clonedObject, redoClonedObject);
         this.modifyInCollections(currentAnnotation, 'fontSize');
+        this.modifyInCollections(currentAnnotation, 'bounds');
         this.pdfViewer.renderDrawing();
     }
 
@@ -2418,7 +2452,11 @@ export class Annotation {
         } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes') {
             this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(true);
         } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
-            this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(false);
+            if (Browser.isDevice) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(true, true);
+            } else {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(false);
+            }
         } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
             this.pdfViewer.toolbar.annotationToolbarModule.enableFreeTextAnnotationPropertiesTools(true);
         } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature') {
@@ -3002,36 +3040,41 @@ export class Annotation {
                 };
             }
         }
-        if (annotSettings.type === 'Shape' || annotSettings.type === 'Measure') {
+        // tslint:disable-next-line
+        let overlappedCollection: any = [];
+        // tslint:disable-next-line
+        let overlappedAnnotations: any = this.getOverlappedAnnotations(annotation, pageNumber);
+        if (overlappedAnnotations && overlappedAnnotations.length > 0) {
+            annotationCollection = overlappedAnnotations;
             // tslint:disable-next-line
-            let overlappedAnnotations: any =  this.getOverlappedAnnotations(annotation, pageNumber);
-            if (overlappedAnnotations && overlappedAnnotations.length > 0) {
-                annotationCollection = overlappedAnnotations;
+            for (let i: number = 0; i < annotationCollection.length; i++) {
+                // tslint:disable-next-line
+                let overlappedObject: any = cloneObject(annotationCollection[i]);
+                overlappedObject.annotationId = annotationCollection[i].annotName;
+                delete overlappedObject.annotName;
+                overlappedCollection.push(overlappedObject);
             }
+        } else {
+            overlappedCollection = null;
         }
         this.addFreeTextProperties(annotation, annotSettings);
         if (!isDblClick) {
             if (annotation.shapeAnnotationType === 'Stamp' || annotation.shapeAnnotationType === 'Image') {
                 if (!this.pdfViewerBase.isNewStamp) {
-                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings);
+                    if (overlappedCollection) {
+                        this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, overlappedCollection);
+                    } else {
+                        this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings);
+                    }
                 }
             } else {
                 let multiPageCollection: ITextMarkupAnnotation[] = this.textMarkupAnnotationModule.multiPageCollectionList(annotation);
                 if (multiPageCollection.length === 0) {
                     multiPageCollection = null;
                 }
-                if (annotationCollection) {
-                    // tslint:disable-next-line
-                    let textMarkupCollection: any = [];
-                    for (let i: number = 0; i < annotationCollection.length; i++) {
-                        // tslint:disable-next-line
-                        let textMarkupObject: any = cloneObject(annotationCollection[i]);
-                        textMarkupObject.annotationId = annotationCollection[i].annotName;
-                        delete textMarkupObject.annotName;
-                        textMarkupCollection.push(textMarkupObject);
-                    }
+                if (overlappedCollection) {
                     // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, textMarkupCollection, multiPageCollection, isSelected);
+                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, overlappedCollection, multiPageCollection, isSelected);
                 } else {
                     this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, null, multiPageCollection, isSelected);
                 }
@@ -3607,7 +3650,6 @@ export class Annotation {
         isLock = annotationSettings.isLock ? annotationSettings.isLock : false;
         return { minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight, isLock: isLock };
     }
-
     // tslint:disable-next-line
     private getOverlappedAnnotations(annotation: any, pageNumber: number): any {
         // tslint:disable-next-line
@@ -3663,60 +3705,175 @@ export class Annotation {
                 }
             }
         }
+        // tslint:disable-next-line
+        let stampObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
+        if (stampObject) {
+            let stampAnnotationObject: IPageAnnotations[] = JSON.parse(stampObject);
+            if (stampAnnotationObject) {
+                let index: number = this.getPageCollection(stampAnnotationObject, pageNumber);
+                if (stampAnnotationObject[index]) {
+                    // tslint:disable-next-line
+                    let stampAnnotations: any = stampAnnotationObject[index].annotations;
+                    if (stampAnnotations && stampAnnotations.length > 0) {
+                        for (let i: number = 0; i < stampAnnotations.length; i++) {
+                            pageCollections.push(stampAnnotations[i]);
+                        }
+                    }
+                }
+            }
+        }
+        // tslint:disable-next-line
+        let freeTextObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
+        if (freeTextObject) {
+            let freeTextAnnotationObject: IPageAnnotations[] = JSON.parse(freeTextObject);
+            if (freeTextAnnotationObject) {
+                let index: number = this.getPageCollection(freeTextAnnotationObject, pageNumber);
+                if (freeTextAnnotationObject[index]) {
+                    // tslint:disable-next-line
+                    let freeTextAnnotations: any = freeTextAnnotationObject[index].annotations;
+                    if (freeTextAnnotations && freeTextAnnotations.length > 0) {
+                        for (let i: number = 0; i < freeTextAnnotations.length; i++) {
+                            pageCollections.push(freeTextAnnotations[i]);
+                        }
+                    }
+                }
+            }
+        }
+        // tslint:disable-next-line
+        let stickyObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_sticky');
+        if (stickyObject) {
+            let stickyNotesAnnotationObject: IPageAnnotations[] = JSON.parse(stickyObject);
+            if (stickyNotesAnnotationObject) {
+                let index: number = this.getPageCollection(stickyNotesAnnotationObject, pageNumber);
+                if (stickyNotesAnnotationObject[index]) {
+                    // tslint:disable-next-line
+                    let stickyNotesAnnotations: any = stickyNotesAnnotationObject[index].annotations;
+                    if (stickyNotesAnnotations && stickyNotesAnnotations.length > 0) {
+                        for (let i: number = 0; i < stickyNotesAnnotations.length; i++) {
+                            pageCollections.push(stickyNotesAnnotations[i]);
+                        }
+                    }
+                }
+            }
+        }
+        // tslint:disable-next-line
+        let textMarkupObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+        if (textMarkupObject) {
+            let textMarkupAnnotationObject: IPageAnnotations[] = JSON.parse(textMarkupObject);
+            if (textMarkupAnnotationObject) {
+                let index: number = this.getPageCollection(textMarkupAnnotationObject, pageNumber);
+                if (textMarkupAnnotationObject[index]) {
+                    // tslint:disable-next-line
+                    let textMarkupAnnotations: any = textMarkupAnnotationObject[index].annotations;
+                    if (textMarkupAnnotations && textMarkupAnnotations.length > 0) {
+                        for (let i: number = 0; i < textMarkupAnnotations.length; i++) {
+                            pageCollections.push(textMarkupAnnotations[i]);
+                        }
+                    }
+                }
+            }
+        }
         return pageCollections;
     }
 
     // tslint:disable-next-line
     private findOverlappedAnnotations(annotation: any, pageCollections: any): any {
-        // tslint:disable-next-line
-        let overlappedCollections: any = [];
+        this.overlappedAnnotations = [];
         if (annotation && annotation.bounds) {
-            // tslint:disable-next-line
-            let selectBounds: any = annotation.bounds;
-            let left: number = selectBounds.left;
-            let top: number = selectBounds.top;
-            let totalHeight: number = selectBounds.top + selectBounds.height;
-            let totalWidth: number = selectBounds.left + selectBounds.width;
-            for (let i: number = 0; i < pageCollections.length; i++) {
-                // tslint:disable-next-line
-                let annotationBounds: any = pageCollections[i].bounds;
-                if (annotationBounds) {
-                    let isOverlapped: boolean = false;
-                    // tslint:disable-next-line:max-line-length
-                    if (((left <= annotationBounds.left) && (totalWidth >= annotationBounds.left)) || ((left <= (annotationBounds.left + annotationBounds.width)) && (totalWidth >= (annotationBounds.left + annotationBounds.width)))) {
-                        isOverlapped = true;
-                    }
-                    if (isOverlapped) {
-                        // tslint:disable-next-line:max-line-length
-                        if (((top <= annotationBounds.top) && (totalHeight >= annotationBounds.top)) || ((top <= (annotationBounds.top + annotationBounds.height)) && (totalHeight >= (annotationBounds.top + annotationBounds.height)))) {
-                            isOverlapped = true;
-                        } else {
-                            isOverlapped = false;
-                        }
-                    }
-                    if (isOverlapped) {
-                        overlappedCollections.push(pageCollections[i]);
+            if (annotation.shapeAnnotationType === 'textMarkup') {
+                for (let i: number = 0; i < annotation.bounds.length; i++) {
+                    this.calculateOverlappedAnnotationBounds(annotation, annotation.bounds[i], pageCollections);
+                }
+            } else {
+                this.calculateOverlappedAnnotationBounds(annotation, annotation.bounds, pageCollections);
+            }
+        }
+        return this.overlappedAnnotations;
+    }
+
+    // tslint:disable-next-line
+    private calculateOverlappedAnnotationBounds(annotation: any, bounds: any, pageCollections: any): void {
+        // tslint:disable-next-line
+        let selectBounds: any = bounds;
+        // tslint:disable-next-line
+        let left: number = parseInt(selectBounds.left);
+        // tslint:disable-next-line
+        let top: number = parseInt(selectBounds.top);
+        // tslint:disable-next-line
+        let totalHeight: number = parseInt(selectBounds.top + selectBounds.height);
+        // tslint:disable-next-line
+        let totalWidth: number = parseInt(selectBounds.left + selectBounds.width);
+        for (let i: number = 0; i < pageCollections.length; i++) {
+            if (annotation.annotName === pageCollections[i].annotName) {
+                this.checkOverlappedCollections(pageCollections[i], this.overlappedAnnotations);
+            } else {
+                let boundsCount: number = 1;
+                if (pageCollections[i].shapeAnnotationType === 'textMarkup') {
+                    boundsCount = pageCollections[i].bounds.length;
+                }
+                for (let j: number = 0; j < boundsCount; j++) {
+                    // tslint:disable-next-line
+                    let annotationBounds: any;
+                    if (pageCollections[i].shapeAnnotationType !== 'textMarkup' && boundsCount === 1) {
+                        annotationBounds = pageCollections[i].bounds;
                     } else {
-                        // tslint:disable-next-line:max-line-length
-                        if (((annotationBounds.left <= left) && ((annotationBounds.left + annotationBounds.width) >= left )) || ((totalWidth >= (annotationBounds.left)) && (totalWidth <= (annotationBounds.left + annotationBounds.width)))) {
+                        annotationBounds = pageCollections[i].bounds[j];
+                    }
+                    if (annotationBounds) {
+                        let isOverlapped: boolean = false;
+                        // tslint:disable-next-line
+                        if (((left <= parseInt(annotationBounds.left)) && (totalWidth >= parseInt(annotationBounds.left))) || ((left <= parseInt(annotationBounds.left + annotationBounds.width)) && (totalWidth >= parseInt(annotationBounds.left + annotationBounds.width)))) {
                             isOverlapped = true;
                         }
                         if (isOverlapped) {
-                            // tslint:disable-next-line:max-line-length
-                            if (((annotationBounds.top <= top) && (annotationBounds.top + annotationBounds.height) >= top ) || ((totalHeight >= (annotationBounds.top)) && (totalHeight <= (annotationBounds.top + annotationBounds.height)))) {
+                            // tslint:disable-next-line
+                            if (((top <= parseInt(annotationBounds.top)) && (totalHeight >= parseInt(annotationBounds.top))) || ((top <= parseInt(annotationBounds.top + annotationBounds.height)) && (totalHeight >= parseInt(annotationBounds.top + annotationBounds.height)))) {
                                 isOverlapped = true;
                             } else {
                                 isOverlapped = false;
                             }
                         }
                         if (isOverlapped) {
-                            overlappedCollections.push(pageCollections[i]);
+                            this.checkOverlappedCollections(pageCollections[i], this.overlappedAnnotations);
+                        } else {
+                            // tslint:disable-next-line
+                            if (((parseInt(annotationBounds.left) <= left) && (parseInt(annotationBounds.left + annotationBounds.width) >= left)) || ((totalWidth >= parseInt(annotationBounds.left)) && (totalWidth <= parseInt(annotationBounds.left + annotationBounds.width)))) {
+                                isOverlapped = true;
+                            }
+                            if (isOverlapped) {
+                                // tslint:disable-next-line
+                                if (((parseInt(annotationBounds.top) <= top) && parseInt(annotationBounds.top + annotationBounds.height) >= top) || ((totalHeight >= parseInt(annotationBounds.top)) && (totalHeight <= parseInt(annotationBounds.top + annotationBounds.height)))) {
+                                    isOverlapped = true;
+                                } else {
+                                    isOverlapped = false;
+                                }
+                            }
+                            if (isOverlapped) {
+                                this.checkOverlappedCollections(pageCollections[i], this.overlappedAnnotations);
+                            }
                         }
                     }
                 }
             }
         }
-        return overlappedCollections;
+    }
+
+    // tslint:disable-next-line
+    private checkOverlappedCollections(annotation: any, overlappedCollections: any): void {
+        if (overlappedCollections.length > 0) {
+            let isAdded: boolean = false;
+            for (let i: number = 0; i < overlappedCollections.length; i++) {
+                if (annotation.annotName === overlappedCollections[i].annotName && annotation.bounds === overlappedCollections[i].bounds) {
+                    isAdded = true;
+                    break;
+                }
+            }
+            if (!isAdded) {
+                overlappedCollections.push(annotation);
+            }
+        } else {
+            overlappedCollections.push(annotation);
+        }
     }
 
     /**
@@ -3738,6 +3895,7 @@ export class Annotation {
         this.pdfViewer.refresh();
         this.undoCommentsElement = [];
         this.redoCommentsElement = [];
+        this.overlappedAnnotations = [];
         this.previousIndex = null;
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.annotation && this.pdfViewer.annotation.stampAnnotationModule) {

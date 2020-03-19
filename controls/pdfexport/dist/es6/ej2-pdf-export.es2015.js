@@ -24330,8 +24330,7 @@ class PdfGridLayouter extends ElementLayouter {
         }
         if (this.Grid.hasRowSpanSpan) {
             for (let i = 0; i < this.Grid.rows.count; i++) {
-                let height = this.Grid.rows.getRow(i).height;
-                if (!this.Grid.rows.getRow(i).isRowHeightSet) {
+                if (this.Grid.rows.getRow(i).height !== -1 && !this.Grid.rows.getRow(i).isRowHeightSet) {
                     this.Grid.rows.getRow(i).isRowHeightSet = true;
                 }
             }

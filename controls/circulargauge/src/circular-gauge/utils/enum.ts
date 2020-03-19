@@ -111,6 +111,7 @@ export type HiddenLabel =
  * * pentagon- Renders a pentagon.
  * * invertedTriangle - Renders a invertedTriangle.
  * * image - Renders a image.
+ * * Text- Renders a text.
  */
 export type GaugeShape =
     /** Render a circle. */
@@ -124,7 +125,9 @@ export type GaugeShape =
     /** Render a InvertedTriangle. */
     'InvertedTriangle' |
     /** Render a Image. */
-    'Image';
+    'Image' |
+    /** Render a Text. */
+    'Text';
 
 export type LegendPosition =
     /** Places the legend on the top of circular gauge. */

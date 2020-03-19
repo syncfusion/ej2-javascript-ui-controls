@@ -2098,8 +2098,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.contentEle.appendChild(this.innerContentElement);
         }
         else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
-            var blazorContain = Object.keys(window);
-            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
+            if (typeof (this.content) === 'string' && !isBlazor()) {
                 this.contentEle.innerHTML = this.sanitizeHelper(this.content);
             }
             else if (this.content instanceof HTMLElement) {
@@ -2125,7 +2124,6 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     Dialog.prototype.setTemplate = function (template, toElement) {
         var templateFn;
         var templateProps;
-        var blazorContain = Object.keys(window);
         if (toElement.classList.contains(DLG_HEADER)) {
             templateProps = this.element.id + 'header';
         }
@@ -2148,7 +2146,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         var fromElements = [];
         if (!isNullOrUndefined(templateFn)) {
-            var isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+            var isString = (isBlazor() &&
                 !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
             for (var _i = 0, _a = templateFn({}, null, null, templateProps, isString); _i < _a.length; _i++) {
@@ -2156,9 +2154,6 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
-                this.blazorTemplate(templateProps);
-            }
         }
     };
     /**
@@ -2166,32 +2161,21 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
      */
     Dialog.prototype.sanitizeHelper = function (value) {
         if (this.enableHtmlSanitizer) {
-            var item = SanitizeHtmlHelper.beforeSanitize();
+            var dialogItem = SanitizeHtmlHelper.beforeSanitize();
             var beforeEvent = {
                 cancel: false,
                 helper: null
             };
-            extend(item, item, beforeEvent);
-            this.trigger('beforeSanitizeHtml', item);
-            if (item.cancel && !isNullOrUndefined(item.helper)) {
-                value = item.helper(value);
+            extend(dialogItem, dialogItem, beforeEvent);
+            this.trigger('beforeSanitizeHtml', dialogItem);
+            if (dialogItem.cancel && !isNullOrUndefined(dialogItem.helper)) {
+                value = dialogItem.helper(value);
             }
-            else if (!item.cancel) {
-                value = SanitizeHtmlHelper.serializeValue(item, value);
+            else if (!dialogItem.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(dialogItem, value);
             }
         }
         return value;
-    };
-    Dialog.prototype.blazorTemplate = function (templateProps) {
-        if (templateProps === this.element.id + 'header') {
-            updateBlazorTemplate(templateProps, 'Header', this);
-        }
-        else if (templateProps === this.element.id + 'footerTemplate') {
-            updateBlazorTemplate(templateProps, 'FooterTemplate', this);
-        }
-        else {
-            updateBlazorTemplate(templateProps, 'Content', this);
-        }
     };
     Dialog.prototype.setMaxHeight = function () {
         if (!this.allowMaxHeight) {
@@ -3238,9 +3222,12 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     }
     Tooltip.prototype.initialize = function () {
         this.formatPosition();
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!(this.isServerRender())) {
             addClass([this.element], ROOT$1);
         }
+    };
+    Tooltip.prototype.isServerRender = function () {
+        return isBlazor() && this.isServerRendered;
     };
     Tooltip.prototype.formatPosition = function () {
         var _a, _b;
@@ -3253,7 +3240,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     Tooltip.prototype.renderArrow = function () {
         this.setTipClass(this.position);
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!(this.isServerRender())) {
             var tip = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
             tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
             tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
@@ -3283,24 +3270,14 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     Tooltip.prototype.renderPopup = function (target) {
         var elePos = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
         this.tooltipEle.classList.remove(POPUP_LIB);
-        if (isBlazor() && this.isServerRendered) {
-            this.popupObj = new Popup(this.tooltipEle, {
-                position: { X: elePos.left, Y: elePos.top },
-                open: this.openPopupHandler.bind(this),
-                close: this.closePopupHandler.bind(this),
-                enableRtl: this.enableRtl
-            });
-        }
-        else {
-            this.popupObj = new Popup(this.tooltipEle, {
-                height: this.height,
-                width: this.width,
-                position: { X: elePos.left, Y: elePos.top },
-                enableRtl: this.enableRtl,
-                open: this.openPopupHandler.bind(this),
-                close: this.closePopupHandler.bind(this)
-            });
-        }
+        this.popupObj = new Popup(this.tooltipEle, {
+            height: this.height,
+            width: this.width,
+            position: { X: elePos.left, Y: elePos.top },
+            enableRtl: this.enableRtl,
+            open: this.openPopupHandler.bind(this),
+            close: this.closePopupHandler.bind(this)
+        });
     };
     Tooltip.prototype.getTooltipPosition = function (target) {
         this.tooltipEle.style.display = 'none';
@@ -3472,7 +3449,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             target.removeAttribute('title');
         }
         if (!isNullOrUndefined(this.content)) {
-            if (this.isBlazorTooltip || !(isBlazor() && this.isServerRendered)) {
+            if (this.isBlazorTooltip || !(this.isServerRender())) {
                 tooltipContent.innerHTML = '';
                 if (this.content instanceof HTMLElement) {
                     tooltipContent.appendChild(this.content);
@@ -3584,9 +3561,10 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         clearTimeout(this.showTimer);
         clearTimeout(this.hideTimer);
-        this.tooltipEventArgs = e
-            ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle }
-            : { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
+        this.tooltipEventArgs = {
+            type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+            element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
+        };
         var observeCallback = function (beforeRenderArgs) {
             _this.beforeRenderCallback(beforeRenderArgs, target, e, showAnimation);
         };
@@ -3601,7 +3579,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         else {
             this.isHidden = false;
             if (isNullOrUndefined(this.tooltipEle)) {
-                if (isBlazor() && this.isServerRendered) {
+                if (this.isServerRender()) {
                     this.contentTargetValue = target;
                     this.contentEvent = e;
                     this.contentAnimation = showAnimation;
@@ -3627,7 +3605,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                if (isBlazor() && this.isServerRendered) {
+                if (this.isServerRender()) {
                     addClass([this.tooltipEle], POPUP_OPEN);
                     document.body.appendChild(this.tooltipEle);
                     this.renderCloseIcon();
@@ -3647,7 +3625,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     
     Tooltip.prototype.contentUpdated = function (args) {
         if (isNullOrUndefined(this.tooltipEle)) {
-            if (isBlazor() && this.isServerRendered) {
+            if (this.isServerRender()) {
                 this.ctrlId = this.element.id;
                 this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
                 this.tooltipEle.setAttribute('style', 'width:' + formatUnit(this.width) +
@@ -3667,7 +3645,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             if (ctrlObj.width !== 'auto') {
                 ctrlObj.tooltipEle.style.maxWidth = formatUnit(ctrlObj.width);
             }
-            if (!(isBlazor() && this.isServerRendered)) {
+            if (!(this.isServerRender())) {
                 ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
             }
             document.body.appendChild(ctrlObj.tooltipEle);
@@ -3689,9 +3667,10 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         if (target) {
             removeClass([ctrlObj.tooltipEle], POPUP_OPEN);
             addClass([ctrlObj.tooltipEle], POPUP_CLOSE);
-            ctrlObj.tooltipEventArgs = e ?
-                { type: e.type, cancel: false, target: target, event: e, element: ctrlObj.tooltipEle } :
-                { type: null, cancel: false, target: target, event: null, element: ctrlObj.tooltipEle };
+            ctrlObj.tooltipEventArgs = {
+                type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+                element: ctrlObj.tooltipEle, isInteracted: !isNullOrUndefined(e)
+            };
             if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail) {
                 ctrlObj.tooltipEle.style.display = 'none';
             }
@@ -3727,7 +3706,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 this.showTimer = setTimeout(show, this.openDelay);
             }
             else {
-                this.popupObj.show(openAnimation_1, target);
+                if (this.popupObj) {
+                    this.popupObj.show(openAnimation_1, target);
+                }
             }
         }
         if (e) {
@@ -3739,7 +3720,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || (isBlazor() && this.isServerRendered) && this.isBlazorTemplate;
+            || (this.isServerRender()) && this.isBlazorTemplate;
     };
     Tooltip.prototype.checkCollision = function (target, x, y) {
         var elePos = {
@@ -3814,22 +3795,21 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var target;
         if (e) {
             target = this.target ? (targetElement || e.target) : this.element;
-            this.tooltipEventArgs = {
-                type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle
-            };
         }
         else {
             target = document.querySelector('[data-tooltip-id= ' + this.ctrlId + '_content]');
-            this.tooltipEventArgs = {
-                type: null, cancel: false, target: target, event: null, element: this.tooltipEle
-            };
         }
-        if (isNullOrUndefined(target)) {
-            return;
-        }
+        this.tooltipEventArgs = {
+            type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+            element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
+        };
+        // this line commented for close the tooltip popup element even the target element destroyed in a page.
+        //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, function (observedArgs) {
             if (!observedArgs.cancel) {
-                _this.restoreElement(target);
+                if (target) {
+                    _this.restoreElement(target);
+                }
                 _this.isHidden = true;
                 var closeAnimation_1 = {
                     name: hideAnimation.effect,
@@ -3849,7 +3829,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                     _this.hideTimer = setTimeout(hide, _this.closeDelay);
                 }
                 else {
-                    _this.popupObj.hide(closeAnimation_1);
+                    if (_this.popupObj) {
+                        _this.popupObj.hide(closeAnimation_1);
+                    }
                 }
             }
             else {
@@ -3874,9 +3856,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             if (this.popupObj) {
                 this.popupObj.destroy();
             }
-            if (isBlazor() && this.isServerRendered && this.tooltipEle) {
+            if (this.isServerRender() && this.tooltipEle) {
                 this.tooltipEle.style.display = 'none';
-                this.tooltipEle = null;
                 var args = { 'enableTooltip': 'false' };
                 // tslint:disable
                 this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
@@ -3901,15 +3882,18 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.hideTooltip(this.animation.close, e);
+                this.clear();
             }
         }
         else {
             this.hideTooltip(this.animation.close, e);
+            this.clear();
         }
     };
     Tooltip.prototype.tooltipElementMouseOut = function (e) {
         this.hideTooltip(this.animation.close, e, this.findTarget());
         EventHandler.remove(this.element, 'mouseleave', this.tooltipElementMouseOut);
+        this.clear();
     };
     Tooltip.prototype.onStickyClose = function (e) {
         this.close();
@@ -3958,7 +3942,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     Tooltip.prototype.scrollHandler = function (e) {
         if (this.tooltipEle) {
-            this.close();
+            if (!(closest(e.target, "." + TOOLTIP_WRAP + "." + POPUP_LIB + "." + POPUP_ROOT$1))) {
+                this.close();
+            }
         }
     };
     /**
@@ -4011,7 +3997,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             }
         }
         EventHandler.add(document, 'touchend', this.touchEnd, this);
-        EventHandler.add(document, 'scroll', this.scrollHandler, this);
+        EventHandler.add(document, 'scroll wheel', this.scrollHandler, this);
         EventHandler.add(document, 'keydown', this.keyDown, this);
     };
     Tooltip.prototype.getTriggerList = function (trigger) {
@@ -4077,7 +4063,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             }
         }
         EventHandler.remove(document, 'touchend', this.touchEnd);
-        EventHandler.remove(document, 'scroll', this.scrollHandler);
+        EventHandler.remove(document, 'scroll wheel', this.scrollHandler);
         EventHandler.remove(document, 'keydown', this.keyDown);
     };
     Tooltip.prototype.unwireFocusEvents = function () {
@@ -4150,12 +4136,12 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'content':
                     if (this.tooltipEle) {
-                        if (isBlazor() && this.isServerRendered) {
+                        if (this.isServerRender()) {
                             this.isBlazorTooltip = true;
                         }
                         this.renderContent();
                     }
-                    else if (isBlazor() && this.isServerRendered) {
+                    else if (this.isServerRender()) {
                         var args = { 'content': newProp.content };
                         // tslint:disable
                         this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
@@ -4216,12 +4202,17 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * It is used to show the Tooltip on the specified target with specific animation settings.
-     * @param element Target element where the Tooltip is to be displayed.
-     * @param animation Sets the specific animation, while showing the Tooltip on the screen.
+     * @param element Target element where the Tooltip is to be displayed. (It is an optional parameter)
+     * @param animation Sets the specific animation, while showing the Tooltip on the screen. (It is an optional parameter)
      * @return {void}
      */
     Tooltip.prototype.open = function (element, animation) {
-        if (animation === void 0) { animation = this.animation.open; }
+        if (isNullOrUndefined(animation)) {
+            animation = this.animation.open;
+        }
+        if (isNullOrUndefined(element)) {
+            element = this.element;
+        }
         if (element.style.display === 'none') {
             return;
         }
@@ -4229,11 +4220,13 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * It is used to hide the Tooltip with specific animation effect.
-     * @param animation Sets the specific animation when hiding Tooltip from the screen.
+     * @param animation Sets the specific animation when hiding Tooltip from the screen. (It is an optional parameter)
      * @return {void}
      */
     Tooltip.prototype.close = function (animation) {
-        if (animation === void 0) { animation = this.animation.close; }
+        if (!animation) {
+            animation = this.animation.close;
+        }
         this.hideTooltip(animation);
     };
     /**
@@ -4256,14 +4249,20 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
      * @memberof Tooltip
      */
     Tooltip.prototype.destroy = function () {
-        if (!isBlazor()) {
+        if (!this.isServerRender()) {
             _super.prototype.destroy.call(this);
-            if (this.popupObj) {
-                this.popupObj.destroy();
-            }
             if (this.tooltipEle) {
                 remove(this.tooltipEle);
             }
+        }
+        if (this.isServerRender() && this.tooltipEle) {
+            var placeholder = document.querySelector('#' + this.ctrlId + '_content_placeholder');
+            if (placeholder) {
+                placeholder.appendChild(this.tooltipEle);
+            }
+        }
+        if (this.popupObj) {
+            this.popupObj.destroy();
         }
         removeClass([this.element], ROOT$1);
         this.unwireEvents(this.opensOn);

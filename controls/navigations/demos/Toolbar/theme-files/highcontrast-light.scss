@@ -1,0 +1,9 @@
+@import 'ej2-base/styles/highcontrast-light.scss';
+
+// Dependent component styles
+@import 'ej2-buttons/styles/button/highcontrast-light.scss';
+@import 'ej2-popups/styles/popup/highcontrast-light.scss';
+@import '../../../styles/h-scroll/highcontrast-light.scss';
+
+// Component styles from current repository
+@import '../../../styles/toolbar/highcontrast-light.scss';

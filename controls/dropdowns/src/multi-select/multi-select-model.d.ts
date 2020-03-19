@@ -373,7 +373,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 

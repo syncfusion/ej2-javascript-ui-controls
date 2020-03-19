@@ -73,7 +73,11 @@ export class DropDownEditCell implements IEditCell {
     private ddActionComplete(e: { result: Object[] }): void {
         e.result = DataUtil.distinct(e.result, this.obj.fields.value, true);
         if (this.flag && (<DataManager>this.column.dataSource)) {
-            (<DataManager>this.column.dataSource).dataSource.json = e.result;
+            if ('result' in this.column.dataSource) {
+                this.column.dataSource.result = e.result;
+            } else {
+                (<DataManager>this.column.dataSource).dataSource.json = e.result;
+            }
         }
         this.flag = false;
     }

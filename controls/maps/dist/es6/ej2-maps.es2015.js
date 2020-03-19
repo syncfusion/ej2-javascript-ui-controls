@@ -50,7 +50,7 @@ function calculateSize(maps) {
             parentWidth : containerWidth !== 0 ?
             containerWidth : 600;
     }
-    maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || (maps.isDevice ?
+    maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || parseFloat(maps.element.style.width) || 600, stringToNumber(maps.height, containerHeight) || containerHeight || parseFloat(maps.element.style.height) || (maps.isDevice ?
         Math.min(window.innerWidth, window.innerHeight) : 450));
 }
 /**
@@ -495,12 +495,46 @@ function convertElement(element, markerId, data, index, mapObj) {
     let templateHtml = childElement.innerHTML;
     let properties = Object.keys(data);
     for (let i = 0; i < properties.length; i++) {
-        if (properties[i].toLowerCase() !== 'latitude' && properties[i].toLowerCase() !== 'longitude') {
+        if (typeof data[properties[i]] === 'object') {
+            templateHtml = convertStringToValue(templateHtml, '', data, mapObj);
+        }
+        else if (properties[i].toLowerCase() !== 'latitude' && properties[i].toLowerCase() !== 'longitude') {
             templateHtml = templateHtml.replace(new RegExp('{{:' + properties[i] + '}}', 'g'), data[properties[i].toString()]);
         }
     }
     childElement.innerHTML = templateHtml;
     return childElement;
+}
+function formatValue(value, maps) {
+    let formatValue;
+    let formatFunction;
+    if (maps.format && !isNaN(Number(value))) {
+        formatFunction = maps.intl.getNumberFormat({ format: maps.format, useGrouping: maps.useGroupingSeparator });
+        formatValue = formatFunction(Number(value));
+    }
+    else {
+        formatValue = value;
+    }
+    return formatValue;
+}
+function convertStringToValue(stringTemplate, format, data, maps) {
+    let templateHtml = (stringTemplate === '') ? format : stringTemplate;
+    let templateValue = (stringTemplate === '') ? templateHtml.split('${') : templateHtml.split('{{:');
+    for (let i = 0; i < templateValue.length; i++) {
+        if ((templateValue[i].indexOf('}}') > -1 && templateValue[i].indexOf('.') > -1) ||
+            (templateValue[i].indexOf('}') > -1 && templateValue[i].search('.') > -1)) {
+            let split = (stringTemplate === '') ? templateValue[i].split('}') : templateValue[i].split('}}');
+            for (let j = 0; j < split.length; j++) {
+                if (split[j].indexOf('.') > -1) {
+                    let templateSplitValue = (getValueFromObject(data, split[j])).toString();
+                    templateHtml = (stringTemplate === '') ?
+                        templateHtml.split('${' + split[j] + '}').join(formatValue(templateSplitValue, maps)) :
+                        templateHtml.replace(new RegExp('{{:' + split[j] + '}}', 'g'), templateSplitValue);
+                }
+            }
+        }
+    }
+    return templateHtml;
 }
 function convertElementFromLabel(element, labelId, data, index, mapObj) {
     let labelEle = isNullOrUndefined(element.childElementCount) ? element[0] : element;
@@ -554,24 +588,46 @@ function drawSymbols(shape, imageUrl, location, markerID, shapeCustom, markerCol
     }
     return markerEle;
 }
+function getValueFromObject(data, value) {
+    if (!isNullOrUndefined(data) && !isNullOrUndefined(value)) {
+        var splits = value.replace(/\[/g, '.').replace(/\]/g, '').split('.');
+        if (splits.length === 1) {
+            data = data[splits[0]];
+        }
+        else {
+            for (var i = 0; i < splits.length && !isNullOrUndefined(data); i++) {
+                data = data[splits[i]];
+            }
+        }
+    }
+    return data;
+}
 function markerColorChoose(eventArgs, data) {
+    let color = (!isNullOrUndefined(eventArgs.colorValuePath)) ? ((eventArgs.colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.colorValuePath)).toString() :
+        data[eventArgs.colorValuePath]) : data[eventArgs.colorValuePath];
     eventArgs.fill = (!isNullOrUndefined(eventArgs.colorValuePath) &&
-        !isNullOrUndefined(data[eventArgs.colorValuePath])) ?
-        data[eventArgs.colorValuePath] : eventArgs.fill;
+        !isNullOrUndefined(color)) ?
+        ((eventArgs.colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.colorValuePath)).toString() :
+            data[eventArgs.colorValuePath]) : eventArgs.fill;
     return eventArgs;
 }
 function markerShapeChoose(eventArgs, data) {
     if (!isNullOrUndefined(eventArgs.shapeValuePath) && !isNullOrUndefined(data[eventArgs.shapeValuePath])) {
-        eventArgs.shape = data[eventArgs.shapeValuePath];
+        let shape = ((eventArgs.shapeValuePath.indexOf('.') > -1) ?
+            (getValueFromObject(data, eventArgs.shapeValuePath).toString()) :
+            data[eventArgs.shapeValuePath]);
+        eventArgs.shape = shape;
         if (data[eventArgs.shapeValuePath] == 'Image') {
             eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath) &&
                 !isNullOrUndefined(data[eventArgs.imageUrlValuePath])) ?
-                data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl;
+                ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() : data[eventArgs.imageUrlValuePath]) : eventArgs.imageUrl;
         }
     }
     else {
-        eventArgs.shape = eventArgs.shape;
-        eventArgs.imageUrl = eventArgs.imageUrl;
+        let shapes = (!isNullOrUndefined(eventArgs.shapeValuePath)) ? ((eventArgs.shapeValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.shapeValuePath).toString() : eventArgs.shape) : eventArgs.shape;
+        eventArgs.shape = shapes;
+        let shapeImage = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ? ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.imageUrlValuePath)).toString() : eventArgs.imageUrl) : eventArgs.imageUrl;
+        eventArgs.imageUrl = shapeImage;
     }
     return eventArgs;
 }
@@ -588,6 +644,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
     let options;
     let textElement;
     let tempElement1;
+    let shapeCustom;
     let tempElement;
     let postionY = (15 / 4);
     let m = 0;
@@ -640,26 +697,43 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                         let markerIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
                         markerTemplate.childNodes[o]['style']['visibility'] = "hidden";
                         let clusters = currentLayer.markerClusterSettings;
-                        let shapeCustom = {
-                            size: new Size(clusters.width, clusters.height),
-                            fill: clusters.fill, borderColor: clusters.border.color,
-                            borderWidth: clusters.border.width, opacity: clusters.opacity,
-                            dashArray: clusters.dashArray
-                        };
-                        shapeCustom['fill'] = eventArg.fill;
-                        shapeCustom['size']['width'] = eventArg.width;
-                        shapeCustom['size']['height'] = eventArg.height;
-                        shapeCustom['imageUrl'] = eventArg.imageUrl;
-                        shapeCustom['shape'] = eventArg.shape;
-                        shapeCustom['borderColor'] = eventArg.border.color;
-                        shapeCustom['borderWidth'] = eventArg.border.width;
+                        if (eventArg.cancel) {
+                            shapeCustom = {
+                                size: new Size(clusters.width, clusters.height),
+                                fill: clusters.fill, borderColor: clusters.border.color,
+                                borderWidth: clusters.border.width, opacity: clusters.opacity,
+                                dashArray: clusters.dashArray
+                            };
+                            shapeCustom['fill'] = clusters.fill;
+                            shapeCustom['size']['width'] = clusters.width;
+                            shapeCustom['size']['height'] = clusters.height;
+                            shapeCustom['imageUrl'] = clusters.imageUrl;
+                            shapeCustom['shape'] = clusters.shape;
+                            shapeCustom['borderColor'] = clusters.border.color;
+                            shapeCustom['borderWidth'] = clusters.border.width;
+                        }
+                        else {
+                            shapeCustom = {
+                                size: new Size(clusters.width, clusters.height),
+                                fill: clusters.fill, borderColor: clusters.border.color,
+                                borderWidth: clusters.border.width, opacity: clusters.opacity,
+                                dashArray: clusters.dashArray
+                            };
+                            shapeCustom['fill'] = eventArg.fill;
+                            shapeCustom['size']['width'] = eventArg.width;
+                            shapeCustom['size']['height'] = eventArg.height;
+                            shapeCustom['imageUrl'] = eventArg.imageUrl;
+                            shapeCustom['shape'] = eventArg.shape;
+                            shapeCustom['borderColor'] = eventArg.border.color;
+                            shapeCustom['borderWidth'] = eventArg.border.width;
+                        }
                         tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
                         tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
                         let clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
                         let labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
                         m++;
-                        let imageShapeY = eventArg.shape === 'Image' ? eventArg.height / 2 : 0;
-                        let ele = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY }, clusterID, shapeCustom, markerCollection, maps);
+                        let imageShapeY = shapeCustom['shape'] === 'Image' ? shapeCustom['size']['height'] / 2 : 0;
+                        let ele = drawSymbols(shapeCustom['shape'], shapeCustom['imageUrl'], { x: 0, y: imageShapeY }, clusterID, shapeCustom, markerCollection, maps);
                         ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
                         if (eventArg.shape === 'Balloon') {
                             ele.children[0].innerHTML = indexCollection.toString();
@@ -1006,6 +1080,9 @@ function calculateShapes(maps, shape, options, size, location, markerEle) {
             options.d += ' Z';
             break;
     }
+    if (shape === 'Cross' || shape === 'HorizontalLine' || shape === 'VerticalLine') {
+        options['stroke'] = (options['stroke'] === 'transparent') ? options['fill'] : options['stroke'];
+    }
     return shape === 'Balloon' ? tempGroup : maps.renderer.drawPath(options);
 }
 /**
@@ -1115,15 +1192,17 @@ function getFieldData(dataSource, fields) {
  * To find the index of dataSource from shape properties
  */
 // tslint:disable:no-string-literal
-function checkShapeDataFields(dataSource, properties, dataPath, propertyPath) {
+function checkShapeDataFields(dataSource, properties, dataPath, propertyPath, layer) {
     if (!(isNullOrUndefined(properties))) {
         for (let i = 0; i < dataSource.length; i++) {
-            let shapePath = checkPropertyPath(dataSource[i][dataPath], propertyPath, properties);
-            let shapePathValue = !isNullOrUndefined(properties[shapePath]) ? properties[shapePath].toLowerCase()
-                : properties[shapePath];
-            let dataSourceValue = !isNullOrUndefined(dataSource[i][dataPath]) ?
-                dataSource[i][dataPath].toLowerCase() : dataSource[i][dataPath];
-            if (dataSourceValue === shapePathValue) {
+            let shapeDataPath = ((dataPath.indexOf('.') > -1) ? getValueFromObject(dataSource[i], dataPath) :
+                dataSource[i][dataPath]);
+            let shapePath = checkPropertyPath(shapeDataPath, propertyPath, properties);
+            let shapeDataPathValue = !isNullOrUndefined(shapeDataPath) && isNaN(properties[shapePath])
+                ? shapeDataPath.toLowerCase() : shapeDataPath;
+            let propertiesShapePathValue = !isNullOrUndefined(properties[shapePath]) && isNaN(properties[shapePath])
+                ? properties[shapePath].toLowerCase() : properties[shapePath];
+            if (shapeDataPathValue === propertiesShapePathValue) {
                 return i;
             }
         }
@@ -1136,10 +1215,11 @@ function checkPropertyPath(shapeData, shapePropertyPath, shape) {
             let properties = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
                 shapePropertyPath : [shapePropertyPath]);
             for (let i = 0; i < properties.length; i++) {
-                let shapeProperties = !isNullOrUndefined(shape[properties[i]]) ? shape[properties[i]].toLowerCase() :
-                    shape[properties[i]];
                 let shapeDataValue = !isNullOrUndefined(shapeData) ? shapeData.toLowerCase() : shapeData;
-                if (shapeDataValue === shapeProperties) {
+                let shapePropertiesValue = !isNullOrUndefined(shape[properties[i]])
+                    && isNaN(shape[properties[i]])
+                    ? shape[properties[i]].toLowerCase() : shape[properties[i]];
+                if (shapeDataValue === shapePropertiesValue) {
                     return properties[i];
                 }
             }
@@ -1371,7 +1451,9 @@ function getTranslate(mapObject, layer, animate) {
     let mapWidth = Math.abs(max['x'] - min['x']);
     let mapHeight = Math.abs(min['y'] - max['y']);
     let factor = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
-    let titleTextSize = measureText(mapObject.titleSettings.text, mapObject.titleSettings.textStyle);
+    center = mapObject.zoomSettings.shouldZoomInitially
+        && mapObject.markerZoomedState && !mapObject.zoomPersistence ? mapObject.markerZoomCenterPoint :
+        mapObject.centerPosition;
     if ((!isNullOrUndefined(centerLongitude) && !isNullOrUndefined(centerLatitude)) || checkMethodeZoom) {
         let leftPosition = (((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) + mapObject.mapAreaRect.x) / factor;
         let topPosition = (((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) + mapObject.mapAreaRect.y) / factor;
@@ -1406,8 +1488,10 @@ function getTranslate(mapObject, layer, animate) {
             scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
             mapWidth *= scaleFactor;
             mapHeight *= scaleFactor;
-            x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
+            let widthDiff = min['x'] !== 0 && mapObject.translateType === 'layers' ? availSize.width - size.width : 0;
+            x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2))) - widthDiff;
             y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+            mapObject.previousTranslate = new Point(x, y);
         }
         else {
             if (!mapObject.zoomSettings.shouldZoomInitially && mapObject.markerZoomFactor === 1 && mapObject.mapScaleValue === 1) {
@@ -1431,6 +1515,24 @@ function getTranslate(mapObject, layer, animate) {
                     x = size.x + ((-(min['x']))
                         + ((size.width / 2) - (mapWidth / 2)));
                 }
+                else if (mapObject.availableSize.height !== mapObject.heightBeforeRefresh || mapObject.widthBeforeRefresh !== mapObject.availableSize.width) {
+                    let cscaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                    let cmapWidth = mapWidth;
+                    cmapWidth *= cscaleFactor;
+                    let cmapHeight = mapHeight;
+                    cmapHeight *= cscaleFactor;
+                    let x1 = size.x + ((-(min['x'])) + ((size.width / 2) - (cmapWidth / 2)));
+                    let y1 = size.y + ((-(min['y'])) + ((size.height / 2) - (cmapHeight / 2)));
+                    let xdiff = (mapObject.translatePoint.x - mapObject.previousTranslate.x) / (mapObject.widthBeforeRefresh);
+                    let ydiff = (mapObject.translatePoint.y - mapObject.previousTranslate.y) / (mapObject.heightBeforeRefresh);
+                    let actxdiff = xdiff * (mapObject.availableSize.width);
+                    let actydiff = ydiff * (mapObject.availableSize.height);
+                    x = x1 + actxdiff;
+                    y = y1 + actydiff;
+                    mapObject.previousTranslate = new Point(x1, y1);
+                    mapObject.zoomTranslatePoint.x = x;
+                    mapObject.zoomTranslatePoint.y = y;
+                }
                 else {
                     if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1 && !mapObject.zoomModule.isDragZoom) {
                         scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
@@ -1453,6 +1555,8 @@ function getTranslate(mapObject, layer, animate) {
         y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
     }
     scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
+    mapObject.widthBeforeRefresh = mapObject.availableSize.width;
+    mapObject.heightBeforeRefresh = mapObject.availableSize.height;
     return { scale: scaleFactor, location: new Point(x, y) };
 }
 /**
@@ -1582,6 +1686,19 @@ function getZoomTranslate(mapObject, layer, animate) {
 /**
  * To get the html element by specified id
  */
+function fixInitialScaleForTile(map) {
+    map.tileZoomScale = map.tileZoomLevel = Math.floor(map.availableSize.height / 512) + 1;
+    let padding = map.layers[map.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
+        20 : 0;
+    let totalSize = Math.pow(2, map.tileZoomLevel) * 256;
+    map.tileTranslatePoint.x = (map.availableSize.width / 2) - (totalSize / 2);
+    map.tileTranslatePoint.y = (map.availableSize.height / 2) - (totalSize / 2) + padding;
+    map.previousTileWidth = map.availableSize.width;
+    map.previousTileHeight = map.availableSize.height;
+}
+/**
+ * To get the html element by specified id
+ */
 function getElementByID(id) {
     return document.getElementById(id);
 }
@@ -1628,7 +1745,7 @@ function getShapeData(targetId, map) {
     let shapeData = layer.layerData[shapeIndex]['property'];
     let data;
     if (layer.dataSource) {
-        data = layer.dataSource[checkShapeDataFields(layer.dataSource, shapeData, layer.shapeDataPath, layer.shapePropertyPath)];
+        data = layer.dataSource[checkShapeDataFields(layer.dataSource, shapeData, layer.shapeDataPath, layer.shapePropertyPath, layer)];
     }
     return { shapeData: shapeData, data: data };
 }
@@ -2230,7 +2347,7 @@ function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeigh
     let latRatio;
     let lngRatio;
     let scaleFactor;
-    let maxZoomFact = maps.zoomSettings.maxZoom;
+    let maxZoomFact = 10;
     let applyMethodeZoom;
     let latZoom;
     let lngZoom;
@@ -3076,6 +3193,9 @@ __decorate$1([
 __decorate$1([
     Property(false)
 ], ZoomSettings.prototype, "shouldZoomInitially", void 0);
+__decorate$1([
+    Property(true)
+], ZoomSettings.prototype, "resetToInitial", void 0);
 /**
  * To configure the toggle legend settings in the maps
  */
@@ -3329,6 +3449,12 @@ __decorate$1([
 __decorate$1([
     Complex({}, HighlightSettings)
 ], MarkerBase.prototype, "highlightSettings", void 0);
+__decorate$1([
+    Property(null)
+], MarkerBase.prototype, "latitudeValuePath", void 0);
+__decorate$1([
+    Property(null)
+], MarkerBase.prototype, "longitudeValuePath", void 0);
 class MarkerSettings extends MarkerBase {
     // tslint:disable-next-line:no-any
     constructor(parent, propName, defaultValue, isArray) {
@@ -3472,9 +3598,11 @@ class Marker {
         let markerCount = 0;
         let nullCount = 0;
         let markerTemplateCount = 0;
+        this.maps.translateType = 'marker';
         let currentLayer = this.maps.layersCollection[layerIndex];
         this.markerSVGObject = this.maps.renderer.createGroup({
             id: this.maps.element.id + '_Markers_Group',
+            class: 'GroupElement',
             style: 'pointer-events: auto;'
         });
         let markerTemplateEle = createElement('div', {
@@ -3511,8 +3639,10 @@ class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
-                    let lat = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
+                    let lng = (!isNullOrUndefined(data[markerSettings.longitudeValuePath])) ?
+                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
+                    let lat = (!isNullOrUndefined(data[markerSettings.latitudeValuePath])) ?
+                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
                     if (this.maps.isBlazor) {
                         let data1 = {};
                         let text = [];
@@ -3540,7 +3670,7 @@ class Marker {
                                 getTranslate(this.maps, currentLayer, animate$$1);
                         let scale = type === 'AddMarker' ? this.maps.scale : translate['scale'];
                         let transPoint = type === 'AddMarker' ? this.maps.translatePoint : translate['location'];
-                        if (eventArgs.template && (!isNullOrUndefined(location.x) && !isNullOrUndefined(location.y))) {
+                        if (eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location, scale, offset, this.maps);
                         }
@@ -3549,11 +3679,10 @@ class Marker {
                             marker(eventArgs, markerSettings, markerData, dataIndex, location, transPoint, markerID, offset, scale, this.maps, this.markerSVGObject);
                         }
                     }
-                    nullCount += (!isNullOrUndefined(lat) && !isNullOrUndefined(lng)) ? 0 : 1;
+                    nullCount += (!isNaN(lat) && !isNaN(lng)) ? 0 : 1;
                     markerTemplateCount += (eventArgs.cancel) ? 1 : 0;
                     markerCount += (eventArgs.cancel) ? 1 : 0;
-                    this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat))
-                        ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
+                    this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat)) ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
                     let markerDataLength = markerData.length - this.maps.markerNullCount;
                     if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount - nullCount) && (type !== 'Template')) {
                         layerElement.appendChild(this.markerSVGObject);
@@ -3609,6 +3738,8 @@ class Marker {
             let maxZoomFact = 10;
             let mapWidth = this.maps.mapAreaRect.width;
             let mapHeight = this.maps.mapAreaRect.height;
+            this.maps.markerZoomedState = this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor);
+            this.maps.defaultState = this.maps.markerZoomedState ? !this.maps.markerZoomedState : this.maps.defaultState;
             Array.prototype.forEach.call(layersCollection, (currentLayer, layerIndex) => {
                 let isMarker = currentLayer.markerSettings.length !== 0;
                 if (isMarker) {
@@ -3648,6 +3779,12 @@ class Marker {
                 centerLong = (minLong + maxLong) / 2;
                 this.maps.markerCenterLatitude = centerLat;
                 this.maps.markerCenterLongitude = centerLong;
+                if (isNullOrUndefined(this.maps.markerZoomCenterPoint) || this.maps.markerZoomedState) {
+                    this.maps.markerZoomCenterPoint = {
+                        latitude: centerLat,
+                        longitude: centerLong
+                    };
+                }
                 let markerFactor;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
                     zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, this.maps);
@@ -3681,6 +3818,7 @@ class Marker {
             }
         }
         else {
+            this.maps.markerZoomedState = false;
             if (this.maps.markerZoomFactor > 1) {
                 this.maps.markerCenterLatitude = null;
                 this.maps.markerCenterLongitude = null;
@@ -3753,7 +3891,7 @@ class Marker {
             latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
         };
         if (this.maps.isBlazor) {
-            const { maps, data } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "data"]);
+            const { maps, data, latitude, longitude } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "data", "latitude", "longitude"]);
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClusterClick, eventArgs);
@@ -4075,7 +4213,8 @@ class ColorMapping {
      */
     getShapeColorMapping(shapeSettings, layerData, color) {
         let colorValuePath = shapeSettings.colorValuePath ? shapeSettings.colorValuePath : shapeSettings.valuePath;
-        let equalValue = layerData[colorValuePath];
+        let equalValue = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
+            getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath]) : layerData[colorValuePath];
         let colorValue = Number(equalValue);
         let shapeColor = this.getColorByValue(shapeSettings.colorMapping, colorValue, equalValue);
         return shapeColor ? shapeColor : color;
@@ -4285,9 +4424,9 @@ var __rest$2 = (undefined && undefined.__rest) || function (s, e) {
  */
 class LayerPanel {
     constructor(map) {
-        this.tileTranslatePoint = new MapLocation(0, 0);
         this.isMapCoordinates = true;
-        this.ajaxProcessCount = 0;
+        this.horizontalPan = false;
+        this.horizontalPanXCount = 0;
         this.mapObject = map;
         this.ajaxModule = new Ajax();
         this.ajaxResponse = [];
@@ -4331,7 +4470,6 @@ class LayerPanel {
         this.mapObject.baseMapBounds = null;
         this.mapObject.baseMapRectBounds = null;
         this.mapObject.baseSize = null;
-        let layerCount = layerCollection.length - 1;
         Array.prototype.forEach.call(layerCollection, (layer, index) => {
             this.currentLayer = layer;
             this.processLayers(layer, index);
@@ -4341,6 +4479,7 @@ class LayerPanel {
      * Tile rendering
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     renderTileLayer(panel, layer, layerIndex, bing) {
         panel.currentFactor = panel.calculateFactor(layer);
         if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
@@ -4366,9 +4505,21 @@ class LayerPanel {
                 centerTileMap = new Point(panel.mapObject.markerCenterLongitude, panel.mapObject.markerCenterLatitude);
             }
         }
-        let zoomFactorValue = panel.mapObject.zoomSettings.shouldZoomInitially &&
-            panel.mapObject.zoomSettings.zoomFactor === 1 ? isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
-            panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
+        if (!panel.mapObject.zoomSettings.shouldZoomInitially && panel.mapObject.centerPosition.longitude
+            && panel.mapObject.centerPosition.latitude && !panel.mapObject.zoomPersistence && panel.mapObject.defaultState) {
+            center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
+        }
+        else if (panel.mapObject.zoomSettings.shouldZoomInitially
+            && panel.mapObject.markerZoomedState && !panel.mapObject.zoomPersistence
+            && !isNullOrUndefined(panel.mapObject.markerZoomCenterPoint)) {
+            center = new Point(panel.mapObject.markerZoomCenterPoint.longitude, panel.mapObject.markerZoomCenterPoint.latitude);
+        }
+        else {
+            center = { x: null, y: null };
+        }
+        let zoomFactorValue = panel.mapObject.zoomSettings.shouldZoomInitially ?
+            isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
+                panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
         zoomFactorValue = (panel.mapObject.enablePersistence) ? ((isNullOrUndefined(panel.mapObject.mapScaleValue))
             ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
                 panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
@@ -4381,7 +4532,8 @@ class LayerPanel {
             panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
         }
         else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
-            panel.mapObject.tileZoomLevel = !panel.mapObject.zoomSettings.shouldZoomInitially
+            panel.mapObject.tileZoomLevel = panel.mapObject.defaultState ?
+                panel.mapObject.tileZoomLevel : !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
                 panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
                     panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
@@ -4392,6 +4544,10 @@ class LayerPanel {
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
         }
+        if (zoomFactorValue <= 1 && !isNullOrUndefined(panel.mapObject.height) && !panel.mapObject.zoomSettings.shouldZoomInitially
+            && (panel.mapObject.tileZoomLevel === panel.mapObject.tileZoomScale) && this.mapObject.initialCheck) {
+            fixInitialScaleForTile(this.mapObject);
+        }
         if (!isNullOrUndefined(panel.mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(panel.mapObject.centerLongOfGivenLocation) &&
             panel.mapObject.zoomNotApplied) {
             centerTileMap.y = panel.mapObject.centerLatOfGivenLocation;
@@ -4399,7 +4555,17 @@ class LayerPanel {
             panel.mapObject.tileZoomLevel = panel.mapObject.mapScaleValue = panel.mapObject.scaleOfGivenLocation;
         }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, centerTileMap);
-        panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
+        if (this.mapObject.zoomSettings.resetToInitial && this.mapObject.initialCheck && !isNullOrUndefined(panel.mapObject.height)
+            && this.mapObject.availableSize.height > 512) {
+            this.mapObject.applyZoomReset = true;
+            this.mapObject.initialZoomLevel = Math.floor(this.mapObject.availableSize.height / 512) + 1;
+            let padding = this.mapObject.layers[this.mapObject.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
+                20 : 0;
+            let totalSize = Math.pow(2, this.mapObject.initialZoomLevel) * 256;
+            this.mapObject.initialTileTranslate.x = (this.mapObject.availableSize.width / 2) - (totalSize / 2);
+            this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
+        }
+        panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, null, bing);
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex));
         }
@@ -4460,6 +4626,7 @@ class LayerPanel {
                             }
                             proxy.mapObject['bingMap'] = bing;
                             proxy.renderTileLayer(proxy, layer, layerIndex, bing);
+                            this.mapObject.arrangeTemplate();
                         };
                         ajax.send();
                     }
@@ -4477,17 +4644,6 @@ class LayerPanel {
                         }
                         else if (isNullOrUndefined(this.mapObject.baseMapBounds) && !isCustomPath(featureData)) {
                             this.calculateRectBounds(featureData);
-                            // if (isNullOrUndefined(this.mapObject.baseSize)) {
-                            //     let minSize: Point = convertGeoToPoint(
-                            //         this.mapObject.baseMapBounds.latitude.min,
-                            //         this.mapObject.baseMapBounds.longitude.min, this.calculateFactor(layer), layer, this.mapObject
-                            //     );
-                            //     let maxSize: Point = convertGeoToPoint(
-                            //         this.mapObject.baseMapBounds.latitude.max,
-                            //         this.mapObject.baseMapBounds.longitude.max, this.calculateFactor(layer), layer, this.mapObject
-                            //     );
-                            //     this.mapObject.baseSize = new Size(Math.abs(minSize.x - maxSize.x), Math.abs(minSize.y - maxSize.y));
-                            // }
                         }
                         this.calculatePathCollection(layerIndex, featureData);
                     }
@@ -4499,13 +4655,17 @@ class LayerPanel {
         }
         else if (this.tileSvgObject) {
             this.tileSvgObject.appendChild(this.layerGroup);
+            this.mapObject.baseMapBounds = null;
         }
     }
     //tslint:disable:max-func-body-length
     bubbleCalculation(bubbleSettings, range) {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
             for (let i = 0; i < bubbleSettings.dataSource.length; i++) {
-                let bubbledata = parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
+                let bubbledata = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
+                    Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
+                    parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
+                    parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
                 if (i !== 0) {
                     if (bubbledata > range.max) {
                         range.max = bubbledata;
@@ -4567,13 +4727,17 @@ class LayerPanel {
                 let fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
                 let opacity;
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
-                    k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath);
+                    k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer);
                     if (k !== null && shapeSettings.colorMapping.length === 0) {
-                        fill = this.currentLayer.dataSource[k][shapeSettings.colorValuePath];
+                        fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
+                            (getValueFromObject(this.currentLayer.dataSource[k], shapeSettings.colorValuePath)) :
+                            this.currentLayer.dataSource[k][shapeSettings.colorValuePath]);
                     }
                     else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
                         this.currentLayer.dataSource.length === 0 && shapeSettings.colorMapping.length === 0) {
-                        fill = currentShapeData['property'][shapeSettings.colorValuePath];
+                        fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
+                            (getValueFromObject(currentShapeData['property'], shapeSettings.colorValuePath)) :
+                            currentShapeData['property'][shapeSettings.colorValuePath]);
                     }
                 }
                 let shapeID = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
@@ -4598,10 +4762,19 @@ class LayerPanel {
                     let drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
                         ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
                     drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
-                    eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
-                    eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color : eventArgs.border.color;
-                    eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
-                    this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                    if (!eventArgs.cancel) {
+                        eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
+                        eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color
+                            : eventArgs.border.color;
+                        eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
+                        this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                    }
+                    else {
+                        eventArgs.fill = fill;
+                        eventArgs.border.color = shapeSettings.border.color;
+                        eventArgs.border.width = shapeSettings.border.width;
+                        this.mapObject.layers[layerIndex].shapeSettings.border = shapeSettings.border;
+                    }
                     if (this.groupElements.length < 1) {
                         groupElement = this.mapObject.renderer.createGroup({
                             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
@@ -4790,7 +4963,7 @@ class LayerPanel {
         if (layer.shapeSettings.colorMapping.length === 0 && isNullOrUndefined(layer.dataSource)) {
             return color;
         }
-        let index = checkShapeDataFields(layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath);
+        let index = checkShapeDataFields(layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath, layer);
         let colorMapping = new ColorMapping(this.mapObject);
         if (isNullOrUndefined(layer.dataSource[index])) {
             return color;
@@ -4902,6 +5075,7 @@ class LayerPanel {
     }
     translateLayerElements(layerElement, index) {
         let childNode;
+        this.mapObject.translateType = 'layer';
         if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
             let duration = this.currentLayer.animationDuration;
             let animate$$1 = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
@@ -5010,20 +5184,37 @@ class LayerPanel {
             }
         });
     }
-    generateTiles(zoomLevel, tileTranslatePoint, bing) {
+    generateTiles(zoomLevel, tileTranslatePoint, zoomType, bing, position) {
         let userLang = this.mapObject.locale;
         let size = this.mapObject.availableSize;
         this.tiles = [];
         let xcount;
         let ycount;
         xcount = ycount = Math.pow(2, zoomLevel);
-        let width = size.width / 2;
-        let height = size.height / 2;
+        let xLeft = 0;
+        let xRight = 0;
+        if ((tileTranslatePoint.x + (xcount * 256)) < size.width) {
+            xLeft = tileTranslatePoint.x > 0 ? Math.ceil(tileTranslatePoint.x / 256) : 0;
+            xRight = ((tileTranslatePoint.x + xcount * 256) < size.width) ?
+                Math.ceil((size.width - (tileTranslatePoint.x + xcount * 256)) / 256) : 0;
+        }
+        xcount += xLeft + xRight;
+        if (zoomType === 'Pan') {
+            if (this.horizontalPanXCount !== xcount) {
+                xcount = this.horizontalPanXCount;
+                this.horizontalPan = false;
+                return null;
+            }
+        }
+        else {
+            this.horizontalPanXCount = xcount;
+            this.horizontalPan = true;
+        }
         let baseLayer = this.mapObject.layers[this.mapObject.baseLayerIndex];
         this.urlTemplate = baseLayer.urlTemplate;
         let endY = Math.min(ycount, ((-tileTranslatePoint.y + size.height) / 256) + 1);
-        let endX = Math.min(xcount, ((-tileTranslatePoint.x + size.width) / 256) + 1);
-        let startX = (-(tileTranslatePoint.x + 256) / 256);
+        let endX = Math.min(xcount, ((-tileTranslatePoint.x + size.width + (xRight * 256)) / 256) + 1);
+        let startX = (-((tileTranslatePoint.x + (xLeft * 256)) + 256) / 256);
         let startY = (-(tileTranslatePoint.y + 256) / 256);
         bing = bing || this.bing || this.mapObject['bingMap'];
         for (let i = Math.round(startX); i < Math.round(endX); i++) {
@@ -5031,8 +5222,12 @@ class LayerPanel {
                 let x = 256 * i + tileTranslatePoint.x;
                 let y = 256 * j + tileTranslatePoint.y;
                 if (x > -256 && x <= size.width && y > -256 && y < size.height) {
-                    if (i >= 0 && j >= 0) {
-                        let tile = new Tile(i, j);
+                    if (j >= 0) {
+                        let tileI = i;
+                        if (i < 0) {
+                            tileI = (tileI % ycount) + ycount;
+                        }
+                        let tile = new Tile(tileI % ycount, j);
                         tile.left = x;
                         tile.top = y;
                         if (baseLayer.layerType === 'Bing') {
@@ -5046,6 +5241,16 @@ class LayerPanel {
                         this.tiles.push(tile);
                     }
                 }
+            }
+        }
+        if (!isNullOrUndefined(zoomType)) {
+            if (zoomType.indexOf('wheel') > 1) {
+                this.animateToZoomX = (this.mapObject.availableSize.width / 2) - position.x - 10;
+                this.animateToZoomY = -position.y;
+            }
+            else {
+                this.animateToZoomX = -10;
+                this.animateToZoomY = -(this.mapObject.availableSize.height / 2 + 11.5) + 10;
             }
         }
         let proxTiles = extend([], this.tiles, [], true);
@@ -5067,28 +5272,103 @@ class LayerPanel {
                 }
             }
         }
-        this.arrangeTiles();
+        this.arrangeTiles(zoomType, this.animateToZoomX, this.animateToZoomY);
     }
-    arrangeTiles() {
+    arrangeTiles(type, x, y) {
+        let element = document.getElementById(this.mapObject.element.id + '_tile_parent');
+        let element1 = document.getElementById(this.mapObject.element.id + '_tiles');
+        let timeOut;
+        if (!isNullOrUndefined(type) && type !== 'Pan' && type !== 'Reset' && type.indexOf('ZoomOut') === -1) {
+            this.tileAnimation(type, x, y);
+            timeOut = 250;
+        }
+        else {
+            timeOut = 0;
+        }
         if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
             this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
         }
         else {
-            let htmlString = this.templateCompiler(this.tiles);
-            if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
-                document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
-            }
+            setTimeout(() => {
+                if (element) {
+                    element.style.zIndex = '1';
+                }
+                if (element1) {
+                    element1.style.zIndex = '0';
+                }
+                let animateElement;
+                if (!document.getElementById('animated_tiles') && element) {
+                    animateElement = createElement('div', { id: 'animated_tiles' });
+                    element.appendChild(animateElement);
+                }
+                else {
+                    if (type !== 'Pan' && element1 && element) {
+                        element1.appendChild(element.children[0]);
+                        animateElement = createElement('div', { id: 'animated_tiles' });
+                        element.appendChild(animateElement);
+                    }
+                    else {
+                        animateElement = element ? element.children[0] : null;
+                    }
+                }
+                let id = 0;
+                for (let tile of this.tiles) {
+                    let imgElement = createElement('img');
+                    imgElement.setAttribute('src', tile.src);
+                    let child;
+                    if (document.getElementById('tile_' + id) && type === 'Pan') {
+                        removeElement('tile_' + id);
+                    }
+                    child = createElement('div', { id: 'tile_' + id });
+                    child.style.position = 'absolute';
+                    child.style.left = tile.left + 'px';
+                    child.style.top = tile.top + 'px';
+                    child.style.height = tile.height + 'px';
+                    child.style.width = tile.width + 'px';
+                    child.appendChild(imgElement);
+                    if (animateElement) {
+                        animateElement.appendChild(child);
+                    }
+                    id++;
+                }
+                // tslint:disable-next-line:align
+            }, timeOut);
         }
     }
-    templateCompiler(tiles) {
-        let tileElment = '';
-        let id = 0;
-        for (let tile of tiles) {
-            tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
-                'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
-            id++;
+    /**
+     * Animation for tile layers and hide the group element until the tile layer rendering
+     */
+    tileAnimation(zoomType, translateX, translateY) {
+        let element = document.getElementById(this.mapObject.element.id + '_tile_parent');
+        let element1 = document.getElementById('animated_tiles');
+        let ele = document.getElementById(this.mapObject.element.id + '_tiles');
+        let scaleValue = '2';
+        if (zoomType.indexOf('ZoomOut') === 0) {
+            ele.style.zIndex = '1';
+            element.style.zIndex = '0';
+            // element1 = ele.children[ele.childElementCount - 1] as HTMLElement;
+            while (ele.childElementCount >= 1) {
+                ele.removeChild(ele.children[0]);
+            }
+            translateX = 0;
+            translateY = 128 - 23;
+            scaleValue = '0.5';
         }
-        return tileElment;
+        else if (zoomType === 'Reset') {
+            ele.style.zIndex = '1';
+            element.style.zIndex = '0';
+            while (!(ele.childElementCount === 1) && !(ele.childElementCount === 0)) {
+                ele.removeChild(ele.children[1]);
+            }
+            element1 = ele.children[0];
+            translateX = 0;
+            translateY = 0;
+            scaleValue = '1';
+        }
+        if (!isNullOrUndefined(element1)) {
+            element1.style.transition = '250ms';
+            element1.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scaleValue + ')';
+        }
     }
     /* tslint:disable:no-string-literal */
     /**
@@ -5147,7 +5427,16 @@ class LayerPanel {
             = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
                 + eleHeight + 'px"><img src="' + staticMapString + '"></div>';
     }
+    /**
+     * To find the tile translate point
+     * @param factorX
+     * @param factorY
+     * @param centerPosition
+     */
     panTileMap(factorX, factorY, centerPosition) {
+        if (this.mapObject.tileZoomLevel <= this.mapObject.tileZoomScale && this.mapObject.initialCheck) {
+            this.mapObject.tileZoomLevel = this.mapObject.tileZoomScale;
+        }
         let level = this.mapObject.tileZoomLevel;
         let padding = this.mapObject.layers[this.mapObject.layers.length - 1].layerType !== 'GoogleStaticMap' ?
             20 : 0;
@@ -5161,6 +5450,22 @@ class LayerPanel {
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
+        if ((isNullOrUndefined(this.mapObject.tileTranslatePoint) || (this.mapObject.tileTranslatePoint.y === 0 &&
+            this.mapObject.tileTranslatePoint.x === 0)) || (isNullOrUndefined(this.mapObject.previousTileWidth) ||
+            isNullOrUndefined(this.mapObject.previousTileHeight))) {
+            this.mapObject.previousTileWidth = factorX;
+            this.mapObject.previousTileHeight = factorY;
+        }
+        if (!isNullOrUndefined(this.mapObject.tileTranslatePoint) && (isNullOrUndefined(centerPosition.x)) &&
+            (this.mapObject.zoomSettings.zoomFactor === 1 ||
+                this.mapObject.zoomSettings.zoomFactor !== level || !this.mapObject.defaultState)) {
+            if ((factorX !== this.mapObject.previousTileWidth || factorY !== this.mapObject.previousTileHeight)) {
+                let xdiff = x - ((this.mapObject.previousTileWidth / 2) - (totalSize / 2));
+                let ydiff = y - ((this.mapObject.previousTileHeight / 2) - (totalSize / 2) + padding);
+                this.mapObject.tileTranslatePoint.x = this.mapObject.tileTranslatePoint.x + xdiff;
+                this.mapObject.tileTranslatePoint.y = this.mapObject.tileTranslatePoint.y + ydiff;
+            }
+        }
         if (!isNullOrUndefined(this.mapObject.tileTranslatePoint) && !this.mapObject.zoomNotApplied) {
             if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x
                 && !this.mapObject.centerPositionChanged) {
@@ -5172,6 +5477,8 @@ class LayerPanel {
             }
         }
         this.mapObject.translatePoint = new Point((x - (0.01 * this.mapObject.scale)) / this.mapObject.scale, (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale);
+        this.mapObject.previousTileWidth = factorX;
+        this.mapObject.previousTileHeight = factorY;
         return new Point(x, y);
     }
 }
@@ -5350,6 +5657,7 @@ class ExportUtils {
      * @param fileName
      */
     export(type, fileName, exportDownload, orientation) {
+        // tslint:disable-next-line:max-func-body-length
         let promise = new Promise((resolve, reject) => {
             let canvasElement = createElement('canvas', {
                 id: 'ej2-canvas',
@@ -5360,9 +5668,18 @@ class ExportUtils {
             });
             let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                this.control.svgObject.outerHTML +
-                '</svg>';
+            let toolbarEle = document.getElementById(this.control.element.id + '_ToolBar');
+            let svgParent = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+            let svgData;
+            if (!this.control.isTileMap) {
+                svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    this.control.svgObject.outerHTML + '</svg>';
+            }
+            else {
+                let tileSvg = document.getElementById(this.control.element.id + '_Tile_SVG');
+                svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
+            }
             let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
                 [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
             if (type === 'SVG') {
@@ -5374,35 +5691,111 @@ class ExportUtils {
                 }
             }
             else {
+                let pdfDocument = new PdfDocument();
                 let image = new Image();
                 let ctx = canvasElement.getContext('2d');
-                image.onload = (() => {
-                    ctx.drawImage(image, 0, 0);
-                    window.URL.revokeObjectURL(url);
-                    if (type === 'PDF') {
-                        let document = new PdfDocument();
-                        let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                        document.pageSettings.orientation = orientation;
-                        imageString = imageString.slice(imageString.indexOf(',') + 1);
-                        document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
-                        if (exportDownload) {
-                            document.save(fileName + '.pdf');
-                            document.destroy();
+                if (!this.control.isTileMap) {
+                    image.onload = (() => {
+                        ctx.drawImage(image, 0, 0);
+                        window.URL.revokeObjectURL(url);
+                        if (type === 'PDF') {
+                            let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                            pdfDocument.pageSettings.orientation = orientation;
+                            imageString = imageString.slice(imageString.indexOf(',') + 1);
+                            pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                            if (exportDownload) {
+                                pdfDocument.save(fileName + '.pdf');
+                                pdfDocument.destroy();
+                            }
+                            else {
+                                resolve(null);
+                            }
                         }
                         else {
-                            resolve(null);
+                            if (exportDownload) {
+                                this.triggerDownload(fileName, type, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                            }
+                            else {
+                                resolve(canvasElement.toDataURL('image/png'));
+                            }
                         }
-                    }
-                    else {
-                        if (exportDownload) {
-                            this.triggerDownload(fileName, type, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                    });
+                    image.src = url;
+                }
+                else {
+                    let xHttp = new XMLHttpRequest();
+                    let tileLength = this.control.mapLayerPanel.tiles.length;
+                    for (let i = 0; i <= tileLength + 1; i++) {
+                        let tile = document.getElementById('tile_' + (i - 1));
+                        let tileImg = new Image();
+                        tileImg.crossOrigin = 'Anonymous';
+                        ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
+                        ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
+                        ctx.font = this.control.titleSettings.textStyle.size + ' Arial';
+                        ctx.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
+                        ctx.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                        tileImg.onload = (() => {
+                            if (i === 0 || i === tileLength + 1) {
+                                if (i === 0) {
+                                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                                    ctx.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                    ctx.clip();
+                                }
+                                else {
+                                    ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                                }
+                            }
+                            else {
+                                ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                    (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
+                            }
+                            ctx.drawImage(tileImg, 0, 0);
+                            if (i === tileLength + 1) {
+                                if (type === 'PDF') {
+                                    localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
+                                    let x = localStorage.getItem('saved-image-example');
+                                    pdfDocument.pageSettings.orientation = orientation;
+                                    x = x.slice(x.indexOf(',') + 1);
+                                    pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(x), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                                    if (exportDownload) {
+                                        pdfDocument.save(fileName + '.pdf');
+                                        pdfDocument.destroy();
+                                    }
+                                    else {
+                                        resolve(null);
+                                    }
+                                }
+                                else {
+                                    localStorage.setItem('local-canvasImage', canvasElement.toDataURL('image/png'));
+                                    let localBase64 = localStorage.getItem('local-canvasImage');
+                                    if (exportDownload) {
+                                        this.triggerDownload(fileName, type, localBase64, isDownload);
+                                        localStorage.removeItem('local-canvasImage');
+                                    }
+                                    else {
+                                        resolve(localBase64);
+                                    }
+                                }
+                            }
+                        });
+                        if (i === 0 || i === tileLength + 1) {
+                            if (i === 0) {
+                                tileImg.src = url;
+                            }
+                            else {
+                                setTimeout(() => {
+                                    tileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
+                                    // tslint:disable-next-line:align
+                                }, 300);
+                            }
                         }
                         else {
-                            resolve(canvasElement.toDataURL('image/png'));
+                            xHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                            xHttp.send();
+                            tileImg.src = tile.children[0].getAttribute('src');
                         }
                     }
-                });
-                image.src = url;
+                }
             }
         });
         return promise;
@@ -5466,6 +5859,12 @@ let Maps = class Maps extends Component {
         /** @public */
         this.zoomTranslatePoint = new Point(0, 0);
         /** @private */
+        this.markerZoomedState = true;
+        /** @private */
+        this.zoomPersistence = false;
+        /** @private */
+        this.defaultState = true;
+        /** @private */
         this.centerPositionChanged = false;
         /** @private */
         this.isTileMapSubLayer = false;
@@ -5509,6 +5908,12 @@ let Maps = class Maps extends Component {
         this.toggledShapeElementId = [];
         /** @private */
         this.checkInitialRender = true;
+        /** @private */
+        this.initialTileTranslate = new Point(0, 0);
+        /** @private */
+        this.initialCheck = true;
+        /** @private */
+        this.applyZoomReset = false;
         setValue('mergePersistData', this.mergePersistMapsData, this);
     }
     /**
@@ -5683,6 +6088,7 @@ let Maps = class Maps extends Component {
             let svg = this.svgObject.getBoundingClientRect();
             let element = document.getElementById(this.element.id);
             let tileElement = document.getElementById(this.element.id + '_tile_parent');
+            let tileElement1 = document.getElementById(this.element.id + '_tiles');
             let tile = tileElement.getBoundingClientRect();
             let bottom;
             let top;
@@ -5719,6 +6125,8 @@ let Maps = class Maps extends Component {
             left = (bottom <= 11) ? left : (left * 2);
             tileElement.style.top = top + 'px';
             tileElement.style.left = left + 'px';
+            tileElement1.style.top = top + 'px';
+            tileElement1.style.left = left + 'px';
         }
         this.arrangeTemplate();
         let blazor = this.isBlazor ? this.blazorTemplates() : null;
@@ -5730,6 +6138,7 @@ let Maps = class Maps extends Component {
     }
     /**
      * To append blazor templates
+     * @private
      */
     blazorTemplates() {
         let layerLength = this.layers.length - 1;
@@ -5815,7 +6224,7 @@ let Maps = class Maps extends Component {
                     }
                 }
             }
-            if (this.zoomModule && ((this.previousScale !== this.scale))) {
+            if (this.zoomModule && (this.previousScale !== this.scale)) {
                 this.zoomModule.applyTransform(true);
             }
         }
@@ -5824,18 +6233,21 @@ let Maps = class Maps extends Component {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             let secondaryElement = createElement('div', {
                 id: this.element.id + '_Secondary_Element',
-                styles: 'position: absolute;z-index:1;'
+                styles: 'position: absolute;z-index:2;'
             });
             this.element.appendChild(secondaryElement);
         }
     }
+    /**
+     * @private
+     */
     arrangeTemplate() {
-        let secondaryEle = getElementByID(this.element.id + '_Secondary_Element');
         if (document.getElementById(this.element.id + '_Legend_Border')) {
             document.getElementById(this.element.id + '_Legend_Border').style.pointerEvents = 'none';
         }
         let templateElements = document.getElementsByClassName('template');
-        if (!isNullOrUndefined(templateElements) && templateElements.length > 0 && getElementByID(this.element.id + '_Layer_Collections')) {
+        if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
+            getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
             for (let i = 0; i < templateElements.length; i++) {
                 let templateGroupEle = templateElements[i];
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
@@ -5861,17 +6273,22 @@ let Maps = class Maps extends Component {
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
             mainLayer.layerType === 'GoogleStaticMap')) {
             removeElement(this.element.id + '_tile_parent');
-            // let elementRect: ClientRect = this.element.getBoundingClientRect();
-            // let parentRect: ClientRect = this.element.parentElement.getBoundingClientRect();
-            // let left: number = Math.abs(elementRect.left - parentRect.left);
-            // let top: number = Math.abs(elementRect.top - parentRect.top);
+            removeElement(this.element.id + '_tiles');
+            removeElement('animated_tiles');
             let ele = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
                     (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
+            let ele1 = createElement('div', {
+                id: this.element.id + '_tiles', styles: 'position: absolute; left: ' +
+                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
+                    (this.mapAreaRect.height) + 'px; width: '
+                    + (this.mapAreaRect.width) + 'px; overflow: hidden;'
+            });
             this.element.appendChild(ele);
+            this.element.appendChild(ele1);
         }
     }
     /**
@@ -5988,6 +6405,7 @@ let Maps = class Maps extends Component {
         }
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
+        removeElement(this.element.id + '_tiles');
         if (document.getElementsByClassName('e-tooltip-wrap')[0]) {
             remove(document.getElementsByClassName('e-tooltip-wrap')[0]);
         }
@@ -6257,7 +6675,7 @@ let Maps = class Maps extends Component {
         else if (this.zoomModule) {
             this.tileZoomLevel = zoomFactor;
             this.tileTranslatePoint = this.mapLayerPanel['panTileMap'](this.availableSize.width, this.availableSize.height, { x: centerPosition.longitude, y: centerPosition.latitude });
-            this.mapLayerPanel.generateTiles(zoomFactor, this.tileTranslatePoint, new BingMap(this));
+            this.mapLayerPanel.generateTiles(zoomFactor, this.tileTranslatePoint, null, new BingMap(this));
         }
     }
     /**
@@ -6342,7 +6760,7 @@ let Maps = class Maps extends Component {
             let shapeData = this.layers[layerIndex].shapeData['features'];
             for (let i = 0; i < shapeData.length; i++) {
                 if (shapeData[i]['properties'][propertyName] === name) {
-                    let k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath);
+                    let k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath, this.layers[layerIndex]);
                     targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
                         (k ? k.toString() : 'undefined');
                     targetEle = getElement(targetId);
@@ -6496,7 +6914,9 @@ let Maps = class Maps extends Component {
      * @private
      */
     getPersistData() {
-        let keyEntity = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint', 'scale'];
+        let keyEntity = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint',
+            'scale', 'zoomPersistence', 'defaultState', 'markerZoomedState', 'initialCheck', 'initialZoomLevel', 'initialTileTranslate',
+            'applyZoomReset', 'markerZoomFactor'];
         return this.addOnPersist(keyEntity);
     }
     /**
@@ -6507,8 +6927,11 @@ let Maps = class Maps extends Component {
         let render = false;
         let isMarker = false;
         let isStaticMapType = false;
-        let newLayerLength = Object.keys(newProp).length;
-        let layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
+        let layerEle;
+        if (newProp['layers']) {
+            let newLayerLength = Object.keys(newProp['layers']).length;
+            layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
+        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'background':
@@ -6821,8 +7244,6 @@ let Maps = class Maps extends Component {
         let container = document.getElementById(this.element.id);
         let latLong;
         let ele = document.getElementById(this.element.id + '_tile_parent');
-        let lastTile = this.mapLayerPanel.tiles[this.mapLayerPanel.tiles.length - 1];
-        let tile0 = this.mapLayerPanel.tiles[0];
         latLong = this.pointToLatLong(location.layerX + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft), location.layerY + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     }
@@ -7020,9 +7441,14 @@ class Bubble {
     renderBubble(bubbleSettings, shapeData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group, bubbleID) {
         let layerData = layer.layerData;
         let colorValuePath = bubbleSettings.colorValuePath;
-        let equalValue = shapeData[colorValuePath];
-        let colorValue = Number(shapeData[colorValuePath]);
-        let bubbleValue = Number(shapeData[bubbleSettings.valuePath]);
+        let equalValue = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
+            (getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : shapeData[colorValuePath]) : shapeData[colorValuePath];
+        let colorValue = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
+            Number(getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : Number(shapeData[colorValuePath])) :
+            Number(shapeData[colorValuePath]);
+        let bubbleValue = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
+            Number(getValueFromObject(shapeData, bubbleSettings.valuePath)) : Number(shapeData[bubbleSettings.valuePath])) :
+            Number(shapeData[bubbleSettings.valuePath]);
         let opacity;
         let bubbleColor;
         if (isNaN(bubbleValue) && isNaN(colorValue) && isNullOrUndefined(equalValue)) {
@@ -7036,6 +7462,7 @@ class Bubble {
         opacity = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
             !isNullOrUndefined(shapeColor['opacity'])) ? shapeColor['opacity'] : bubbleSettings.opacity;
         let shapePoints = [[]];
+        this.maps.translateType = 'bubble';
         let midIndex = 0;
         let pointsLength = 0;
         let currentLength = 0;
@@ -7322,6 +7749,7 @@ class DataLabel {
         let scaleZoomValue = !isNullOrUndefined(this.maps.scale) ? Math.floor(this.maps.scale) : 1;
         let zoomLabelsPosition = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
             this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable;
+        this.maps.translateType = 'labels';
         for (let j = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
@@ -7365,7 +7793,8 @@ class DataLabel {
                 }
             }
         }
-        text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath];
+        text = (!isNullOrUndefined(datasrcObj)) ? !isNullOrUndefined(datasrcObj[labelpath]) ?
+            datasrcObj[labelpath].toString() : datasrcObj[labelpath] : shapeData['properties'][labelpath];
         let dataLabelText = text;
         let projectionType = this.maps.projectionType;
         if (isPoint) {
@@ -7411,7 +7840,7 @@ class DataLabel {
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
             if (this.maps.isBlazor) {
-                const { maps } = eventargs, blazorEventArgs = __rest$4(eventargs, ["maps"]);
+                const { maps, datalabel } = eventargs, blazorEventArgs = __rest$4(eventargs, ["maps", "datalabel"]);
                 eventargs = blazorEventArgs;
             }
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs) => {
@@ -8092,6 +8521,9 @@ class Legend {
                 let textId = map.element.id + '_Legend_Index_' + i + '_Text';
                 let item = this.legendRenderingCollections[i];
                 let bounds = new Rect(item['x'], item['y'], item['width'], item['height']);
+                if (i === 0) {
+                    this.renderLegendBorder();
+                }
                 let textLocation = new Point(item['textX'], item['textY']);
                 textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
                 let rectOptions = new RectOption(itemId, item['fill'], item['shapeBorder'], legend.opacity, bounds);
@@ -8100,9 +8532,7 @@ class Legend {
                 textFont.size = map.themeStyle.legendFontSize || textFont.size;
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
-                if (i === this.legendRenderingCollections.length - 1) {
-                    this.renderLegendBorder();
-                }
+                this.legendToggle();
             }
         }
         else {
@@ -8143,6 +8573,9 @@ class Legend {
                     this.maps.themeStyle.legendTextColor;
                 legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
                 legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                if (i === 0) {
+                    this.renderLegendBorder();
+                }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
@@ -8196,7 +8629,7 @@ class Legend {
                         pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
                         this.legendGroup.appendChild(pagingGroup);
                     }
-                    this.renderLegendBorder();
+                    this.legendToggle();
                 }
             }
         }
@@ -8733,28 +9166,9 @@ class Legend {
         return legendShapeElements;
     }
     //tslint:disable
-    renderLegendBorder() {
+    legendToggle() {
         let map = this.maps;
         let legend = map.legendSettings;
-        let legendTitle = legend.title.text;
-        let textStyle = legend.titleStyle;
-        let textOptions;
-        let spacing = 10;
-        let trimTitle = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
-        let textSize = measureText(trimTitle, textStyle);
-        this.legendBorderRect = new Rect((this.legendItemRect.x - spacing), (this.legendItemRect.y - spacing - textSize.height), (this.legendItemRect.width) + (spacing * 2), (this.legendItemRect.height) + (spacing * 2) + textSize.height +
-            (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0));
-        if (legendTitle) {
-            textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTextColor;
-            textOptions = new TextOption(map.element.id + '_LegendTitle', (this.legendItemRect.x) + (this.legendItemRect.width / 2), this.legendItemRect.y - (textSize.height / 2) - spacing / 2, 'middle', trimTitle, '');
-            renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
-        }
-        let renderOptions = new RectOption(map.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, null, null, '', '');
-        this.legendGroup.appendChild(map.renderer.drawRectangle(renderOptions));
-        this.getLegendAlignment(map, this.legendBorderRect.width, this.legendBorderRect.height, legend);
-        this.legendGroup.setAttribute('transform', 'translate( ' + (this.translate.x + (-(this.legendBorderRect.x))) + ' ' +
-            (this.translate.y + (-(this.legendBorderRect.y))) + ' )');
-        map.svgObject.appendChild(this.legendGroup);
         if (this.maps.selectedLegendElementId) {
             // To maintain the state of legend selection during page resize.
             for (let j = 0; j < this.maps.selectedLegendElementId.length; j++) {
@@ -8791,6 +9205,30 @@ class Legend {
                     legendElement.setAttribute("fill", "#E5E5E5");
                 }
             }
+        }
+    }
+    //tslint:disable
+    renderLegendBorder() {
+        let map = this.maps;
+        let legend = map.legendSettings;
+        let legendTitle = legend.title.text;
+        let textStyle = legend.titleStyle;
+        let textOptions;
+        let spacing = 10;
+        let trimTitle = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
+        let textSize = measureText(trimTitle, textStyle);
+        this.legendBorderRect = new Rect((this.legendItemRect.x - spacing), (this.legendItemRect.y - spacing - textSize.height), (this.legendItemRect.width) + (spacing * 2), (this.legendItemRect.height) + (spacing * 2) + textSize.height +
+            (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0));
+        let renderOptions = new RectOption(map.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, null, null, '', '');
+        this.legendGroup.appendChild(map.renderer.drawRectangle(renderOptions));
+        this.getLegendAlignment(map, this.legendBorderRect.width, this.legendBorderRect.height, legend);
+        this.legendGroup.setAttribute('transform', 'translate( ' + (this.translate.x + (-(this.legendBorderRect.x))) + ' ' +
+            (this.translate.y + (-(this.legendBorderRect.y))) + ' )');
+        map.svgObject.appendChild(this.legendGroup);
+        if (legendTitle) {
+            textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTextColor;
+            textOptions = new TextOption(map.element.id + '_LegendTitle', (this.legendItemRect.x) + (this.legendItemRect.width / 2), this.legendItemRect.y - (textSize.height / 2) - spacing / 2, 'middle', trimTitle, '');
+            renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
         }
     }
     changeNextPage(e) {
@@ -8852,7 +9290,7 @@ class Legend {
                     }
                     break;
             }
-            if (legend.height && legend.width && legend.mode !== 'Interactive') {
+            if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
                 map.totalRect = totalRect;
             }
             else {
@@ -8903,7 +9341,8 @@ class Legend {
                 rangeData = [];
                 let colorMapProcess = false;
                 Array.prototype.forEach.call(dataSource, (data, dataIndex) => {
-                    let colorValue = parseFloat(data[colorValuePath]);
+                    let colorValue = (colorValuePath.indexOf(".") > -1) ? Number(getValueFromObject(data, colorValuePath)) :
+                        parseFloat(data[colorValuePath]);
                     if (colorValue >= colorMap.from && colorValue <= colorMap.to) {
                         colorMapProcess = true;
                         rangeData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, colorValue));
@@ -8975,7 +9414,8 @@ class Legend {
                 equalData = [];
                 let eqaulColorProcess = false;
                 Array.prototype.forEach.call(dataSource, (data, dataIndex) => {
-                    let equalValue = data[colorValuePath];
+                    let equalValue = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
+                        (data[colorValuePath]));
                     if (equalValue === colorMap.value) {
                         eqaulColorProcess = true;
                         if (equalValues.indexOf(equalValue) === -1) {
@@ -9010,7 +9450,8 @@ class Legend {
             else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
                 Array.prototype.forEach.call(dataSource, (data, dataIndex) => {
-                    let equalValue = data[colorValuePath];
+                    let equalValue = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
+                        (data[colorValuePath]));
                     for (let k = 0; k < outOfRangeValues.length; k++) {
                         if (equalValue === outOfRangeValues[k]) {
                             outOfRange.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
@@ -9054,11 +9495,14 @@ class Legend {
                 let showLegend = isNullOrUndefined(this.maps.legendSettings.showLegendPath) ?
                     true : isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
                     false : data[this.maps.legendSettings.showLegendPath];
-                let dataValue = data[colorValuePath];
+                let dataValue = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
+                    (data[colorValuePath]));
                 let newData = [];
                 let legendFill = (isNullOrUndefined(fill)) ? dataValue : fill;
                 if (!isNullOrUndefined(dataValue) && colorMapping.length === 0) {
-                    legendText = !isNullOrUndefined(data[valuePath]) ? data[valuePath] : data[dataPath];
+                    legendText = !isNullOrUndefined(data[valuePath]) ? ((valuePath.indexOf(".") > -1) ?
+                        getValueFromObject(data, valuePath) : data[valuePath]) : ((dataPath.indexOf(".") > -1) ?
+                        getValueFromObject(data, dataPath) : data[dataPath]);
                     newData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, dataValue));
                 }
                 this.getOverallLegendItemsCollection(legendText, legendFill, newData, showLegend);
@@ -9436,8 +9880,9 @@ class Legend {
         if (Object.prototype.toString.call(layerData) === '[object Array]') {
             for (let i = 0; i < layerData.length; i++) {
                 let shapeData = layerData[i];
+                let dataPathValue = (dataPath.indexOf(".") > -1) ? getValueFromObject(data, dataPath) : data[dataPath];
                 let shapePath = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
-                if (shapeData['properties'][shapePath] === data[dataPath]) {
+                if (shapeData['properties'][shapePath] === dataPathValue) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,
                         name: data[dataPath], value: value
@@ -10030,11 +10475,13 @@ class MapsTooltip {
                     for (let k = 0; k < properties.length; k++) {
                         for (let i = 0; i < layer['dataSource']['length']; i++) {
                             let data = layer.dataSource[i];
-                            let dataShapeLayerValue = !isNullOrUndefined(data[layer.shapeDataPath]) ?
-                                data[layer.shapeDataPath].toLowerCase() : data[layer.shapeDataPath];
-                            let propertiesValue = !isNullOrUndefined(value[properties[k]]) ? value[properties[k]].toLowerCase()
-                                : value[properties[k]];
-                            if ((dataShapeLayerValue) === propertiesValue) {
+                            let dataPath = (layer.shapeDataPath.indexOf('.') > -1) ?
+                                (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
+                            let dataPathValue = isNullOrUndefined(dataPath) ? dataPath.toLowerCase() : dataPath;
+                            let propertyValue = isNullOrUndefined(value[properties[k]])
+                                && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
+                                value[properties[k]];
+                            if (dataPathValue === propertyValue) {
                                 isShape = true;
                                 index = i;
                                 k = properties.length;
@@ -10051,10 +10498,13 @@ class MapsTooltip {
                     }
                     else {
                         let shapePath = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);
-                        currentData = ((!isNullOrUndefined(layer.dataSource)) && ((!isNullOrUndefined(index)))) ?
-                            this.formatValue(layer.dataSource[index][option.valuePath], this.maps) : value[shapePath];
+                        currentData = (!isNullOrUndefined(layer.dataSource) && !isNullOrUndefined(index)) ?
+                            formatValue(((option.valuePath.indexOf('.') > -1) ?
+                                (getValueFromObject(layer.dataSource[index], option.valuePath)) :
+                                layer.dataSource[index][option.valuePath]), this.maps) : value[shapePath];
                         if (isNullOrUndefined(currentData)) {
-                            currentData = value[option.valuePath];
+                            currentData = (option.valuePath.indexOf('.') > -1) ?
+                                (getValueFromObject(value, option.valuePath)) : value[option.valuePath];
                         }
                     }
                 }
@@ -10071,7 +10521,10 @@ class MapsTooltip {
                         currentData = this.formatter(marker$$1.tooltipSettings.format, marker$$1.dataSource[dataIndex]);
                     }
                     else {
-                        currentData = this.formatValue(marker$$1.dataSource[dataIndex][marker$$1.tooltipSettings.valuePath], this.maps);
+                        currentData =
+                            formatValue(((marker$$1.tooltipSettings.valuePath.indexOf('.') > -1) ?
+                                (getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.tooltipSettings.valuePath)) :
+                                marker$$1.dataSource[dataIndex][marker$$1.tooltipSettings.valuePath]), this.maps);
                     }
                 }
                 //location.y = this.template(option, location);
@@ -10087,7 +10540,10 @@ class MapsTooltip {
                         currentData = this.formatter(bubble.tooltipSettings.format, bubble.dataSource[dataIndex]);
                     }
                     else {
-                        currentData = this.formatValue(bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath], this.maps);
+                        currentData =
+                            formatValue(((bubble.tooltipSettings.valuePath.indexOf('.') > -1) ?
+                                (getValueFromObject(bubble.dataSource[dataIndex], bubble.tooltipSettings.valuePath)) :
+                                bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath]), this.maps);
                     }
                 }
                 //location.y = this.template(option, location);
@@ -10184,18 +10640,6 @@ class MapsTooltip {
         }
         return localData;
     }
-    formatValue(value, maps) {
-        let formatValue;
-        let formatFunction;
-        if (maps.format && !isNaN(Number(value))) {
-            formatFunction = maps.intl.getNumberFormat({ format: maps.format, useGrouping: maps.useGroupingSeparator });
-            formatValue = formatFunction(Number(value));
-        }
-        else {
-            formatValue = value;
-        }
-        return formatValue;
-    }
     /*private template(tooltip: TooltipSettingsModel, location: MapLocation): number {
         location.y = (tooltip.template) ? location.y + 10 : location.y;
         return location.y;
@@ -10203,7 +10647,8 @@ class MapsTooltip {
     formatter(format, data = {}) {
         let keys = Object.keys(data);
         for (let key of keys) {
-            format = format.split('${' + key + '}').join(this.formatValue(data[key], this.maps));
+            format = (typeof data[key] === 'object') ? convertStringToValue('', format, data, this.maps) :
+                format.split('${' + key + '}').join(formatValue(data[key], this.maps));
         }
         return format;
     }
@@ -10319,12 +10764,15 @@ class Zoom {
     performZooming(position, newZoomFactor, type) {
         let map = this.maps;
         map.previousProjection = map.projectionType;
+        map.defaultState = false;
+        map.initialCheck = false;
+        map.markerZoomedState = false;
+        map.zoomPersistence = map.enablePersistence;
         let prevLevel = map.tileZoomLevel;
         let scale = map.previousScale = map.scale;
         let maxZoom = map.zoomSettings.maxZoom;
         let minZoom = map.zoomSettings.minZoom;
         newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
-        let translatePoint = map.previousPoint = map.translatePoint;
         let prevTilePoint = map.tileTranslatePoint;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
             let availSize = map.mapAreaRect;
@@ -10340,50 +10788,81 @@ class Zoom {
             translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = newZoomFactor;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
+            this.applyTransform();
         }
         else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
-            this.getTileTranslatePosition(prevLevel, newZoomFactor, position);
+            this.getTileTranslatePosition(prevLevel, newZoomFactor, position, type);
             map.tileZoomLevel = newZoomFactor;
             map.scale = Math.pow(2, newZoomFactor - 1);
+            if (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && newZoomFactor <= map.initialZoomLevel) {
+                map.initialCheck = true;
+                map.zoomPersistence = false;
+                map.tileTranslatePoint.x = map.initialTileTranslate.x;
+                map.tileTranslatePoint.y = map.initialTileTranslate.y;
+                newZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
+                map.scale = Math.pow(2, newZoomFactor - 1);
+            }
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
             map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
-            map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
+            if (document.querySelector('.GroupElement')) {
+                document.querySelector('.GroupElement').style.display = 'none';
+            }
+            if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
+            }
+            map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint, type + 'wheel', null, position);
+            let element1 = document.getElementById(this.maps.element.id + '_tiles');
+            setTimeout(() => {
+                // if (type === 'ZoomOut') {
+                //     element1.removeChild(element1.children[element1.childElementCount - 1]);
+                //     if (element1.childElementCount) {
+                //         element1.removeChild(element1.children[element1.childElementCount - 1]);
+                //     } else {
+                //         element1 = element1;
+                //     }
+                // }
+                this.applyTransform();
+                if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                    document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
+                }
+                // tslint:disable-next-line:align
+            }, 250);
         }
-        this.applyTransform();
         this.maps.zoomNotApplied = false;
     }
-    triggerZoomEvent(prevTilePoint, prevLevel) {
+    triggerZoomEvent(prevTilePoint, prevLevel, type) {
         let map = this.maps;
         let zoomArgs;
         if (!map.isTileMap) {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.scale > map.previousScale ? zoomIn : zoomOut, maps: !map.isBlazor ? map : null,
+                cancel: false, name: 'zoom', type: type, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: {}, scale: { previous: map.previousScale, current: map.scale }
             };
         }
         else {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: !map.isBlazor ? map : null,
+                cancel: false, name: 'zoom', type: type, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
             };
         }
         map.trigger('zoom', zoomArgs);
     }
-    getTileTranslatePosition(prevLevel, currentLevel, position) {
+    getTileTranslatePosition(prevLevel, currentLevel, position, type) {
         let map = this.maps;
         let tileDefaultSize = 256;
-        let bounds = getElementByID(this.maps.element.id).getBoundingClientRect();
+        let padding = type === 'ZoomOut' ? 10 : (type === 'Reset' && currentLevel > 1) ? 0 : 10;
+        let bounds = map.availableSize;
         let prevSize = Math.pow(2, prevLevel) * 256;
         let totalSize = Math.pow(2, currentLevel) * 256;
         let x = ((position.x - map.tileTranslatePoint.x) / prevSize) * 100;
         let y = ((position.y - map.tileTranslatePoint.y) / prevSize) * 100;
         map.tileTranslatePoint.x = (currentLevel === 1) ? (bounds.width / 2) - ((tileDefaultSize * 2) / 2) :
             position.x - ((x * totalSize) / 100);
-        map.tileTranslatePoint.y = (currentLevel === 1) ? (bounds.height / 2) - ((tileDefaultSize * 2) / 2) :
+        map.tileTranslatePoint.y = (currentLevel === 1) ? ((bounds.height / 2) - ((tileDefaultSize * 2) / 2) + (padding * 2)) :
             position.y - ((y * totalSize) / 100);
     }
     performRectZooming() {
@@ -10408,7 +10887,7 @@ class Zoom {
                 let translatePointY = translatePoint.y - (((size.height / scale) - (size.height / zoomCalculationFactor)) / (size.height / y));
                 map.translatePoint = new Point(translatePointX, translatePointY);
                 map.scale = zoomCalculationFactor;
-                this.triggerZoomEvent(prevTilePoint, prevLevel);
+                this.triggerZoomEvent(prevTilePoint, prevLevel, '');
             }
             else {
                 zoomCalculationFactor = prevLevel + (Math.round(prevLevel + (((size.width / zoomRect.width) + (size.height / zoomRect.height)) / 2)));
@@ -10420,7 +10899,7 @@ class Zoom {
                 map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, zoomCalculationFactor))) /
                     (Math.pow(2, zoomCalculationFactor));
                 map.scale = (Math.pow(2, zoomCalculationFactor));
-                this.triggerZoomEvent(prevTilePoint, prevLevel);
+                this.triggerZoomEvent(prevTilePoint, prevLevel, '');
                 map.mapLayerPanel.generateTiles(zoomCalculationFactor, map.tileTranslatePoint);
             }
             map.mapScaleValue = zoomCalculationFactor;
@@ -10468,7 +10947,7 @@ class Zoom {
             translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = zoomCalculationFactor;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, '');
         }
         else {
             let newTileFactor = zoomCalculationFactor;
@@ -10479,7 +10958,7 @@ class Zoom {
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, newTileFactor))) /
                 (Math.pow(2, newTileFactor));
             map.scale = (Math.pow(2, newTileFactor));
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, '');
             map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
         }
         this.applyTransform();
@@ -10663,6 +11142,8 @@ class Zoom {
                         }
                     }
                 }
+                this.maps.arrangeTemplate();
+                let blazor = this.maps.isBlazor ? this.maps.blazorTemplates() : null;
             }
             if (!isNullOrUndefined(this.currentLayer)) {
                 if (!animate$$1 || this.currentLayer.animationDuration === 0) {
@@ -10681,11 +11162,9 @@ class Zoom {
         let layerIndex = parseInt((element ? element : layerElement).id.split('_LayerIndex_')[1].split('_')[0], 10);
         markerSVGObject = this.maps.renderer.createGroup({
             id: this.maps.element.id + '_Markers_Group',
+            class: 'GroupElement',
             style: 'pointer-events: auto;'
         });
-        if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
-            document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
-        }
         if (document.getElementById(markerSVGObject.id)) {
             removeElement(markerSVGObject.id);
         }
@@ -10727,8 +11206,10 @@ class Zoom {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
                         eventArgs = markerColorChoose(eventArgs, data);
                     }
-                    let lati = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
-                    let long = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
+                    let lati = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                    let long = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
+                        Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
                     let offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -10745,7 +11226,7 @@ class Zoom {
                             marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint, markerID, offset, scale, this.maps, markerSVGObject);
                         }
                     }
-                    nullCount += (!isNullOrUndefined(lati) && !isNullOrUndefined(long)) ? 0 : 1;
+                    nullCount += (!isNaN(lati) && !isNaN(long)) ? 0 : 1;
                     markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;
                     markerCounts += (eventArgs.cancel) ? 1 : 0;
                     this.maps.markerNullCount = (!isNullOrUndefined(lati) || !isNullOrUndefined(long))
@@ -10825,8 +11306,8 @@ class Zoom {
                     let templateOffset = element.getBoundingClientRect();
                     let layerOffset = layerEle.getBoundingClientRect();
                     let elementOffset = element.parentElement.getBoundingClientRect();
-                    let x = ((labelX) + (layerOffset.left - elementOffset.left));
-                    let y = ((labelY) + (layerOffset.top - elementOffset.top));
+                    let x = ((labelX) + (layerOffset.left - elementOffset.left) - (templateOffset.width / 2));
+                    let y = ((labelY) + (layerOffset.top - elementOffset.top) - (templateOffset.height / 2));
                     element.style.left = x + 'px';
                     element.style.top = y + 'px';
                 }
@@ -10937,8 +11418,12 @@ class Zoom {
         let layer = this.maps.layersCollection[layerIndex];
         let marker$$1 = layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker$$1) && !isNullOrUndefined(marker$$1.dataSource) && !isNullOrUndefined(marker$$1.dataSource[dataIndex])) {
-            let lng = parseFloat(marker$$1.dataSource[dataIndex]['longitude']);
-            let lat = parseFloat(marker$$1.dataSource[dataIndex]['latitude']);
+            let lng = (!isNullOrUndefined(marker$$1.longitudeValuePath)) ?
+                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.longitudeValuePath)) :
+                parseFloat(marker$$1.dataSource[dataIndex]['longitude']);
+            let lat = (!isNullOrUndefined(marker$$1.latitudeValuePath)) ?
+                Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.latitudeValuePath)) :
+                parseFloat(marker$$1.dataSource[dataIndex]['latitude']);
             let duration = this.currentLayer.animationDuration;
             let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
             if (this.maps.isTileMap) {
@@ -10995,6 +11480,10 @@ class Zoom {
         let down = this.mouseDownPoints;
         let move = this.mouseMovePoints;
         let scale = map.scale;
+        map.markerZoomedState = false;
+        map.zoomPersistence = map.enablePersistence;
+        map.defaultState = false;
+        map.initialCheck = false;
         let translatePoint = map.translatePoint;
         let prevTilePoint = map.tileTranslatePoint;
         let x;
@@ -11037,6 +11526,10 @@ class Zoom {
             this.distanceY = y - map.tileTranslatePoint.y;
             map.tileTranslatePoint.x = x;
             map.tileTranslatePoint.y = y;
+            if ((map.tileTranslatePoint.y > -10 && yDifference < 0) || ((map.tileTranslatePoint.y < -((Math.pow(2, this.maps.tileZoomLevel) - 2) * 256) && yDifference > 0))) {
+                map.tileTranslatePoint.x = x + xDifference;
+                map.tileTranslatePoint.y = y + yDifference;
+            }
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
             panArgs = {
@@ -11046,8 +11539,10 @@ class Zoom {
                 tileZoomLevel: map.tileZoomLevel
             };
             map.trigger(pan, panArgs);
-            map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint);
-            this.applyTransform();
+            map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
+            if (map.mapLayerPanel.horizontalPan) {
+                this.applyTransform();
+            }
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
@@ -11063,8 +11558,13 @@ class Zoom {
     }
     toolBarZooming(zoomFactor, type) {
         let map = this.maps;
+        map.initialCheck = false;
+        map.defaultState = ((type === 'Reset' && zoomFactor === 1 && !(map.zoomSettings.resetToInitial && map.applyZoomReset))
+            || (type === 'ZoomOut' && zoomFactor === 1));
         let prevLevel = map.tileZoomLevel;
         let scale = map.previousScale = map.scale;
+        map.markerZoomedState = false;
+        map.zoomPersistence = map.enablePersistence;
         map.mapScaleValue = zoomFactor;
         let maxZoom = map.zoomSettings.maxZoom;
         let minZoom = map.zoomSettings.minZoom;
@@ -11073,8 +11573,9 @@ class Zoom {
         let prevTilePoint = map.tileTranslatePoint;
         map.previousProjection = map.projectionType;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
+        zoomFactor = (type === 'Reset') ? 1 : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom || minZoom >= 1 && zoomFactor >= 1)) {
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
             let min = map.baseMapRectBounds['min'];
             let max = map.baseMapRectBounds['max'];
             let mapWidth = Math.abs(max['x'] - min['x']);
@@ -11089,20 +11590,40 @@ class Zoom {
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.zoomTranslatePoint = map.translatePoint;
             map.scale = zoomFactor;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
+            this.applyTransform(true);
         }
-        else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom || minZoom >= 1 && zoomFactor >= 1)) {
+        else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
             let tileZoomFactor = zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
             let position = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
-            this.getTileTranslatePosition(prevLevel, tileZoomFactor, position);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            this.getTileTranslatePosition(prevLevel, tileZoomFactor, position, type);
+            if (map.zoomSettings.resetToInitial && map.applyZoomReset && type === 'Reset' || (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && tileZoomFactor <= map.initialZoomLevel)) {
+                map.initialCheck = true;
+                map.zoomPersistence = false;
+                map.tileTranslatePoint.x = map.initialTileTranslate.x;
+                map.tileTranslatePoint.y = map.initialTileTranslate.y;
+                tileZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
+            }
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
-            map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint);
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
+            }
+            if (document.querySelector('.GroupElement')) {
+                document.querySelector('.GroupElement').style.display = 'none';
+            }
+            map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint, type);
+            let element1 = document.getElementById(this.maps.element.id + '_tiles');
+            setTimeout(() => {
+                this.applyTransform(true);
+                if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                    document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
+                }
+            }, 250);
         }
-        this.applyTransform(true);
         this.maps.zoomNotApplied = false;
     }
     /* tslint:disable:max-func-body-length */
@@ -11277,7 +11798,7 @@ class Zoom {
                 map.staticMapZoom = map.zoomSettings.enable ? map.zoomSettings.zoomFactor : 0;
                 map.markerCenterLatitude = null;
                 map.markerCenterLongitude = null;
-                this.toolBarZooming(1, 'ZoomOut');
+                this.toolBarZooming(1, 'Reset');
                 if (!this.maps.zoomSettings.enablePanning) {
                     this.applySelection(this.zoomElements, this.selectionColor);
                     this.applySelection(this.panElements, '#737373');
@@ -11386,6 +11907,8 @@ class Zoom {
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.mouseWheelZoom) {
             let map = this.maps;
             let size = map.availableSize;
+            map.markerZoomedState = false;
+            map.zoomPersistence = map.enablePersistence;
             let position = this.getMousePosition(e.pageX, e.pageY);
             let prevLevel = map.tileZoomLevel;
             let prevScale = map.scale;
@@ -11533,7 +12056,7 @@ class Zoom {
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
         let targetId = e.target['id'];
         let targetEle = e.target;
-        if (zoom.enable && this.isPanning) {
+        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length > 1) || !Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
@@ -11671,5 +12194,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, formatValue, convertStringToValue, convertElementFromLabel, drawSymbols, getValueFromObject, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, fixInitialScaleForTile, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es2015.js.map

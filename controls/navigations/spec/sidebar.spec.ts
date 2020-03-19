@@ -333,7 +333,7 @@ describe("Sidebar DOM class Testing ", () => {
             currentTarget: null,
             target: document.body,
             stopPropagation: (): void => { /** NO Code */ },
-            swipeDirection: 'Left', startX: 20,
+            swipeDirection: 'Left', startX: window.innerWidth - 20,
             distanceX: 60,
             velocity: 0.5
         };
@@ -342,10 +342,7 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar = new Sidebar({ enableGestures: true, position: 'Right', type: "Push" }, ele);
         expect(document.getElementById('sidebar').classList.contains('e-touch')).toBe(true);
         expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
-        sidebar.show();
-        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
         sidebar.enableGestureHandler(touch);
-        sidebar.show();
         expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
     });
     it("Sidebar with swipe towards left direction with right position  test case", () => {
@@ -367,6 +364,119 @@ describe("Sidebar DOM class Testing ", () => {
         expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
         sidebar.enableGestureHandler(touch);
         expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+    });
+
+    it("Sidebar with swipe towards right direction test case (event)", () => {
+        let touch: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ },
+            swipeDirection: 'Right',
+            startX: 20,
+            distanceX: 60,
+            velocity: 0.5
+        };
+        let openCount:number=0;
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ 
+            enableGestures: true, type: "Push", 
+            open: ()=>{ openCount++; }
+        }, ele);
+        expect(document.getElementById('sidebar').classList.contains('e-touch')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        sidebar.enableGestureHandler(touch);
+        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+        sidebar.enableGestureHandler(touch);
+        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+    });
+
+    it("Sidebar with swipe towards left direction test case (event)", () => {
+        let touch: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ },
+            swipeDirection: 'Left',
+            startX: 20,
+            distanceX: 60,
+            velocity: 0.5
+        };
+        let openCount:number=0;
+        let closeCount:number=0;
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ 
+            enableGestures: true, 
+            type: "Push", 
+            open: ()=>{ openCount++; },
+            close: ()=>{ closeCount++; } 
+        }, ele);
+        expect(document.getElementById('sidebar').classList.contains('e-touch')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        sidebar.show();
+        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+        sidebar.enableGestureHandler(touch);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        expect(openCount).toBe(1);
+        sidebar.enableGestureHandler(touch);
+        expect(openCount).toBe(1);
+    });
+    it("Sidebar with swipe towards left direction with right position  test case (event)", () => {
+        let touch: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ },
+            swipeDirection: 'Left', startX: window.innerWidth - 20,
+            distanceX: 60,
+            velocity: 0.5
+        };
+        let openCount:number=0;
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ 
+            enableGestures: true, position: 'Right', type: "Push", 
+            open: ()=>{ openCount++; }
+        }, ele);
+        expect(document.getElementById('sidebar').classList.contains('e-touch')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        sidebar.enableGestureHandler(touch);
+        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+        expect(openCount).toBe(1);
+        sidebar.enableGestureHandler(touch);
+        expect(openCount).toBe(1);
+    });
+    it("Sidebar with swipe towards right direction with right position  test case (event)", () => {
+        let touch: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: document.body,
+            stopPropagation: (): void => { /** NO Code */ },
+            swipeDirection: 'Right', startX: 20,
+            distanceX: 60,
+            velocity: 0.5
+        };
+        let openCount:number=0;
+        let closeCount:number=0;
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ 
+            enableGestures: true, position: 'Right', type: "Push", 
+            open: ()=>{ openCount++; },
+            close: ()=>{ closeCount++; } 
+        }, ele);
+        expect(document.getElementById('sidebar').classList.contains('e-touch')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        sidebar.show();
+        expect(document.getElementById('sidebar').classList.contains('e-open')).toBe(true);
+        sidebar.enableGestureHandler(touch);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);        
+        expect(openCount).toBe(1);
+        expect(closeCount).toBe(1);
+        sidebar.enableGestureHandler(touch);
+        expect(closeCount).toBe(1);        
     });
 
     it("Sidebar Base property Testing", () => {
@@ -1874,9 +1984,9 @@ describe("Blazor Sidebar testing ", () => {
     let sidebar: any;
     beforeEach((): void => {
         enableBlazorMode();
-        (window as any)["ejsInterop"] = function () { };
-        (window as any).ejsInterop["updateModel"] = function () { };
-        (window as any).ejsInterop["renderComplete"] = function () { };
+        (window as any)["sfBlazor"] = function () { };
+        (window as any).sfBlazor["updateModel"] = function () { };
+        (window as any).sfBlazor["renderComplete"] = function () { };
         let ele: HTMLElement = document.createElement("div");
         let sibin: HTMLElement = document.createElement("div");
         ele.innerHTML = "<h3>Testing of Sidebar</h3>"

@@ -5,8 +5,9 @@ import { Observer, BoundOptions } from './observer';
 import { ChildProperty } from './child-property';
 import { Property, NotifyPropertyChanges } from './notify-property-change';
 import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';
-import { createElement, addClass, removeClass } from './dom';
-
+import { createElement, addClass, removeClass, ElementProperties } from './dom';
+import { VirtualDOM } from './virtual-dom';
+import { getRandomId } from './template-engine';
 let componentCount: number = 0;
 let lastPageID: number;
 let lastHistoryLen: number = 0;
@@ -42,16 +43,21 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * @private
      */
     public isStringTemplate: boolean = false;
+    //tslint:disable:no-any
+    public currentContext: { calls?: Function, args?: any };
     protected needsID: boolean = false;
+    protected isReactHybrid: boolean = false;
     protected moduleLoader: ModuleLoader;
     protected localObserver: Observer;
     protected abstract render(): void;
     protected abstract preRender(): void;
     protected abstract getPersistData(): string;
     protected injectedModules: Function[];
+    protected mount: Function;
     protected requiredModules(): ModuleDeclaration[] {
         return [];
     };
+
     /**
      * Destroys the sub modules while destroying the widget
      */
@@ -82,6 +88,22 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.render();
         this.refreshing = false;
     }
+
+    private accessMount(): void {
+        if (this.mount && !this.isReactHybrid) {
+            this.mount();
+        }
+    }
+    /**
+     * Returns the route element of the component
+     */
+    public getRootElement(): HTMLElement {
+        if (this.isReactHybrid) {
+            return (this as any).actualElement;
+        } else {
+            return this.element;
+        }
+    }
     /**
      * Appends the control within the given HTML element
      * @param {string | HTMLElement} selector - Target element where control needs to be appended
@@ -110,7 +132,11 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             this.preRender();
             this.injectModules();
             this.render();
-            this.trigger('created');
+            if (!this.mount) {
+                this.trigger('created');
+            } else {
+                this.accessMount();
+            }
         }
     }
 
@@ -119,9 +145,9 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      */
     protected renderComplete(wrapperElement?: Node): void {
         if (isBlazor()) {
-            let ejsInterop: string = 'ejsInterop';
+            let sfBlazor: string = 'sfBlazor';
             // tslint:disable-next-line:no-any
-            (window as any)[ejsInterop].renderComplete(this.element, wrapperElement);
+            (window as any)[sfBlazor].renderComplete(this.element, wrapperElement);
         }
         this.isRendered = true;
     }
@@ -226,11 +252,34 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * This is a instance method to create an element.
      * @private
      */
-    public createElement: (
-        tag: string,
-        prop?: { id?: string, className?: string, innerHTML?: string, styles?: string, attrs?: { [key: string]: string } }
-    ) => HTMLElement = createElement;
+    //tslint:disable:no-any
+    public createElement(tagName: string, prop?: ElementProperties, isVDOM?: boolean): any {
+        if (isVDOM && this.isReactHybrid) {
+            if (prop) {
+                prop = {};
+            }
+            prop['data-id'] = getRandomId();
+            return VirtualDOM.createElement(tagName, prop);
+        } else {
+            return createElement(tagName, prop);
+        }
+    }
+    /**
+     * 
+     * @param handler - handler to be triggered after state Updated.
+     * @param argument - Arguments to be passed to caller.
+     * @private
+     */
+    //tslint:disable:no-any
+    public triggerStateChange(handler?: Function, argument?: any): void {
+        if (this.isReactHybrid) {
+            //tslint:disable:no-any
+            (this as any).setState();
+            this.currentContext = { calls: handler, args: argument };
+        }
 
+    }
+    // tslint: enable: no-any
     private injectModules(): void {
         if (this.injectedModules && this.injectedModules.length) {
             this.moduleLoader.inject(this.requiredModules(), this.injectedModules);

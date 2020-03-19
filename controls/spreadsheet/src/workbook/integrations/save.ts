@@ -88,10 +88,10 @@ export class WorkbookSave extends SaveWorker {
     private updateBasicSettings(): void {
         let jsonStr: string = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
-            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
-            'contextMenuBeforeOpen', 'created', 'dataBound', 'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure',
+            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
+            'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
-            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete']);
+            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo']);
         let basicSettings: { [key: string]: Object } = JSON.parse(jsonStr);
         let sheetCount: number = this.parent.sheets.length;
         let i: number = 0;

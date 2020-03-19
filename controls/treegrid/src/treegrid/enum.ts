@@ -185,3 +185,19 @@ export type WrapMode =
     'Header' |
     /** Wraps  content alone */
     'Content';
+/**
+ * Defines types of CopyHierarchyMode. They are
+ * * Parent
+ * * Child
+ * * Both
+ * * None
+ */
+export declare type CopyHierarchyType =
+/**  Defines CopyHiearchyMode as Parent */
+'Parent' |
+/**  Defines CopyHiearchyMode as Child */
+'Child' |
+/**  Defines CopyHiearchyMode as Both */
+'Both' |
+/**  Defines CopyHiearchyMode as None */
+'None' ;

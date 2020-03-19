@@ -11,6 +11,8 @@ import * as events from '../../common/base/constant';
  */
 /** @hidden */
 export class KeyboardInteraction {
+    /** @hidden */
+    public event: KeyboardEventArgs;
     private parent: PivotView;
     private keyConfigs: { [key: string]: string } = {
         tab: 'tab',
@@ -19,6 +21,7 @@ export class KeyboardInteraction {
         shiftDown: 'shift+downArrow',
         shiftLeft: 'shift+leftArrow',
         shiftRight: 'shift+rightArrow',
+        shiftEnter: 'shift+enter',
         upArrow: 'upArrow',
         downArrow: 'downArrow',
         leftArrow: 'leftArrow',
@@ -31,6 +34,7 @@ export class KeyboardInteraction {
      */
     constructor(parent: PivotView) {
         this.parent = parent;
+        this.event = undefined;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
         this.pivotViewKeyboardModule = new KeyboardEvents(this.parent.element, {
             keyAction: this.keyActionHandler.bind(this),
@@ -44,6 +48,7 @@ export class KeyboardInteraction {
                 this.processTab(e);
                 break;
             case 'enter':
+            case 'shiftEnter':
                 this.processEnter(e);
                 break;
             case 'shiftUp':
@@ -115,17 +120,34 @@ export class KeyboardInteraction {
             }
         }
     }
-    private processEnter(e: Event): void {
+    private processEnter(e: KeyboardEventArgs): void {
         let target: Element = (e.target as HTMLElement);
         if (target && closest(target, '.' + cls.GRID_CLASS)) {
-            if (target.querySelector('.' + cls.ICON)) {
-                (target.querySelector('.' + cls.ICON) as HTMLElement).click();
-            } else if (target.classList.contains('e-valuescontent')) {
-                target.dispatchEvent(new MouseEvent('dblclick', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true
-                }));
+            let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (target.querySelector('.' + cls.ICON)) {
+                    this.event = e;
+                    (target.querySelector('.' + cls.ICON) as HTMLElement).click();
+                    gridFocus.focus();
+                    let element: HTMLElement = gridFocus.getFocusedElement();
+                    addClass([element], ['e-focused', 'e-focus']);
+                    element.setAttribute('tabindex', '0');
+                } else if (target.classList.contains('e-valuescontent')) {
+                    target.dispatchEvent(new MouseEvent('dblclick', {
+                        'view': window,
+                        'bubbles': true,
+                        'cancelable': true
+                    }));
+                }
+            } else {
+                if (this.parent.enableValueSorting) {
+                    this.event = e;
+                    (target as HTMLElement).click();
+                    gridFocus.focus();
+                    let element: HTMLElement = gridFocus.getFocusedElement();
+                    addClass([element], ['e-focused', 'e-focus']);
+                    element.setAttribute('tabindex', '0');
+                }
             }
             e.preventDefault();
             return;

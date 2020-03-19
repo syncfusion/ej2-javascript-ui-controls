@@ -1,6 +1,6 @@
 import { SheetModel } from './index';
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { ColumnModel } from './column-model';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';
 
 /**
  * Configures the Column behavior for the spreadsheet.
@@ -32,7 +32,6 @@ export class Column extends ChildProperty<Column> {
     /**
      * To hide/show the column in spreadsheet.
      * @default false
-     * @hidden
      */
     @Property(false)
     public hidden: boolean;
@@ -53,12 +52,21 @@ export function getColumn(sheet: SheetModel, colIndex: number): ColumnModel {
     return sheet.columns[colIndex];
 }
 
+/** @hidden */
+export function setColumn(sheet: SheetModel, colIndex: number, column: ColumnModel): void {
+    let curColumn: ColumnModel = getColumn(sheet, colIndex);
+    Object.keys(column).forEach((key: string): void => {
+        curColumn[key] = column[key];
+    });
+}
+
 /**
  * @hidden
  */
-export function getColumnWidth(sheet: SheetModel, index: number): number {
-    if (sheet && sheet.columns && sheet.columns[index] && (sheet.columns[index].width || sheet.columns[index].customWidth)) {
-        return sheet.columns[index].width;
+export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: boolean): number {
+    if (sheet && sheet.columns && sheet.columns[index]) {
+        if (!skipHidden && sheet.columns[index].hidden) { return 0; }
+        return (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
     } else {
         return 64;
     }
@@ -82,6 +90,5 @@ export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: num
 
 /** @hidden */
 export function isHiddenCol(sheet: SheetModel, index: number): boolean {
-    return sheet.columns[index] && (sheet.columns[index].hidden || (sheet.columns[index].width !== undefined &&
-        sheet.columns[index].width === 0));
+    return sheet.columns[index] && sheet.columns[index].hidden;
 }

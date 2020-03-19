@@ -2,10 +2,10 @@ import { Spreadsheet } from '../base/index';
 import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf } from '../common/index';
 import { SheetModel, getColumnsWidth, updateSelectedRange, getColumnWidth } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged } from '../../workbook/index';
-import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest } from '@syncfusion/ej2-base';
 import { BeforeSelectEventArgs, selectionComplete, getMoveEvent, getEndEvent, isTouchStart, locateElem } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
-import { colWidthChanged } from '../common/index';
+import { colWidthChanged, protectSelection } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 
 
@@ -41,6 +41,7 @@ export class Selection {
         this.parent.on(selectRange, this.selectRange, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
         this.parent.on(colWidthChanged, this.colWidthChanged, this);
+        this.parent.on(protectSelection, this.protectHandler, this);
     }
 
     private removeEventListener(): void {
@@ -52,6 +53,7 @@ export class Selection {
             this.parent.off(selectRange, this.selectRange);
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
             this.parent.off(colWidthChanged, this.colWidthChanged);
+            this.parent.off(protectSelection, this.protectHandler);
         }
     }
 
@@ -106,6 +108,8 @@ export class Selection {
     }
 
     private init(): void {
+        let isInit: boolean = true;
+        let sheet: SheetModel = this.parent.getActiveSheet();
         let range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
         let sRange: number[] = getSwapRange(range);
         let actRange: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
@@ -113,6 +117,7 @@ export class Selection {
             && sRange[3] >= actRange[1];
         this.createSelectionElement();
         this.selectRangeByIdx(range, null, null, inRange);
+        this.selectRangeByIdx(range, null, null, inRange, isInit);
     }
 
     private createSelectionElement(): void {
@@ -125,67 +130,71 @@ export class Selection {
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         if (!this.parent.isEdit) {
-            if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
-                && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
-                let sheet: SheetModel = this.parent.getActiveSheet();
-                let mode: string = this.parent.selectionSettings.mode;
-                let rowIdx: number = this.getRowIdxFromClientY(getClientY(e));
-                let colIdx: number = this.getColIdxFromClientX(getClientX(e));
-                let activeIdx: number[] = getCellIndexes(sheet.activeCell);
-                let isRowSelected: boolean = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target as Node);
-                let isColSelected: boolean = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target as Node);
-                if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
-                    return;
-                }
-                if (mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
-                    (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
-                    document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
-                    if (!Browser.isPointer) {
-                        document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
+            if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
+                return;
+            }
+            if (!closest(e.target as Element, '.e-findtool-dlg')) {
+                if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
+                    && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
+                    let sheet: SheetModel = this.parent.getActiveSheet();
+                    let mode: string = this.parent.selectionSettings.mode;
+                    let rowIdx: number = this.getRowIdxFromClientY(getClientY(e));
+                    let colIdx: number = this.getColIdxFromClientX(getClientX(e));
+                    let activeIdx: number[] = getCellIndexes(sheet.activeCell);
+                    let isRowSelected: boolean = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target as Node);
+                    let isColSelected: boolean = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target as Node);
+                    if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
+                        return;
                     }
-                }
-                if (!isTouchEnd(e)) {
-                    EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
-                }
-                if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
-                    this.touchEvt = e;
-                    return;
-                }
-                if (isRowSelected) {
-                    this.isRowSelected = true;
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [rowIdx, 0];
+                    if (mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
+                        (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
+                        document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
+                        if (!Browser.isPointer) {
+                            document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
+                        }
                     }
-                    this.selectRangeByIdx([this.startCell[0], 0, rowIdx, sheet.colCount - 1], e);
-                } else if (isColSelected) {
-                    this.isColSelected = true;
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [0, colIdx];
+                    if (!isTouchEnd(e)) {
+                        EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
                     }
-                    this.selectRangeByIdx([0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
-                } else if ((e.target as Element).classList.contains('e-selectall')) {
-                    this.startCell = [0, 0];
-                    this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
-                } else if (!(e.target as Element).classList.contains('e-main-content')) {
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [rowIdx, colIdx];
+                    if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
+                        this.touchEvt = e;
+                        return;
                     }
-                    this.selectRangeByIdx(
-                        [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
-                }
-                if (this.parent.isMobileView()) {
-                    this.parent.element.classList.add('e-mobile-focused');
-                    this.parent.renderModule.setSheetPanelSize();
+                    if (isRowSelected) {
+                        this.isRowSelected = true;
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [rowIdx, 0];
+                        }
+                        this.selectRangeByIdx([this.startCell[0], 0, rowIdx, sheet.colCount - 1], e);
+                    } else if (isColSelected) {
+                        this.isColSelected = true;
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [0, colIdx];
+                        }
+                        this.selectRangeByIdx([0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
+                    } else if ((e.target as Element).classList.contains('e-selectall')) {
+                        this.startCell = [0, 0];
+                        this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
+                    } else if (!(e.target as Element).classList.contains('e-main-content')) {
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [rowIdx, colIdx];
+                        }
+                        this.selectRangeByIdx(
+                            [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+                    }
+                    if (this.parent.isMobileView()) {
+                        this.parent.element.classList.add('e-mobile-focused');
+                        this.parent.renderModule.setSheetPanelSize();
+                    }
                 }
             }
         }
     }
-
     private mouseMoveHandler(e: MouseEvent & TouchEvent): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
         if (isTouchMove(e)) {
             e.preventDefault();
         }
-        let sheet: SheetModel = this.parent.getActiveSheet();
         let cont: Element = this.getScrollContent();
         let clientRect: ClientRect = cont.getBoundingClientRect();
         let clientX: number = getClientX(e); let clientY: number = getClientY(e);
@@ -276,6 +285,10 @@ export class Selection {
     }
 
     private cellNavigateHandler(args: { range: number[] }): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+            return;
+        }
         this.selectRangeByIdx(args.range.concat(args.range));
     }
 
@@ -305,8 +318,10 @@ export class Selection {
         }
     }
 
-    private selectRangeByIdx(range: number[], e?: MouseEvent, isScrollRefresh?: boolean, isActCellChanged?: boolean): void {
-        let ele: Element = this.getSelectionElement();
+    private selectRangeByIdx(
+        range: number[], e?: MouseEvent, isScrollRefresh?: boolean,
+        isActCellChanged?: boolean, isInit?: boolean): void {
+        let ele: HTMLElement = this.getSelectionElement();
         let sheet: SheetModel = this.parent.getActiveSheet();
         let args: BeforeSelectEventArgs = { range: getRangeAddress(range), cancel: false };
         this.parent.trigger('beforeSelect', args);
@@ -323,7 +338,7 @@ export class Selection {
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range);
+            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range, isInit);
         }
         if (isNullOrUndefined(e)) { e = <MouseEvent>{ type: 'mousedown' }; }
         this.parent.notify(selectionComplete, e);
@@ -335,15 +350,18 @@ export class Selection {
         this.isColSelected = (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1);
     }
 
-    private updateActiveCell(range: number[]): void {
+    private updateActiveCell(range: number[], isInit?: boolean): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell);
         let rowIdx: number = this.isColSelected ? topLeftIdx[0] : range[0];
         let colIdx: number = this.isRowSelected ? topLeftIdx[1] : range[1];
-        sheet.activeCell = getCellAddress(rowIdx, colIdx);
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-        locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
-        this.parent.notify(activeCellChanged, null);
+        if (sheet.activeCell !== getCellAddress(rowIdx, colIdx) || isInit) {
+            sheet.activeCell = getCellAddress(rowIdx, colIdx);
+            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+            this.parent.notify(activeCellChanged, null);
+        } else {
+            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+        }
     }
 
     private getSelectionElement(): HTMLElement {
@@ -360,6 +378,7 @@ export class Selection {
 
     private highlightHdr(range: number[], isRowRefresh: boolean = true, isColRefresh: boolean = true): void {
         if (this.parent.getActiveSheet().showHeaders) {
+            let sheet: SheetModel = this.parent.getActiveSheet();
             let rowHdr: Element[] = []; let colHdr: Element[] = [];
             let swapRange: number[] = getSwapRange(range);
             swapRange = this.getHdrIndexes(swapRange);
@@ -373,7 +392,11 @@ export class Selection {
             if (isColRefresh) {
                 colHdr = [].slice.call(this.parent.getColumnHeaderContent().querySelectorAll('th')).slice(swapRange[1], swapRange[3] + 1);
             }
-            addClass([].concat(rowHdr, colHdr), 'e-highlight');
+            if (sheet.isProtected && !sheet.protectSettings.selectCells)  {
+                removeClass([].concat(rowHdr, colHdr), 'e-highlight');
+            } else {
+                addClass([].concat(rowHdr, colHdr), 'e-highlight');
+            }
             if (rowHdr.length && rowHdr[0].parentElement.previousElementSibling) {
                 rowHdr[0].parentElement.previousElementSibling.classList.add('e-prev-highlight');
             }
@@ -381,7 +404,11 @@ export class Selection {
                 colHdr[0].previousElementSibling.classList.add('e-prev-highlight');
             }
             if (this.isRowSelected && this.isColSelected) {
-                document.getElementById(`${this.parent.element.id}_select_all`).classList.add('e-highlight');
+                if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+                    document.getElementById(`${this.parent.element.id}_select_all`).classList.remove('e-highlight');
+                } else {
+                    document.getElementById(`${this.parent.element.id}_select_all`).classList.add('e-highlight');
+                }
             }
             if (swapRange[0] === 0) {
                 selectAll.classList.add('e-prev-highlight-bottom');
@@ -392,18 +419,28 @@ export class Selection {
         }
     }
 
+    private protectHandler(): void {
+        let range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        let swapRange: number[] = getSwapRange(range);
+        let actRange: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        let inRange: boolean = swapRange[0] <= actRange[0] && swapRange[2] >= actRange[0] && swapRange[1] <= actRange[1]
+            && swapRange[3] >= actRange[1];
+        this.selectRangeByIdx(range, null, null, inRange);
+    }
+
     private getHdrIndexes(range: number[]): number[] {
         if (this.parent.scrollSettings.enableVirtualization) {
             let indexes: number[] = [];
-            let hiddenRowCount: number = this.parent.hiddenRowsCount(this.parent.viewport.topIndex, range[0]);
+            let hiddenRowCount: number = this.parent.hiddenCount(this.parent.viewport.topIndex, range[0]);
+            let hiddenColCount: number = this.parent.hiddenCount(this.parent.viewport.leftIndex, range[1], 'columns');
             indexes[0] = this.isColSelected ? range[0] : (range[0] - this.parent.viewport.topIndex) < 0
                 ? 0 : ((range[0] - hiddenRowCount) - this.parent.viewport.topIndex);
             indexes[1] = this.isRowSelected ? range[1] : (range[1] - this.parent.viewport.leftIndex) < 0
-                ? 0 : (range[1] - this.parent.viewport.leftIndex);
+                ? 0 : ((range[1] - hiddenColCount) - this.parent.viewport.leftIndex);
             indexes[2] = this.isColSelected ? this.parent.viewport.rowCount + this.parent.getThreshold('row') * 2 : range[2] -
-                this.parent.hiddenRowsCount(range[0], range[2]) - hiddenRowCount - this.parent.viewport.topIndex;
-            indexes[3] = this.isRowSelected ? this.parent.viewport.colCount + this.parent.getThreshold('col') * 2 : indexes[1] === 0
-                ? range[3] - this.parent.viewport.leftIndex : range[3] - range[1] + indexes[1];
+                this.parent.hiddenCount(range[0], range[2]) - hiddenRowCount - this.parent.viewport.topIndex;
+            indexes[3] = this.isRowSelected ? this.parent.viewport.colCount + this.parent.getThreshold('col') * 2 :
+                range[3] - this.parent.hiddenCount(range[1], range[3], 'columns') - hiddenColCount - this.parent.viewport.leftIndex;
             return indexes;
         }
         return range;

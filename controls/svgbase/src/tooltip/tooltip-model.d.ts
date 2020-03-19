@@ -325,6 +325,14 @@ export interface TooltipModel extends ComponentModel{
     isCanvas?: boolean;
 
     /**
+     * To check tooltip wrap for chart.
+     * @default false.
+     * @private.
+     */
+
+    isTextWrap?: boolean;
+
+    /**
      * To place tooltip in a particular position.
      * @default null.
      * @private.

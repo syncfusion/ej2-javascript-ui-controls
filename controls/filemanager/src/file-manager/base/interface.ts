@@ -28,7 +28,7 @@ export interface IToolBarItems {
     template?: string;
     tooltipText?: string;
 }
-
+/** @hidden */
 export interface NotifyArgs {
     module?: string;
     newProp?: FileManagerModel;
@@ -36,7 +36,7 @@ export interface NotifyArgs {
     target?: Element;
     selectedNode?: string;
 }
-
+/** @hidden */
 export interface ReadArgs {
     cwd?: { [key: string]: Object; };
     files?: { [key: string]: Object; }[];
@@ -44,28 +44,28 @@ export interface ReadArgs {
     details?: Object;
     id?: string;
 }
-
+/** @hidden */
 export interface MouseArgs {
     target?: Element;
 }
-
+/** @hidden */
 export interface UploadArgs {
     files?: { [key: string]: Object; }[];
     error?: Object[];
     details?: Object;
 }
-
+/** @hidden */
 export interface RetryArgs {
     action: string;
     file: FileInfo;
 }
-
+/** @hidden */
 export interface ErrorArgs {
     code?: string;
     message?: string;
     fileExists?: string[];
 }
-
+/** @hidden */
 export interface DialogOptions {
     dialogName?: string;
     header?: string;
@@ -74,6 +74,7 @@ export interface DialogOptions {
     open?: EmitType<Object>;
     close?: EmitType<Object>;
 }
+/** @hidden */
 export interface SearchArgs {
     files?: { [key: string]: Object; }[];
     error?: Object[];
@@ -91,6 +92,7 @@ export interface FileDetails {
     multipleFiles: boolean;
     permission: Object;
 }
+/** @hidden */
 export interface DownloadArgs {
     files?: { [key: string]: Object; }[];
     error?: Object[];
@@ -281,7 +283,7 @@ export interface FileSelectionEventArgs {
 export interface ToolbarCreateEventArgs {
     /**
      * Return an array of items that is used to configure toolbar content.
-     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.ItemModel>
+     * @blazorType List<Syncfusion.Blazor.Navigations.ItemModel>
      */
     items: ItemModel[];
 }
@@ -297,7 +299,7 @@ export interface ToolbarClickEventArgs {
     fileDetails: Object[];
     /**
      * Return the currently clicked toolbar item as JSON object.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
+     * @blazorType Syncfusion.Blazor.Navigations.ItemModel
      */
     item: ItemModel;
 }
@@ -317,7 +319,7 @@ export interface MenuClickEventArgs {
     fileDetails?: Object[];
     /**
      * Return the currently clicked context menu item as JSON object.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel
+     * @blazorType Syncfusion.Blazor.Navigations.MenuItemModel
      */
     item?: MenuItemModel;
 }
@@ -337,12 +339,12 @@ export interface MenuOpenEventArgs {
     fileDetails?: Object[];
     /**
      * Returns the current context menu items as JSON object.
-     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.MenuItemModel>
+     * @blazorType List<Syncfusion.Blazor.Navigations.MenuItemModel>
      */
     items?: MenuItemModel[];
     /**
      * Returns the instance of context menu component.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ContextMenuModel
+     * @blazorType Syncfusion.Blazor.Navigations.ContextMenuModel
      */
     menuModule?: ContextMenu;
     /**

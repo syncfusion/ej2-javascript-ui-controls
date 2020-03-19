@@ -88,5 +88,6 @@ export let defaultLocale: Object = {
     'Button-Keep-Both': 'Keep both',
     'Button-Replace': 'Replace',
     'Button-Skip': 'Skip',
-    'ApplyAll-Label': 'Do this for all current items'
+    'ApplyAll-Label': 'Do this for all current items',
+    'KB': 'KB'
 };

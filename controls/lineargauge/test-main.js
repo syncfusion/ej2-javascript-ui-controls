@@ -42,7 +42,6 @@ require.config({
             location: 'node_modules/@syncfusion/ej2-file-utils/dist',
             main: 'ej2-file-utils.umd.min.js'
         }
-
         // Include dependent packages
     ],
 

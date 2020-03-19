@@ -179,7 +179,8 @@ function extend(copied, first, second, deep) {
                     }
                 }
                 else {
-                    clone = src ? src : [];
+                    /* istanbul ignore next */
+                    clone = isBlazor() ? src && Object.keys(copy).length : src ? src : [];
                     result[key] = extend([], clone, copy, deep);
                 }
             }
@@ -2979,21 +2980,6 @@ var IntlBase;
         return actualPattern;
     }
     IntlBase.getActualDateTimeFormat = getActualDateTimeFormat;
-    // tslint:disable-next-line:no-any
-    function processSymbol(actual, option) {
-        for (let i = 0; i < actual.length; i++) {
-            let mapper = { '.': 'decimal', ',': 'group' };
-            // tslint:disable-next-line:no-any
-            let matched = mapper[actual[i]];
-            if (matched === 'decimal') {
-                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
-            }
-            else if (matched === 'group') {
-                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
-            }
-        }
-        return actual;
-    }
     /**
      * Returns Native Number pattern
      * @private
@@ -3008,8 +2994,8 @@ var IntlBase;
         let minFrac;
         let curObj = {};
         let curMatch = (options.format || '').match(IntlBase.currencyFormatRegex);
-        let dOptions = {};
         if (curMatch) {
+            let dOptions = {};
             dOptions.numberMapper = ParserBase.getNumberMapper(dependable.parserObject, ParserBase.getNumberingSystem(cldr), true);
             let curCode = getCurrencySymbol(dependable.numericObject, options.currency || defaultCurrencyCode, options.altSymbol);
             let symbolPattern = getSymbolPattern('currency', dOptions.numberMapper.numberSystem, dependable.numericObject, (/a/i).test(options.format));
@@ -3054,9 +3040,6 @@ var IntlBase;
         }
         else {
             actualPattern = options.format.replace(/\'/g, '"');
-        }
-        if (Object.keys(dOptions).length > 0) {
-            actualPattern = processSymbol(actualPattern, dOptions);
         }
         return actualPattern;
     }
@@ -3392,6 +3375,775 @@ class EventHandler {
 }
 
 /**
+ * Template Engine
+ */
+const LINES = new RegExp('\\n|\\r|\\s\\s+', 'g');
+const QUOTES = new RegExp(/'|"/g);
+const IF_STMT = new RegExp('if ?\\(');
+const ELSEIF_STMT = new RegExp('else if ?\\(');
+const ELSE_STMT = new RegExp('else');
+const FOR_STMT = new RegExp('for ?\\(');
+const IF_OR_FOR = new RegExp('(\/if|\/for)');
+const CALL_FUNCTION = new RegExp('\\((.*)\\)', '');
+const NOT_NUMBER = new RegExp('^[0-9]+$', 'g');
+const WORD = new RegExp('[\\w"\'.\\s+]+', 'g');
+const DBL_QUOTED_STR = new RegExp('"(.*?)"', 'g');
+const WORDIF = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
+let exp = new RegExp('\\${([^}]*)}', 'g');
+// let cachedTemplate: Object = {};
+let ARR_OBJ = /^\..*/gm;
+let SINGLE_SLASH = /\\/gi;
+let DOUBLE_SLASH = /\\\\/gi;
+const WORDFUNC = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
+const WINDOWFUNC = /\window\./gm;
+/**
+ * The function to set regular expression for template expression string.
+ * @param  {RegExp} value - Value expression.
+ * @private
+ */
+
+// /**
+//  * To render the template string from the given data.
+//  * @param  {string} template - String Template.
+//  * @param  {Object[]|JSON} data - DataSource for the template.
+//  * @param  {Object} helper? - custom helper object.
+//  */
+// export function template(template: string, data: JSON, helper?: Object): string {
+//     let hash: string = hashCode(template);
+//     let tmpl: Function;
+//     if (!cachedTemplate[hash]) {
+//         tmpl = cachedTemplate[hash] = compile(template, helper);
+//     } else {
+//         tmpl = cachedTemplate[hash];
+//     }
+//     return tmpl(data);
+// }
+/**
+ * Compile the template string into template function.
+ * @param  {string} template - The template string which is going to convert.
+ * @param  {Object} helper? - Helper functions as an object.
+ * @private
+ */
+function compile$1(template, helper) {
+    let argName = 'data';
+    let evalExpResult = evalExp(template, argName, helper);
+    let fnCode = `var str="${evalExpResult}"; return str;`;
+    // tslint:disable-next-line:no-function-constructor-with-string-args
+    let fn = new Function(argName, fnCode);
+    return fn.bind(helper);
+}
+// function used to evaluate the function expression
+function evalExp(str, nameSpace, helper) {
+    let varCOunt = 0;
+    /**
+     * Variable containing Local Keys
+     */
+    let localKeys = [];
+    let isClass = str.match(/class="([^\"]+|)\s{2}/g);
+    let singleSpace = '';
+    if (isClass) {
+        isClass.forEach((value) => {
+            singleSpace = value.replace(/\s\s+/g, ' ');
+            str = str.replace(value, singleSpace);
+        });
+    }
+    return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(exp, (match, cnt, offset, matchStr) => {
+        const SPECIAL_CHAR = /\@|\#|\$/gm;
+        let matches = cnt.match(CALL_FUNCTION);
+        // matches to detect any function calls
+        if (matches) {
+            let rlStr = matches[1];
+            if (ELSEIF_STMT.test(cnt)) {
+                //handling else-if condition
+                cnt = '";} ' + cnt.replace(matches[1], rlStr.replace(WORD, (str) => {
+                    str = str.trim();
+                    return addNameSpace(str, !(QUOTES.test(str)) && (localKeys.indexOf(str) === -1), nameSpace, localKeys);
+                })) + '{ \n str = str + "';
+            }
+            else if (IF_STMT.test(cnt)) {
+                //handling if condition
+                cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs) => {
+                    return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                })) + '{ \n str = str + "';
+            }
+            else if (FOR_STMT.test(cnt)) {
+                //handling for condition
+                let rlStr = matches[1].split(' of ');
+                // replace for each into actual JavaScript
+                cnt = '"; ' + cnt.replace(matches[1], (mtc) => {
+                    localKeys.push(rlStr[0]);
+                    localKeys.push(rlStr[0] + 'Index');
+                    varCOunt = varCOunt + 1;
+                    // tslint:disable-next-line
+                    return 'var i' + varCOunt + '=0; i' + varCOunt + ' < ' + addNameSpace(rlStr[1], true, nameSpace, localKeys) + '.length; i' + varCOunt + '++';
+                }) + '{ \n ' + rlStr[0] + '= ' + addNameSpace(rlStr[1], true, nameSpace, localKeys)
+                    + '[i' + varCOunt + ']; \n var ' + rlStr[0] + 'Index=i' + varCOunt + '; \n str = str + "';
+            }
+            else {
+                //helper function handling
+                let fnStr = cnt.split('(');
+                let fNameSpace = (helper && helper.hasOwnProperty(fnStr[0]) ? 'this.' : 'global');
+                fNameSpace = (/\./.test(fnStr[0]) ? '' : fNameSpace);
+                let ftArray = matches[1].split(',');
+                if (matches[1].length !== 0 && !(/data/).test(ftArray[0]) && !(/window./).test(ftArray[0])) {
+                    matches[1] = (fNameSpace === 'global' ? nameSpace + '.' + matches[1] : matches[1]);
+                }
+                let splRegexp = /\@|\$|\#/gm;
+                let arrObj = /\]\./gm;
+                if (WINDOWFUNC.test(cnt) && arrObj.test(cnt) || splRegexp.test(cnt)) {
+                    let splArrRegexp = /\@|\$|\#|\]\./gm;
+                    if (splArrRegexp.test(cnt)) {
+                        // tslint:disable-next-line
+                        cnt = '"+ ' + (fNameSpace === 'global' ? '' : fNameSpace) + cnt.replace(matches[1], rlStr.replace(WORDFUNC, (strs) => {
+                            return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                        })) + '+ "';
+                    }
+                }
+                else {
+                    cnt = '" + ' + (fNameSpace === 'global' ? '' : fNameSpace) +
+                        cnt.replace(rlStr, addNameSpace(matches[1].replace(/,( |)data.|,/gi, ',' + nameSpace + '.').replace(/,( |)data.window/gi, ',window'), (fNameSpace === 'global' ? false : true), nameSpace, localKeys)) +
+                        '+"';
+                }
+            }
+        }
+        else if (ELSE_STMT.test(cnt)) {
+            // handling else condition
+            cnt = '"; ' + cnt.replace(ELSE_STMT, '} else { \n str = str + "');
+        }
+        else if (!!cnt.match(IF_OR_FOR)) {
+            // close condition 
+            cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
+        }
+        else if (SPECIAL_CHAR.test(cnt)) {
+            // template string with double slash with special character
+            if (cnt.match(SINGLE_SLASH)) {
+                cnt = SlashReplace(cnt);
+            }
+            cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
+        }
+        else {
+            // template string with double slash
+            if (cnt.match(SINGLE_SLASH)) {
+                cnt = SlashReplace(cnt);
+                cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
+            }
+            else {
+                // evaluate normal expression
+                cnt = '"+' + addNameSpace(cnt.replace(/\,/gi, '+' + nameSpace + '.'), (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+            }
+        }
+        return cnt;
+    });
+}
+function addNameSpace(str, addNS, nameSpace, ignoreList) {
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
+}
+function NameSpaceArrObj(str, addNS, nameSpace, ignoreList) {
+    let arrObjReg = /^\..*/gm;
+    return ((addNS && !(NOT_NUMBER.test(str)) &&
+        ignoreList.indexOf(str.split('.')[0]) === -1 && !(arrObjReg.test(str))) ? nameSpace + '.' + str : str);
+}
+// // Create hashCode for template string to storeCached function
+// function hashCode(str: string): string {
+//     return str.split('').reduce((a: number, b: string) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0).toString();
+// }
+function NameSpaceForspecialChar(str, addNS, nameSpace, ignoreList) {
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '["' + str : str);
+}
+// tslint:disable-next-line
+function SlashReplace(tempStr) {
+    // tslint:disable-next-line
+    let double = `\\\\`;
+    if (tempStr.match(DOUBLE_SLASH)) {
+        tempStr = tempStr;
+    }
+    else {
+        tempStr = tempStr.replace(SINGLE_SLASH, double);
+    }
+    return tempStr;
+}
+function HandleSpecialCharArrObj(str, nameSpaceNew, keys) {
+    str = str.trim();
+    let windowFunc = /\window\./gm;
+    if (!windowFunc.test(str)) {
+        let quotes = /'|"/gm;
+        let splRegexp = /\@|\$|\#/gm;
+        if (splRegexp.test(str)) {
+            str = NameSpaceForspecialChar(str, (keys.indexOf(str) === -1), nameSpaceNew, keys) + '"]';
+        }
+        if (ARR_OBJ.test(str)) {
+            return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+        }
+        else {
+            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+        }
+    }
+    else {
+        return str;
+    }
+}
+
+/**
+ * Template Engine Bridge
+ */
+const HAS_ROW = /^[\n\r.]+\<tr|^\<tr/;
+const HAS_SVG = /^[\n\r.]+\<svg|^\<path|^\<g/;
+let blazorTemplates = {};
+function getRandomId() {
+    return '-' + Math.random().toString(36).substr(2, 5);
+}
+/**
+ * Compile the template string into template function.
+ * @param  {string} templateString - The template string which is going to convert.
+ * @param  {Object} helper? - Helper functions as an object.
+ * @private
+ */
+//tslint:disable-next-line
+function compile$$1(templateString, helper) {
+    let compiler = engineObj.compile(templateString, helper);
+    //tslint:disable-next-line
+    return (data, component, propName, templateId, isStringTemplate, index) => {
+        let result = compiler(data, component, propName);
+        let blazorTemplateId = 'BlazorTemplateId';
+        if (isBlazor() && !isStringTemplate) {
+            let randomId = getRandomId();
+            let blazorId = templateId + randomId;
+            if (!blazorTemplates[templateId]) {
+                blazorTemplates[templateId] = [];
+            }
+            if (!isNullOrUndefined(index)) {
+                let keys = Object.keys(blazorTemplates[templateId][index]);
+                for (let key of keys) {
+                    if (key !== blazorTemplateId && data[key]) {
+                        blazorTemplates[templateId][index][key] = data[key];
+                    }
+                    if (key === blazorTemplateId) {
+                        blazorId = blazorTemplates[templateId][index][key];
+                    }
+                }
+            }
+            else {
+                data[blazorTemplateId] = blazorId;
+                blazorTemplates[templateId].push(data);
+            }
+            // tslint:disable-next-line:no-any
+            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] :
+                // tslint:disable-next-line:no-any
+                [createElement('div', { id: blazorId, className: 'e-blazor-template' })];
+        }
+        if (typeof result === 'string') {
+            if (HAS_SVG.test(result)) {
+                let ele = createElement('svg', { innerHTML: result });
+                return ele.childNodes;
+            }
+            else {
+                let ele = createElement((HAS_ROW.test(result) ? 'table' : 'div'), { innerHTML: result });
+                return ele.childNodes;
+            }
+        }
+        else {
+            return result;
+        }
+    };
+}
+function updateBlazorTemplate(templateId, templateName, comp, isEmpty, callBack) {
+    if (isBlazor()) {
+        let ejsIntrop = 'sfBlazor';
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
+        if (isEmpty !== false) {
+            blazorTemplates[templateId] = [];
+        }
+    }
+}
+function resetBlazorTemplate(templateId, templateName, index) {
+    let templateDiv = document.getElementById(templateId);
+    if (templateDiv) {
+        // tslint:disable-next-line:no-any
+        let innerTemplates = templateDiv.getElementsByClassName('blazor-inner-template');
+        for (let i = 0; i < innerTemplates.length; i++) {
+            let tempId = ' ';
+            if (!isNullOrUndefined(index)) {
+                tempId = innerTemplates[index].getAttribute('data-templateId');
+            }
+            else {
+                tempId = innerTemplates[i].getAttribute('data-templateId');
+            }
+            let tempElement = document.getElementById(tempId);
+            if (tempElement) {
+                let length = tempElement.childNodes.length;
+                for (let j = 0; j < length; j++) {
+                    if (!isNullOrUndefined(index)) {
+                        innerTemplates[index].appendChild(tempElement.childNodes[0]);
+                        i = innerTemplates.length;
+                    }
+                    else {
+                        innerTemplates[i].appendChild(tempElement.childNodes[0]);
+                    }
+                }
+            }
+        }
+    }
+}
+/**
+ * Set your custom template engine for template rendering.
+ * @param  {ITemplateEngine} classObj - Class object for custom template.
+ * @private
+ */
+function setTemplateEngine(classObj) {
+    engineObj.compile = classObj.compile;
+}
+/**
+ * Get current template engine for template rendering
+ * @param  {ITemplateEngine} classObj - Class object for custom template.
+ * @private
+ */
+function getTemplateEngine() {
+    return engineObj.compile;
+}
+//Default Engine Class
+class Engine {
+    compile(templateString, helper = {}) {
+        return compile$1(templateString, helper);
+    }
+}
+let engineObj = { compile: new Engine().compile };
+
+const simpleRegex = /^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/;
+const multipleSplitRegex = /(?:#([\w-]+)|(\w+)|\.([\w-]+))/g;
+const idClassSelector = /^(\.|#)/;
+const selectMapper = {
+    '.': 'className',
+    '#': 'id'
+};
+const classRegexString = '(?=.*?\\b{value}\\b)';
+const assigner = { className: 'attributes.className', id: 'attributes.id', tagName: 'tagName' };
+const emptyElements = ['area', 'base', 'basefont', 'br', 'col', 'frame', 'hr', 'img', 'input',
+    'link', 'meta', 'param', 'embed', 'command', 'keygen', 'source', 'track', 'wbr'];
+const blockElements = ['a', 'address', 'article', 'applet', 'aside', 'audio', 'blockquote',
+    'button', 'canvas', 'center', 'dd', 'del', 'dir', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure',
+    'footer', 'form', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'iframe', 'ins',
+    'isindex', 'li', 'map', 'menu', 'noframes', 'noscript', 'object', 'ol', 'output', 'p', 'pre', 'section',
+    'script', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul', 'video'];
+const inlineElement = ['abbr', 'acronym', 'applet', 'b', 'basefont', 'bdo', 'big', 'br', 'button',
+    'cite', 'code', 'del', 'dfn', 'em', 'font', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'map',
+    'object', 'q', 's', 'samp', 'script', 'select', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'textarea',
+    'tt', 'u', 'var'];
+const selfClosingElements = ['colgroup', 'dd', 'dt', 'li', 'options', 'p', 'td', 'tfoot', 'th',
+    'thead', 'tr'];
+const fillAttrs = ['checked', 'compact', 'declare', 'defer', 'disabled', 'ismap', 'multiple',
+    'nohref', 'noresize', 'noshade', 'nowrap', 'readonly', 'selected'];
+const cspElement = ['Script', 'style'];
+const nameMapper = { 'tabindex': 'tabIndex' };
+const startRegex = /^<([-A-Za-z0-9_]+)((?:\s+[a-zA-Z_:][-a-zA-Z0-9_:.]*(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/;
+const endRegex = /^<\/([-A-Za-z0-9_]+)[^>]*>/;
+const attributeRegex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/g;
+/**
+ * Namespace for VirtualDOM
+ * @private
+ */
+var VirtualDOM;
+(function (VirtualDOM) {
+    //tslint:disable:no-any
+    function createElement(tagName, properties) {
+        let children = [];
+        let extended = extend({}, {}, properties, true);
+        if (!isNullOrUndefined(properties)) {
+            let keys = Object.keys(properties);
+            if (keys.length) {
+                if (extended.innerHTML) {
+                    children = ConvertHTMLToJSon(extended.innerHTML);
+                    delete extended.innerHTML;
+                }
+                if (extended.attrs) {
+                    extend(extended, extended.attrs);
+                    delete extended.attrs;
+                }
+                if (extended.styles) {
+                    let valArr = extended.styles.split(';');
+                    let vObj = {};
+                    for (let i = 0, length = valArr.length; i < length; i++) {
+                        let cVal = valArr[i];
+                        let styleSplit = cVal.split(':');
+                        vObj[styleSplit[0]] = styleSplit[1];
+                    }
+                    delete extended.styles;
+                    extended.style = vObj;
+                }
+            }
+        }
+        return {
+            tagName: tagName,
+            attributes: extended || {},
+            children: children
+        };
+    }
+    VirtualDOM.createElement = createElement;
+    function assignParent(childrens, parent) {
+        if (parent && childrens) {
+            childrens.forEach((child) => {
+                if (isObject(child)) {
+                    if (child.parent) {
+                        detach(child);
+                    }
+                    child.parent = parent;
+                }
+                return child;
+            });
+        }
+    }
+    VirtualDOM.assignParent = assignParent;
+    function append(fromElements, toElement) {
+        assignParent(fromElements, toElement);
+        if (toElement.children) {
+            toElement.children = toElement.children.concat(fromElements);
+        }
+        else {
+            toElement.children = [].concat(fromElements);
+        }
+    }
+    VirtualDOM.append = append;
+    function prepend(child, toElement) {
+        assignParent(child, toElement);
+        if (!toElement.children || !toElement.children.length) {
+            toElement.children = [];
+            toElement.children.concat(child);
+        }
+        else {
+            for (let i = child.length - 1; i >= 0; i--) {
+                toElement.children.unshift(child[i]);
+            }
+        }
+    }
+    VirtualDOM.prepend = prepend;
+    function detach(element) {
+        let parent = element.parent;
+        if (parent) {
+            let index = parent.children.indexOf(element);
+            if (index !== -1) {
+                parent.children.splice(index);
+            }
+        }
+        return parent;
+    }
+    VirtualDOM.detach = detach;
+    //tslint:disable-next-line
+    function vDomSelector({ ele, selector, selectAll, immediateParent }) {
+        let iSelector = selector.split(' ');
+        let curColl = ele;
+        for (let i = 0, length = iSelector.length; i < length; i++) {
+            let isDescendant = false;
+            let parent = curColl;
+            let curSelector = iSelector[i];
+            let mapper = [];
+            if (simpleRegex.test(curSelector)) {
+                processSelector(curSelector, mapper);
+            }
+            else if (curSelector.indexOf('>') === -1) {
+                let splitSelector = curSelector.match(multipleSplitRegex);
+                for (let curMap of splitSelector) {
+                    processSelector(curMap, mapper);
+                }
+            }
+            else if (curSelector.indexOf('>') !== -1) {
+                isDescendant = true;
+                let dSelector = curSelector.split('>');
+                //tslint:disable-next-line
+                let dParent = ele;
+                let descendent;
+                let flag = 0;
+                for (let sel of dSelector) {
+                    if (!dParent) {
+                        break;
+                    }
+                    if (dParent.length) {
+                        let descendentChild = [];
+                        for (let child of dParent) {
+                            descendentChild = descendentChild.concat(vDomSelector({
+                                ele: child, selector: sel,
+                                selectAll, immediateParent: !!flag
+                            }));
+                        }
+                        descendent = descendentChild;
+                    }
+                    else {
+                        descendent = vDomSelector({ ele: dParent, selector: sel, selectAll, immediateParent: !!flag });
+                    }
+                    flag++;
+                    dParent = descendent;
+                }
+                if (descendent) {
+                    curColl = descendent;
+                }
+            }
+            if (!isDescendant) {
+                if (parent.length) {
+                    let iCurSelector = [];
+                    for (let curParent of parent) {
+                        iCurSelector = iCurSelector.concat(accessElement(curParent, mapper, selectAll, immediateParent));
+                    }
+                    curColl = iCurSelector;
+                }
+                else {
+                    curColl = accessElement(parent, mapper, selectAll, immediateParent);
+                }
+            }
+        }
+        if (selectAll) {
+            return curColl;
+        }
+        else {
+            return curColl[0] || null;
+        }
+    }
+    VirtualDOM.vDomSelector = vDomSelector;
+    function processSelector(selector, mapper) {
+        let match = selector.match(idClassSelector);
+        let obj = {};
+        if (match) {
+            let curMapper = selectMapper[match[0]];
+            if (curMapper === 'className') {
+                let curObj = mapper.filter((obj) => { return obj.hasOwnProperty('className'); })[0];
+                let canPush = false;
+                if (!curObj) {
+                    canPush = true;
+                    curObj = {};
+                }
+                let existValue = curObj[curMapper] || '';
+                curObj[curMapper] = existValue + classRegexString.replace('{value}', selector.replace('.', ''));
+                if (canPush) {
+                    mapper.push(curObj);
+                }
+            }
+            else {
+                obj[curMapper] = selector.replace(match[0], '');
+                mapper.push(obj);
+            }
+        }
+        else {
+            mapper.push({ tagName: selector });
+        }
+    }
+    //tslint:disable-next-line
+    function accessElement(ele, mapper, selectAll, immediateParent) {
+        if (ele.children) {
+            //tslint:disable-next-line
+            let temp = ele.children.filter(function (child) {
+                if (typeof (child) !== 'string') {
+                    let matched = true;
+                    for (let map of mapper) {
+                        let key = Object.keys(map)[0];
+                        let expected = map[key];
+                        let actualValue = getValue(assigner[key], child);
+                        if (key === 'className') {
+                            if (!(new RegExp('^' + expected + '.*$').test(actualValue))) {
+                                matched = false;
+                                break;
+                            }
+                        }
+                        else if (actualValue !== expected) {
+                            matched = false;
+                            break;
+                        }
+                    }
+                    return matched;
+                }
+                else {
+                    return false;
+                }
+            });
+            if (!immediateParent && (!temp.length || selectAll)) {
+                ele.children.forEach((child) => {
+                    if (isObject(child)) {
+                        temp = temp.concat(accessElement(child, mapper, selectAll));
+                    }
+                });
+            }
+            return temp;
+        }
+        else {
+            return [];
+        }
+    }
+    VirtualDOM.accessElement = accessElement;
+    function ConvertHTMLToJSon(htmlString) {
+        let results = [];
+        let isText;
+        let tagArray = [];
+        let nodeArray = [];
+        while (htmlString) {
+            isText = true;
+            let lastVal = getLastValue(tagArray);
+            if (!lastVal || !contains(cspElement, lastVal)) {
+                if (htmlString.indexOf('</') === 0) {
+                    let match = htmlString.match(endRegex);
+                    if (match) {
+                        htmlString = htmlString.substring(match[0].length);
+                        //tslint:disable-next-line
+                        match[0].replace(endRegex, iterateEndTag);
+                    }
+                    isText = false;
+                }
+                else if (htmlString.indexOf('<') === 0) {
+                    let match = htmlString.match(startRegex);
+                    if (match) {
+                        htmlString = htmlString.substring(match[0].length);
+                        //tslint:disable-next-line
+                        match[0].replace(startRegex, iterateStartTag);
+                    }
+                    isText = false;
+                }
+                if (isText) {
+                    let tagIndex = htmlString.indexOf('<');
+                    let text = tagIndex < 0 ? htmlString : htmlString.substring(0, tagIndex);
+                    htmlString = tagIndex < 0 ? '' : htmlString.substring(tagIndex);
+                    iterateText(text);
+                }
+            }
+            else {
+                //tslint:disable-next-line
+                htmlString = htmlString.replace(new RegExp('([\\s\\S]*?)<\/' + getLastValue(nodeArray) + '[^>]*>'), (all, text) => {
+                    text = text.replace(/<!--([\s\S]*?)-->|<!\[CDATA\[([\s\S]*?)]]>/g, '$1$2');
+                    iterateText(text);
+                    return '';
+                });
+                iterateEndTag('', getLastValue(tagArray));
+            }
+            
+        }
+        function iterateStartTag(start, tagName, rest) {
+            tagName = tagName.toLowerCase();
+            if (contains(blockElements, tagName)) {
+                while (getLastValue(tagArray) && contains(inlineElement, getLastValue(tagArray))) {
+                    iterateEndTag('', getLastValue(tagArray));
+                }
+            }
+            if (contains(selfClosingElements, tagName) && getLastValue(tagArray)) {
+                iterateEndTag('', tagName);
+            }
+            let isSelfTag = contains(emptyElements, tagName);
+            if (!isSelfTag) {
+                tagArray.push(tagName);
+            }
+            let attrs = {};
+            //tslint:disable-next-line
+            rest.replace(attributeRegex, function (match, name, ...names) {
+                //tslint:disable-next-line
+                let val = names[2] ? names[2] :
+                    names[3] ? names[3] :
+                        names[4] ? names[4] :
+                            contains(fillAttrs, name) ? name : '';
+                if (name === 'style') {
+                    let valArr = val.split(';');
+                    let vObj = {};
+                    for (let i = 0, length = valArr.length; i < length; i++) {
+                        let cVal = valArr[i];
+                        let styleSplit = cVal.split(':');
+                        vObj[styleSplit[0]] = styleSplit[1];
+                    }
+                    val = vObj;
+                }
+                name = nameMapper[name] || name;
+                attrs[name] = val;
+                //tslint:disable-next-line
+            });
+            attrs['data-id'] = getRandomId();
+            let tagObject = {
+                tagName: tagName,
+                attributes: attrs
+            };
+            if (isSelfTag) {
+                let parent = (nodeArray[0] || results);
+                if (parent.children === undefined) {
+                    parent.children = [];
+                }
+                tagObject.parent = parent;
+                parent.children.push(tagObject);
+            }
+            else {
+                nodeArray.unshift(tagObject);
+            }
+        }
+        function iterateEndTag(start, tagName) {
+            let pos;
+            if (!tagName) {
+                pos = 0;
+            }
+            else {
+                for (pos = tagArray.length - 1; pos >= 0; pos--) {
+                    if (tagArray[pos] === tagName) {
+                        break;
+                    }
+                }
+            }
+            if (pos >= 0) {
+                for (let j = nodeArray.length - 1; j >= pos; j--) {
+                    //tslint:disable-next-line
+                    let node = nodeArray.shift();
+                    if (nodeArray.length === 0) {
+                        results.push(node);
+                    }
+                    else {
+                        let parent = nodeArray[0];
+                        if (parent.children === undefined) {
+                            parent.children = [];
+                        }
+                        node.parent = parent;
+                        parent.children.push(node);
+                    }
+                }
+                tagArray.length = pos;
+            }
+        }
+        function iterateText(text) {
+            if (nodeArray.length === 0) {
+                results.push(text);
+            }
+            else {
+                let parent = nodeArray[0];
+                if (parent.children === undefined) {
+                    parent.children = [];
+                }
+                parent.children.push(text);
+            }
+        }
+        return results;
+    }
+    VirtualDOM.ConvertHTMLToJSon = ConvertHTMLToJSon;
+    //tslint:disable-next-line 
+    function getLastValue(arr) {
+        return arr[arr.length - 1];
+    }
+    function contains(arr, key) {
+        return arr.indexOf(key) !== -1;
+    }
+    //tslint:disable-next-line
+    function cloneNode(ele, deep) {
+        if (isObject(ele)) {
+            if (deep) {
+                return extend({}, {}, ele, true);
+            }
+            else {
+                return { tagName: ele.tagName, attributes: ele.attributes };
+            }
+        }
+        else {
+            return ele.cloneNode(deep);
+        }
+    }
+    VirtualDOM.cloneNode = cloneNode;
+    function setStyleAttribute(element, attrs) {
+        if (element.attributes.style) {
+            (element.attributes).style = extend({}, attrs);
+        }
+        else {
+            element.attributes.style = extend(element.attributes.style, attrs);
+        }
+    }
+    VirtualDOM.setStyleAttribute = setStyleAttribute;
+    //tslint:enable:no-any
+})(VirtualDOM || (VirtualDOM = {}));
+
+/**
  * Functions related to dom operations.
  */
 const SVG_REG = /^svg|^path|^g/;
@@ -3437,8 +4189,19 @@ function addClass(elements, classes) {
     let classList = getClassList(classes);
     for (let ele of elements) {
         for (let className of classList) {
-            if (!ele.classList.contains(className)) {
-                ele.classList.add(className);
+            if (isObject(ele)) {
+                let curClass = getValue('attributes.className', ele);
+                if (isNullOrUndefined(curClass)) {
+                    setValue('attributes.className', className, ele);
+                }
+                else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
+                    setValue('attributes.className', curClass + ' ' + className, ele);
+                }
+            }
+            else {
+                if (!ele.classList.contains(className)) {
+                    ele.classList.add(className);
+                }
             }
         }
     }
@@ -3453,9 +4216,22 @@ function addClass(elements, classes) {
 function removeClass(elements, classes) {
     let classList = getClassList(classes);
     for (let ele of elements) {
-        if (ele.className !== '') {
+        let flag = isObject(ele);
+        let canRemove = flag ? getValue('attributes.className', ele) : ele.className !== '';
+        if (canRemove) {
             for (let className of classList) {
-                ele.classList.remove(className);
+                if (flag) {
+                    let classes = getValue('attributes.className', ele);
+                    let classArr = classes.split(' ');
+                    let index = classArr.indexOf(className);
+                    if (index !== -1) {
+                        classArr.splice(index, 1);
+                    }
+                    setValue('attributes.className', classArr.join(' '), ele);
+                }
+                else {
+                    ele.classList.remove(className);
+                }
             }
         }
     }
@@ -3487,13 +4263,19 @@ function isVisible(element) {
  * @private
  */
 function prepend(fromElements, toElement, isEval) {
-    let docFrag = document.createDocumentFragment();
-    for (let ele of fromElements) {
-        docFrag.appendChild(ele);
+    //tslint:disable:no-any
+    if (isObject(toElement)) {
+        VirtualDOM.prepend(fromElements, toElement);
     }
-    toElement.insertBefore(docFrag, toElement.firstElementChild);
-    if (isEval) {
-        executeScript(toElement);
+    else {
+        let docFrag = document.createDocumentFragment();
+        for (let ele of fromElements) {
+            docFrag.appendChild(ele);
+        }
+        toElement.insertBefore(docFrag, toElement.firstElementChild);
+        if (isEval) {
+            executeScript(toElement);
+        }
     }
     return fromElements;
 }
@@ -3504,16 +4286,22 @@ function prepend(fromElements, toElement, isEval) {
  * @private
  */
 function append(fromElements, toElement, isEval) {
-    let docFrag = document.createDocumentFragment();
-    for (let ele of fromElements) {
-        docFrag.appendChild(ele);
+    if (isObject(toElement)) {
+        VirtualDOM.append(fromElements, toElement);
     }
-    toElement.appendChild(docFrag);
-    if (isEval) {
-        executeScript(toElement);
+    else {
+        let docFrag = document.createDocumentFragment();
+        for (let ele of fromElements) {
+            docFrag.appendChild(ele);
+        }
+        toElement.appendChild(docFrag);
+        if (isEval) {
+            executeScript(toElement);
+        }
     }
     return fromElements;
 }
+//tslint: enable:no-any
 /**
  * The function is used to evaluate script from Ajax request
  * @param ele - An element is going to evaluate the script
@@ -3533,8 +4321,13 @@ function executeScript(ele) {
  * @private
  */
 function detach(element) {
-    let parentNode = element.parentNode;
-    return parentNode.removeChild(element);
+    if (isObject(element)) {
+        return VirtualDOM.detach(element);
+    }
+    else {
+        let parentNode = element.parentNode;
+        return parentNode.removeChild(element);
+    }
 }
 /**
  * The function used to remove the element from Dom also clear the bounded events
@@ -3542,9 +4335,14 @@ function detach(element) {
  * @private
  */
 function remove(element) {
-    let parentNode = element.parentNode;
-    EventHandler.clearEvents(element);
-    parentNode.removeChild(element);
+    if (isObject(element)) {
+        VirtualDOM.detach(element);
+    }
+    else {
+        let parentNode = element.parentNode;
+        EventHandler.clearEvents(element);
+        parentNode.removeChild(element);
+    }
 }
 /**
  * The function helps to set multiple attributes to an element
@@ -3556,7 +4354,16 @@ function attributes(element, attributes) {
     let keys = Object.keys(attributes);
     let ele = element;
     for (let key of keys) {
-        ele.setAttribute(key, attributes[key]);
+        if (isObject(ele)) {
+            let iKey = key;
+            if (key === 'tabindex') {
+                iKey = 'tabIndex';
+            }
+            ele.attributes[iKey] = attributes[key];
+        }
+        else {
+            ele.setAttribute(key, attributes[key]);
+        }
     }
     return ele;
 }
@@ -3566,8 +4373,15 @@ function attributes(element, attributes) {
  * @param  {Document|Element=document} context - It is an optional type, That specifies a Dom context.
  * @private
  */
-function select(selector, context = document) {
-    return context.querySelector(selector);
+//tslint:disable-next-line
+function select(selector, context = document, needsVDOM) {
+    if (isObject(context) && needsVDOM) {
+        //tslint:disable-next-line
+        return VirtualDOM.vDomSelector({ ele: context, selector, selectAll: false });
+    }
+    else {
+        return context.querySelector(selector);
+    }
 }
 /**
  * The function selects an array of element from the given context.
@@ -3575,9 +4389,15 @@ function select(selector, context = document) {
  * @param  {Document|Element=document} context - It is an optional type, That specifies a Dom context.
  * @private
  */
-function selectAll(selector, context = document) {
-    let nodeList = context.querySelectorAll(selector);
-    return nodeList;
+function selectAll(selector, context = document, needsVDOM) {
+    if (isObject(context) && !needsVDOM) {
+        //tslint:disable-next-line
+        return VirtualDOM.vDomSelector({ ele: context, selector, selectAll: true });
+    }
+    else {
+        let nodeList = context.querySelectorAll(selector);
+        return nodeList;
+    }
 }
 /**
  * Returns single closest parent element based on class selector.
@@ -3621,9 +4441,21 @@ function siblings(element) {
  * @private
  */
 function getAttributeOrDefault(element, property, value) {
-    let attrVal = element.getAttribute(property);
-    if (isNullOrUndefined(attrVal)) {
-        element.setAttribute(property, value.toString());
+    let attrVal;
+    let isObj = isObject(element);
+    if (isObj) {
+        attrVal = getValue('attributes.' + property, element);
+    }
+    else {
+        attrVal = element.getAttribute(property);
+    }
+    if (isNullOrUndefined(attrVal) && value) {
+        if (!isObj) {
+            element.setAttribute(property, value.toString());
+        }
+        else {
+            element.attributes[property] = value;
+        }
         attrVal = value;
     }
     return attrVal;
@@ -3637,10 +4469,16 @@ function getAttributeOrDefault(element, property, value) {
  */
 function setStyleAttribute(element, attrs) {
     if (attrs !== undefined) {
-        Object.keys(attrs).forEach((key) => {
+        if (isObject(element)) {
             // tslint:disable-next-line:no-any
-            element.style[key] = attrs[key];
-        });
+            VirtualDOM.setStyleAttribute(element, attrs);
+        }
+        else {
+            Object.keys(attrs).forEach((key) => {
+                // tslint:disable-next-line:no-any
+                element.style[key] = attrs[key];
+            });
+        }
     }
 }
 /**
@@ -3663,12 +4501,61 @@ function classList(element, addClasses, removeClasses) {
  * @private
  */
 function matches(element, selector) {
+    //tslint:disable-next-line
     let matches = element.matches || element.msMatchesSelector || element.webkitMatchesSelector;
     if (matches) {
         return matches.call(element, selector);
     }
     else {
         return [].indexOf.call(document.querySelectorAll(selector), element) !== -1;
+    }
+}
+function includeInnerHTML(ele, innerHTML) {
+    if (isObject(ele)) {
+        if (innerHTML === '') {
+            ele.children = [];
+        }
+        else {
+            let res = VirtualDOM.ConvertHTMLToJSon(innerHTML);
+            if (res.length) {
+                VirtualDOM.assignParent(res, ele);
+                ele.children = res;
+            }
+        }
+    }
+    else {
+        ele.innerHTML = innerHTML;
+    }
+}
+//tslint:disable-next-line
+function containsClass(ele, className) {
+    if (isObject(ele)) {
+        // tslint:disable-next-line:no-any
+        return new RegExp('\\b' + className + '\\b', 'i').test(ele.attributes.className);
+    }
+    else {
+        return ele.classList.contains(className);
+    }
+}
+/**
+ * Method to check whether the element matches the given selector.
+ * @param {} element - Element to compare with the selector.
+ * @param {string} selector - String selector which element will satisfy.
+ * @return {Element | VirtualObject}
+ * @private
+ */
+//tslint:disable:no-any
+function cloneNode(element, deep) {
+    if (isObject(element)) {
+        if (deep) {
+            return extend({}, {}, element, true);
+        }
+        else {
+            return { tagName: element.tagName, attributes: element.attributes };
+        }
+    }
+    else {
+        return element.cloneNode(deep);
     }
 }
 
@@ -3791,8 +4678,8 @@ class Base {
         newChanges = newChanges ? newChanges : {};
         extend(this.bulkChanges, {}, newChanges, true);
         if (this.allowServerDataBinding) {
-            let ejsInterop = 'ejsInterop';
-            window[ejsInterop].updateModel(this);
+            let sfBlazor = 'sfBlazor';
+            window[sfBlazor].updateModel(this);
             this.bulkChanges = {};
         }
     }
@@ -5342,11 +6229,7 @@ let Component = class Component extends Base {
          */
         this.isStringTemplate = false;
         this.needsID = false;
-        /**
-         * This is a instance method to create an element.
-         * @private
-         */
-        this.createElement = createElement;
+        this.isReactHybrid = false;
         if (isNullOrUndefined(this.enableRtl)) {
             this.setProperties({ 'enableRtl': rightToLeft }, true);
         }
@@ -5399,6 +6282,22 @@ let Component = class Component extends Base {
         this.render();
         this.refreshing = false;
     }
+    accessMount() {
+        if (this.mount && !this.isReactHybrid) {
+            this.mount();
+        }
+    }
+    /**
+     * Returns the route element of the component
+     */
+    getRootElement() {
+        if (this.isReactHybrid) {
+            return this.actualElement;
+        }
+        else {
+            return this.element;
+        }
+    }
     /**
      * Appends the control within the given HTML element
      * @param {string | HTMLElement} selector - Target element where control needs to be appended
@@ -5428,7 +6327,12 @@ let Component = class Component extends Base {
             this.preRender();
             this.injectModules();
             this.render();
-            this.trigger('created');
+            if (!this.mount) {
+                this.trigger('created');
+            }
+            else {
+                this.accessMount();
+            }
         }
     }
     /**
@@ -5436,9 +6340,9 @@ let Component = class Component extends Base {
      */
     renderComplete(wrapperElement) {
         if (isBlazor()) {
-            let ejsInterop = 'ejsInterop';
+            let sfBlazor = 'sfBlazor';
             // tslint:disable-next-line:no-any
-            window[ejsInterop].renderComplete(this.element, wrapperElement);
+            window[sfBlazor].renderComplete(this.element, wrapperElement);
         }
         this.isRendered = true;
     }
@@ -5519,6 +6423,38 @@ let Component = class Component extends Base {
             }
         }
     }
+    /**
+     * This is a instance method to create an element.
+     * @private
+     */
+    //tslint:disable:no-any
+    createElement(tagName, prop, isVDOM) {
+        if (isVDOM && this.isReactHybrid) {
+            if (prop) {
+                prop = {};
+            }
+            prop['data-id'] = getRandomId();
+            return VirtualDOM.createElement(tagName, prop);
+        }
+        else {
+            return createElement(tagName, prop);
+        }
+    }
+    /**
+     *
+     * @param handler - handler to be triggered after state Updated.
+     * @param argument - Arguments to be passed to caller.
+     * @private
+     */
+    //tslint:disable:no-any
+    triggerStateChange(handler, argument) {
+        if (this.isReactHybrid) {
+            //tslint:disable:no-any
+            this.setState();
+            this.currentContext = { calls: handler, args: argument };
+        }
+    }
+    // tslint: enable: no-any
     injectModules() {
         if (this.injectedModules && this.injectedModules.length) {
             this.moduleLoader.inject(this.requiredModules(), this.injectedModules);
@@ -7004,340 +7940,6 @@ Touch = __decorate$5([
 ], Touch);
 
 /**
- * Template Engine
- */
-const LINES = new RegExp('\\n|\\r|\\s\\s+', 'g');
-const QUOTES = new RegExp(/'|"/g);
-const IF_STMT = new RegExp('if ?\\(');
-const ELSEIF_STMT = new RegExp('else if ?\\(');
-const ELSE_STMT = new RegExp('else');
-const FOR_STMT = new RegExp('for ?\\(');
-const IF_OR_FOR = new RegExp('(\/if|\/for)');
-const CALL_FUNCTION = new RegExp('\\((.*)\\)', '');
-const NOT_NUMBER = new RegExp('^[0-9]+$', 'g');
-const WORD = new RegExp('[\\w"\'.\\s+]+', 'g');
-const DBL_QUOTED_STR = new RegExp('"(.*?)"', 'g');
-const WORDIF = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
-let exp = new RegExp('\\${([^}]*)}', 'g');
-// let cachedTemplate: Object = {};
-let ARR_OBJ = /^\..*/gm;
-let SINGLE_SLASH = /\\/gi;
-let DOUBLE_SLASH = /\\\\/gi;
-const WORDFUNC = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
-const WINDOWFUNC = /\window\./gm;
-/**
- * The function to set regular expression for template expression string.
- * @param  {RegExp} value - Value expression.
- * @private
- */
-
-// /**
-//  * To render the template string from the given data.
-//  * @param  {string} template - String Template.
-//  * @param  {Object[]|JSON} data - DataSource for the template.
-//  * @param  {Object} helper? - custom helper object.
-//  */
-// export function template(template: string, data: JSON, helper?: Object): string {
-//     let hash: string = hashCode(template);
-//     let tmpl: Function;
-//     if (!cachedTemplate[hash]) {
-//         tmpl = cachedTemplate[hash] = compile(template, helper);
-//     } else {
-//         tmpl = cachedTemplate[hash];
-//     }
-//     return tmpl(data);
-// }
-/**
- * Compile the template string into template function.
- * @param  {string} template - The template string which is going to convert.
- * @param  {Object} helper? - Helper functions as an object.
- * @private
- */
-function compile$1(template, helper) {
-    let argName = 'data';
-    let evalExpResult = evalExp(template, argName, helper);
-    let fnCode = `var str="${evalExpResult}"; return str;`;
-    // tslint:disable-next-line:no-function-constructor-with-string-args
-    let fn = new Function(argName, fnCode);
-    return fn.bind(helper);
-}
-// function used to evaluate the function expression
-function evalExp(str, nameSpace, helper) {
-    let varCOunt = 0;
-    /**
-     * Variable containing Local Keys
-     */
-    let localKeys = [];
-    let isClass = str.match(/class="([^\"]+|)\s{2}/g);
-    let singleSpace = '';
-    if (isClass) {
-        isClass.forEach((value) => {
-            singleSpace = value.replace(/\s\s+/g, ' ');
-            str = str.replace(value, singleSpace);
-        });
-    }
-    return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(exp, (match, cnt, offset, matchStr) => {
-        const SPECIAL_CHAR = /\@|\#|\$/gm;
-        let matches = cnt.match(CALL_FUNCTION);
-        // matches to detect any function calls
-        if (matches) {
-            let rlStr = matches[1];
-            if (ELSEIF_STMT.test(cnt)) {
-                //handling else-if condition
-                cnt = '";} ' + cnt.replace(matches[1], rlStr.replace(WORD, (str) => {
-                    str = str.trim();
-                    return addNameSpace(str, !(QUOTES.test(str)) && (localKeys.indexOf(str) === -1), nameSpace, localKeys);
-                })) + '{ \n str = str + "';
-            }
-            else if (IF_STMT.test(cnt)) {
-                //handling if condition
-                cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs) => {
-                    return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
-                })) + '{ \n str = str + "';
-            }
-            else if (FOR_STMT.test(cnt)) {
-                //handling for condition
-                let rlStr = matches[1].split(' of ');
-                // replace for each into actual JavaScript
-                cnt = '"; ' + cnt.replace(matches[1], (mtc) => {
-                    localKeys.push(rlStr[0]);
-                    localKeys.push(rlStr[0] + 'Index');
-                    varCOunt = varCOunt + 1;
-                    // tslint:disable-next-line
-                    return 'var i' + varCOunt + '=0; i' + varCOunt + ' < ' + addNameSpace(rlStr[1], true, nameSpace, localKeys) + '.length; i' + varCOunt + '++';
-                }) + '{ \n ' + rlStr[0] + '= ' + addNameSpace(rlStr[1], true, nameSpace, localKeys)
-                    + '[i' + varCOunt + ']; \n var ' + rlStr[0] + 'Index=i' + varCOunt + '; \n str = str + "';
-            }
-            else {
-                //helper function handling
-                let fnStr = cnt.split('(');
-                let fNameSpace = (helper && helper.hasOwnProperty(fnStr[0]) ? 'this.' : 'global');
-                fNameSpace = (/\./.test(fnStr[0]) ? '' : fNameSpace);
-                let ftArray = matches[1].split(',');
-                if (matches[1].length !== 0 && !(/data/).test(ftArray[0]) && !(/window./).test(ftArray[0])) {
-                    matches[1] = (fNameSpace === 'global' ? nameSpace + '.' + matches[1] : matches[1]);
-                }
-                let splRegexp = /\@|\$|\#/gm;
-                let arrObj = /\]\./gm;
-                if (WINDOWFUNC.test(cnt) && arrObj.test(cnt) || splRegexp.test(cnt)) {
-                    let splArrRegexp = /\@|\$|\#|\]\./gm;
-                    if (splArrRegexp.test(cnt)) {
-                        // tslint:disable-next-line
-                        cnt = '"+ ' + (fNameSpace === 'global' ? '' : fNameSpace) + cnt.replace(matches[1], rlStr.replace(WORDFUNC, (strs) => {
-                            return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
-                        })) + '+ "';
-                    }
-                }
-                else {
-                    cnt = '" + ' + (fNameSpace === 'global' ? '' : fNameSpace) +
-                        cnt.replace(rlStr, addNameSpace(matches[1].replace(/,( |)data.|,/gi, ',' + nameSpace + '.').replace(/,( |)data.window/gi, ',window'), (fNameSpace === 'global' ? false : true), nameSpace, localKeys)) +
-                        '+"';
-                }
-            }
-        }
-        else if (ELSE_STMT.test(cnt)) {
-            // handling else condition
-            cnt = '"; ' + cnt.replace(ELSE_STMT, '} else { \n str = str + "');
-        }
-        else if (!!cnt.match(IF_OR_FOR)) {
-            // close condition 
-            cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
-        }
-        else if (SPECIAL_CHAR.test(cnt)) {
-            // template string with double slash with special character
-            if (cnt.match(SINGLE_SLASH)) {
-                cnt = SlashReplace(cnt);
-            }
-            cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
-        }
-        else {
-            // template string with double slash
-            if (cnt.match(SINGLE_SLASH)) {
-                cnt = SlashReplace(cnt);
-                cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
-            }
-            else {
-                // evaluate normal expression
-                cnt = '"+' + addNameSpace(cnt.replace(/\,/gi, '+' + nameSpace + '.'), (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
-            }
-        }
-        return cnt;
-    });
-}
-function addNameSpace(str, addNS, nameSpace, ignoreList) {
-    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
-}
-function NameSpaceArrObj(str, addNS, nameSpace, ignoreList) {
-    let arrObjReg = /^\..*/gm;
-    return ((addNS && !(NOT_NUMBER.test(str)) &&
-        ignoreList.indexOf(str.split('.')[0]) === -1 && !(arrObjReg.test(str))) ? nameSpace + '.' + str : str);
-}
-// // Create hashCode for template string to storeCached function
-// function hashCode(str: string): string {
-//     return str.split('').reduce((a: number, b: string) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0).toString();
-// }
-function NameSpaceForspecialChar(str, addNS, nameSpace, ignoreList) {
-    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '["' + str : str);
-}
-// tslint:disable-next-line
-function SlashReplace(tempStr) {
-    // tslint:disable-next-line
-    let double = `\\\\`;
-    if (tempStr.match(DOUBLE_SLASH)) {
-        tempStr = tempStr;
-    }
-    else {
-        tempStr = tempStr.replace(SINGLE_SLASH, double);
-    }
-    return tempStr;
-}
-function HandleSpecialCharArrObj(str, nameSpaceNew, keys) {
-    str = str.trim();
-    let windowFunc = /\window\./gm;
-    if (!windowFunc.test(str)) {
-        let quotes = /'|"/gm;
-        let splRegexp = /\@|\$|\#/gm;
-        if (splRegexp.test(str)) {
-            str = NameSpaceForspecialChar(str, (keys.indexOf(str) === -1), nameSpaceNew, keys) + '"]';
-        }
-        if (ARR_OBJ.test(str)) {
-            return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
-        }
-        else {
-            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
-        }
-    }
-    else {
-        return str;
-    }
-}
-
-/**
- * Template Engine Bridge
- */
-const HAS_ROW = /^[\n\r.]+\<tr|^\<tr/;
-const HAS_SVG = /^[\n\r.]+\<svg|^\<path|^\<g/;
-let blazorTemplates = {};
-function getRandomId() {
-    return '-' + Math.random().toString(36).substr(2, 5);
-}
-/**
- * Compile the template string into template function.
- * @param  {string} templateString - The template string which is going to convert.
- * @param  {Object} helper? - Helper functions as an object.
- * @private
- */
-//tslint:disable-next-line
-function compile$$1(templateString, helper) {
-    let compiler = engineObj.compile(templateString, helper);
-    //tslint:disable-next-line
-    return (data, component, propName, templateId, isStringTemplate, index) => {
-        let result = compiler(data, component, propName);
-        let blazorTemplateId = 'BlazorTemplateId';
-        if (isBlazor() && !isStringTemplate) {
-            let randomId = getRandomId();
-            let blazorId = templateId + randomId;
-            if (!blazorTemplates[templateId]) {
-                blazorTemplates[templateId] = [];
-            }
-            if (!isNullOrUndefined(index)) {
-                let keys = Object.keys(blazorTemplates[templateId][index]);
-                for (let key of keys) {
-                    if (key !== blazorTemplateId && data[key]) {
-                        blazorTemplates[templateId][index][key] = data[key];
-                    }
-                    if (key === blazorTemplateId) {
-                        blazorId = blazorTemplates[templateId][index][key];
-                    }
-                }
-            }
-            else {
-                data[blazorTemplateId] = blazorId;
-                blazorTemplates[templateId].push(data);
-            }
-            // tslint:disable-next-line:no-any
-            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] :
-                // tslint:disable-next-line:no-any
-                [createElement('div', { id: blazorId, className: 'e-blazor-template' })];
-        }
-        if (typeof result === 'string') {
-            if (HAS_SVG.test(result)) {
-                let ele = createElement('svg', { innerHTML: result });
-                return ele.childNodes;
-            }
-            else {
-                let ele = createElement((HAS_ROW.test(result) ? 'table' : 'div'), { innerHTML: result });
-                return ele.childNodes;
-            }
-        }
-        else {
-            return result;
-        }
-    };
-}
-function updateBlazorTemplate(templateId, templateName, comp, isEmpty, callBack) {
-    if (isBlazor()) {
-        let ejsIntrop = 'ejsInterop';
-        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
-        if (isEmpty !== false) {
-            blazorTemplates[templateId] = [];
-        }
-    }
-}
-function resetBlazorTemplate(templateId, templateName, index) {
-    let templateDiv = document.getElementById(templateId);
-    if (templateDiv) {
-        // tslint:disable-next-line:no-any
-        let innerTemplates = templateDiv.getElementsByClassName('blazor-inner-template');
-        for (let i = 0; i < innerTemplates.length; i++) {
-            let tempId = ' ';
-            if (!isNullOrUndefined(index)) {
-                tempId = innerTemplates[index].getAttribute('data-templateId');
-            }
-            else {
-                tempId = innerTemplates[i].getAttribute('data-templateId');
-            }
-            let tempElement = document.getElementById(tempId);
-            if (tempElement) {
-                let length = tempElement.childNodes.length;
-                for (let j = 0; j < length; j++) {
-                    if (!isNullOrUndefined(index)) {
-                        innerTemplates[index].appendChild(tempElement.childNodes[0]);
-                        i = innerTemplates.length;
-                    }
-                    else {
-                        innerTemplates[i].appendChild(tempElement.childNodes[0]);
-                    }
-                }
-            }
-        }
-    }
-}
-/**
- * Set your custom template engine for template rendering.
- * @param  {ITemplateEngine} classObj - Class object for custom template.
- * @private
- */
-function setTemplateEngine(classObj) {
-    engineObj.compile = classObj.compile;
-}
-/**
- * Get current template engine for template rendering
- * @param  {ITemplateEngine} classObj - Class object for custom template.
- * @private
- */
-function getTemplateEngine() {
-    return engineObj.compile;
-}
-//Default Engine Class
-class Engine {
-    compile(templateString, helper = {}) {
-        return compile$1(templateString, helper);
-    }
-}
-let engineObj = { compile: new Engine().compile };
-
-/**
  * SanitizeHtmlHelper for sanitize the value.
  */
 const removeTags = [
@@ -7515,5 +8117,5 @@ class SanitizeHtmlHelper {
  * Base modules
  */
 
-export { blazorCultureFormats, IntlBase, Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, removeChildInstance, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event$1 as Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, disableBlazorMode, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, enableBlazorMode, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer, SanitizeHtmlHelper };
+export { blazorCultureFormats, IntlBase, Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, removeChildInstance, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event$1 as Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, disableBlazorMode, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, enableBlazorMode, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, includeInnerHTML, containsClass, cloneNode, Observer, SanitizeHtmlHelper };
 //# sourceMappingURL=ej2-base.es2015.js.map

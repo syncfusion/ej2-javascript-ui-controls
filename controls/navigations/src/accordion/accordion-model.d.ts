@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { isVisible, closest, attributes, detach, select, blazorTemplates, isBlazor, addClass, append } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { isVisible, closest, attributes, detach, select, isBlazor, addClass, append } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import {ExpandMode,AccordionClickArgs,ExpandEventArgs,ExpandedEventArgs} from "./accordion";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -119,6 +119,18 @@ export interface AccordionItemModel {
    */
     expanded?: Boolean;
 
+    /**
+   * Sets false to hide an accordion item.
+   * @default true
+   */
+    visible?: Boolean;
+
+    /**
+   * Sets true to disable an accordion item.
+   * @default false
+   */
+    disabled?: Boolean;
+
 }
 
 /**
@@ -143,6 +155,7 @@ export interface AccordionModel extends ComponentModel{
    * Specifies the datasource for the accordion items.
    * @isdatamanager false
    * @default []
+   * @blazorType IEnumerable<object>
    */
     dataSource?: Object[];
 

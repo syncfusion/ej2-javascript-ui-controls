@@ -590,13 +590,15 @@ export class Workbook {
     }
     private processCellValue(value: string, cell: Cell): string {
         let cellValue : string = value;
+        if(value.indexOf("<font") !== -1 || value.indexOf("<a") !== -1 || value.indexOf("<b>") !== -1 || 
+        value.indexOf("<i>") !== -1 || value.indexOf("<u>") !== -1 ){
         let processedVal: string = '';
         let startindex: number = value.indexOf('<', 0);
-        if (startindex >= 0) {
+        let endIndex: number = value.indexOf('>', startindex + 1);
+        if (startindex >= 0 && endIndex >= 0) {
         if (startindex !== 0) {
             processedVal += '<r><t xml:space="preserve">' + value.substring(0, startindex) + '</t></r>';
-        }
-        let endIndex: number = value.indexOf('>', startindex + 1);
+        }        
         while (startindex >= 0 && endIndex >= 0 ) {
            endIndex = value.indexOf('>', startindex + 1);
            if (endIndex >= 0) {
@@ -658,6 +660,10 @@ export class Workbook {
         }
         return processedVal;
     } else {
+        return cellValue;
+    }
+    }else
+    {
         return cellValue;
     }
     }

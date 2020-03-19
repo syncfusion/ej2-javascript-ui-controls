@@ -381,7 +381,7 @@ var Button = /** @__PURE__ @class */ (function (_super) {
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    if (!isBlazor()) {
+                    if (!isBlazor() || (isBlazor() && !this.isServerRendered && this.getModuleName() !== 'progress-btn')) {
                         if (this.enableHtmlSanitizer) {
                             newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
                         }
@@ -575,26 +575,33 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.destroy = function () {
         var _this = this;
         var wrapper = this.getWrapper();
-        _super.prototype.destroy.call(this);
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            wrapper.parentNode.insertBefore(this.element, wrapper);
-            detach(wrapper);
-            this.element.checked = false;
-            if (this.indeterminate) {
-                this.element.indeterminate = false;
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
             }
-            ['name', 'value', 'disabled'].forEach(function (key) {
-                _this.element.removeAttribute(key);
-            });
         }
         else {
-            ['role', 'aria-checked', 'class'].forEach(function (key) {
-                wrapper.removeAttribute(key);
-            });
-            wrapper.innerHTML = '';
+            _super.prototype.destroy.call(this);
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                wrapper.parentNode.insertBefore(this.element, wrapper);
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
+                }
+                ['name', 'value', 'disabled'].forEach(function (key) {
+                    _this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach(function (key) {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
+            }
         }
     };
     CheckBox.prototype.focusHandler = function () {
@@ -768,6 +775,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.preRender = function () {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -785,12 +795,20 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.render = function () {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
+        this.renderComplete();
     };
     CheckBox.prototype.setDisabled = function () {
         var wrapper = this.getWrapper();
@@ -881,7 +899,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * Click the CheckBox element
      * its native method
      * @public
-     * @deprecated
      */
     CheckBox.prototype.click = function () {
         this.element.click();
@@ -890,7 +907,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * Sets the focus to CheckBox
      * its native method
      * @public
-     * @deprecated
      */
     CheckBox.prototype.focusIn = function () {
         this.element.focus();
@@ -1819,7 +1835,9 @@ var classNames = {
 var ChipList = /** @__PURE__ @class */ (function (_super) {
     __extends$4(ChipList, _super);
     function ChipList(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        _this.multiSelectedChip = [];
+        return _this;
     }
     /**
      * Initialize the event handler
@@ -1842,7 +1860,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             this.select(this.selectedChips);
         }
         this.wireEvent(false);
-        this.rippleFunctin = rippleEffect(this.element, {
+        this.rippleFunction = rippleEffect(this.element, {
             selector: '.e-chip'
         });
         this.renderComplete();
@@ -1919,7 +1937,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         append(chipListArray, this.element);
     };
     ChipList.prototype.getFieldValues = function (data) {
-        var chipEnabled = this.enabled.toString() === 'false' ? false : true;
+        var chipEnabled = !(this.enabled.toString() === 'false');
         var fields = {
             text: typeof data === 'object' ? (data.text ? data.text.toString() : this.text.toString()) :
                 (this.type === 'chip' ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
@@ -1987,6 +2005,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      * A function that adds chip items based on given input.
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
+     * @deprecated
      */
     ChipList.prototype.add = function (chipsData) {
         var _a;
@@ -2004,6 +2023,24 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      */
     ChipList.prototype.select = function (fields) {
         this.onSelect(fields, false);
+    };
+    ChipList.prototype.multiSelection = function (newProp) {
+        var items = this.element.querySelectorAll('.' + 'e-chip');
+        for (var j = 0; j < newProp.length; j++) {
+            if (typeof newProp[j] === 'string') {
+                for (var k = 0; k < items.length; k++) {
+                    if (newProp[j] !== k) {
+                        if (newProp[j] === items[k].attributes[5].value) {
+                            this.multiSelectedChip.push(k);
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                this.multiSelectedChip.push(newProp[j]);
+            }
+        }
     };
     ChipList.prototype.onSelect = function (fields, callFromProperty) {
         if (this.type !== 'chip' && this.selection !== 'None') {
@@ -2064,7 +2101,8 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                 selectedItems.Indexes.push(index);
                 selectedItems.data.push(this.chips[index]);
                 var text = typeof this.chips[index] === 'object' ?
-                    this.chips[index].text.toString() : this.chips[index].toString();
+                    this.chips[index].text ? this.chips[index].text.toString()
+                        : null : this.chips[index].toString();
                 selectedItems.texts.push(text);
             }
             var selectedItem = {
@@ -2215,41 +2253,36 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             if (selectedEle.getAttribute('aria-selected') === 'true') {
                 value = selectedEle.getAttribute('data-value');
                 if (this.selection === 'Single' && selectedEle.classList.contains('e-active')) {
-                    if (value) {
-                        chip = value;
-                    }
-                    else {
-                        chip = i;
-                    }
+                    chip = value ? value : i;
                     break;
                 }
                 else {
-                    if (value) {
-                        chipCollValue.push(value);
-                    }
-                    else {
-                        chipCollIndex.push(i);
-                    }
+                    value ? chipCollValue.push(value) : chipCollIndex.push(i);
                 }
             }
         }
         this.setProperties({ selectedChips: this.selection === 'Single' ? chip : value ? chipCollValue : chipCollIndex }, true);
     };
     ChipList.prototype.deleteHandler = function (chipWrapper, index) {
+        this.allowServerDataBinding = true;
         this.chips.splice(index, 1);
-        detach(chipWrapper);
+        this.setProperties({ chips: this.chips }, true);
+        this.serverDataBind();
+        this.allowServerDataBinding = false;
+        if (!(isBlazor() && this.isServerRendered)) {
+            detach(chipWrapper);
+        }
     };
     /**
      * It is used to destroy the ChipList component.
      */
     ChipList.prototype.destroy = function () {
-        _super.prototype.destroy.call(this);
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,
             classNames.multiSelection, classNames.singleSelection, classNames.disabled, classNames.chipWrapper, classNames.iconWrapper,
             classNames.active, classNames.focused].concat(this.cssClass.toString().split(' ').filter(function (css) { return css; })));
         this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
         this.wireEvent(true);
-        this.rippleFunctin();
+        this.rippleFunction();
         if (isBlazor()) {
             var chipChildElement = this.element.querySelectorAll('.e-chip');
             for (var i = 0; i < chipChildElement.length; i++) {
@@ -2259,6 +2292,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
+            _super.prototype.destroy.call(this);
             this.element.innerHTML = '';
             this.element.innerText = this.innerText;
         }
@@ -2292,9 +2326,11 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                 case 'selection':
                 case 'enableDelete':
                 case 'enabled':
-                    this.isServerRendered = false;
-                    this.refresh();
-                    this.isServerRendered = true;
+                    if (!(prop === 'chips' && (isBlazor() && this.isServerRendered))) {
+                        this.isServerRendered = false;
+                        this.refresh();
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'cssClass':
                     if (this.type === 'chip') {
@@ -2309,7 +2345,15 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
-                    this.onSelect(newProp.selectedChips, true);
+                    if (this.selection === 'Multiple') {
+                        this.multiSelectedChip = [];
+                        this.multiSelection(newProp.selectedChips);
+                        this.onSelect(this.multiSelectedChip, true);
+                        this.updateSelectedChips();
+                    }
+                    else {
+                        this.onSelect(newProp.selectedChips, true);
+                    }
                     break;
                 case 'enableRtl':
                     this.setRtl();

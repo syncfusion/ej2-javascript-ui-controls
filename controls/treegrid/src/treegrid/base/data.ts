@@ -3,7 +3,8 @@ import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption } from 
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { getObject, BeforeDataBoundArgs, getUid, NotifyArgs, SaveEventArgs, Action } from '@syncfusion/ej2-grids';
+import { getObject, BeforeDataBoundArgs, VirtualContentRenderer, getUid } from '@syncfusion/ej2-grids';
+import { NotifyArgs, SaveEventArgs, Action, VirtualInfo } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline, isCountRequired } from '../utils';
 import * as events from './constant';
 import { Column } from '../models';
@@ -212,6 +213,7 @@ public isRemote(): boolean {
             records[rec].level = 0;
             records[rec].index = Math.ceil(Math.random() * 1000);
             records[rec].hasChildRecords = true;
+            records[rec].checkboxState = 'uncheck';
           }
         }
       } else {
@@ -309,7 +311,7 @@ public isRemote(): boolean {
         setValue('action', 'beforecontentrender', e);
         this.parent.trigger(events.actionComplete, e);
         hideSpinner(this.parent.element);
-        if (this.parent.grid.aggregates.length > 0) {
+        if (this.parent.grid.aggregates.length > 0 && !this.parent.enableVirtualization) {
           let gridQuery: Query = getObject('query', e);
           let result: string = 'result';
           if (isNullOrUndefined(gridQuery)) {
@@ -321,11 +323,27 @@ public isRemote(): boolean {
           }
         }
         e.count = this.parent.grid.pageSettings.totalRecordsCount;
-        getValue('grid.renderModule', this.parent).dataManagerSuccess(e);
+        let virtualArgs: NotifyArgs = {};
+        if (this.parent.enableVirtualization) {
+          this.remoteVirtualAction(virtualArgs);
+        }
+        getValue('grid.renderModule', this.parent).dataManagerSuccess(e, virtualArgs);
         this.parent.trigger(events.expanded, args);
       });
     }
   }
+
+  private remoteVirtualAction(virtualArgs: NotifyArgs): void {
+    virtualArgs.requestType = 'refresh';
+    setValue('isExpandCollapse', true, virtualArgs);
+    let contentModule: VirtualContentRenderer = getValue('grid.contentModule', this.parent);
+    let currentInfo: VirtualInfo = getValue('currentInfo', contentModule);
+    let prevInfo: VirtualInfo = getValue('prevInfo', contentModule);
+    if (currentInfo.loadNext && this.parent.grid.pageSettings.currentPage === currentInfo.nextInfo.page) {
+      this.parent.grid.pageSettings.currentPage = prevInfo.page;
+    }
+  }
+
   private beginSorting(): void {
     this.isSortAction = true;
   }

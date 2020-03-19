@@ -1,12 +1,8 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
-import { SheetModel } from './sheet-model';
-import { RowModel } from './row-model';
-import { CellModel } from './cell-model';
-import { getRow, isHiddenRow } from './row';
-import { getCell } from './cell';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel } from '../common/index';
+import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { getMaxSheetId, getSheetNameCount } from './sheet';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -49,7 +45,14 @@ export function getData(
                             if (indexes[3] < i + 1) { cells[rowKey] = (sRow + 1).toString(); }
                             data[index.toString()] = cells;
                         } else {
-                            (data as Map<string, CellModel>).set(getCellAddress(sRow, i), row ? getCell(sRow, i, sheet) : null);
+                            if (!valueOnly && isHiddenCol(sheet, i)) { i++; continue; }
+                            let cellObj: CellModel = {}; Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
+                            if (cellObj.style) {
+                                let style: CellStyleModel = {}; Object.assign(style, cellObj.style); cellObj.style = style;
+                            }
+                            let eventArgs: CellInfoEventArgs = { cell: cellObj, address: getCellAddress(sRow, i) };
+                            context.trigger(queryCellInfo, eventArgs);
+                            (data as Map<string, CellModel>).set(eventArgs.address, eventArgs.cell);
                         }
                         i++;
                     }
@@ -120,12 +123,14 @@ export function getModel(model: (SheetModel | RowModel | CellModel)[], idx: numb
  */
 export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet?: true, context?: Workbook): void {
     let j: number;
-    let diff: number;
+    let diff: number = 0;
     let cnt: number;
     let len: number = model.length;
     for (let i: number = 0; i < len; i++) {
-        cnt = diff = model[i].index - i;
-        model[i].index = null;
+        if (!isNullOrUndefined(model[i]) && !isUndefined(model[i].index)) {
+            cnt = diff = model[i].index - i;
+            delete model[i].index;
+        }
         if (diff > 0) {
             j = 0;
             while (diff--) {
@@ -140,14 +145,18 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
             len += cnt;
         }
         if (isSheet) {
-            (model[i] as SheetModel).id = getMaxSheetId(context.sheets);
+            if ((model[i] as SheetModel).id < 1) {
+                (model[i] as SheetModel).id = getMaxSheetId(context.sheets);
+            }
             if (!(model[i] as SheetModel).name) {
                 (model[i] as SheetModel).name = 'Sheet' + getSheetNameCount(context);
             }
+            let cellCnt: number = 0;
+            (model[i] as SheetModel).rows.forEach((row: RowModel) => {
+                cellCnt = Math.max(cellCnt, (row && row.cells && row.cells.length - 1) || 0);
+            });
+            (model[i] as SheetModel).usedRange = { rowIndex: (model[i] as SheetModel).rows.length - 1, colIndex: cellCnt };
         }
-    }
-    if (isSheet) {
-        context.setProperties({ 'sheets': context.sheets }, true);
     }
 }
 

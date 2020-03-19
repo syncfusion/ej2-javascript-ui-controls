@@ -2,7 +2,7 @@ import { ColorPicker as ColorPickerComponent, BeforeOpenCloseEventArgs, OpenEven
 import { ColorPickerEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { addClass, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale, destroyComponent } from '../common/index';
+import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale } from '../common/index';
 import { setCellFormat, SetCellFormatArgs } from '../../workbook/common/index';
 /**
  * `Color Picker` module is used to handle ColorPicker functionality.
@@ -10,6 +10,8 @@ import { setCellFormat, SetCellFormatArgs } from '../../workbook/common/index';
  */
 export class ColorPicker {
     private parent: Spreadsheet;
+    private fontColorPicker: ColorPickerComponent;
+    private filColorPicker: ColorPickerComponent;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -17,59 +19,59 @@ export class ColorPicker {
     private render(): void {
         let id: string = this.parent.element.id;
         let input: HTMLInputElement = this.parent.createElement('input', { attrs: { 'type': 'color' } }) as HTMLInputElement;
-        let fontColorPicker: ColorPickerComponent = new ColorPickerComponent({
+        this.fontColorPicker = new ColorPickerComponent({
             value: '#000000ff',
             mode: 'Palette',
             showButtons: false,
             presetColors: fontColor,
             enableOpacity: false,
-            beforeClose: (args: BeforeOpenCloseEventArgs): void => this.beforeCloseHandler(fontColorPicker),
+            beforeClose: (args: BeforeOpenCloseEventArgs): void => this.beforeCloseHandler(this.fontColorPicker),
             open: this.openHandler.bind(this),
-            beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(fontColorPicker, args),
+            beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(this.fontColorPicker, args),
             change: (args: ColorPickerEventArgs): void => {
-                let color: string = fontColorPicker.getValue(args.currentValue.rgba);
+                let color: string = this.fontColorPicker.getValue(args.currentValue.rgba);
                 let eventArgs: SetCellFormatArgs = { style: { color: color }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
-                    fontColorPicker.setProperties({ 'value': fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                    this.fontColorPicker.setProperties({ 'value': this.fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 } else {
-                    this.updateSelectedColor(eventArgs.style.color, fontColorPicker.element);
+                    this.updateSelectedColor(eventArgs.style.color, this.fontColorPicker.element);
                 }
                 this.parent.element.focus();
             },
-            created: (): void => this.wireFocusEvent(fontColorPicker.element, '#000000')
+            created: (): void => this.wireFocusEvent(this.fontColorPicker.element, '#000000')
         });
-        fontColorPicker.createElement = this.parent.createElement;
+        this.fontColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
-        fontColorPicker.appendTo(input);
+        this.fontColorPicker.appendTo(input);
         input.parentElement.id = `${id}_font_color_picker`;
         addClass([input.nextElementSibling.getElementsByClassName('e-selected-color')[0]], ['e-icons', 'e-font-color']);
         input = this.parent.createElement('input', { attrs: { 'type': 'color' } }) as HTMLInputElement;
-        let filColorPicker: ColorPickerComponent = new ColorPickerComponent({
+        this.filColorPicker = new ColorPickerComponent({
             value: '#ffff00ff',
             mode: 'Palette',
             presetColors: fillColor,
             showButtons: false,
             enableOpacity: false,
             open: this.openHandler.bind(this),
-            beforeClose: (args: BeforeOpenCloseEventArgs): void => this.beforeCloseHandler(filColorPicker),
-            beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(filColorPicker, args),
+            beforeClose: (args: BeforeOpenCloseEventArgs): void => this.beforeCloseHandler(this.filColorPicker),
+            beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(this.filColorPicker, args),
             change: (args: ColorPickerEventArgs): void => {
-                let color: string = filColorPicker.getValue(args.currentValue.rgba);
+                let color: string = this.filColorPicker.getValue(args.currentValue.rgba);
                 let eventArgs: SetCellFormatArgs = { style: { backgroundColor: color }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
-                    filColorPicker.setProperties({ 'value': filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                    this.filColorPicker.setProperties({ 'value': this.filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 } else {
-                    this.updateSelectedColor(eventArgs.style.backgroundColor, filColorPicker.element);
+                    this.updateSelectedColor(eventArgs.style.backgroundColor, this.filColorPicker.element);
                 }
                 this.parent.element.focus();
             },
-            created: (): void => this.wireFocusEvent(filColorPicker.element, '#ffff00')
+            created: (): void => this.wireFocusEvent(this.filColorPicker.element, '#ffff00')
         });
-        filColorPicker.createElement = this.parent.createElement;
+        this.filColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
-        filColorPicker.appendTo(input);
+        this.filColorPicker.appendTo(input);
         input.parentElement.id = `${id}_fill_color_picker`;
         addClass([input.nextElementSibling.getElementsByClassName('e-selected-color')[0]], ['e-icons', 'e-fill-color']);
     }
@@ -104,24 +106,22 @@ export class ColorPicker {
         }
     }
     private destroy(): void {
-        this.removeEventListener();
-        let id: string = this.parent.element.id;
-        this.destroyColorPicker(`${id}_font_color_picker`);
-        this.destroyColorPicker(`${id}_fill_color_picker`);
-        this.parent = null;
+        if (this.parent) {
+            this.removeEventListener();
+            this.fontColorPicker.destroy(); this.fontColorPicker = null;
+            this.filColorPicker.destroy(); this.filColorPicker = null;
+            this.parent = null;
+        }
     }
-    private destroyColorPicker(id: string): void {
-        let ele: HTMLElement = document.getElementById(id);
-        if (ele) { destroyComponent(ele.firstElementChild as HTMLElement, ColorPickerComponent); }
-    }
+
     private addEventListener(): void {
         this.parent.on(beforeRibbonCreate, this.render, this);
+        this.parent.on('destroyRibbonComponents', this.destroy, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
     private removeEventListener(): void {
-        if (!this.parent.isDestroyed) {
-            this.parent.off(beforeRibbonCreate, this.render);
-            this.parent.off(spreadsheetDestroyed, this.destroy);
-        }
+        this.parent.off(beforeRibbonCreate, this.render);
+        this.parent.off('destroyRibbonComponents', this.destroy);
+        this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
 }

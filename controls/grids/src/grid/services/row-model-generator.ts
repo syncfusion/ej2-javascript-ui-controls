@@ -26,7 +26,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     public generateRows(data: Object, args?: { startIndex?: number, requestType?: Action }): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        let isInifiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'infiniteScroll';
+        let isInifiniteScroll: boolean = this.parent.enableInfiniteScrolling && args.requestType === 'infiniteScroll';
         let startIndex: number = this.parent.enableVirtualization || isInifiniteScroll ? args.startIndex : 0;
         for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
@@ -74,8 +74,15 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         }
         options.cssClass = cssClass;
         options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
-        options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
-
+        options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
+        if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization && this.parent.selectionModule.checkBoxState) {
+            options.isSelected = this.parent.selectionModule.checkBoxState;
+            if (options.isSelected && this.parent.selectionModule.selectedRowIndexes.indexOf(index) === -1 ) {
+                this.parent.selectionModule.selectedRowIndexes.push(index);
+            }
+        } else {
+            options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
+        }
         this.refreshForeignKeyRow(options);
         let cells: Cell<Column>[] = this.ensureColumns();
         let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);

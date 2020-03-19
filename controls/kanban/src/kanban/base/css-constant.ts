@@ -161,3 +161,5 @@ export const POPUP_WRAPPER_CLASS: string = 'e-mobile-popup-wrapper';
 export const CLOSE_ICON_CLASS: string = 'e-close-icon';
 /** @hidden */
 export const POPUP_OPEN_CLASS: string = 'e-popup-open';
+/** @hidden */
+export const DIALOG_CONTENT_CONTAINER: string = 'e-kanban-dialog-content';

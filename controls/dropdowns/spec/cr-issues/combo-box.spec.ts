@@ -434,16 +434,16 @@ describe('ComboBox', () => {
             };
             listObj.focusOut();
         });
-		it('Check the value selection', (done) => {
-            listObj.focusIn();
-            (<any>listObj).inputElement.value = 'Cr';
-            listObj.showPopup();
-            listObj.change = function (args) {
-                expect(args.value).toBe('Cr');
-                done();
-            };
-            listObj.focusOut();
-        });
+		// it('Check the value selection', (done) => {
+        //     listObj.focusIn();
+        //     (<any>listObj).inputElement.value = 'Cr';
+        //     listObj.showPopup();
+        //     listObj.change = function (args) {
+        //         expect(args.value).toBe('Cr');
+        //         done();
+        //     };
+        //     listObj.focusOut();
+        // });
     });
 
     describe('template item not generate', () => {

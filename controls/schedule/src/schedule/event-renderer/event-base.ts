@@ -202,11 +202,9 @@ export class EventBase {
         if (startDate && endDate) {
             filteredEvents = this.filterEvents(startDate, endDate, eventCollection);
         } else if (startDate && !endDate) {
-            let predicate: Predicate = new Predicate(this.parent.eventFields.startTime, 'greaterthanorequal', startDate);
-            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+            filteredEvents = eventCollection.filter((e: { [key: string]: Object }) => e[this.parent.eventFields.startTime] >= startDate);
         } else if (!startDate && endDate) {
-            let predicate: Predicate = new Predicate(this.parent.eventFields.endTime, 'lessthanorequal', endDate);
-            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+            filteredEvents = eventCollection.filter((e: { [key: string]: Object }) => e[this.parent.eventFields.endTime] <= endDate);
         } else {
             filteredEvents = eventCollection;
         }
@@ -701,13 +699,14 @@ export class EventBase {
     }
 
     public getEventByGuid(guid: string): Object {
-        return new DataManager({ json: this.parent.eventsProcessed }).executeLocal(new Query().where('Guid', 'equal', guid))[0];
+        return this.parent.eventsProcessed.filter((data: { [key: string]: Object }) => data.Guid === guid)[0];
     }
+
     public getEventById(id: number | string): { [key: string]: Object } {
-        let eventFields: EventFieldsMapping = this.parent.eventFields;
-        return new DataManager({ json: this.parent.eventsData }).executeLocal(new Query()
-            .where(eventFields.id, 'equal', id))[0] as { [key: string]: Object };
+        return this.parent.eventsData.filter((data: { [key: string]: Object }) =>
+            data[this.parent.eventFields.id] === id)[0] as { [key: string]: Object };
     }
+
     public generateGuid(): string {
         return 'xyxxxxyx-xxxy-yxxx-xyxx-xxyxxxxyyxxx'.replace(/[xy]/g, (c: string) => {
             const r: number = Math.random() * 16 | 0;
@@ -857,8 +856,8 @@ export class EventBase {
         } else {
             fieldValue = (parentObj[fields.recurrenceID] || parentObj[fields.followingID]) as string | number;
         }
-        let filterQuery: Query = new Query().where(isReverse ? fields.followingID : fields.id, 'equal', fieldValue);
-        let parentApp: Object[] = new DataManager(this.parent.eventsData).executeLocal(filterQuery);
+        let parentApp: Object[] = this.parent.eventsData.filter((data: { [key: string]: Object }) =>
+            data[isReverse ? fields.followingID : fields.id] === fieldValue);
         return parentApp.shift() as { [key: string]: Object };
     }
 
@@ -872,9 +871,8 @@ export class EventBase {
     public getOccurrenceEvent(eventObj: { [key: string]: Object }, isGuid: boolean = false, isFollowing: boolean = false): Object[] {
         let idField: string = isGuid ? 'Guid' : (isFollowing) ? this.parent.eventFields.followingID : this.parent.eventFields.recurrenceID;
         let fieldKey: string = isGuid ? 'Guid' : this.parent.eventFields.id;
-        let filterQuery: Query = new Query().where(idField, 'equal', eventObj[fieldKey] as string | number);
         let dataSource: Object[] = isGuid ? this.parent.eventsProcessed : this.parent.eventsData;
-        return new DataManager(dataSource).executeLocal(filterQuery);
+        return dataSource.filter((data: { [key: string]: Object }) => data[idField] === eventObj[fieldKey]);
     }
 
     public getOccurrencesByID(id: number | string): Object[] {
@@ -1049,8 +1047,7 @@ export class EventBase {
         return deleteFutureEditEventList;
     }
 
-    public getEditedOccurrences(deleteFutureEditEventList: { [key: string]: Object }[], startTime?: string)
-        : { [key: string]: Object }[] {
+    public getEditedOccurrences(deleteFutureEditEventList: { [key: string]: Object }[], startTime?: string): { [key: string]: Object }[] {
         let fields: EventFieldsMapping = this.parent.eventFields;
         let deleteRecurrenceEventList: { [key: string]: Object }[] = [];
         let delEditedEvents: { [key: string]: Object }[];

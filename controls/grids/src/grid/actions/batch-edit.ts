@@ -31,6 +31,7 @@ export class BatchEdit {
     private renderer: EditRender;
     private focus: FocusStrategy;
     private dataBoundFunction: Function;
+    private batchCancelFunction: Function;
     private removeSelectedData : Object[];
     private cellDetails: {
         rowData?: Object, field?: string, value?: string,
@@ -65,7 +66,9 @@ export class BatchEdit {
         this.parent.on(events.beforeCellFocused, this.onBeforeCellFocused, this);
         this.parent.on(events.cellFocused, this.onCellFocused, this);
         this.dataBoundFunction = this.dataBound.bind(this);
+        this.batchCancelFunction = this.batchCancel.bind(this);
         this.parent.addEventListener(events.dataBound, this.dataBoundFunction);
+        this.parent.addEventListener(events.batchCancel, this.batchCancelFunction);
         this.parent.on(events.doubleTap, this.dblClickHandler, this);
         this.parent.on(events.keyPressed, this.keyDownHandler, this);
         this.parent.on(events.editNextValCell, this.editNextValCell, this);
@@ -82,10 +85,15 @@ export class BatchEdit {
         this.parent.off(events.beforeCellFocused, this.onBeforeCellFocused);
         this.parent.off(events.cellFocused, this.onCellFocused);
         this.parent.removeEventListener(events.dataBound, this.dataBoundFunction);
+        this.parent.removeEventListener(events.batchCancel, this.batchCancelFunction);
         this.parent.off(events.doubleTap, this.dblClickHandler);
         this.parent.off(events.keyPressed, this.keyDownHandler);
         this.parent.off(events.editNextValCell, this.editNextValCell);
         this.parent.off('closebatch', this.closeForm);
+    }
+
+    private batchCancel(args: BeforeBatchSaveArgs): void {
+        this.parent.focusModule.restoreFocus();
     }
 
     private dataBound(): void {

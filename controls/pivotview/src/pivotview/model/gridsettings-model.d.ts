@@ -27,6 +27,7 @@ export interface PivotSelectionSettingsModel {
       * * `Multiple`: Allows selection of multiple rows or columns or cells. 
       * @blazorType PivotTableSelectionType
       * @default Single 
+      * @blazorDefaultValue PivotTableSelectionType.Single
       */
     type?: SelectionType;
 
@@ -52,6 +53,7 @@ export interface PivotSelectionSettingsModel {
       *  rows can be selected by using CTRL or SHIFT key.
       * @blazorType PivotTableCheckboxSelectionType
       * @default Default
+      * @blazorDefaultValue PivotTableCheckboxSelectionType.Default
       */
     checkboxMode?: CheckboxSelectionType;
 
@@ -89,6 +91,7 @@ export interface GridSettingsModel {
       * * `Default`: Displays grid lines based on the theme.
       * @blazorType PivotTableGridLine
       * @default Both
+      * @blazorDefaultValue PivotTableGridLine.Both
       */
     gridLines?: GridLine;
 
@@ -133,6 +136,7 @@ export interface GridSettingsModel {
       * also it will display tooltip while hover on ellipsis applied cell.
       * @blazorType PivotTableClipMode
       * @default Ellipsis
+      * @blazorDefaultValue PivotTableClipMode.Ellipsis
       */
     clipMode?: ClipMode;
 
@@ -167,6 +171,7 @@ export interface GridSettingsModel {
       * * `CurrentPage`: Prints the current page of the Grid.
       * @blazorType PivotTablePrintMode
       * @default AllPages
+      * @blazorDefaultValue PivotTablePrintMode.AllPages
       */
     printMode?: PrintMode;
 

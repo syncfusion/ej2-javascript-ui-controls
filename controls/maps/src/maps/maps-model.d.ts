@@ -300,7 +300,7 @@ export interface MapsModel extends ComponentModel{
     bubbleMouseMove?: EmitType<IBubbleMoveEventArgs>;
 
     /**
-     * Triggers after the animation completed.
+     * Triggers after the bubble animation completed.
      * @event
      * @blazorProperty 'AnimationCompleted'
      */

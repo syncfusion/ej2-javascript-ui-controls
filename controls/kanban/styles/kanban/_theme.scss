@@ -11,6 +11,10 @@
         .e-column-expand,
         .e-column-collapse {
           color: $kanban-icons-color;
+
+          &:focus {
+            color: $kanban-icons-toggle-color;
+          }
         }
 
       }
@@ -57,6 +61,10 @@
 
           &.e-multi-bottom-border {
             border-bottom-color: $kanban-dropped-clone-border-color;
+          }
+
+          &.e-multi-active:first-child {
+            border-color: $kanban-dropped-clone-border-color;
           }
         }
       }

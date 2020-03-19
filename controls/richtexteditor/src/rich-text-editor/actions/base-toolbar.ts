@@ -119,6 +119,10 @@ export class BaseToolbar {
                                 this.parent.formatter.saveData();
                             }
                             callback.call(this);
+                            if ((this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1].text.trim()
+                            === this.parent.inputElement.innerHTML.trim())) {
+                               return;
+                            }
                             if (proxy.undo) {
                                 this.parent.formatter.saveData();
                             }

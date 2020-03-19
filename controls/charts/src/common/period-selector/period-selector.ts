@@ -112,11 +112,11 @@ export class PeriodSelector {
         }
         let selctorArgs: IRangeSelectorRenderEventArgs;
         if (enableCustom) {
-                this.calendarId = controlId + '_calendar';
-                selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
+            this.calendarId = controlId + '_calendar';
+            selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
         }
         selctorArgs = {
-                selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
+            selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
         };
         if (this.rootControl.getModuleName() === 'stockChart') {
             selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
@@ -209,7 +209,7 @@ export class PeriodSelector {
         });
         this.datePicker.appendTo('#' + this.calendarId);
     }
-    }
+}
     private updateCustomElement(): ItemModel[] {
         let selector: ItemModel[] = [];
         let controlId: string = this.rootControl.element.id;

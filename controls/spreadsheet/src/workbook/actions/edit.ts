@@ -122,14 +122,12 @@ export class WorkbookEdit {
             this.parent.notify(checkDateFormat, dateEventArgs);
             if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
                 cell.value = <string>dateEventArgs.updatedVal;
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
             }
         } else {
             if (value.toString().indexOf(this.decimalSep) > -1) {
                 value = this.checkDecimalPoint(value);
             }
             cell.value = value;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         this.parent.setUsedRange(range[0] + 1, range[1]);
     }

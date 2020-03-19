@@ -648,10 +648,10 @@ describe('CRUD actions module', () => {
         it('Dropped clone testing', (done: DoneFn) => {
             let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
             kanbanObj.dataBound = () => {
-                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][0] as { [key: string]: Object }).Id).toEqual(2);
-                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][0] as { [key: string]: Object }).RankId).toEqual(1);
-                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][10] as { [key: string]: Object }).Id).toEqual(45);
-                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][10] as { [key: string]: Object }).RankId).toEqual(10);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][10] as { [key: string]: Object }).Id).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][10] as { [key: string]: Object }).RankId).toEqual(11);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][9] as { [key: string]: Object }).Id).toEqual(45);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][9] as { [key: string]: Object }).RankId).toEqual(10);
                 done();
             };
             util.triggerMouseEvent(droppedElement, 'mouseup', 250, 550);

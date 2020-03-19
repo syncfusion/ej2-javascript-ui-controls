@@ -268,7 +268,7 @@ describe('Range navigator', () => {
         it('checked with Minutes as label type', (done: Function) => {
             range.loaded = (args: Object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
-                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:41 AM');
+                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:42 AM');
                 expect(axisLabel.childNodes[1].lastChild.textContent).toBe('10 AM');
                 done();
             };
@@ -280,7 +280,7 @@ describe('Range navigator', () => {
         it('checked with seconds as label type', (done: Function) => {
             range.loaded = (args: Object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
-                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:12:30 AM');
+                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:12:40 AM');
                 expect(axisLabel.childNodes[1].lastChild.textContent).toBe('10:12 AM');
                 done();
             };

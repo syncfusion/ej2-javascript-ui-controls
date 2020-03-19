@@ -73,6 +73,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
      * @default 'Middle'
+     * @deprecated
      */
 
     @Property('Middle')
@@ -84,6 +85,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * * Far - Align the annotation element as bottom side.
      * * Center - Align the annotation element as mid point.
      * @default 'Center'
+     * @deprecated
      */
 
     @Property('Center')
@@ -285,8 +287,8 @@ export class AccPoints {
     public degree: number;
     /** @private */
     public transform: string;
-    /** @private */
-    public separatorY: string;
+     /** @private */
+     public separatorY: string;
 }
 
 /**

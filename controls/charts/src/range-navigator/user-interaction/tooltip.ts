@@ -166,7 +166,7 @@ export class RangeTooltip {
                 format: format || 'MM/dd/yyyy',
                 type: firstToLowerCase(control.skeletonType),
                 skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null)
-            }))(new Date(value + (control.isGMT ? new Date().getTimezoneOffset() * 60 * 1000 : 0)));
+            }))(new Date(value));
         } else {
             xAxis.format = control.intl.getNumberFormat({
                 format: isCustom ? '' : format,

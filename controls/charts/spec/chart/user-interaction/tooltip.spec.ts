@@ -121,6 +121,8 @@ describe('Chart Control', () => {  beforeAll(() => {
             };
             chartObj.pointClick = null;
             chartObj.pointMove = null;
+            chartObj.selectionMode = 'None';
+            chartObj.selectionPattern = 'None';
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
@@ -535,57 +537,6 @@ describe('Chart Control', () => {  beforeAll(() => {
             };
             chartObj.loaded = loaded;
             chartObj.series[0].type = 'Line';
-            chartObj.refresh();
-        });
-        it('support Subscript value in tooltip title', (done: Function) => {
-            loaded = (args: Object): void => {
-                let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');
-                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
-                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
-
-                let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
-                expect(tooltip.firstElementChild.innerHTML).toEqual("H₂₃₄O₂,CO₄₅₆₂H₃");
-                done();
-            };
-            chartObj.loaded = loaded;
-            chartObj.tooltip.header='H~234~O~2~,CO~4562~H~3~';
-            chartObj.tooltip = { enable: true };
-            chartObj.refresh();
-        });
-        it('support Superscript value in tooltip title', (done: Function) => {
-            loaded = (args: Object): void => {
-                let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');
-                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
-                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
-
-                let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
-                expect(tooltip.firstElementChild.innerHTML).toEqual("H²³⁴O²,CO⁴⁵⁶²H³");
-                done();
-            };
-            chartObj.loaded = loaded;
-            chartObj.tooltip.header= 'H^234^O^2^,CO^4562^H^3^';
-            chartObj.tooltip = { enable: true };
-            chartObj.refresh();
-        });
-        it('support Subscript and Superscript value in tooltip title', (done: Function) => {
-            loaded = (args: Object): void => {
-                let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');
-                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
-                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
-
-                let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
-                expect(tooltip.firstElementChild.innerHTML).toEqual('H₂₃₄O²,CO⁴⁵⁶²H₃');
-                done();
-            };
-            chartObj.loaded = loaded;
-            chartObj.tooltip.header='H~234~O^2^,CO^4562^H~3~';
-            chartObj.tooltip = { enable: true };
             chartObj.refresh();
         });
         it('checking with tooltipRender event with headerText', (done: Function) => {

@@ -1,10 +1,11 @@
 import { BulletChart } from '../bullet-chart';
-import { isNullOrUndefined, compile as templateComplier, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { compile as templateComplier, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { BulletLabelStyleModel } from '../model/bullet-base-model';
 import { stringToNumber } from '../../chart/index';
 import { IBulletTooltipContent, IBulletchartTooltipEventArgs } from '../model/bullet-interface';
 import { tooltipRender } from '../../common/model/constants';
 import { BulletChartTheme } from '../utils/theme';
+import { BulletChartAxis } from '../renderer/bullet-axis';
 
 
 /**
@@ -15,6 +16,8 @@ export class BulletTooltip {
     public toolTipInterval: number;
     private control: BulletChart;
     private templateFn: Function;
+     /** @private */
+     public bulletAxis: BulletChartAxis;
 
     /**
      * Constructor for tooltip module.
@@ -23,6 +26,7 @@ export class BulletTooltip {
     constructor(bullet: BulletChart) {
         this.control = bullet;
         this.elementId = bullet.element.id;
+        this.bulletAxis = new BulletChartAxis(this.control);
     }
 
     /**
@@ -74,23 +78,31 @@ export class BulletTooltip {
             let blazorTooltipData: IBulletTooltipContent;
             let measureId: string;
             let currentVal: number;
-            let targetVal: number[] = [];
+            let targetVal: string[] = [];
             let categoryVal: number;
             let tooltipdiv: HTMLDivElement;
             let pointer: PointerEvent = e;
+            let format: string = this.bulletAxis.getFormat(this.control);
+            let isCustomFormat: boolean = format.match('{value}') !== null;
             measureId = targetId.substring(targetId.lastIndexOf('_') + 1);
+            let targetValues: string[] = [];
+            this.bulletAxis.format = this.bulletAxis.bulletChart.intl.getNumberFormat({
+                format: isCustomFormat ? '' : format, useGrouping: this.bulletAxis.bulletChart.enableGroupSeparator
+            });
             currentVal = this.control.dataSource[measureId][this.control.valueField];
             targetVal = targetVal.concat(this.control.dataSource[measureId][this.control.targetField]);
             categoryVal = this.control.dataSource[measureId][this.control.categoryField];
-            if (localizedText) {
-                data = {
-                    value: currentVal.toLocaleString(locale), target: targetVal.map((x: number) => { return x.toLocaleString(locale); }),
-                    category: (!isNullOrUndefined(categoryVal) ? categoryVal.toLocaleString(locale) : categoryVal)
-                };
-            } else {
-                data = { value: currentVal, target: targetVal, category: categoryVal };
-                blazorTooltipData = { value: currentVal, target: targetVal.toString(), category: categoryVal };
+            let labelCurrentText: string = currentVal ? (currentVal).toString() : '';
+            let labelTargetText: string = targetVal ? (targetVal).toString() : '';
+            let labelCategoryText: string = categoryVal ? (categoryVal).toString() : '';
+            labelCurrentText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +currentVal);
+            for (let i: number = 0; i < targetVal.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +targetVal[i]));
             }
+            labelCategoryText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +categoryVal);
+            data = { value: labelCurrentText, target: targetValues, category: labelCategoryText };
+            blazorTooltipData = { value: labelCurrentText, target: labelTargetText, category: labelCategoryText };
             let style: string = 'position: absolute; z-index: 13000; display: block;';
             if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
                 tooltipdiv = <HTMLDivElement>this.control.createElement('div');

@@ -41,7 +41,7 @@ export class Group implements IAction {
         let target: Element = (e.sender.target as Element);
         let element: HTMLElement = target.classList.contains('e-groupheadercell') ? target as HTMLElement :
             parentsUntil(target, 'e-groupheadercell') as HTMLElement;
-        if (!element || (!target.classList.contains('e-drag') && this.parent.allowGroupReordering)) {
+        if (!element || (!target.classList.contains('e-drag') && this.groupSettings.allowReordering)) {
             return false;
         }
         this.column = gObj.getColumnByField(element.firstElementChild.getAttribute('ej-mappingname'));
@@ -59,13 +59,13 @@ export class Group implements IAction {
         }
     }
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }): void => {
-        if (this.parent.allowGroupReordering) {
+        if (this.groupSettings.allowReordering) {
             this.animateDropper(e);
         }
         let target: Element = e.target;
         let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         this.parent.trigger(events.columnDrag, { target: target, draggableType: 'headercell', column: this.column });
-        if (!this.parent.allowGroupReordering) {
+        if (!this.groupSettings.allowReordering) {
             classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
             if (!(parentsUntil(target as Element, 'e-gridcontent') || parentsUntil(target as Element, 'e-headercell'))) {
                 classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
@@ -75,7 +75,7 @@ export class Group implements IAction {
     private dragStop: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
         this.parent.element.classList.remove('e-ungroupdrag');
         let preventDrop: boolean = !(parentsUntil(e.target, 'e-gridcontent') || parentsUntil(e.target, 'e-gridheader'));
-        if (this.parent.allowGroupReordering && preventDrop) {
+        if (this.groupSettings.allowReordering && preventDrop) {
             remove(e.helper);
             if (parentsUntil(e.target, 'e-groupdroparea')) {
                 this.rearrangeGroup(e);
@@ -179,7 +179,7 @@ export class Group implements IAction {
     }
 
     private columnDrag(e: { target: Element }): void {
-        if (this.parent.allowGroupReordering) {
+        if (this.groupSettings.allowReordering) {
             this.animateDropper(e);
         }
         let gObj: IGrid = this.parent;
@@ -265,7 +265,7 @@ export class Group implements IAction {
     }
 
     private blazorActionBegin(): void {
-        if (this.parent.allowGrouping && this.parent.isCollapseStateEnabled()) {
+        if (this.parent.allowGrouping && !this.parent.isCollapseStateEnabled()) {
             this.expandAll();
         }
     }
@@ -532,7 +532,7 @@ export class Group implements IAction {
             remove(groupElem);
         }
         this.element = this.parent.createElement('div', { className: 'e-groupdroparea', attrs: { 'tabindex': '-1' } });
-        if (this.parent.allowGroupReordering) {
+        if (this.groupSettings.allowReordering) {
             this.element.classList.add('e-group-animate');
         }
         this.updateGroupDropArea();
@@ -563,8 +563,8 @@ export class Group implements IAction {
 
     private initializeGHeaderDrag(): void {
         let drag: Draggable = new Draggable(this.element as HTMLElement, {
-            dragTarget: this.parent.allowGroupReordering ? '.e-drag' : '.e-groupheadercell',
-            distance: this.parent.allowGroupReordering ? -10 : 5,
+            dragTarget: this.groupSettings.allowReordering ? '.e-drag' : '.e-groupheadercell',
+            distance: this.groupSettings.allowReordering ? -10 : 5,
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
@@ -646,7 +646,7 @@ export class Group implements IAction {
         if (isBlazor() && this.parent[isServerRendered]) {
             gObj.sortSettings.columns = gObj.sortSettings.columns;
         }
-        if (this.parent.allowGroupReordering) {
+        if (this.groupSettings.allowReordering) {
             this.reorderingColumns = columns;
         }
         this.groupSettings.columns = columns;
@@ -736,7 +736,7 @@ export class Group implements IAction {
         //     }
         //     childDiv.firstElementChild.classList.add('e-grouptext');
         // } else {
-        if (this.parent.allowGroupReordering) {
+        if (this.groupSettings.allowReordering) {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
                 className: 'e-drag e-icons e-icon-drag', innerHTML: '&nbsp;',
@@ -775,7 +775,7 @@ export class Group implements IAction {
 
         groupedColumn.appendChild(childDiv);
         let index: number = this.groupSettings.columns.indexOf(field);
-        if (this.parent.allowGroupReordering) {
+        if (this.groupSettings.allowReordering) {
             animator.appendChild(groupedColumn);
             animator.appendChild(this.createSeparator());
             groupedColumn = animator;
@@ -783,7 +783,7 @@ export class Group implements IAction {
         return groupedColumn;
     }
     private addColToGroupDrop(field: string): void {
-        if (this.parent.allowGroupReordering
+        if (this.groupSettings.allowReordering
             && this.parent.element.querySelector('.e-groupdroparea div[ej-mappingname=' + field + ']')) {
             return;
         }
@@ -792,7 +792,7 @@ export class Group implements IAction {
             return;
         }
         let groupedColumn: Element = this.createElement(field);
-        if (this.parent.allowGroupReordering) {
+        if (this.groupSettings.allowReordering) {
             let index: number = this.element.querySelectorAll('.e-group-animator').length;
             groupedColumn.setAttribute('index', index.toString());
         }
@@ -834,7 +834,7 @@ export class Group implements IAction {
     private removeColFromGroupDrop(field: string): void {
         if (!isNullOrUndefined(this.getGHeaderCell(field))) {
             let elem: Element = this.getGHeaderCell(field);
-            if (this.parent.allowGroupReordering) {
+            if (this.groupSettings.allowReordering) {
                 let parent: Element = parentsUntil(elem, 'e-group-animator');
                 remove(parent);
             } else {
@@ -881,6 +881,11 @@ export class Group implements IAction {
                                     this.parent.getColumnByField(columns[i]).visible = true;
                                 }
                             }
+                        }
+                        let requestType: string = 'requestType';
+                        if (isBlazor() && this.parent.isServerRendered && this.parent.isCollapseStateEnabled() &&
+                            args[requestType] === 'grouping') {
+                            this.parent.refreshHeader();
                         }
                         this.parent.notify(events.modelChanged, args);
                     }

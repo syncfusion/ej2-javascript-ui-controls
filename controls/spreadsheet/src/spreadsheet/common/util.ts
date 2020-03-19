@@ -1,10 +1,11 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './interface';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getCellPosition, getRowsHeight, getColumnsWidth, getSwapRange, CellModel } from '../../workbook/index';
-import { RangeSettingModel, getRangeIndexes, Workbook } from '../../workbook/index';
-import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress } from '../../workbook/index';
-import { addSheetTab, removeSheetTab } from './event';
+import { SheetModel, getCellPosition, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel } from '../../workbook/index';
+import { RangeSettingModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs } from '../../workbook/index';
+import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight } from '../../workbook/index';
+import { ValidationModel, setValidation, removeValidation } from '../../workbook/index';
+import { removeSheetTab, rowHeightChanged, replace } from './event';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -30,7 +31,7 @@ export function removeAllChildren(parent: Element, index?: number): void {
 }
 
 /**
- * The function used to remove the dom element children.
+ * The function used to get colgroup width based on the row index.
  * @param  parent - 
  * @hidden
  */
@@ -127,15 +128,16 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
  * Position element with given range
  * @hidden
  */
-export function locateElem(ele: Element, range: number[], sheet: SheetModel, isRtl?: boolean): void {
+export function locateElem(ele: HTMLElement, range: number[], sheet: SheetModel, isRtl?: boolean): void {
     let swapRange: number[] = getSwapRange(range);
     let cellPosition: { top: number, left: number } = getCellPosition(sheet, swapRange);
+    let startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     let attrs: { [key: string]: string } = {
-        'top': (swapRange[0] === 0 ? cellPosition.top : cellPosition.top - 1) + 'px',
-        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === 0 ? 0 : 1) + 'px',
-        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === 0 ? 0 : 1) + 'px'
+        'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - 1) + 'px',
+        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === startIndex[0] ? 0 : 1) + 'px',
+        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + 'px'
     };
-    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === 0 ? cellPosition.left : cellPosition.left - 1) + 'px';
+    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
     setStyleAttribute([{ element: ele, attrs: attrs }]);
 }
 
@@ -586,8 +588,9 @@ export function findMaxValue(table: HTMLElement, text: HTMLElement[], isCol: boo
 /**
  * @hidden 
  */
-/* tslint:disable no-any */
-export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isCutRedo?: boolean): void {
+// tslint:disable-next-line
+export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean): void {
+    /* tslint:disable-next-line no-any */
     let eventArgs: any = options.eventArgs;
     switch (options.action) {
         case 'sorting':
@@ -618,7 +621,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             }
             break;
         case 'clipboard':
-            if (eventArgs.copiedInfo.isCut && !isCutRedo) {
+            if (eventArgs.copiedInfo.isCut && !isRedo) {
                 return;
             }
             let clipboardPromise: Promise<Object> = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
@@ -636,16 +639,18 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         case 'resize':
         case 'resizeToFit':
             if (eventArgs.isCol) {
-                spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                if (eventArgs.hide === undefined) {
+                    spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                } else {
+                    spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
+                }
             } else {
-                spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx);
+                if (eventArgs.hide === undefined) {
+                    spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx);
+                } else {
+                    spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
+                }
             }
-            break;
-        case 'addSheet':
-            spreadsheet.notify(addSheetTab, {
-                text: eventArgs.text, isAction: true, count: eventArgs.sheetCount,
-                previousIndex: eventArgs.previousIndex
-            });
             break;
         case 'renameSheet':
             spreadsheet.sheets[eventArgs.index - 1].name = eventArgs.value;
@@ -657,6 +662,47 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
                 count: eventArgs.sheetCount,
                 clicked: true
             });
+            break;
+        case 'wrap':
+            wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
+            break;
+        case 'hideShow':
+            eventArgs.isCol ? spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide) :
+                spreadsheet.hideRow(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+            break;
+        case 'replace':
+            spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
+            break;
+        case 'insert':
+            if (isRedo === false) {
+                spreadsheet.delete(
+                    options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
+            } else {
+                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{ model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                    spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index + (options.eventArgs.model
+                    .length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount: options.eventArgs.sheetCount,
+                    activeSheetTab: options.eventArgs.activeSheetTab });
+            }
+            break;
+        case 'delete':
+            if (isRedo === false) {
+                spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{ model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                    spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
+                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel });
+            } else {
+                spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
+            }
+            break;
+        case 'validation':
+            if (isRedo) {
+                let rules: ValidationModel = {
+                    type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1,
+                    value2: eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown
+                };
+                spreadsheet.notify(setValidation, { rules: rules, range: eventArgs.range });
+            } else {
+                spreadsheet.notify(removeValidation, { range: eventArgs.range });
+            }
             break;
     }
 }
@@ -677,4 +723,122 @@ export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, 
         }
     }
     return false;
+}
+
+/**
+ * Setting row height in view an model.
+ * @hidden
+ */
+export function setRowEleHeight(
+    parent: Spreadsheet, sheet: SheetModel, height: number, rowIdx: number, row?: HTMLElement,
+    hRow?: HTMLElement, notifyRowHgtChange: boolean = true): void {
+    let prevHgt: number = getRowHeight(sheet, rowIdx);
+    (row || parent.getRow(rowIdx)).style.height = `${height}px`;
+    if (sheet.showHeaders) {
+        (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = `${height}px`;
+    }
+    setRowHeight(sheet, rowIdx, height);
+    parent.setProperties({ sheets: parent.sheets }, true);
+    if (notifyRowHgtChange) {
+        parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - prevHgt });
+    }
+}
+
+/** @hidden */
+export function getTextHeight(context: Workbook, style: CellStyleModel, lines: number = 1): number {
+    let fontSize: string = (style && style.fontSize) || context.cellStyle.fontSize;
+    let fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize,  10) * 1.33 : parseInt(fontSize, 10);
+    return Math.ceil(fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines);
+}
+
+/** @hidden */
+export function getTextWidth(text: string, style: CellStyleModel, parentStyle: CellStyleModel): number {
+    if (!style) {
+        style = parentStyle;
+    }
+    let canvas: HTMLCanvasElement = document.createElement('canvas');
+    let context: CanvasRenderingContext2D = canvas.getContext('2d');
+    context.font = (style.fontStyle || parentStyle.fontStyle) + ' ' + (style.fontWeight || parentStyle.fontWeight) + ' '
+        + (style.fontSize || parentStyle.fontSize) + ' ' + (style.fontFamily || parentStyle.fontFamily);
+    return context.measureText(text).width;
+}
+
+/**
+ * @hidden
+ */
+export function getLines(text: string, colwidth: number, style: CellStyleModel, parentStyle: CellStyleModel): number {
+    let width: number;
+    let prevWidth: number = 0;
+    let textArr: string[] = text.toString().split(' ');
+    let spaceWidth: number = getTextWidth(' ', style, parentStyle);
+    let lines: number;
+    let cnt: number = 0;
+    colwidth -= 5; // for padding
+    textArr.forEach((txt: string) => {
+        let lWidth: number = 0;
+        let cWidth: number = 0;
+        width = getTextWidth(txt, style, parentStyle);
+        lines = (prevWidth + width) / colwidth;
+        if (lines >= 1) {
+            if (prevWidth) {
+                cnt++;
+            }
+            if (width / colwidth >= 1) {
+                txt.split('').forEach((val: string) => {
+                    cWidth = getTextWidth(val, style, parentStyle);
+                    lWidth += cWidth;
+                    if (lWidth > colwidth) {
+                        cnt++;
+                        lWidth = cWidth;
+                    }
+                });
+                prevWidth = lWidth + spaceWidth;
+            } else {
+                prevWidth = width + spaceWidth;
+            }
+        } else {
+            prevWidth += (width + spaceWidth);
+        }
+    });
+    if (prevWidth) {
+        cnt += Math.ceil((prevWidth - spaceWidth) / colwidth);
+    }
+    return cnt;
+}
+
+/**
+ * Setting maximum height while doing formats and wraptext
+ * @hidden
+ */
+export function setMaxHgt(sheet: SheetModel, rIdx: number, cIdx: number, hgt: number): void {
+    if (!sheet.maxHgts[rIdx]) {
+        sheet.maxHgts[rIdx] = {};
+    }
+    sheet.maxHgts[rIdx][cIdx] = hgt;
+}
+
+/**
+ * Getting maximum height by comparing each cell's modified height.
+ * @hidden
+ */
+export function getMaxHgt(sheet: SheetModel, rIdx: number): number {
+    let maxHgt: number = 0;
+    let rowHgt: object = sheet.maxHgts[rIdx];
+    if (rowHgt) {
+        Object.keys(rowHgt).forEach((key: string) => {
+            if (rowHgt[key] > maxHgt) {
+                maxHgt = rowHgt[key];
+            }
+        });
+    }
+    return maxHgt;
+}
+/** @hidden */
+export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
+    if (index < 0) { index = -1; }
+    if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+        increase ? index++ : index--;
+        index = skipHiddenIdx(sheet, index, increase, layout);
+    }
+    return index;
 }

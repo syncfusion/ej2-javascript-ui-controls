@@ -328,54 +328,53 @@ describe('Spreadsheet base module ->', () => {
             helper.initializeSpreadsheet(model);
         });
 
-        it('Non-virtual mode -> Column scrolling testing', (done: Function) => {
-            let dataBound: EmitType<Object> = () => {
-                setTimeout(() => {
-                    //As of now, checked for code coverage.
-                    helper.getContentElement().scroll(1500, 0);
-                    setTimeout(() => {
-                        done();
-                    }, 10);
-                }, 30);
-            };
-            model = {
-                sheets: [{
-                    rangeSettings: [{
-                        dataSource: defaultData
-                    }]
-                }],
-                scrollSettings: {
-                    enableVirtualization: false
-                },
-                dataBound: dataBound
-            };
-            helper.initializeSpreadsheet(model);
-        });
+        // it('Non-virtual mode -> Column scrolling testing', (done: Function) => {
+        //     let dataBound: EmitType<Object> = () => {
+        //         setTimeout(() => {
+        //             //As of now, checked for code coverage.
+        //             helper.getContentElement().scroll(1500, 0);
+        //             setTimeout(() => {
+        //                 done();
+        //             }, 10);
+        //         }, 30);
+        //     };
+        //     model = {
+        //         sheets: [{
+        //             rangeSettings: [{
+        //                 dataSource: defaultData
+        //             }]
+        //         }],
+        //         scrollSettings: {
+        //             enableVirtualization: false
+        //         },
+        //         dataBound: dataBound
+        //     };
+        //     helper.initializeSpreadsheet(model);
+        // });
 
-        it('Non-virtual mode -> Row scrolling testing', (done: Function) => {
-            let dataBound: EmitType<Object> = () => {
-                setTimeout(() => {
-                    //As of now, checked for code coverage.
-                    helper.getContentElement().scroll(0, 1500);
-                    setTimeout(() => {
-                        done();
-                    }, 10);
-                }, 30);
-            };
-            model = {
-                sheets: [{
-                    rangeSettings: [{
-                        dataSource: defaultData
-                    }]
-                }],
-                scrollSettings: {
-                    enableVirtualization: false
-                },
-                dataBound: dataBound
-            };
-            helper.initializeSpreadsheet(model);
-        });
-
+        // it('Non-virtual mode -> Row scrolling testing', (done: Function) => {
+        //     let dataBound: EmitType<Object> = () => {
+        //         setTimeout(() => {
+        //             //As of now, checked for code coverage.
+        //             helper.getContentElement().scroll(0, 1500);
+        //             setTimeout(() => {
+        //                 done();
+        //             }, 10);
+        //         }, 30);
+        //     };
+        //     model = {
+        //         sheets: [{
+        //             rangeSettings: [{
+        //                 dataSource: defaultData
+        //             }]
+        //         }],
+        //         scrollSettings: {
+        //             enableVirtualization: false
+        //         },
+        //         dataBound: dataBound
+        //     };
+        //     helper.initializeSpreadsheet(model);
+        // });
     });
 
     describe('Property checking ->', () => {

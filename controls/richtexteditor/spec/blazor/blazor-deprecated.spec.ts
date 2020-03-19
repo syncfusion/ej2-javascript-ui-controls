@@ -16,26 +16,26 @@ describe('RTE blazor coverage issues', () => {
             });
         });
         it("Coverage for formatter", () => {
-            (window as any).ejsInterop={ renderComplete:()=> {return true;}};
+            (window as any).sfBlazor={ renderComplete:()=> {return true;}};
             (window as any).Blazor = null;
             rteObj.formatter.process(rteObj,null,new Event('keydown'));
             expect(Object.keys(window).indexOf('Blazor') >= 0).toBe(true);
             delete (window as any).Blazor;
-            delete (window as any).ejsInterop;
+            delete (window as any).sfBlazor;
         });
 
         it("Coverage for quicktoolbar - case 1", () => {
-            (window as any).ejsInterop={ renderComplete:()=> {return true;}};
+            (window as any).sfBlazor={ renderComplete:()=> {return true;}};
             (window as any).Blazor = null;
             (rteObj.quickToolbarModule as any).renderQuickToolbars();
             (rteObj.quickToolbarModule.imageQTBar as any).popupRenderer.quickToolbarOpen();
             expect(Object.keys(window).indexOf('Blazor') >= 0).toBe(true);
             delete (window as any).Blazor;
-            delete (window as any).ejsInterop;
+            delete (window as any).sfBlazor;
         });
 
         it("Coverage for quicktoolbar - case 2", () => {
-            delete (window as any).ejsInterop;
+            delete (window as any).sfBlazor;
             delete (window as any).Blazor;
             (rteObj.quickToolbarModule as any).renderQuickToolbars();   
             (rteObj.quickToolbarModule.imageQTBar as any).popupRenderer.quickToolbarOpen();
@@ -44,7 +44,7 @@ describe('RTE blazor coverage issues', () => {
 
         afterAll(() => {
             delete (window as any).Blazor;
-            delete (window as any).ejsInterop;
+            delete (window as any).sfBlazor;
             destroy(rteObj);
         });
     });

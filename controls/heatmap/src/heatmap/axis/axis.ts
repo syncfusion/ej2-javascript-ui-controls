@@ -5,9 +5,9 @@ import { Property, Complex, ChildProperty, DateFormatOptions, isNullOrUndefined,
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Orientation } from '../utils/enum';
 import { FontModel, TitleModel, AxisLabelBorderModel, MultiLevelLabelsModel, MultiLevelCategoriesModel } from '../model/base-model';
-import { Font, Title, AxisLabelBorder, MultiLevelLabels, MultiLevelCategories } from '../model/base';
+import { Font, Title, AxisLabelBorder, MultiLevelLabels, MultiLevelCategories, MultipleRow } from '../model/base';
 import { Theme } from '../model/theme';
-import { Rect, measureText, Size, rotateTextSize, increaseDateTimeInterval, formatValue } from '../utils/helper';
+import { Rect, measureText, Size, rotateTextSize, increaseDateTimeInterval, formatValue, textTrim } from '../utils/helper';
 import { MultiLevelPosition, textWrap } from '../utils/helper';
 import { ValueType, IntervalType, LabelIntersectAction, LabelType } from '../utils/enum';
 import { HeatMap } from '../heatmap'
@@ -150,8 +150,24 @@ export class Axis extends ChildProperty<Axis> {
     public labelIntersectAction: LabelIntersectAction;
 
     /**
+     * Enable Trim for heatmap yAxis
+     * @default false
+     */
+
+    @Property(false)
+    public enableTrim: boolean;
+
+    /**
+     * Specifies the maximum length of an axis label.
+     * @default 35.
+     */
+    @Property(35)
+    public maxLabelLength: number;
+
+    /**
      * Border of the axis labels.
      */
+
     @Complex<AxisLabelBorderModel>({ color: '#b5b5b5', width: 0, type: 'Rectangle' }, AxisLabelBorder)
     public border: AxisLabelBorderModel;
 
@@ -165,6 +181,8 @@ export class Axis extends ChildProperty<Axis> {
     public orientation: Orientation;
 
     /** @private */
+    public multipleRow: MultipleRow [] = [];
+    /** @private */
     public rect: Rect = new Rect(undefined, undefined, 0, 0);
 
     /** @private */
@@ -176,6 +194,8 @@ export class Axis extends ChildProperty<Axis> {
     /** @private */
     public titleSize: Size = new Size(0, 0);
 
+    /** @private */
+    public multilevel: number[] = [];
     /** @private */
     public axisLabels: string[] = [];
     /** @private */
@@ -319,20 +339,19 @@ export class Axis extends ChildProperty<Axis> {
     }
 
     private getMaxLabelSize(axis: Axis, heatmap: HeatMap): Size {
-        let labelSize: Size = new Size(0, 0);
-        let labels: string[] = this.axisLabels;
+        let labelSize: Size = new Size(0, 0); let labels: string[] = this.axisLabels;
         let padding: number = (axis.border.width > 0 || axis.multiLevelLabels.length > 0) ? 10 : 0;
-        axis.angle = axis.labelRotation;
-        axis.isIntersect = false;
+        let count: number = 1; let summ: number = 1; let row: number = 1;
+        let interval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+        heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
+        axis.angle = axis.labelRotation; axis.isIntersect = false;
         if (axis.orientation === 'Horizontal' && (axis.labelIntersectAction === 'Rotate45' ||
-            (axis.labelRotation % 180 === 0 && axis.labelIntersectAction === 'Trim'))) {
-            let interval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
-                heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
+            (axis.labelRotation % 180 === 0 && axis.labelIntersectAction === 'Trim' || axis.enableTrim)) ||
+                axis.labelIntersectAction === 'MultipleRows') {
             let startX: number = heatmap.initialClipRect.x + ((!axis.isInversed) ? 0 : heatmap.initialClipRect.width);
-            let previousEnd: number; let previousStart: number;
+            let previousEnd: number; let previousStart: number; this.clearMultipleRow();
             for (let i: number = 0, len: number = labels.length; i < len; i++) {
-                let label: string = labels[i];
-                let elementSize: Size = measureText(label, axis.textStyle);
+                let label: string = labels[i]; let elementSize: Size = measureText(label, axis.textStyle);
                 let axisInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
                     axis.dateTimeAxisLabelInterval[i] * interval : interval;
                 let startPoint: number = startX + (!axis.isInversed ?
@@ -342,36 +361,76 @@ export class Axis extends ChildProperty<Axis> {
                 if (!axis.isInversed) {
                     if (isNullOrUndefined(previousEnd)) {
                         previousEnd = endPoint;
-                    } else if ((startPoint < previousEnd)) {
-                        if (axis.labelIntersectAction === 'Rotate45') {
+                    } else if ((startPoint < previousEnd) && axis.labelIntersectAction !== 'MultipleRows') {
+                        if (axis.labelIntersectAction === 'Rotate45' && !axis.enableTrim) {
                             axis.angle = 45;
-                        } else {
-                            axis.isIntersect = true;
-                        }
+                        } else { axis.isIntersect = true; }
                         break;
                     }
                     previousEnd = endPoint;
                 } else {
                     if (isNullOrUndefined(previousStart)) {
                         previousStart = startPoint;
-                    } else if ((previousStart < endPoint)) {
-                        if (axis.labelIntersectAction === 'Rotate45') {
+                    } else if ((previousStart < endPoint && axis.labelIntersectAction !== 'MultipleRows')) {
+                        if (axis.labelIntersectAction === 'Rotate45' && !axis.enableTrim) {
                             axis.angle = 45;
-                        } else {
-                            axis.isIntersect = true;
-                        }
+                        } else { axis.isIntersect = true; }
                         break;
                     }
                     previousStart = startPoint;
                 }
                 startX += axis.isInversed ? -axisInterval : axisInterval;
+                if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && axis.labelRotation === 0) {
+                    this.multipleRow.push(new MultipleRow (startPoint , endPoint, count, label, row));
+                }
+            }
+            if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && axis.isInversed) {
+                this.multipleRow = this.multipleRow.reverse();
             }
         }
         for (let i: number = 0; i < labels.length; i++) {
+            let multipleRow : MultipleRow [] = this.multipleRow;
+            let label : string;
+            if (axis.enableTrim) {
+                label = textTrim(axis.maxLabelLength, labels[i], axis.textStyle);
+            } else { label = labels[i]; }
             let size: Size = (axis.angle % 180 === 0) ?
-                measureText(labels[i], axis.textStyle) : rotateTextSize(axis.textStyle, labels[i], axis.angle);
+                measureText(label, axis.textStyle) : rotateTextSize(axis.textStyle, labels[i], axis.angle);
             labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
-            labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
+            if (axis.labelIntersectAction === 'MultipleRows' && axis.orientation === 'Horizontal' && i > 0 && axis.labelRotation === 0) {
+                if (multipleRow[i].end >= heatmap.initialClipRect.width && i < labels.length - 1) {
+                    multipleRow[i].row = multipleRow[i].row + 1;
+                }
+                for (let k: number = 1; k <= axis.multilevel.length; k++) {
+                    if (multipleRow[i].start < multipleRow[i - 1].end) {
+                        if (axis.multilevel[k] < multipleRow[i].start) {
+                            count = k;
+                            break;
+                        } else if (k === axis.multilevel.length - 1) {
+                            count = axis.multilevel.length;
+                            break;
+                        }
+                    } else if (size.width < interval) {
+                        for (let j: number = 1; j <= axis.multilevel.length; j++) {
+                            if (axis.multilevel[j] < multipleRow[i].start) {
+                                count = j;
+                                multipleRow[j].row = count;
+                                break;
+                            }
+                        }
+                    }
+                }
+                labelSize.height = (labelSize.height > ((size.height * count) + (((size.height * 0.5) / 2) * (count - 1)))) ?
+                    labelSize.height : ((size.height * count) + (((size.height * 0.5) / 2) * count));
+                this.multipleRow[i].index = count;
+                axis.multilevel[count] = multipleRow[i].end;
+            } else {
+                if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && i === 0 &&
+                    axis.labelRotation === 0) {
+                    axis.multilevel[1] = multipleRow[i].end;
+                }
+                labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
+            }
         }
         if (axis.opposedPosition) {
             this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
@@ -648,4 +707,14 @@ export class Axis extends ChildProperty<Axis> {
         this.dateTimeAxisLabelInterval = [];
         this.labelValue = [];
     }
+
+    /**
+     * Clear the axis label collection
+     * @private
+     */
+    public clearMultipleRow(): void {
+        this.multipleRow = [];
+        this.multilevel = [];
+    }
+
 }

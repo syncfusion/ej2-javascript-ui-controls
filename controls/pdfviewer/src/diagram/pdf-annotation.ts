@@ -509,6 +509,13 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public annotationSettings: object;
 
     /**
+     * specifies the previous font size  of the annotation.
+     * @default '16'
+     */
+    @Property(16)
+    public previousFontSize: number;
+
+    /**
      * Represents the text style of annotation
      * @default ''
      */

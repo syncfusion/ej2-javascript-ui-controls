@@ -1917,7 +1917,7 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
             fill = getItemColor['fill'];
             opacity = getItemColor['opacity'];
             format = isLeafItem ? leaf.labelFormat : (levels[index]).headerFormat;
-            var levelName = void 0;
+            var levelName;
             txtVisible = isLeafItem ? leaf.showLabels : (levels[index]).showHeader;
             if (index === this_1.treemap.currentLevel) {
                 if (this_1.treemap.enableBreadcrumb) {
@@ -1950,7 +1950,7 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
             template = isLeafItem ? leaf.labelTemplate : levels[index].headerTemplate;
             item['options'] = { border: border, opacity: opacity, fill: fill };
             eventArgs = {
-                cancel: false, name: itemRendering, treemap: this_1.treemap,
+                cancel: false, name: itemRendering, treemap: this_1.treemap, text: renderText,
                 currentItem: item, RenderItems: this_1.renderItems, options: item['options']
             };
             if (this_1.treemap.isBlazor) {
@@ -1965,7 +1965,10 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                     var path = _this.renderer.drawPath(pathOptions);
                     itemGroup.appendChild(path);
                     if (txtVisible) {
-                        _this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
+                        if (eventArgs.text !== renderText) {
+                            eventArgs.text = textFormatter(eventArgs.text, item['data'], _this.treemap) || levelName;
+                        }
+                        _this.renderItemText(eventArgs.text.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
                     }
                     if (template) {
                         templateEle = _this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
@@ -2869,6 +2872,10 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             currentSize: new Size(0, 0),
             treemap: this.isBlazor ? null : this
         };
+        if (this.isBlazor) {
+            var treemap = args.treemap, blazorEventArgs = __rest(args, ["treemap"]);
+            args = blazorEventArgs;
+        }
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -2879,7 +2886,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 _this.refreshing = true;
                 _this.wireEVents();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resize, args, function () {
+                _this.trigger(resize, args, function (observedArgs) {
                     _this.render();
                 });
             }, 500);
@@ -2890,6 +2897,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var targetId = targetEle.id;
         var eventArgs;
         var itemIndex;
+        var labelText = targetEle.innerHTML;
         var clickArgs = { cancel: false, name: click, treemap: this, mouseEvent: e };
         var clickBlazorArgs = { cancel: false, name: click, mouseEvent: e };
         this.trigger(click, this.isBlazor ? clickBlazorArgs : clickArgs);
@@ -2898,7 +2906,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             itemIndex = parseFloat(targetId.split('_')[6]);
             eventArgs = {
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
-                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
+                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name'],
+                text: labelText
             };
             if (this.isBlazor) {
                 var data = {
@@ -2917,6 +2926,10 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 eventArgs = blazorEventArgs;
             }
             this.trigger(itemClick, eventArgs);
+            if (eventArgs.text !== labelText) {
+                eventArgs.text = textFormatter(eventArgs.text, eventArgs.item['data'], eventArgs.treemap);
+                targetEle.innerHTML = eventArgs.text;
+            }
         }
         var end = new Date().getMilliseconds();
         var doubleTapTimer1;
@@ -3120,12 +3133,13 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                     newDrillItem[item['groupName']] = [item];
                 }
                 startEvent = {
-                    cancel: false, name: drillStart, treemap: this, item: newDrillItem, element: targetEle,
-                    groupIndex: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
+                    cancel: false, name: drillStart, treemap: this.isBlazor ? null : this,
+                    element: targetEle, groupIndex: this.enableBreadcrumb &&
+                        this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
                         this.drilledItems[this.drilledItems.length - 1]['data']['groupIndex'] : item['groupIndex'],
                     groupName: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
                         this.drilledItems[this.drilledItems.length - 1]['data']['name'] : item['name'],
-                    rightClick: e.which === 3 ? true : false, childItems: null
+                    rightClick: e.which === 3 ? true : false, childItems: null, item: this.isBlazor ? null : newDrillItem,
                 };
                 if (this.isBlazor) {
                     var treemap = startEvent.treemap, blazorEventArgs = __rest(startEvent, ["treemap"]);
@@ -3173,7 +3187,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                     }
                 });
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
-                endBlazorEvent = { cancel: false, name: drillEnd, renderItems: this.layout.renderItems };
+                endBlazorEvent = { cancel: false, name: drillEnd, renderItems: this.isBlazor ? null : this.layout.renderItems };
                 this.trigger(drillEnd, this.isBlazor ? endBlazorEvent : endEvent);
                 if (process) {
                     if (!directLevel && isNullOrUndefined(drillLevel)) {
@@ -4074,7 +4088,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                     textLocation = legendRtlLocation['textLocation'];
                 }
                 eventArgs = {
-                    cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
+                    cancel: false, name: legendItemRendering, treemap: this_1.treemap.isBlazor ? null : treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
                 if (this_1.treemap.isBlazor) {
@@ -4511,7 +4525,7 @@ var TreeMapHighlight = /** @__PURE__ @class */ (function () {
                             this.highLightId = targetId;
                         }
                         eventArgs = { cancel: false, name: itemHighlight, treemap: treemap, items: items, elements: highLightElements };
-                        eventBlazorArgs = { cancel: false, name: itemHighlight, items: items, elements: highLightElements };
+                        eventBlazorArgs = { cancel: false, name: itemHighlight, items: null, elements: highLightElements };
                         treemap.trigger(itemHighlight, treemap.isBlazor ? eventBlazorArgs : eventArgs);
                     }
                     else {
@@ -4889,7 +4903,7 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                         location: tootipArgs.options['location'],
                         text: tootipArgs.options['text'],
                         textStyle: tootipArgs.options['textStyle'],
-                        data: tootipArgs.options['data'],
+                        data: this.treemap.isBlazor ? null : tootipArgs.options['data'],
                         template: tootipArgs.options['template'],
                         name: tooltipRendering
                     };

@@ -27,7 +27,7 @@ export interface SpinSettingsModel {
      * * Center: The spinner will be positioned at the center of the progress button.
      * @default 'Left'
      * @aspType Syncfusion.EJ2.SplitButtons.SpinPosition
-     * @blazorType Syncfusion.EJ2.SplitButtons.SpinPosition
+     * @blazorType Syncfusion.SplitButtons.SpinPosition
      * @isEnumeration true
      */
     position?: SpinPosition;
@@ -49,7 +49,7 @@ export interface AnimationSettingsModel {
      * Specifies the effect of animation.
      * @default 'None'
      * @aspType Syncfusion.EJ2.SplitButtons.AnimationEffect
-     * @blazorType Syncfusion.EJ2.SplitButtons.AnimationEffect
+     * @blazorType Syncfusion.SplitButtons.AnimationEffect
      * @isEnumeration true
      */
     effect?: AnimationEffect;

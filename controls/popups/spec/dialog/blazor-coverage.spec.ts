@@ -27,15 +27,6 @@ describe('Dialog blazor coverage issues', () => {
             delete (window as any).Blazor;
         });
 
-        it("Coverage for Blazortemplate", () => {
-            (window as any).Blazor = null;
-            dialog.blazorTemplate("dialog1");
-            dialog.blazorTemplate("dialog1footerTemplate");
-            dialog.blazorTemplate("dialog1header");
-            expect(Object.keys(window).indexOf('Blazor') >= 0).toBe(true);
-            delete (window as any).Blazor;
-        });
-
         afterAll(() => {
             delete (window as any).Blazor;
             destroyDialog(dialog);
@@ -53,19 +44,19 @@ describe('Dialog blazor coverage issues', () => {
 
         it("Coverage for Blazortemplate", () => {
             (window as any).Blazor = null;
-            (window as any).ejsInterop = null
+            (window as any).sfBlazor = null
             dialog.header = 'Demo';
             dialog.content = '<div>Blazor First demo content</div>';
             dialog.footerTemplate = 'Footer Content';
             dialog.dataBind();
             expect(Object.keys(window).indexOf('Blazor') >= 0).toBe(true);
             delete (window as any).Blazor;
-            delete (window as any).ejsInterop;
+            delete (window as any).sfBlazor;
         });
 
         afterAll(() => {
             delete (window as any).Blazor;
-            delete (window as any).ejsInterop;
+            delete (window as any).sfBlazor;
             destroyDialog(dialog);
         });
     });

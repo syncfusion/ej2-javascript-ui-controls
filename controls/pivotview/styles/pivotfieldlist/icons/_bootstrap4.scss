@@ -314,5 +314,25 @@
         content: '\e665' !important;
     }
     // sass-lint:enable-all
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edited.e-icons::before {
+      content: '\e7fc';
+    }
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edit.e-icons::before {
+      content: '\e78f';
+    }
+
+    .e-pivot-button .e-edit::before {
+      content: '\e78f';
+    }
+
+    .e-sort-ascend-icon::before {
+      content: '\e812';
+    }
+
+    .e-sort-descend-icon::before {
+      content: '\e811';
+    }
   }
 }

@@ -1461,8 +1461,9 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
                 range.interior = range.color ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {
-                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 : position === 'Outside' ?
-                        -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
+                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
+                        (position === 'Outside' || position === 'Auto') ?
+                            -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
                     pointY = (valueToCoefficient(end, axis, orientation, visibleRange) * line.height) + line.y;
                     height = (valueToCoefficient(start, axis, orientation, visibleRange) * line.height) + line.y;
                     height -= pointY;
@@ -1479,7 +1480,7 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 else {
                     pointX = (valueToCoefficient(end, axis, orientation, visibleRange) * line.width) + line.x;
                     pointY = axis.lineBounds.y + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
-                        position === 'Outside' ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
+                        (position === 'Outside' || position === 'Auto') ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
                     width = (valueToCoefficient(start, axis, orientation, visibleRange) * line.width) + line.x;
                     width = pointX - width;
                     startVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + startWidth) : position === 'Cross' ?
@@ -3119,7 +3120,6 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
             _this.mouseX = args.x;
             _this.mouseY = args.y;
             var dragArgs;
-            var currentPointerDrag = false;
             var dragBlazorArgs;
             if (args.target && !args.cancel) {
                 if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
@@ -3127,9 +3127,8 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
                         current = _this.moveOnPointer(args.target);
                         if (!(isNullOrUndefined(current)) && current.pointer) {
                             _this.element.style.cursor = current.style;
-                            currentPointerDrag = current.pointer;
                         }
-                        if (_this.activePointer && currentPointerDrag) {
+                        if (_this.activePointer) {
                             _this.isDrag = true;
                             var dragPointInd = parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10);
                             var dragAxisInd = parseInt(_this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
@@ -3296,9 +3295,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
                 this.activeAxis = null;
                 this.activePointer = null;
                 this.isDrag = false;
-                if (!isNullOrUndefined(this.mouseElement)) {
-                    this.triggerDragEvent(this.mouseElement);
-                }
+                this.triggerDragEvent(e.target);
             }
         }
         if (!isNullOrUndefined(this.mouseElement)) {

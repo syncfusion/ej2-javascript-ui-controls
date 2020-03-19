@@ -327,7 +327,7 @@ describe('Toolbar - view html', () => {
             item.click();
             expect((rteObj as any).inputElement.style.display === 'none').toBe(true);
             let tag: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
-            expect(tag.value === '<span id="rte">RTE</span>').toBe(true);
+            expect(tag.value === '<p><span id="rte">RTE</span></p>').toBe(true);
             tag.value = '<p id="rte">RTE</p>';
             expect(rteObj.element.querySelectorAll(".e-toolbar-item:not(.e-overlay):not(.e-separator)").length === 1).toBe(true);
             item = rteObj.element.querySelector('#' + controlId + '_toolbar_Preview');

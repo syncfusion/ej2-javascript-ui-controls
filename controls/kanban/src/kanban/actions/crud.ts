@@ -74,16 +74,28 @@ export class Crud {
                     changedRecords: this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
                 };
                 if (cardData instanceof Array || modifiedData.length > 0) {
-                    promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery()) as
-                        Promise<Object>;
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.saveChanges(
+                            editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
+                    } else {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('AddCards', { Records: cardData }, this.keyField);
+                    }
                 } else {
-                    promise = this.parent.dataModule.dataManager.insert(cardData, this.getTable(), this.getQuery()) as Promise<Object>;
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.insert(cardData, this.getTable(), this.getQuery()) as Promise<Object>;
+                    } else {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('AddCard', { Record: cardData });
+                    }
                 }
-                let crudArgs: CrudArgs = {
-                    requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                this.refreshData(crudArgs);
+                if (!this.parent.isBlazorRender()) {
+                    let crudArgs: CrudArgs = {
+                        requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    this.refreshData(crudArgs);
+                }
             }
         });
     }
@@ -105,17 +117,29 @@ export class Crud {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
                 if (cardData instanceof Array) {
-                    promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery()) as
-                        Promise<Object>;
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.saveChanges(
+                            editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
+                    } else {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('UpdateCards', { Records: cardData }, this.keyField);
+                    }
                 } else {
-                    promise = this.parent.dataModule.dataManager.update(this.keyField, cardData, this.getTable(), this.getQuery()) as
-                        Promise<Object>;
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.update(
+                            this.keyField, cardData, this.getTable(), this.getQuery()) as Promise<Object>;
+                    } else {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('UpdateCard', this.keyField, { Record: cardData });
+                    }
                 }
-                let crudArgs: CrudArgs = {
-                    requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                this.refreshData(crudArgs);
+                if (!this.parent.isBlazorRender()) {
+                    let crudArgs: CrudArgs = {
+                        requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    this.refreshData(crudArgs);
+                }
             }
         });
     }
@@ -136,17 +160,29 @@ export class Crud {
             if (!deleteArgs.cancel) {
                 let promise: Promise<Object> = null;
                 if (editParms.deletedRecords.length > 1) {
-                    promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery()) as
-                        Promise<Object>;
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.saveChanges(
+                            editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
+                    } else {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCards', { Records: cardData }, this.keyField);
+                    }
                 } else {
-                    promise = this.parent.dataModule.dataManager.remove(this.keyField, cardData, this.getTable(), this.getQuery()) as
-                        Promise<Object>;
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.remove(
+                            this.keyField, cardData, this.getTable(), this.getQuery()) as Promise<Object>;
+                    } else {
+                        // tslint:disable-next-line
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });
+                    }
                 }
-                let crudArgs: CrudArgs = {
-                    requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                this.refreshData(crudArgs);
+                if (!this.parent.isBlazorRender()) {
+                    let crudArgs: CrudArgs = {
+                        requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    this.refreshData(crudArgs);
+                }
             }
         });
     }

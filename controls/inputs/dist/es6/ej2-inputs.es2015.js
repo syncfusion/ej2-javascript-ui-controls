@@ -3764,7 +3764,9 @@ let Slider = class Slider extends Component {
      * @private
      */
     render() {
-        this.initialize();
+        if (!isBlazor() || !this.isServerRendered) {
+            this.initialize();
+        }
         this.initRender();
         this.wireEvents();
         this.setZindex();
@@ -3807,11 +3809,18 @@ let Slider = class Slider extends Component {
      * @private
      */
     initRender() {
-        this.sliderContainer = this.createElement('div', { className: classNames.sliderContainer + ' ' + classNames.controlWrapper });
-        this.element.parentNode.insertBefore(this.sliderContainer, this.element);
-        this.sliderContainer.appendChild(this.element);
-        this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
-        this.element.appendChild(this.sliderTrack);
+        if (isBlazor() && this.isServerRendered) {
+            this.sliderContainer = this.element.parentElement;
+            this.sliderTrack = this.element.querySelector('.e-slider-track');
+            this.hiddenInput = this.element.parentElement.querySelector('.e-slider-input');
+        }
+        else {
+            this.sliderContainer = this.createElement('div', { className: classNames.sliderContainer + ' ' + classNames.controlWrapper });
+            this.element.parentNode.insertBefore(this.sliderContainer, this.element);
+            this.sliderContainer.appendChild(this.element);
+            this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
+            this.element.appendChild(this.sliderTrack);
+        }
         this.element.tabIndex = -1;
         this.getThemeInitialization();
         this.setHandler();
@@ -3819,16 +3828,18 @@ let Slider = class Slider extends Component {
         if (this.limits.enabled) {
             this.createLimitBar();
         }
-        this.setOrientClass();
-        this.hiddenInput = (this.createElement('input', {
-            attrs: {
-                type: 'hidden', value: (isNullOrUndefined(this.value) ? this.min.toString() : this.value.toString()),
-                name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
-                    '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
-            }
-        }));
-        this.hiddenInput.tabIndex = -1;
-        this.sliderContainer.appendChild(this.hiddenInput);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.setOrientClass();
+            this.hiddenInput = (this.createElement('input', {
+                attrs: {
+                    type: 'hidden', value: (isNullOrUndefined(this.value) ? this.min.toString() : this.value.toString()),
+                    name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
+                        '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
+                }
+            }));
+            this.hiddenInput.tabIndex = -1;
+            this.sliderContainer.appendChild(this.hiddenInput);
+        }
         if (this.showButtons) {
             this.setButtons();
         }
@@ -3856,17 +3867,19 @@ let Slider = class Slider extends Component {
         if (this.tooltip.isVisible) {
             this.renderTooltip();
         }
-        if (!this.enabled) {
-            addClass([this.sliderContainer], [classNames.sliderDisabled]);
-        }
-        else {
-            removeClass([this.sliderContainer], [classNames.sliderDisabled]);
-        }
-        if (this.readonly) {
-            addClass([this.sliderContainer], [classNames.readonly]);
-        }
-        else {
-            removeClass([this.sliderContainer], [classNames.readonly]);
+        if (!isBlazor() || !this.isServerRendered) {
+            if (!this.enabled) {
+                addClass([this.sliderContainer], [classNames.sliderDisabled]);
+            }
+            else {
+                removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+            }
+            if (this.readonly) {
+                addClass([this.sliderContainer], [classNames.readonly]);
+            }
+            else {
+                removeClass([this.sliderContainer], [classNames.readonly]);
+            }
         }
     }
     getThemeInitialization() {
@@ -3892,20 +3905,28 @@ let Slider = class Slider extends Component {
         }
     }
     createLimitBar() {
-        let firstElementClassName = this.type !== 'Range' ? classNames.limitBarDefault :
-            classNames.limitBarFirst;
-        firstElementClassName += ' ' + classNames.limits;
-        this.limitBarFirst = (this.createElement('div', {
-            attrs: { class: firstElementClassName }
-        }));
-        this.element.appendChild(this.limitBarFirst);
-        if (this.type === 'Range') {
-            this.limitBarSecond = (this.createElement('div', {
-                attrs: {
-                    class: classNames.limitBarSecond + ' ' + classNames.limits
-                }
+        if (isBlazor() && this.isServerRendered) {
+            this.limitBarFirst = this.element.querySelectorAll('.e-limits')[0];
+            if (this.type === 'Range') {
+                this.limitBarSecond = this.element.querySelectorAll('.e-limit-second')[0];
+            }
+        }
+        else {
+            let firstElementClassName = this.type !== 'Range' ? classNames.limitBarDefault :
+                classNames.limitBarFirst;
+            firstElementClassName += ' ' + classNames.limits;
+            this.limitBarFirst = (this.createElement('div', {
+                attrs: { class: firstElementClassName }
             }));
-            this.element.appendChild(this.limitBarSecond);
+            this.element.appendChild(this.limitBarFirst);
+            if (this.type === 'Range') {
+                this.limitBarSecond = (this.createElement('div', {
+                    attrs: {
+                        class: classNames.limitBarSecond + ' ' + classNames.limits
+                    }
+                }));
+                this.element.appendChild(this.limitBarSecond);
+            }
         }
     }
     setOrientClass() {
@@ -3954,22 +3975,32 @@ let Slider = class Slider extends Component {
         }
     }
     createSecondHandle() {
-        this.secondHandle = this.createElement('div', {
-            attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
-            }
-        });
-        this.secondHandle.classList.add(classNames.sliderSecondHandle);
-        this.element.appendChild(this.secondHandle);
+        if (isBlazor() && this.isServerRendered) {
+            this.secondHandle = this.element.querySelector('.e-handle-second');
+        }
+        else {
+            this.secondHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.secondHandle.classList.add(classNames.sliderSecondHandle);
+            this.element.appendChild(this.secondHandle);
+        }
     }
     createFirstHandle() {
-        this.firstHandle = this.createElement('div', {
-            attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
-            }
-        });
-        this.firstHandle.classList.add(classNames.sliderFirstHandle);
-        this.element.appendChild(this.firstHandle);
+        if (isBlazor() && this.isServerRendered) {
+            this.firstHandle = this.element.querySelector('.e-handle-first');
+        }
+        else {
+            this.firstHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.firstHandle.classList.add(classNames.sliderFirstHandle);
+            this.element.appendChild(this.firstHandle);
+        }
         if (this.isMaterialTooltip) {
             this.materialHandle = this.createElement('div', {
                 attrs: {
@@ -4073,23 +4104,25 @@ let Slider = class Slider extends Component {
         }
     }
     setEnableRTL() {
-        this.enableRtl && this.orientation !== 'Vertical' ? addClass([this.sliderContainer], classNames.rtl) :
-            removeClass([this.sliderContainer], classNames.rtl);
-        let preDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
-        if (this.enableRtl) {
-            this.horDir = 'right';
-            this.verDir = 'bottom';
-        }
-        else {
-            this.horDir = 'left';
-            this.verDir = 'bottom';
-        }
-        let currDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
-        if (preDir !== currDir) {
-            if (this.orientation === 'Horizontal') {
-                setStyleAttribute(this.firstHandle, { 'right': '', 'left': 'auto' });
-                if (this.type === 'Range') {
-                    setStyleAttribute(this.secondHandle, { 'top': '', 'left': 'auto' });
+        if (!isBlazor() || !this.isServerRendered) {
+            this.enableRtl && this.orientation !== 'Vertical' ? addClass([this.sliderContainer], classNames.rtl) :
+                removeClass([this.sliderContainer], classNames.rtl);
+            let preDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (this.enableRtl) {
+                this.horDir = 'right';
+                this.verDir = 'bottom';
+            }
+            else {
+                this.horDir = 'left';
+                this.verDir = 'bottom';
+            }
+            let currDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (preDir !== currDir) {
+                if (this.orientation === 'Horizontal') {
+                    setStyleAttribute(this.firstHandle, { 'right': '', 'left': 'auto' });
+                    if (this.type === 'Range') {
+                        setStyleAttribute(this.secondHandle, { 'top': '', 'left': 'auto' });
+                    }
                 }
             }
         }
@@ -4101,8 +4134,13 @@ let Slider = class Slider extends Component {
             value: this.value,
             text: ''
         };
-        this.setTooltipContent();
-        args.text = text = this.tooltipObj.content;
+        if (isBlazor() && this.isServerRendered) {
+            args.text = this.formatContent(this.tooltipFormatInfo, false);
+        }
+        else {
+            this.setTooltipContent();
+            args.text = text = this.tooltipObj.content;
+        }
         this.trigger('tooltipChange', args, (observedArgs) => {
             this.addTooltipClass(observedArgs.text);
             if (text !== observedArgs.text) {
@@ -4366,7 +4404,9 @@ let Slider = class Slider extends Component {
         });
         if (this.isMaterialTooltip) {
             this.sliderContainer.classList.add(classNames.materialSlider);
-            this.tooltipValue();
+            if (!isBlazor()) {
+                this.tooltipValue();
+            }
             this.tooltipObj.animation.close.effect = 'None';
             this.tooltipObj.open(this.firstHandle);
         }
@@ -4376,17 +4416,23 @@ let Slider = class Slider extends Component {
         this.tooltipCollidedPosition = undefined;
     }
     setButtons() {
-        this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
-        this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
-        this.firstBtn.tabIndex = -1;
-        this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
-        this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
-        this.secondBtn.tabIndex = -1;
-        this.sliderContainer.classList.add(classNames.sliderButtonClass);
-        this.sliderContainer.appendChild(this.firstBtn);
-        this.sliderContainer.appendChild(this.secondBtn);
-        this.sliderContainer.appendChild(this.element);
-        this.buttonTitle();
+        if (isBlazor() && this.isServerRendered) {
+            this.firstBtn = this.element.parentElement.querySelector('.e-slider-button.e-first-button');
+            this.secondBtn = this.element.parentElement.querySelector('.e-slider-button.e-second-button');
+        }
+        else {
+            this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
+            this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.firstBtn.tabIndex = -1;
+            this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
+            this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.secondBtn.tabIndex = -1;
+            this.sliderContainer.classList.add(classNames.sliderButtonClass);
+            this.sliderContainer.appendChild(this.firstBtn);
+            this.sliderContainer.appendChild(this.secondBtn);
+            this.sliderContainer.appendChild(this.element);
+            this.buttonTitle();
+        }
     }
     buttonTitle() {
         let enabledRTL = this.enableRtl && this.orientation !== 'Vertical';
@@ -4436,7 +4482,7 @@ let Slider = class Slider extends Component {
         }
     }
     repeatHandlerUp(e) {
-        this.changeEvent('changed');
+        this.changeEvent('changed', e);
         this.closeTooltip();
         clearInterval(this.repeatInterval);
         this.getHandle().focus();
@@ -4461,12 +4507,18 @@ let Slider = class Slider extends Component {
     }
     // tslint:disable-next-line:max-func-body-length
     renderScale() {
+        let liElementPosition = 0;
         let orien = this.orientation === 'Vertical' ? 'v' : 'h';
         this.noOfDecimals = this.numberOfDecimals(this.step);
-        this.ul = this.createElement('ul', {
-            className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
-            attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
-        });
+        if (isBlazor() && this.isServerRendered) {
+            this.ul = this.element.querySelector('ul');
+        }
+        else {
+            this.ul = this.createElement('ul', {
+                className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
+                attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
+            });
+        }
         this.ul.style.zIndex = '-1';
         if (Browser.isAndroid && orien === 'h') {
             this.ul.classList.add(classNames.sliderTickPosition);
@@ -4486,7 +4538,9 @@ let Slider = class Slider extends Component {
         let customStep = this.customTickCounter(bigNum);
         let count = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
             (bigNum * customStep) + bigNum : Math.abs((max - min) / steps);
-        this.element.appendChild(this.ul);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.element.appendChild(this.ul);
+        }
         let li;
         let start = parseFloat(this.min.toString());
         if (orien === 'v') {
@@ -4551,11 +4605,21 @@ let Slider = class Slider extends Component {
                 for (let j = 0; j < repeat; j++) {
                     this.createTick(li, start, tickWidth);
                 }
+                if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
             }
             else if (isNullOrUndefined(this.customValues)) {
                 this.formatTicksValue(li, start);
+                if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
             }
-            this.ul.appendChild(li);
+            if (!isBlazor() || !this.isServerRendered) {
+                this.ul.appendChild(li);
+            }
             this.tickElementCollection.push(li);
             let decimalPoints;
             if (isNullOrUndefined(this.customValues)) {
@@ -4575,6 +4639,33 @@ let Slider = class Slider extends Component {
             }
         }
         this.ticksAlignment(orien, tickWidth);
+    }
+    updateTicksValues(start, liElement) {
+        if (liElement.childElementCount > 0) {
+            for (let i = 0; i < liElement.childElementCount; i++) {
+                this.blazortTicksValue(liElement, start, liElement.children[i]);
+            }
+        }
+        else {
+            this.blazortTicksValue(liElement, start, null);
+        }
+    }
+    blazortTicksValue(li, start, span) {
+        const tickText = this.formatNumber(start);
+        const text = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
+            this.formatString(start, this.ticksFormatInfo).formatString : tickText;
+        let eventArgs = { value: start, text: text, tickElement: li };
+        this.trigger('renderingTicks', eventArgs, (observedArgs) => {
+            li.setAttribute('title', observedArgs.text.toString());
+            if (span) {
+                if (this.enableHtmlSanitizer) {
+                    span.innerHTML = SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                }
+                else {
+                    span.innerHTML = observedArgs.text.toString();
+                }
+            }
+        });
     }
     ticksAlignment(orien, tickWidth, triggerEvent = true) {
         this.firstChild = this.ul.firstElementChild;
@@ -4650,8 +4741,10 @@ let Slider = class Slider extends Component {
         }
     }
     tickValuePosition() {
+        this.firstChild = this.element.querySelector('ul').children[0];
         let first = this.firstChild.getBoundingClientRect();
         let firstChild;
+        let otherChild;
         let smallStep = this.ticks.smallStep;
         let count = Math.abs((parseFloat(formatUnit(this.max))) - (parseFloat(formatUnit(this.min)))) / smallStep;
         if (this.firstChild.children.length > 0) {
@@ -4670,7 +4763,9 @@ let Slider = class Slider extends Component {
             (first.height * 2) : (first.width * 2);
         for (let i = 0; i < this.firstChild.children.length; i++) {
             if (this.orientation === 'Vertical') {
-                this.firstChild.children[i].style.top = -(firstChild.height / 2) + 'px';
+                if (!isBlazor() || !this.isServerRendered) {
+                    this.firstChild.children[i].style.top = -(firstChild.height / 2) + 'px';
+                }
             }
             else {
                 if (!this.enableRtl) {
@@ -4683,9 +4778,11 @@ let Slider = class Slider extends Component {
             }
         }
         for (let i = 0; i < other.length; i++) {
-            let otherChild = other[i].getBoundingClientRect();
+            otherChild = other[i].getBoundingClientRect();
             if (this.orientation === 'Vertical') {
-                setStyleAttribute(other[i], { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                if (!isBlazor() || !this.isServerRendered) {
+                    setStyleAttribute(other[i], { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                }
             }
             else {
                 setStyleAttribute(other[i], { left: (tickWidth - otherChild.width) / 2 + 'px' });
@@ -4694,29 +4791,73 @@ let Slider = class Slider extends Component {
         if (this.enableRtl && this.lastChild.children.length && count !== 0) {
             this.lastChild.children[0].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
             if (this.ticks.placement === 'Both') {
-                this.lastChild.children[1].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+                if (!isBlazor()) {
+                    this.lastChild.children[1].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+                }
             }
         }
         if (count === 0) {
             if (this.orientation === 'Horizontal') {
                 if (!this.enableRtl) {
                     this.firstChild.classList.remove(classNames.sliderLastTick);
-                    this.firstChild.style.left = this.firstHandle.style.left;
+                    if (!isBlazor()) {
+                        this.firstChild.style.left = this.firstHandle.style.left;
+                    }
                 }
                 else {
                     this.firstChild.classList.remove(classNames.sliderLastTick);
                     this.firstChild.style.right = this.firstHandle.style.right;
-                    this.firstChild.children[0].style.left =
-                        (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
-                    if (this.ticks.placement === 'Both') {
-                        this.firstChild.children[1].style.left =
+                    if (!isBlazor()) {
+                        this.firstChild.children[0].style.left =
                             (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        if (this.ticks.placement === 'Both') {
+                            this.firstChild.children[1].style.left =
+                                (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        }
                     }
                 }
             }
-            if (this.orientation === 'Vertical') {
-                this.firstChild.classList.remove(classNames.sliderLastTick);
+            if (!isBlazor() || !this.isServerRendered) {
+                if (this.orientation === 'Vertical') {
+                    this.firstChild.classList.remove(classNames.sliderLastTick);
+                }
             }
+        }
+        if (isBlazor() && this.isServerRendered) {
+            let args;
+            if (this.firstChild != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { firstTickPostion: this.firstChild.children[0].style.left };
+                }
+                else {
+                    args = { firstTickPostion: -(firstChild.height / 2) + 'px' };
+                }
+            }
+            if (other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { otherTicksPosition: other[0].style.left };
+                }
+                else {
+                    args = { otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px' };
+                }
+            }
+            if (this.firstChild != null && other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = {
+                        firstTickPostion: this.firstChild.children[0].style.left,
+                        otherTicksPosition: other[0].style.left
+                    };
+                }
+                else {
+                    args = {
+                        firstTickPostion: -(firstChild.height / 2) + 'px',
+                        otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px'
+                    };
+                }
+            }
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('SliderTicksData', args);
+            // tslint:enable
         }
     }
     setAriaAttrValue(element) {
@@ -4967,11 +5108,11 @@ let Slider = class Slider extends Component {
                 this.handlePos1 = values[1];
                 this.preHandlePos1 = this.handlePos1;
             }
-            this.setHandlePosition();
+            this.setHandlePosition(null);
             this.handleStart();
             this.value = this.handleVal1;
             this.setAriaAttrValue(this.firstHandle);
-            this.changeEvent('changed');
+            this.changeEvent('changed', null);
         }
         else {
             this.validateRangeValue();
@@ -5007,7 +5148,7 @@ let Slider = class Slider extends Component {
             this.tooltipElement.style.zIndex = getZindexPartial(this.element) + '';
         }
     }
-    setHandlePosition() {
+    setHandlePosition(event) {
         let handle;
         let pos = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
         if (this.isMaterialTooltip) {
@@ -5025,8 +5166,11 @@ let Slider = class Slider extends Component {
             else {
                 handle.style.bottom = `${pos}px`;
             }
+            if (isBlazor() && this.isServerRendered) {
+                handle.style.removeProperty('visibility');
+            }
         });
-        this.changeEvent('change');
+        this.changeEvent('change', event);
     }
     getHandle() {
         return (this.activeHandle === 1) ? this.firstHandle : this.secondHandle;
@@ -5034,17 +5178,17 @@ let Slider = class Slider extends Component {
     setRangeValue() {
         this.updateRangeValue();
         this.activeHandle = 1;
-        this.setHandlePosition();
+        this.setHandlePosition(null);
         this.activeHandle = 2;
-        this.setHandlePosition();
+        this.setHandlePosition(null);
         this.activeHandle = 1;
     }
-    changeEvent(eventName) {
+    changeEvent(eventName, e) {
         let previous = eventName === 'change' ? this.previousVal : this.previousChanged;
         if (this.type !== 'Range') {
             this.setProperties({ 'value': this.handleVal1 }, true);
             if (previous !== this.value) {
-                this.trigger(eventName, this.changeEventArgs(eventName));
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.firstHandle);
@@ -5054,21 +5198,23 @@ let Slider = class Slider extends Component {
             this.setProperties({ 'value': value }, true);
             if (previous.length === this.value.length
                 && this.value[0] !== previous[0] || this.value[1] !== previous[1]) {
-                this.trigger(eventName, this.changeEventArgs(eventName));
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.getHandle());
         }
         this.hiddenInput.value = this.value.toString();
     }
-    changeEventArgs(eventName) {
+    changeEventArgs(eventName, e) {
         let eventArgs;
         if (this.tooltip.isVisible && this.tooltipObj) {
-            this.tooltipValue();
+            if (!isBlazor() || !this.isServerRendered) {
+                this.tooltipValue();
+            }
             eventArgs = {
                 value: this.value,
                 previousValue: eventName === 'change' ? this.previousVal : this.previousChanged,
-                action: eventName, text: this.tooltipObj.content
+                action: eventName, text: this.tooltipObj.content, isInteracted: isNullOrUndefined(e) ? false : true
             };
         }
         else {
@@ -5078,7 +5224,8 @@ let Slider = class Slider extends Component {
                 action: eventName, text: isNullOrUndefined(this.ticksFormatInfo.format) ? this.value.toString() :
                     (this.type !== 'Range' ? this.formatString(this.value, this.ticksFormatInfo).formatString :
                         (this.formatString(this.value[0], this.ticksFormatInfo).formatString + ' - ' +
-                            this.formatString(this.value[1], this.ticksFormatInfo).formatString))
+                            this.formatString(this.value[1], this.ticksFormatInfo).formatString)),
+                isInteracted: isNullOrUndefined(e) ? false : true
             };
         }
         return eventArgs;
@@ -5218,9 +5365,14 @@ let Slider = class Slider extends Component {
             this.setLimitBar();
         }
         if (this.ticks.placement !== 'None' && this.ul) {
-            this.removeElement(this.ul);
-            this.ul = undefined;
+            if (!isBlazor()) {
+                this.removeElement(this.ul);
+                this.ul = undefined;
+            }
             this.renderScale();
+            if (isBlazor()) {
+                this.tickValuePosition();
+            }
         }
         this.handleStart();
         if (!this.tooltip.isVisible) {
@@ -5231,7 +5383,9 @@ let Slider = class Slider extends Component {
                 }
             });
         }
-        this.refreshTooltip(this.tooltipTarget);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
         this.setBarColor();
     }
     changeHandleValue(value) {
@@ -5268,7 +5422,7 @@ let Slider = class Slider extends Component {
             if (this.type !== 'Default') {
                 this.setRangeBar();
             }
-            this.setHandlePosition();
+            this.setHandlePosition(null);
         }
     }
     tempStartEnd() {
@@ -5424,7 +5578,7 @@ let Slider = class Slider extends Component {
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = transition.rangeBar;
         }
-        this.setHandlePosition();
+        this.setHandlePosition(evt);
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -5537,14 +5691,14 @@ let Slider = class Slider extends Component {
             }
         }
         this.activeHandle = 1;
-        this.setHandlePosition();
+        this.setHandlePosition(event);
         this.activeHandle = 2;
-        this.setHandlePosition();
+        this.setHandlePosition(event);
         this.tooltipToggle(this.rangeBar);
         this.setRangeBar();
     }
-    sliderBarUp() {
-        this.changeEvent('changed');
+    sliderBarUp(event) {
+        this.changeEvent('changed', event);
         this.handleFocusOut();
         this.firstHandle.classList.remove(classNames.sliderActiveHandle);
         if (this.type === 'Range') {
@@ -5633,7 +5787,7 @@ let Slider = class Slider extends Component {
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = 'none';
         }
-        this.setHandlePosition();
+        this.setHandlePosition(evt);
         if (this.isMaterial && !this.tooltip.isVisible &&
             !this.getHandle().classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
@@ -5644,7 +5798,7 @@ let Slider = class Slider extends Component {
         }
     }
     dragRangeBarUp(event) {
-        this.changeEvent('changed');
+        this.changeEvent('changed', event);
         this.closeTooltip();
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
@@ -5791,7 +5945,7 @@ let Slider = class Slider extends Component {
             }
         }
         this.closeTooltip();
-        this.changeEvent('changed');
+        this.changeEvent('changed', event);
     }
     hover(event) {
         if (!isNullOrUndefined(event)) {
@@ -5828,7 +5982,7 @@ let Slider = class Slider extends Component {
             element.parentNode.removeChild(element);
         }
     }
-    changeSliderType(type) {
+    changeSliderType(type, args) {
         if (this.isMaterialTooltip && this.materialHandle) {
             this.sliderContainer.classList.remove(classNames.materialSlider);
             this.removeElement(this.materialHandle);
@@ -5883,7 +6037,10 @@ let Slider = class Slider extends Component {
             this.renderTooltip();
             this.wireMaterialTooltipEvent(false);
         }
-        this.updateConfig();
+        this.setBarColor();
+        if ((!isBlazor() && !this.isServerRendered) || args !== 'tooltip') {
+            this.updateConfig();
+        }
     }
     changeRtl() {
         if (!this.enableRtl && this.type === 'Range') {
@@ -5900,13 +6057,15 @@ let Slider = class Slider extends Component {
         }
     }
     changeOrientation() {
-        this.changeSliderType(this.type);
+        this.changeSliderType(this.type, 'null');
     }
     updateConfig() {
         this.setEnableRTL();
         this.setValue();
         if (this.tooltip.isVisible) {
-            this.refreshTooltip(this.tooltipTarget);
+            if (!isBlazor()) {
+                this.refreshTooltip(this.tooltipTarget);
+            }
         }
         if (this.ticks.placement !== 'None') {
             if (this.ul) {
@@ -5960,12 +6119,16 @@ let Slider = class Slider extends Component {
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');
         }
-        this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
-        detach(this.sliderContainer);
+        if (!isBlazor() && !this.isServerRendered) {
+            this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
+            detach(this.sliderContainer);
+        }
         if (this.tooltip.isVisible) {
             this.tooltipObj.destroy();
         }
-        this.element.innerHTML = '';
+        if (!isBlazor() && !this.isServerRendered) {
+            this.element.innerHTML = '';
+        }
     }
     /**
      * Calls internally if any of the property value is changed.
@@ -5985,7 +6148,9 @@ let Slider = class Slider extends Component {
                         this.setProperties({ 'value': value }, true);
                         if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
                             this.setValue();
-                            this.refreshTooltip(this.tooltipTarget);
+                            if (!isBlazor() || !this.isServerRendered) {
+                                this.refreshTooltip(this.tooltipTarget);
+                            }
                             if (this.type === 'Range') {
                                 if (isNullOrUndefined(newProp.value) || oldProp.value[1] === value[1]) {
                                     this.activeHandle = 1;
@@ -6000,35 +6165,70 @@ let Slider = class Slider extends Component {
                 case 'min':
                 case 'step':
                 case 'max':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.setMinMaxValue();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'tooltip':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
-                        this.setTooltip();
+                        this.setTooltip(prop);
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'type':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
                         && !isNullOrUndefined(oldProp.type)) {
-                        this.changeSliderType(oldProp.type);
+                        this.changeSliderType(oldProp.type, prop);
                         this.setZindex();
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'enableRtl':
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                        this.isServerRendered = false;
+                    }
                     if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
                         this.rtl = oldProp.enableRtl;
                         this.changeRtl();
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'limits':
                     this.limitsPropertyChange();
                     break;
                 case 'orientation':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.changeOrientation();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'ticks':
                     if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
-                        detach(this.ul);
+                        if (!isBlazor() || !this.isServerRendered) {
+                            detach(this.ul);
+                        }
                         Array.prototype.forEach.call(this.sliderContainer.classList, (className) => {
                             if (className.match(/e-scale-/)) {
                                 this.sliderContainer.classList.remove(className);
@@ -6054,28 +6254,57 @@ let Slider = class Slider extends Component {
                         }
                     }
                     else {
-                        if (this.firstBtn && this.secondBtn) {
-                            this.sliderContainer.removeChild(this.firstBtn);
-                            this.sliderContainer.removeChild(this.secondBtn);
-                            this.sliderContainer.classList.remove(classNames.sliderButtonClass);
-                            this.firstBtn = undefined;
-                            this.secondBtn = undefined;
-                            this.reposition();
+                        if (!isBlazor() || !this.isServerRendered) {
+                            if (this.firstBtn && this.secondBtn) {
+                                this.sliderContainer.removeChild(this.firstBtn);
+                                this.sliderContainer.removeChild(this.secondBtn);
+                                this.sliderContainer.classList.remove(classNames.sliderButtonClass);
+                                this.firstBtn = undefined;
+                                this.secondBtn = undefined;
+                                this.reposition();
+                            }
+                        }
+                    }
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
                         }
                     }
                     break;
                 case 'enabled':
                     this.setEnabled();
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
                     break;
                 case 'readonly':
                     this.setReadOnly();
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
                     break;
                 case 'customValues':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.setValue();
                     this.reposition();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'colorRange':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.reposition();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
             }
         }
@@ -6092,7 +6321,9 @@ let Slider = class Slider extends Component {
     }
     setMinMaxValue() {
         this.setValue();
-        this.refreshTooltip(this.tooltipTarget);
+        if (!isBlazor()) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
         if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
             if (this.ul) {
                 detach(this.ul);
@@ -6122,8 +6353,8 @@ let Slider = class Slider extends Component {
             this.secondHandle.style.zIndex = (this.zIndex + 4) + '';
         }
     }
-    setTooltip() {
-        this.changeSliderType(this.type);
+    setTooltip(args) {
+        this.changeSliderType(this.type, args);
     }
     setBarColor() {
         let trackPosition;
@@ -7165,6 +7396,8 @@ let Uploader = class Uploader extends Component {
         this.flag = true;
         this.selectedFiles = [];
         this.uploaderName = 'UploadFiles';
+        this.fileStreams = [];
+        this.newFileRef = 0;
         /**
          * Get the file item(li) which are shown in file list.
          * @private
@@ -7219,9 +7452,13 @@ let Uploader = class Uploader extends Component {
                 case 'directoryUpload':
                     this.updateDirectoryAttributes();
                     break;
+                case 'template':
+                    if (!this.isServerBlazor) {
+                        this.clearAll();
+                    }
+                    break;
                 case 'minFileSize':
                 case 'maxFileSize':
-                case 'template':
                 case 'autoUpload':
                     this.clearAll();
                     break;
@@ -7245,7 +7482,9 @@ let Uploader = class Uploader extends Component {
                 this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
                     this.localizedTexts('Browse') : this.buttons.browse;
                 this.browseButton.setAttribute('title', this.browseButton.innerText);
-                this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
+                if (this.uploadWrapper) {
+                    this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
+                }
             }
             this.updateFileList();
         }
@@ -7316,8 +7555,64 @@ let Uploader = class Uploader extends Component {
         };
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
-        this.updateHTMLAttrToElement();
-        this.checkHTMLAttributes(false);
+        this.isServerBlazor = (isBlazor() && this.isServerRendered) ? true : false;
+        this.isBlazorTemplate = this.isServerBlazor && this.template !== '' && !isNullOrUndefined(this.template) ? true : false;
+        this.isBlazorSaveUrl = (this.isServerRendered &&
+            (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl))) ? true : false;
+        if (this.isBlazorSaveUrl && this.sequentialUpload) {
+            this.sequentialUpload = false;
+        }
+        this.formRendered();
+        if (!this.isServerBlazor) {
+            this.updateHTMLAttrToElement();
+            this.checkHTMLAttributes(false);
+            // tslint:disable-next-line
+            let ejInstance = getValue('ej2_instances', this.element);
+            /* istanbul ignore next */
+            if (this.element.tagName === 'EJS-UPLOADER') {
+                let inputElement = this.createElement('input', { attrs: { type: 'file' } });
+                let index = 0;
+                for (index; index < this.element.attributes.length; index++) {
+                    inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    inputElement.innerHTML = this.element.innerHTML;
+                }
+                if (!inputElement.hasAttribute('name')) {
+                    inputElement.setAttribute('name', 'UploadFiles');
+                }
+                this.element.appendChild(inputElement);
+                this.element = inputElement;
+                setValue('ej2_instances', ejInstance, this.element);
+            }
+            /* istanbul ignore next */
+            if (ejInstance[0].isPureReactComponent) {
+                if (!isNullOrUndefined(ejInstance[0].props.name)) {
+                    this.element.setAttribute('name', ejInstance[0].props.name);
+                }
+                else if (!isNullOrUndefined(ejInstance[0].props.id) && isNullOrUndefined(ejInstance[0].props.name)) {
+                    this.element.setAttribute('name', ejInstance[0].props.id);
+                }
+                else {
+                    this.element.setAttribute('name', 'UploadFiles');
+                }
+            }
+            if (isNullOrUndefined(this.element.getAttribute('name'))) {
+                this.element.setAttribute('name', this.element.getAttribute('id'));
+            }
+            if (!this.element.hasAttribute('type')) {
+                this.element.setAttribute('type', 'file');
+            }
+            this.updateDirectoryAttributes();
+        }
+        this.keyConfigs = {
+            enter: 'enter'
+        };
+        if (this.element.hasAttribute('tabindex')) {
+            this.tabIndex = this.element.getAttribute('tabindex');
+        }
+        this.browserName = Browser.info.name;
+        this.uploaderName = this.element.getAttribute('name');
+    }
+    formRendered() {
         let parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -7329,50 +7624,6 @@ let Uploader = class Uploader extends Component {
                 }
             }
         }
-        // tslint:disable-next-line
-        let ejInstance = getValue('ej2_instances', this.element);
-        /* istanbul ignore next */
-        if (this.element.tagName === 'EJS-UPLOADER') {
-            let inputElement = this.createElement('input', { attrs: { type: 'file' } });
-            let index = 0;
-            for (index; index < this.element.attributes.length; index++) {
-                inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
-                inputElement.innerHTML = this.element.innerHTML;
-            }
-            if (!inputElement.hasAttribute('name')) {
-                inputElement.setAttribute('name', 'UploadFiles');
-            }
-            this.element.appendChild(inputElement);
-            this.element = inputElement;
-            setValue('ej2_instances', ejInstance, this.element);
-        }
-        /* istanbul ignore next */
-        if (ejInstance[0].isPureReactComponent) {
-            if (!isNullOrUndefined(ejInstance[0].props.name)) {
-                this.element.setAttribute('name', ejInstance[0].props.name);
-            }
-            else if (!isNullOrUndefined(ejInstance[0].props.id) && isNullOrUndefined(ejInstance[0].props.name)) {
-                this.element.setAttribute('name', ejInstance[0].props.id);
-            }
-            else {
-                this.element.setAttribute('name', 'UploadFiles');
-            }
-        }
-        if (isNullOrUndefined(this.element.getAttribute('name'))) {
-            this.element.setAttribute('name', this.element.getAttribute('id'));
-        }
-        if (!this.element.hasAttribute('type')) {
-            this.element.setAttribute('type', 'file');
-        }
-        this.updateDirectoryAttributes();
-        this.keyConfigs = {
-            enter: 'enter'
-        };
-        if (this.element.hasAttribute('tabindex')) {
-            this.tabIndex = this.element.getAttribute('tabindex');
-        }
-        this.browserName = Browser.info.name;
-        this.uploaderName = this.element.getAttribute('name');
     }
     getPersistData() {
         return this.addOnPersist([]);
@@ -7398,16 +7649,26 @@ let Uploader = class Uploader extends Component {
      * @private
      */
     render() {
-        this.renderBrowseButton();
-        this.initializeUpload();
-        this.updateHTMLAttrToWrapper();
-        this.wireEvents();
-        this.setMultipleSelection();
-        this.setExtensions(this.allowedExtensions);
-        this.setRTL();
-        this.renderPreLoadFiles();
-        this.setControlStatus();
-        this.setCSSClass();
+        if (!this.isServerBlazor) {
+            this.renderBrowseButton();
+            this.initializeUpload();
+            this.updateHTMLAttrToWrapper();
+            this.wireEvents();
+            this.setMultipleSelection();
+            this.setExtensions(this.allowedExtensions);
+            this.setRTL();
+            this.renderPreLoadFiles();
+            this.setControlStatus();
+            this.setCSSClass();
+        }
+        else {
+            this.dropAreaWrapper = closest(this.element, '.' + DROP_WRAPPER);
+            this.uploadWrapper = closest(this.element, '.e-upload.e-control-wrapper');
+            this.browseButton = this.dropAreaWrapper.querySelector('button.e-upload-browse-btn');
+            this.setDropArea();
+            this.renderPreLoadFiles();
+            this.wireEvents();
+        }
         this.renderComplete();
     }
     renderBrowseButton() {
@@ -7425,18 +7686,46 @@ let Uploader = class Uploader extends Component {
     }
     renderActionButtons() {
         this.element.setAttribute('tabindex', '-1');
-        this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
-        this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS,
-            attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
-        this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
-            attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
-        this.actionButtons.appendChild(this.clearButton);
-        this.actionButtons.appendChild(this.uploadButton);
-        this.renderButtonTemplates();
-        this.uploadWrapper.appendChild(this.actionButtons);
-        this.browseButton.blur();
-        this.uploadButton.focus();
-        this.wireActionButtonEvents();
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
+            this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS,
+                attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
+            this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
+                attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
+            this.actionButtons.appendChild(this.clearButton);
+            this.actionButtons.appendChild(this.uploadButton);
+            this.renderButtonTemplates();
+            this.uploadWrapper.appendChild(this.actionButtons);
+            this.browseButton.blur();
+            this.uploadButton.focus();
+            this.wireActionButtonEvents();
+        }
+    }
+    /* istanbul ignore next */
+    serverActionButtonsEventBind(element) {
+        if (element && !this.isForm) {
+            this.browseButton.blur();
+            this.actionButtons = element;
+            this.uploadButton = this.actionButtons.querySelector('.e-file-upload-btn');
+            this.clearButton = this.actionButtons.querySelector('.e-file-clear-btn');
+            this.uploadButton.focus();
+            this.unwireActionButtonEvents();
+            this.wireActionButtonEvents();
+            this.checkActionButtonStatus();
+        }
+    }
+    /* istanbul ignore next */
+    serverUlElement(element) {
+        if (element) {
+            if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+                this.listParent = element;
+                this.fileList = [].slice.call(this.listParent.querySelectorAll('li'));
+                this.serverRemoveIconBindEvent();
+                if (!this.isForm) {
+                    this.checkAutoUpload(this.filesData);
+                }
+            }
+        }
     }
     wireActionButtonEvents() {
         EventHandler.add(this.uploadButton, 'click', this.uploadButtonClick, this);
@@ -7449,7 +7738,9 @@ let Uploader = class Uploader extends Component {
     removeActionButtons() {
         if (this.actionButtons) {
             this.unwireActionButtonEvents();
-            detach(this.actionButtons);
+            if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                detach(this.actionButtons);
+            }
             this.actionButtons = null;
         }
     }
@@ -7833,6 +8124,9 @@ let Uploader = class Uploader extends Component {
             return;
         }
         let selectedElement = args.target.parentElement;
+        if (this.isBlazorSaveUrl) {
+            this.fileList = [].slice.call(this.uploadWrapper.querySelectorAll('li'));
+        }
         let index = this.fileList.indexOf(selectedElement);
         let liElement = this.fileList[index];
         let formUpload = this.isFormUpload();
@@ -7874,20 +8168,28 @@ let Uploader = class Uploader extends Component {
         if (isNullOrUndefined(selectedElement)) {
             return;
         }
-        detach(selectedElement);
+        if (!this.isBlazorSaveUrl) {
+            detach(selectedElement);
+        }
         index = this.fileList.indexOf(selectedElement);
         this.fileList.splice(index, 1);
         this.filesData.splice(index, 1);
-        if (this.fileList.length === 0 && !isNullOrUndefined(this.listParent)) {
-            detach(this.listParent);
-            this.listParent = null;
-            this.removeActionButtons();
-        }
-        if (this.sequentialUpload) {
-            /* istanbul ignore next */
-            if (index <= this.count) {
-                --this.count;
+        if (!this.isBlazorSaveUrl) {
+            if (this.fileList.length === 0 && !isNullOrUndefined(this.listParent)) {
+                detach(this.listParent);
+                this.listParent = null;
+                this.removeActionButtons();
             }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                if (index <= this.count) {
+                    --this.count;
+                }
+            }
+        }
+        else {
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('removeFileData', index);
         }
     }
     removeUploadedFile(file, eventArgs, removeDirectly, custom) {
@@ -7897,7 +8199,7 @@ let Uploader = class Uploader extends Component {
         let formData = new FormData();
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -7919,6 +8221,15 @@ let Uploader = class Uploader extends Component {
                 this.removingEventCallback(eventArgs, formData, selectedFiles, file);
             }
         };
+        if (this.isServerBlazor) {
+            let name = this.element.getAttribute('name');
+            if (!isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+            }
+            else {
+                formData.append(name, selectedFiles.name);
+            }
+        }
         ajax.onLoad = (e) => { this.removeCompleted(e, selectedFiles, custom); return {}; };
         /* istanbul ignore next */
         ajax.onError = (e) => { this.removeFailed(e, selectedFiles, custom); return {}; };
@@ -7936,13 +8247,15 @@ let Uploader = class Uploader extends Component {
             createSpinner({ target: spinnerTarget, width: '20px' });
             showSpinner(spinnerTarget);
         }
-        if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
-            formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+        if (!this.isServerBlazor) {
+            if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+            }
+            else {
+                formData.append(name, selectedFiles.name);
+            }
+            this.updateFormData(formData, eventArgs.customFormData);
         }
-        else {
-            formData.append(name, selectedFiles.name);
-        }
-        this.updateFormData(formData, eventArgs.customFormData);
     }
     /* istanbul ignore next */
     updateFormData(formData, customData) {
@@ -8187,7 +8500,7 @@ let Uploader = class Uploader extends Component {
     _internalRenderSelect(eventArgs, fileData) {
         if (!eventArgs.cancel) {
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
@@ -8195,6 +8508,13 @@ let Uploader = class Uploader extends Component {
             this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
             if (this.showFileList) {
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                    for (let j = 0; j < eventArgs.modifiedFilesData.length; j++) {
+                        for (let k = 0; k < fileData.length; k++) {
+                            if (eventArgs.modifiedFilesData[j].name === fileData[k].name) {
+                                eventArgs.modifiedFilesData[j].rawFile = fileData[k].rawFile;
+                            }
+                        }
+                    }
                     let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
                         this.checkExtension(eventArgs.modifiedFilesData);
                     this.updateSortedFileList(dataFiles);
@@ -8204,10 +8524,14 @@ let Uploader = class Uploader extends Component {
                     }
                 }
                 else {
-                    this.createFileList(fileData);
-                    this.filesData = this.filesData.concat(fileData);
+                    this.createFileList(fileData, true);
+                    if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                        this.filesData = this.filesData.concat(fileData);
+                    }
                     if (!this.isForm || this.allowUpload()) {
-                        this.checkAutoUpload(fileData);
+                        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                            this.checkAutoUpload(fileData);
+                        }
                     }
                 }
                 if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
@@ -8216,6 +8540,10 @@ let Uploader = class Uploader extends Component {
             }
             else {
                 this.filesData = this.filesData.concat(fileData);
+                if (this.isBlazorSaveUrl) {
+                    // tslint:disable-next-line
+                    this.interopAdaptor.invokeMethodAsync('updateServerFileData', this.filesData, this.isForm);
+                }
                 if (this.autoUpload) {
                     this.upload(this.filesData, true);
                 }
@@ -8239,7 +8567,7 @@ let Uploader = class Uploader extends Component {
         return isFormUpload;
     }
     clearData(singleUpload) {
-        if (!isNullOrUndefined(this.listParent)) {
+        if (!isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             detach(this.listParent);
             this.listParent = null;
         }
@@ -8248,7 +8576,13 @@ let Uploader = class Uploader extends Component {
         }
         this.fileList = [];
         this.filesData = [];
-        this.removeActionButtons();
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('clearAll');
+        }
+        else {
+            this.removeActionButtons();
+        }
     }
     updateSortedFileList(filesData) {
         let previousListClone = this.createElement('div', { id: 'clonewrapper' });
@@ -8561,88 +8895,98 @@ let Uploader = class Uploader extends Component {
      * @param { FileInfo[] } fileData - specifies the files data for file list creation.
      * @returns void
      */
-    createFileList(fileData) {
-        this.createParentUL();
-        if (this.template !== '' && !isNullOrUndefined(this.template)) {
-            if (this.isFormUpload()) {
-                this.uploadWrapper.classList.add(FORM_UPLOAD);
-                this.formCustomFileList(fileData, this.element.files);
-            }
-            else {
-                this.createCustomfileList(fileData);
-            }
-        }
-        else if (this.isFormUpload()) {
-            this.uploadWrapper.classList.add(FORM_UPLOAD);
-            this.formFileList(fileData, this.element.files);
+    createFileList(fileData, isSelectedFile) {
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            let fileListData = (isSelectedFile) ? this.filesData = this.filesData.concat(fileData) : fileData;
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('createFileList', fileListData, this.isForm);
         }
         else {
-            for (let listItem of fileData) {
-                let liElement = this.createElement('li', { className: FILE,
-                    attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' } });
-                let textContainer = this.createElement('span', { className: TEXT_CONTAINER });
-                let textElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
-                textElement.innerHTML = this.getFileNameOnly(listItem.name);
-                let fileExtension = this.createElement('span', { className: FILE_TYPE });
-                fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
-                if (!this.enableRtl) {
-                    textContainer.appendChild(textElement);
-                    textContainer.appendChild(fileExtension);
+            this.createParentUL();
+            if (this.template !== '' && !isNullOrUndefined(this.template)) {
+                if (this.isFormUpload()) {
+                    this.uploadWrapper.classList.add(FORM_UPLOAD);
+                    this.formCustomFileList(fileData, this.element.files);
                 }
                 else {
-                    let rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
-                    rtlContainer.appendChild(fileExtension);
-                    rtlContainer.appendChild(textElement);
-                    textContainer.appendChild(rtlContainer);
+                    this.createCustomfileList(fileData);
                 }
-                let fileSize = this.createElement('span', { className: FILE_SIZE });
-                fileSize.innerHTML = this.bytesToSize(listItem.size);
-                textContainer.appendChild(fileSize);
-                let statusElement = this.createElement('span', { className: STATUS });
-                textContainer.appendChild(statusElement);
-                statusElement.innerHTML = listItem.status;
-                liElement.appendChild(textContainer);
-                let iconElement = this.createElement('span', { className: ' e-icons', attrs: { 'tabindex': this.btnTabIndex } });
-                /* istanbul ignore next */
-                if (this.browserName === 'msie') {
-                    iconElement.classList.add('e-msie');
+            }
+            else if (this.isFormUpload()) {
+                this.uploadWrapper.classList.add(FORM_UPLOAD);
+                this.formFileList(fileData, this.element.files);
+            }
+            else {
+                for (let listItem of fileData) {
+                    let liElement = this.createElement('li', {
+                        className: FILE,
+                        attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' }
+                    });
+                    let textContainer = this.createElement('span', { className: TEXT_CONTAINER });
+                    let textElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
+                    textElement.innerHTML = this.getFileNameOnly(listItem.name);
+                    let fileExtension = this.createElement('span', { className: FILE_TYPE });
+                    fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
+                    if (!this.enableRtl) {
+                        textContainer.appendChild(textElement);
+                        textContainer.appendChild(fileExtension);
+                    }
+                    else {
+                        let rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
+                        rtlContainer.appendChild(fileExtension);
+                        rtlContainer.appendChild(textElement);
+                        textContainer.appendChild(rtlContainer);
+                    }
+                    let fileSize = this.createElement('span', { className: FILE_SIZE });
+                    fileSize.innerHTML = this.bytesToSize(listItem.size);
+                    textContainer.appendChild(fileSize);
+                    let statusElement = this.createElement('span', { className: STATUS });
+                    textContainer.appendChild(statusElement);
+                    statusElement.innerHTML = listItem.status;
+                    liElement.appendChild(textContainer);
+                    let iconElement = this.createElement('span', { className: ' e-icons',
+                        attrs: { 'tabindex': this.btnTabIndex } });
+                    /* istanbul ignore next */
+                    if (this.browserName === 'msie') {
+                        iconElement.classList.add('e-msie');
+                    }
+                    iconElement.setAttribute('title', this.localizedTexts('remove'));
+                    liElement.appendChild(iconElement);
+                    EventHandler.add(iconElement, 'click', this.removeFiles, this);
+                    if (listItem.statusCode === '2') {
+                        statusElement.classList.add(UPLOAD_SUCCESS);
+                        iconElement.classList.add(DELETE_ICON);
+                        iconElement.setAttribute('title', this.localizedTexts('delete'));
+                    }
+                    else if (listItem.statusCode !== '1') {
+                        statusElement.classList.remove(UPLOAD_SUCCESS);
+                        statusElement.classList.add(VALIDATION_FAILS);
+                    }
+                    if (this.autoUpload && listItem.statusCode === '1' && this.asyncSettings.saveUrl !== '') {
+                        statusElement.innerHTML = '';
+                    }
+                    if (!iconElement.classList.contains(DELETE_ICON)) {
+                        iconElement.classList.add(REMOVE_ICON);
+                    }
+                    let index = fileData.indexOf(listItem);
+                    let eventArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    let eventsArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    this.trigger('rendering', eventArgs);
+                    this.trigger('fileListRendering', eventsArgs);
+                    this.listParent.appendChild(liElement);
+                    this.fileList.push(liElement);
+                    this.truncateName(textElement);
                 }
-                iconElement.setAttribute('title', this.localizedTexts('remove'));
-                liElement.appendChild(iconElement);
-                EventHandler.add(iconElement, 'click', this.removeFiles, this);
-                if (listItem.statusCode === '2') {
-                    statusElement.classList.add(UPLOAD_SUCCESS);
-                    iconElement.classList.add(DELETE_ICON);
-                    iconElement.setAttribute('title', this.localizedTexts('delete'));
-                }
-                else if (listItem.statusCode !== '1') {
-                    statusElement.classList.remove(UPLOAD_SUCCESS);
-                    statusElement.classList.add(VALIDATION_FAILS);
-                }
-                if (this.autoUpload && listItem.statusCode === '1' && this.asyncSettings.saveUrl !== '') {
-                    statusElement.innerHTML = '';
-                }
-                if (!iconElement.classList.contains(DELETE_ICON)) {
-                    iconElement.classList.add(REMOVE_ICON);
-                }
-                let index = fileData.indexOf(listItem);
-                let eventArgs = {
-                    element: liElement,
-                    fileInfo: listItem,
-                    index: index,
-                    isPreload: this.isPreLoadFile(listItem)
-                };
-                let eventsArgs = {
-                    element: liElement,
-                    fileInfo: listItem,
-                    index: index,
-                    isPreload: this.isPreLoadFile(listItem)
-                };
-                this.trigger('rendering', eventArgs);
-                this.trigger('fileListRendering', eventsArgs);
-                this.listParent.appendChild(liElement);
-                this.fileList.push(liElement);
-                this.truncateName(textElement);
             }
         }
     }
@@ -8704,8 +9048,18 @@ let Uploader = class Uploader extends Component {
     }
     updateStatus(files, status, statusCode, updateLiStatus = true) {
         if (!(status === '' || isNullOrUndefined(status)) && !(statusCode === '' || isNullOrUndefined(statusCode))) {
-            files.status = status;
-            files.statusCode = statusCode;
+            if (this.isBlazorSaveUrl) {
+                for (let i = 0; i < this.filesData.length; i++) {
+                    if (this.filesData[i].name === files.name) {
+                        this.filesData[i].status = status;
+                        this.filesData[i].statusCode = statusCode;
+                    }
+                }
+            }
+            else {
+                files.status = status;
+                files.statusCode = statusCode;
+            }
         }
         if (updateLiStatus) {
             let li = this.getLiElement(files);
@@ -8909,25 +9263,42 @@ let Uploader = class Uploader extends Component {
         };
         return response;
     }
+    /* istanbul ignore next */
+    serverRemoveIconBindEvent() {
+        if (this.uploadWrapper && this.isBlazorSaveUrl) {
+            let iconElement = [].slice.call(this.uploadWrapper.querySelectorAll('ul li'));
+            for (let i = 0; i < iconElement.length; i++) {
+                let removeIconEle = (iconElement[i]) ? iconElement[i].querySelector('.e-icons') : null;
+                if (removeIconEle) {
+                    EventHandler.remove(removeIconEle, 'click', this.removeFiles);
+                    EventHandler.add(removeIconEle, 'click', this.removeFiles, this);
+                }
+            }
+        }
+    }
     raiseSuccessEvent(e, file) {
         let response = e && e.currentTarget ? this.getResponse(e) : null;
         let statusMessage = this.localizedTexts('uploadSuccessMessage');
         let args = {
             e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
-        let liElement = this.getLiElement(file);
-        if (!isNullOrUndefined(liElement)) {
-            let spinnerEle = liElement.querySelector('.' + SPINNER_PANE);
-            if (!isNullOrUndefined(spinnerEle)) {
-                hideSpinner(liElement);
-                detach(spinnerEle);
+        if (!this.isBlazorSaveUrl) {
+            let liElement = this.getLiElement(file);
+            if (!isNullOrUndefined(liElement)) {
+                let spinnerEle = liElement.querySelector('.' + SPINNER_PANE);
+                if (!isNullOrUndefined(spinnerEle)) {
+                    hideSpinner(liElement);
+                    detach(spinnerEle);
+                }
             }
         }
         this.trigger('success', args, (args) => {
             // tslint:disable-next-line
             this.updateStatus(file, args.statusText, '2');
             this.uploadedFilesData.push(file);
-            this.trigger('change', { file: this.uploadedFilesData });
+            if (!this.isBlazorSaveUrl) {
+                this.trigger('change', { file: this.uploadedFilesData });
+            }
             this.checkActionButtonStatus();
             if (this.fileList.length > 0) {
                 if ((!(this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
@@ -9158,7 +9529,7 @@ let Uploader = class Uploader extends Component {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -9628,7 +9999,9 @@ let Uploader = class Uploader extends Component {
      */
     destroy() {
         this.element.value = null;
-        this.clearAll();
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.clearAll();
+        }
         this.unWireEvents();
         this.unBindDropEvents();
         if (this.multiple) {
@@ -9643,12 +10016,17 @@ let Uploader = class Uploader extends Component {
         for (let key of attributes$$1) {
             this.element.removeAttribute(key);
         }
-        if (!isNullOrUndefined(this.uploadWrapper)) {
-            this.uploadWrapper.parentElement.appendChild(this.element);
-            detach(this.uploadWrapper);
+        if (!this.isServerBlazor) {
+            if (!isNullOrUndefined(this.uploadWrapper)) {
+                this.uploadWrapper.parentElement.appendChild(this.element);
+                detach(this.uploadWrapper);
+            }
+            this.uploadWrapper = null;
+            super.destroy();
         }
-        this.uploadWrapper = null;
-        super.destroy();
+        else {
+            this.uploadWrapper = null;
+        }
     }
     /**
      * Allows you to call the upload process manually by calling save URL action.
@@ -9665,7 +10043,7 @@ let Uploader = class Uploader extends Component {
             currentRequest: null
         };
         this.trigger('beforeUpload', eventArgs, (eventArgs) => {
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
                 this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
                     eventArgs.customFormData : this.customFormDatas;
@@ -9683,9 +10061,71 @@ let Uploader = class Uploader extends Component {
         }
         return uploadFiles;
     }
+    /* istanbul ignore next */
+    serverReadFileBase64(fileIndex, position, totalCount) {
+        return new Promise((resolve, reject) => {
+            let file = this.fileStreams[fileIndex].rawFile;
+            try {
+                let reader = new FileReader();
+                // tslint:disable-next-line
+                reader.onload = ((args) => {
+                    return () => {
+                        try {
+                            let contents = args.result;
+                            let data = contents ? contents.split(';base64,')[1] : null;
+                            resolve(data);
+                        }
+                        catch (e) {
+                            reject(e);
+                        }
+                    };
+                })(reader);
+                reader.readAsDataURL(file.slice(position, position + totalCount));
+            }
+            catch (e) {
+                reject(e);
+            }
+        });
+    }
+    /* istanbul ignore next */
+    uploadFileCount(ele) {
+        let files = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        let result = files.length;
+        return result;
+    }
+    /* istanbul ignore next */
+    getFileRead(index, ele) {
+        let files = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        let file = files[index];
+        let fileCount = this.newFileRef++;
+        this.fileStreams[fileCount] = file;
+        return fileCount;
+    }
+    /* istanbul ignore next */
+    getFileInfo(index, ele) {
+        let files = this.filesData;
+        if (!files || files.length === 0) {
+            return null;
+        }
+        let file = files[index];
+        if (!file) {
+            return null;
+        }
+        return this.filesData[index];
+    }
     uploadFiles(files, custom) {
         let selectedFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
+            if (this.isServerBlazor) {
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('GetFileDetails', files);
+            }
             return;
         }
         if (!custom || isNullOrUndefined(custom)) {
@@ -9702,13 +10142,15 @@ let Uploader = class Uploader extends Component {
             selectedFiles = files;
         }
         for (let i = 0; i < selectedFiles.length; i++) {
-            if (isBlazor() && !this.checkChunkUpload()) {
+            if (this.isServerBlazor && !this.checkChunkUpload()) {
                 /* istanbul ignore next */
                 /* tslint:disable */
-                this.getBase64(selectedFiles[i].rawFile).then((data) => {
-                    this.base64String.push(data);
-                    this.uploadFilesRequest(selectedFiles, i, custom);
-                });
+                if (selectedFiles[i] && selectedFiles[i].rawFile instanceof File) {
+                    this.getBase64(selectedFiles[i].rawFile).then((data) => {
+                        this.base64String.push(data);
+                        this.uploadFilesRequest(selectedFiles, i, custom);
+                    });
+                }
                 /* tslint:disable */
             }
             else {
@@ -9723,12 +10165,12 @@ let Uploader = class Uploader extends Component {
         ajax.emitError = false;
         let getFileData;
         /* istanbul ignore next */
-        if (isBlazor()) {
+        if (this.isServerBlazor) {
             getFileData = selectedFiles.slice(0);
             cloneFiles.push(getFileData[i].rawFile);
         }
         let eventArgs = {
-            fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
+            fileData: (this.isServerBlazor) ? getFileData[i] : selectedFiles[i],
             customFormData: [],
             cancel: false
         };
@@ -9736,7 +10178,7 @@ let Uploader = class Uploader extends Component {
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 eventArgs.fileData.rawFile = !chunkEnabled ? this.base64String[i] : eventArgs.fileData.rawFile;
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
@@ -9747,7 +10189,7 @@ let Uploader = class Uploader extends Component {
             }
             this.trigger('uploading', eventArgs, (eventArgs) => {
                 /* istanbul ignore next */
-                if (isBlazor() && !chunkEnabled) {
+                if (this.isServerBlazor && !chunkEnabled) {
                     selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
                 }
                 if (eventArgs.cancel) {
@@ -9764,7 +10206,7 @@ let Uploader = class Uploader extends Component {
             }
             else {
                 ajax.onLoad = (e) => {
-                    if (eventArgs.cancel && isBlazor()) {
+                    if (eventArgs.cancel && this.isServerBlazor) {
                         return {};
                     }
                     else {
@@ -9773,7 +10215,7 @@ let Uploader = class Uploader extends Component {
                     }
                 };
                 ajax.onUploadProgress = (e) => {
-                    if (eventArgs.cancel && isBlazor()) {
+                    if (eventArgs.cancel && this.isServerBlazor) {
                         return {};
                     }
                     else {
@@ -9829,12 +10271,12 @@ let Uploader = class Uploader extends Component {
         };
         this.trigger('beforeRemove', beforeEventArgs, (beforeEventArgs) => {
             if (!beforeEventArgs.cancel) {
-                if (isBlazor()) {
+                if (this.isServerBlazor) {
                     this.currentRequestHeader = beforeEventArgs.currentRequest;
                     this.customFormDatas = beforeEventArgs.customFormData;
                 }
                 let index;
-                if (this.isFormUpload()) {
+                if (this.isFormUpload() && !this.isBlazorSaveUrl) {
                     eventArgs.filesData = fileData;
                     this.trigger('removing', eventArgs, (eventArgs) => {
                         if (!eventArgs.cancel) {
@@ -9860,7 +10302,8 @@ let Uploader = class Uploader extends Component {
                         }
                     });
                 }
-                else if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
+                else if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')
+                    && !this.isBlazorSaveUrl) {
                     eventArgs.filesData = this.getFilesData();
                     this.trigger('removing', eventArgs, (eventArgs) => {
                         if (!eventArgs.cancel) {
@@ -9916,7 +10359,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     clearAll() {
-        if (isNullOrUndefined(this.listParent)) {
+        if (isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             if (this.browserName !== 'msie') {
                 this.element.value = '';
             }
@@ -9941,7 +10384,7 @@ let Uploader = class Uploader extends Component {
      * @returns FileInfo[]
      */
     getFilesData(index) {
-        if (!isBlazor()) {
+        if (!this.isServerBlazor) {
             if (isNullOrUndefined(index)) {
                 return this.filesData;
             }
@@ -11488,9 +11931,13 @@ let ColorPicker = class ColorPicker extends Component {
         this.tileRipple = null;
         this.ctrlBtnRipple();
         this.ctrlBtnRipple = null;
-        detach(this.element.nextElementSibling);
-        wrapper.parentElement.insertBefore(this.element, wrapper);
-        detach(wrapper);
+        if (this.element.nextElementSibling) {
+            detach(this.element.nextElementSibling);
+        }
+        if (wrapper) {
+            wrapper.parentElement.insertBefore(this.element, wrapper);
+            detach(wrapper);
+        }
         this.container = null;
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);

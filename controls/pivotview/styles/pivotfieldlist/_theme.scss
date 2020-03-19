@@ -37,6 +37,13 @@
       &:hover {
         background-color: $field-list-toggle-hover-color;
       }
+
+      &.e-rtl {
+
+        .e-select-table {
+          padding: 8px 5px;
+        }
+      }
     }
   }
 
@@ -71,9 +78,13 @@
       .e-cancel-btn,
       .e-defer-apply-button,
       .e-checkbox-layout {
-        max-width: 20%;
+        max-width: 25%;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-checkbox-layout .e-label {
         white-space: nowrap;
       }
 
@@ -95,6 +106,10 @@
         .e-defer-apply-button {
           margin-left: 10px;
         }
+      }
+
+      .e-checkbox-layout {
+        float: right;
       }
     }
 
@@ -179,6 +194,7 @@
           text-align: left;
           text-overflow: ellipsis;
           word-break: break-all;
+
           @if ($field-list-skin == 'bootstrap4') {
             padding-left: 12px;
           }
@@ -253,6 +269,12 @@
                 text-align: center;
                 vertical-align: bottom;
                 width: 20px;
+
+                &.e-disable-drag {
+                  cursor: not-allowed;
+                  opacity: .4;
+                  visibility: hidden;
+                }
               }
 
               .e-list-icon {
@@ -274,6 +296,7 @@
               .e-kpiValue-icon {
                 margin-left: 10px;
               }
+
               // sass-lint:enable-all
 
               .e-list-selected {
@@ -376,8 +399,11 @@
             font-size: $field-list-header-font-size;
             line-height: $field-list-header-content-line-height;
             margin-top: 2px;
+            overflow: hidden;
             padding: 0 8px;
+            text-overflow: ellipsis;
             width: 100%;
+
             @if ($field-list-skin == 'bootstrap4') {
               margin-top: 3px;
             }
@@ -429,6 +455,7 @@
                 padding: $field-list-button-padding;
                 text-transform: none;
                 width: 100%;
+
                 @if ($field-list-skin == 'bootstrap4') {
                   color: $field-list-button-font-color;
                 }
@@ -458,7 +485,8 @@
                   .e-sort,
                   .e-pv-filter,
                   .e-pv-filtered,
-                  .e-dropdown-icon {
+                  .e-dropdown-icon,
+                  .e-edit {
                     color: $field-list-button-active-color;
                   }
                 }
@@ -488,12 +516,19 @@
                   font-size: $field-list-icon-size;
                   height: 20px;
                   width: 20px;
+
+                  &.e-disable-drag {
+                    cursor: not-allowed;
+                    opacity: .4;
+                    visibility: hidden;
+                  }
                 }
 
                 .e-sort,
                 .e-pv-filter,
                 .e-pv-filtered,
-                .e-dropdown-icon {
+                .e-dropdown-icon,
+                .e-edit {
                   color: $field-list-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
@@ -528,7 +563,8 @@
                   .e-pv-filter,
                   .e-pv-filtered,
                   .e-remove,
-                  .e-dropdown-icon {
+                  .e-dropdown-icon,
+                  .e-edit {
                     padding-left: 0;
                     padding-right: $field-list-icon-to-icon-padding;
                   }
@@ -587,6 +623,7 @@
       font-weight: $field-list-button-font-weight;
       max-width: 160px;
       min-width: 145px;
+
       @if ($field-list-skin == 'bootstrap4') {
         color: #f8f9fa;
       }
@@ -595,6 +632,7 @@
         display: none;
       }
     }
+
     // sass-lint:enable-all
 
     &.e-rtl {
@@ -631,6 +669,7 @@
               margin-left: 0;
               margin-right: 10px;
             }
+
             // sass-lint:enable-all
           }
         }
@@ -639,6 +678,7 @@
           padding-left: 0;
           padding-right: $field-list-header-padding;
           text-align: right;
+
           @if ($field-list-skin == 'bootstrap4') {
             padding-right: 12px;
           }
@@ -778,7 +818,8 @@
         padding-top: 9px;
       }
 
-      .e-adaptive-field-list-dialog {
+      .e-adaptive-field-list-dialog,
+      .e-member-editor-dialog {
         .e-dlg-header-content {
           background-color: transparent;
           color: $field-list-mobile-header-font-color;
@@ -883,11 +924,13 @@
                   display: none;
                 }
 
+                // sass-lint:disable-all
                 .e-sort,
                 .e-pv-filter,
                 .e-pv-filtered,
                 .e-remove,
-                .e-dropdown-icon {
+                .e-dropdown-icon,
+                .e-edit {
                   color: $field-list-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
@@ -896,10 +939,20 @@
                   padding-left: 10px;
                   width: 24px;
 
+                  @if ($field-list-skin == 'bootstrap4') {
+                    color: #fff;
+                  }
+
                   &:hover {
                     color: $field-list-icon-hover-color;
                   }
+
+                  &.e-disable {
+                    display: none;
+                  }
                 }
+
+                // sass-lint:enable-all
 
                 .e-sort {
                   height: fit-content;
@@ -924,7 +977,8 @@
                   .e-pv-filter,
                   .e-pv-filtered,
                   .e-remove,
-                  .e-dropdown-icon {
+                  .e-dropdown-icon,
+                  .e-edit {
                     padding-left: 0;
                     padding-right: 10px;
                   }
@@ -971,20 +1025,55 @@
             // sass-lint:disable-all
             .e-pivot-calc-input-div,
             .e-member-options,
+            .e-pivot-calc-custom-format-div,
             .e-olap-calc-custom-format-div {
               margin-left: 20px;
               margin-right: 20px;
               margin-top: 20px;
               width: 90% !important;
             }
+
             // sass-lint:enable-all
 
             .e-accordion {
               margin-top: 20px;
               overflow: auto;
 
+              .e-acrdn-header-icon {
+                display: table;
+                font-size: 12px;
+                height: 36px;
+                min-height: 36px;
+                min-width: 24px;
+                padding: 0;
+                position: absolute;
+                right: 16px;
+                top: 0;
+
+                .e-list-icon {
+                  display: table-cell;
+                  text-align: center;
+                  vertical-align: middle;
+                }
+              }
+
               .e-icons.e-frame {
                 margin-right: 12px;
+              }
+
+              &.e-rtl {
+                .e-acrdn-header-icon {
+                  left: 16px;
+                  right: auto;
+                }
+
+                // sass-lint:disable-all
+                .e-icons.e-frame {
+                  margin-left: 12px !important;
+                  margin-right: 0 !important;
+                }
+
+                // sass-lint:enable-all
               }
             }
 
@@ -1017,8 +1106,39 @@
               max-height: 290px;
               overflow: auto;
 
+              ul {
+
+                .e-list-icon {
+                  color: $field-list-tree-icon-color;
+                }
+
+                .e-list-header-icon {
+                  display: table;
+                  height: 30px;
+                  min-height: 30px;
+                  min-width: 24px;
+                  padding: 0;
+                  position: absolute;
+                  right: 16px;
+                  top: 0;
+
+                  .e-list-edit-icon {
+                    color: $field-list-tree-icon-color;
+                    display: table-cell;
+                    pointer-events: all;
+                    text-align: center;
+                    vertical-align: middle;
+                  }
+                }
+              }
+
               &.e-rtl {
                 ul {
+                  .e-list-header-icon {
+                    left: 16px;
+                    right: auto;
+                  }
+
                   .e-list-icon {
                     transform: rotateX(0deg) rotateY(180deg);
                   }
@@ -1029,6 +1149,11 @@
             .e-checkbox-wrapper .e-icons {
               height: 18px;
               width: 18px;
+
+              @if ($field-list-skin == 'bootstrap4') {
+                height: 14px;
+                width: 14px;
+              }
             }
 
             &.e-olap-calc-outer-div {
@@ -1156,13 +1281,6 @@
             float: left !important;
             margin-left: 20px;
           }
-
-          .e-accordion {
-            .e-icons.e-frame {
-              margin-left: 12px !important;
-              margin-right: 0 !important;
-            }
-          }
         }
 
         // sass-lint:enable-all
@@ -1190,6 +1308,7 @@
         height: $field-list-bigger-header-height;
         overflow: hidden;
         padding: $field-list-tree-header-padding 0 0 $field-list-bigger-header-padding;
+
         @if ($field-list-skin == 'bootstrap4') {
           height: 40px;
           padding-left: 16px;
@@ -1285,6 +1404,7 @@
             line-height: $field-list-bigger-header-content-line-height;
             margin-top: 4px;
             padding: 0 12px;
+
             @if ($field-list-skin == 'bootstrap4') {
               margin-top: 7px;
             }
@@ -1316,7 +1436,8 @@
               .e-sort,
               .e-pv-filter,
               .e-pv-filtered,
-              .e-dropdown-icon {
+              .e-dropdown-icon,
+              .e-edit {
                 cursor: pointer;
                 display: inline-block;
                 font-size: $field-list-bigger-icon-size;
@@ -1335,6 +1456,7 @@
             }
           }
         }
+
         .e-draggable-prompt {
           @if ($field-list-skin == 'bootstrap4') {
             font-size: 16px;
@@ -1418,6 +1540,7 @@
             margin-left: 0;
             margin-right: 10px;
           }
+
           // sass-lint:enable-all
         }
 
@@ -1454,7 +1577,8 @@
             .e-pv-filter,
             .e-pv-filtered,
             .e-remove,
-            .e-dropdown-icon {
+            .e-dropdown-icon,
+            .e-edit {
               padding-left: 0;
               padding-right: $field-list-bigger-icon-to-icon-padding;
             }

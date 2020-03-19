@@ -4,7 +4,7 @@
  */
 import { Chart, Category, LineSeries, ILoadedEventArgs, Legend } from '../../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
-import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import { DataManager } from '@syncfusion/ej2-data';
 import { MouseEvents } from '../base/events.spec';
 Chart.Inject(Category, LineSeries, Legend);
 
@@ -112,42 +112,4 @@ describe('Chart Issue fixes', () => {
             legendChart.refresh();
         });
     });
-
-    // describe('Chart DataManager with offline mode', () => {
-    //     let offlineChart: Chart;
-    //     let offlineChartElement: Element;
-    //     let testElement: Element;
-    //     let query: Query = new Query().where('Freight', 'equal', 6.40, false);
-    //     let data: DataManager = new DataManager({
-    //         url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
-    //         adaptor: new ODataV4Adaptor(),
-    //         offline: true
-    //     });
-    //     offlineChartElement = createElement('div', { id: 'offlineChartContainer' });
-    //     beforeAll(() => {
-    //         offlineChart = new Chart({
-    //             height: '300',
-    //             primaryXAxis: { valueType: 'Category' },
-    //             title: 'Chart Offline DataManager in Series',
-    //             series: [{
-    //                 dataSource: data, query: query,
-    //                 animation: { enable: false },
-    //                 xName: 'CustomerID', yName: 'Freight', type: 'Column'
-    //             }]
-    //         });
-    //     });
-    //     afterAll((): void => {
-    //         offlineChart.destroy();
-    //         offlineChartElement.remove();
-    //     });
-    //     it('checking with dataSource with offline mode', (done: Function) => {
-    //         offlineChart.loaded = (args: ILoadedEventArgs) => {
-    //             testElement = document.getElementById('offlineChartContainer');
-    //             expect(testElement.classList.contains('e-control')).toBe(true);
-    //             expect(testElement.classList.contains('e-chart')).toBe(true);
-    //             done();
-    //         };
-    //         offlineChart.appendTo('#rangeContainer');
-    //     });
-    // });
 });

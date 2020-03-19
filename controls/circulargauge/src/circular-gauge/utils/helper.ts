@@ -5,7 +5,7 @@ import { compile as templateComplier, isNullOrUndefined } from '@syncfusion/ej2-
 import { CircularGauge } from '../circular-gauge';
 import { FontModel, BorderModel } from '../model/base-model';
 import { Range, Axis } from '../axes/axis';
-import { IVisiblePointer } from '../model/interface';
+import { IVisiblePointer, IVisibleRange } from '../model/interface';
 import { merge } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { createElement, remove, setStyleAttribute } from '@syncfusion/ej2-base';
@@ -452,6 +452,20 @@ export function getPointer(targetId: string, gauge: CircularGauge): IVisiblePoin
     return {
         axisIndex: +tempString[0],
         pointerIndex: +tempString[tempString.length - 1]
+    };
+}
+
+/**
+ * Function to get current point for circular gauge using element id.
+ * @returns IVisibleRange
+ * @private
+ */
+export function getRange(targetId: string, gauge: CircularGauge): IVisibleRange {
+    let tempString: string;
+    tempString = targetId.replace(gauge.element.id, '').split('_Axis_')[1];
+    return {
+        axisIndex: +tempString[0],
+        rangeIndex: +tempString[tempString.length - 1]
     };
 }
 

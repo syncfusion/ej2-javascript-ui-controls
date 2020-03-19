@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { remove, extend } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement } from '../common/utils/helper';import { appendClipElement } from '../common/utils/helper';import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';import { IndexesModel } from '../common/model/base-model';import { Margin, Border, ChartArea, Font, Indexes, TooltipSettings } from '../common/model/base';import { AxisModel, RowModel, ColumnModel } from './axis/axis-model';import { Row, Column, Axis } from './axis/axis';import { CartesianAxisLayoutPanel } from './axis/cartesian-panel';import { DateTime } from './axis/date-time-axis';import { Category } from './axis/category-axis';import { DateTimeCategory } from './axis/date-time-category-axis';import { CandleSeries } from './series/candle-series';import { ErrorBar } from './series/error-bar';import { Logarithmic } from './axis/logarithmic-axis';import { Rect, measureText, TextOption, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartData } from './utils/get-data';import { SelectionMode, LineType, ZoomMode, ToolbarItems, ChartTheme } from './utils/enum';import { Series, SeriesBase } from './series/chart-series';import { SeriesModel } from './series/chart-series-model';import { Data } from '../common/model/data';import { LineSeries } from './series/line-series';import { AreaSeries } from './series/area-series';import { BarSeries } from './series/bar-series';import { HistogramSeries } from './series/histogram-series';import { StepLineSeries } from './series/step-line-series';import { StepAreaSeries } from './series/step-area-series';import { ColumnSeries } from './series/column-series';import { ParetoSeries } from './series/pareto-series';import { StackingColumnSeries } from './series/stacking-column-series';import { StackingBarSeries } from './series/stacking-bar-series';import { StackingAreaSeries } from './series/stacking-area-series';import { StackingLineSeries } from './series/stacking-line-series';import { ScatterSeries } from './series/scatter-series';import { SplineSeries } from './series/spline-series';import { SplineAreaSeries } from './series/spline-area-series';import { RangeColumnSeries } from './series/range-column-series';import { PolarSeries } from './series/polar-series';import { RadarSeries } from './series/radar-series';import { HiloSeries } from './series/hilo-series';import { HiloOpenCloseSeries } from './series/hilo-open-close-series';import { WaterfallSeries } from './series/waterfall-series';import { BubbleSeries } from './series/bubble-series';import { RangeAreaSeries } from './series/range-area-series';import { Tooltip } from './user-interaction/tooltip';import { Crosshair } from './user-interaction/crosshair';import { DataEditing } from './user-interaction/data-editing';import { Marker } from './series/marker';import { LegendSettings } from '../common/legend/legend';import { LegendSettingsModel } from '../common/legend/legend-model';import { Legend } from './legend/legend';import { Zoom } from './user-interaction/zooming';import { Selection } from './user-interaction/selection';import { DataLabel } from './series/data-label';import { StripLine } from './axis/strip-line';import { MultiLevelLabel } from './axis/multi-level-labels';import { BoxAndWhiskerSeries } from './series/box-and-whisker-series';import { PolarRadarPanel } from './axis/polar-radar-panel';import { StripLineSettingsModel } from './model/chart-base-model';import { Trendline } from './series/chart-series';import { Trendlines } from './trend-lines/trend-line';import { TechnicalIndicator } from './technical-indicators/technical-indicator';import { SmaIndicator } from './technical-indicators/sma-indicator';import { EmaIndicator } from './technical-indicators/ema-indicator';import { TmaIndicator } from './technical-indicators/tma-indicator';import { AccumulationDistributionIndicator } from './technical-indicators/ad-indicator';import { AtrIndicator } from './technical-indicators/atr-indicator';import { BollingerBands } from './technical-indicators/bollinger-bands';import { MomentumIndicator } from './technical-indicators/momentum-indicator';import { StochasticIndicator } from './technical-indicators/stochastic-indicator';import { MacdIndicator } from './technical-indicators/macd-indicator';import { RsiIndicator } from './technical-indicators/rsi-indicator';import { TechnicalIndicatorModel } from './technical-indicators/technical-indicator-model';import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';import { chartMouseDown, chartMouseMove, chartMouseUp, load, regSub, regSup } from '../common/model/constants';import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';import { ChartAnnotationSettingsModel } from './model/chart-base-model';import { ChartAnnotationSettings } from './model/chart-base';import { ChartAnnotation } from './annotation/annotation';import { getElement, getTitle,  getUnicodeText} from '../common/utils/helper';import { Alignment, ExportType } from '../common/utils/enum';import { MultiColoredLineSeries } from './series/multi-colored-line-series';import { MultiColoredAreaSeries } from './series/multi-colored-area-series';import { ScrollBar } from '../common/scrollbar/scrollbar';import { DataManager } from '@syncfusion/ej2-data';import { StockChart } from '../stock-chart/stock-chart';import { Export } from './print-export/export';import { ExportUtils } from '../common/utils/export';
+import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { remove, extend } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement } from '../common/utils/helper';import { appendClipElement } from '../common/utils/helper';import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';import { IndexesModel } from '../common/model/base-model';import { Margin, Border, ChartArea, Font, Indexes, TooltipSettings } from '../common/model/base';import { AxisModel, RowModel, ColumnModel } from './axis/axis-model';import { Row, Column, Axis } from './axis/axis';import { Highlight } from './user-interaction/high-light';import { CartesianAxisLayoutPanel } from './axis/cartesian-panel';import { DateTime } from './axis/date-time-axis';import { Category } from './axis/category-axis';import { DateTimeCategory } from './axis/date-time-category-axis';import { CandleSeries } from './series/candle-series';import { ErrorBar } from './series/error-bar';import { Logarithmic } from './axis/logarithmic-axis';import { Rect, measureText, TextOption, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartData } from './utils/get-data';import { SelectionMode, HighlightMode, LineType, ZoomMode, ToolbarItems, ChartTheme } from './utils/enum';import { Series, SeriesBase } from './series/chart-series';import { SeriesModel } from './series/chart-series-model';import { Data } from '../common/model/data';import { LineSeries } from './series/line-series';import { AreaSeries } from './series/area-series';import { BarSeries } from './series/bar-series';import { HistogramSeries } from './series/histogram-series';import { StepLineSeries } from './series/step-line-series';import { StepAreaSeries } from './series/step-area-series';import { ColumnSeries } from './series/column-series';import { ParetoSeries } from './series/pareto-series';import { StackingColumnSeries } from './series/stacking-column-series';import { StackingBarSeries } from './series/stacking-bar-series';import { StackingAreaSeries } from './series/stacking-area-series';import { StackingLineSeries } from './series/stacking-line-series';import { ScatterSeries } from './series/scatter-series';import { SplineSeries } from './series/spline-series';import { SplineAreaSeries } from './series/spline-area-series';import { RangeColumnSeries } from './series/range-column-series';import { PolarSeries } from './series/polar-series';import { RadarSeries } from './series/radar-series';import { HiloSeries } from './series/hilo-series';import { HiloOpenCloseSeries } from './series/hilo-open-close-series';import { WaterfallSeries } from './series/waterfall-series';import { BubbleSeries } from './series/bubble-series';import { RangeAreaSeries } from './series/range-area-series';import { Tooltip } from './user-interaction/tooltip';import { Crosshair } from './user-interaction/crosshair';import { DataEditing } from './user-interaction/data-editing';import { Marker } from './series/marker';import { LegendSettings } from '../common/legend/legend';import { LegendSettingsModel } from '../common/legend/legend-model';import { Legend } from './legend/legend';import { Zoom } from './user-interaction/zooming';import { Selection } from './user-interaction/selection';import { DataLabel } from './series/data-label';import { StripLine } from './axis/strip-line';import { MultiLevelLabel } from './axis/multi-level-labels';import { BoxAndWhiskerSeries } from './series/box-and-whisker-series';import { PolarRadarPanel } from './axis/polar-radar-panel';import { StripLineSettingsModel } from './model/chart-base-model';import { Trendline } from './series/chart-series';import { Trendlines } from './trend-lines/trend-line';import { TechnicalIndicator } from './technical-indicators/technical-indicator';import { SmaIndicator } from './technical-indicators/sma-indicator';import { EmaIndicator } from './technical-indicators/ema-indicator';import { TmaIndicator } from './technical-indicators/tma-indicator';import { AccumulationDistributionIndicator } from './technical-indicators/ad-indicator';import { AtrIndicator } from './technical-indicators/atr-indicator';import { BollingerBands } from './technical-indicators/bollinger-bands';import { MomentumIndicator } from './technical-indicators/momentum-indicator';import { StochasticIndicator } from './technical-indicators/stochastic-indicator';import { MacdIndicator } from './technical-indicators/macd-indicator';import { RsiIndicator } from './technical-indicators/rsi-indicator';import { TechnicalIndicatorModel } from './technical-indicators/technical-indicator-model';import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-interface';import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';import { chartMouseDown, chartMouseMove, chartMouseUp, load } from '../common/model/constants';import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';import { ChartAnnotationSettingsModel } from './model/chart-base-model';import { ChartAnnotationSettings } from './model/chart-base';import { ChartAnnotation } from './annotation/annotation';import { getElement, getTitle } from '../common/utils/helper';import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';import { MultiColoredLineSeries } from './series/multi-colored-line-series';import { MultiColoredAreaSeries } from './series/multi-colored-area-series';import { ScrollBar } from '../common/scrollbar/scrollbar';import { DataManager } from '@syncfusion/ej2-data';import { StockChart } from '../stock-chart/stock-chart';import { Export } from './print-export/export';import { ExportUtils } from '../common/utils/export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -324,6 +324,68 @@ export interface ChartModel extends ComponentModel{
     selectionMode?: SelectionMode;
 
     /**
+     * Specifies whether series or data point has to be selected. They are,
+     * * none: Disables the highlight.
+     * * series: highlight a series.
+     * * point: highlight a point.
+     * * cluster: highlight a cluster of point
+     * @default None
+     */
+    highlightMode?: HighlightMode;
+
+    /**
+     * Specifies whether series or data point has to be selected. They are,
+     * * none: sets none as selecting pattern.
+     * * chessboard: sets chess board as selecting pattern.
+     * * dots: sets dots as  selecting pattern.
+     * * diagonalForward: sets diagonal forward as selecting pattern.
+     * * crosshatch: sets crosshatch as selecting pattern.
+     * * pacman: sets pacman selecting pattern.
+     * * diagonalbackward: sets diagonal backward as selecting pattern.
+     * * grid: sets grid as selecting pattern.
+     * * turquoise: sets turquoise as selecting pattern.
+     * * star: sets star as selecting pattern.
+     * * triangle: sets triangle as selecting pattern.
+     * * circle: sets circle as selecting pattern.
+     * * tile: sets tile as selecting pattern.
+     * * horizontaldash: sets horizontal dash as selecting pattern.
+     * * verticaldash: sets vertical dash as selecting pattern.
+     * * rectangle: sets rectangle as selecting pattern.
+     * * box: sets box as selecting pattern.
+     * * verticalstripe: sets vertical stripe as  selecting pattern.
+     * * horizontalstripe: sets horizontal stripe as selecting pattern.
+     * * bubble: sets bubble as selecting pattern.
+     * @default None
+     */
+    selectionPattern?: SelectionPattern;
+
+    /**
+     * Specifies whether series or data point has to be selected. They are,
+     * * none: sets none as highlighting pattern.
+     * * chessboard: sets chess board as highlighting pattern.
+     * * dots: sets dots as highlighting pattern.
+     * * diagonalForward: sets diagonal forward as highlighting pattern.
+     * * crosshatch: sets crosshatch as highlighting pattern.
+     * * pacman: sets pacman highlighting  pattern.
+     * * diagonalbackward: sets diagonal backward as highlighting pattern.
+     * * grid: sets grid as highlighting pattern.
+     * * turquoise: sets turquoise as highlighting pattern.
+     * * star: sets star as highlighting  pattern.
+     * * triangle: sets triangle as highlighting pattern.
+     * * circle: sets circle as highlighting  pattern.
+     * * tile: sets tile as highlighting pattern.
+     * * horizontaldash: sets horizontal dash as highlighting pattern.
+     * * verticaldash: sets vertical dash as highlighting pattern.
+     * * rectangle: sets rectangle as highlighting  pattern.
+     * * box: sets box as highlighting pattern.
+     * * verticalstripe: sets vertical stripe as highlighting  pattern.
+     * * horizontalstripe: sets horizontal stripe as highlighting  pattern.
+     * * bubble: sets bubble as highlighting  pattern.
+     * @default None
+     */
+    highlightPattern?: SelectionPattern;
+
+    /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
      * @default false
      */
@@ -343,7 +405,7 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * Specifies the point indexes to be selected while loading a chart.
-     * It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
+     * It requires `selectionMode` or `highlightMode` to be `Point` | `Series` | or `Cluster`.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -438,6 +500,13 @@ export interface ChartModel extends ComponentModel{
     beforePrint?: EmitType<IPrintEventArgs>;
 
     /**
+     * Triggers after chart load.
+     * @event
+     * @blazorProperty 'Loaded'
+     */
+    loaded?: EmitType<ILoadedEventArgs>;
+
+    /**
      * Triggers before the export gets started.
      * @event
      */
@@ -451,16 +520,8 @@ export interface ChartModel extends ComponentModel{
     afterExport?: EmitType<IAfterExportEventArgs>;
 
     /**
-     * Triggers after chart load.
-     * @event
-     * @blazorProperty 'Loaded'
-     */
-    loaded?: EmitType<ILoadedEventArgs>;
-
-    /**
      * Triggers before chart load.
      * @event
-     * @deprecated
      */
     load?: EmitType<ILoadedEventArgs>;
 
@@ -621,12 +682,6 @@ export interface ChartModel extends ComponentModel{
      */
 
     zoomComplete?: EmitType<IZoomCompleteEventArgs>;
-
-    /**
-     * Triggers after the zoom selection is completed.
-     * @event
-     */
-    onZooming?: EmitType<IZoomingEventArgs>;
 
     /**
      * Triggers when start the scroll.

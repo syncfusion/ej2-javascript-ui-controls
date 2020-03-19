@@ -1038,11 +1038,13 @@ export class DiagramEventHandler {
                                     }
                                 }
                                 if (command.execute) {
-                                    // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
-                                    //     command.execute()
-                                    // } else {
-                                    let execute: Function = getFunction(command.execute);
-                                    execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter });
+                                    if (this.diagram.tool !== DiagramTools.ZoomPan) {
+                                        // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
+                                        //     command.execute()
+                                        // } else {
+                                        let execute: Function = getFunction(command.execute);
+                                        execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter });
+                                    }
                                     // }
                                 }
                                 if (isBlazor()) {
@@ -1228,7 +1230,9 @@ export class DiagramEventHandler {
         }
         if (!this.lastObjectUnderMouse && this.eventArgs.source || (this.lastObjectUnderMouse !== this.eventArgs.actualObject)) {
             this.lastObjectUnderMouse = this.eventArgs.actualObject;
-            this.diagram.triggerEvent(DiagramEvent.mouseEnter, arg);
+            if (this.eventArgs.actualObject !== undefined) {
+                this.diagram.triggerEvent(DiagramEvent.mouseEnter, arg);
+            }
         }
         if (this.eventArgs.actualObject) {
             this.diagram.triggerEvent(DiagramEvent.mouseOver, arg);
@@ -2054,11 +2058,11 @@ class ObjectFinder {
                 let connector: ConnectorModel = diagram.selectedItems.connectors[0];
                 for (let i: number = objects.length - 1; i >= 0; i--) {
                     outPort = getInOutConnectPorts(objects[i] as Node, false);
-                    inPort = getInOutConnectPorts(objects[i]as Node, true);
-                    let tool: ConnectTool  = (diagram[eventHandler].tool as ConnectTool);
+                    inPort = getInOutConnectPorts(objects[i] as Node, true);
+                    let tool: ConnectTool = (diagram[eventHandler].tool as ConnectTool);
                     if (objects[i] instanceof Node && ((canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort))) ||
-                    (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
-                         (canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort)))))) {
+                        (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
+                            (canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[i];
                         if (connector) {
                             actualTarget = this.isTarget(actualTarget as Node, diagram, action);

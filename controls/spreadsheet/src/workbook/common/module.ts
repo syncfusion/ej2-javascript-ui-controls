@@ -13,6 +13,10 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
         member: 'dataBind',
         args: [context]
     });
+    modules.push({
+        member: 'workbookProtectSheet',
+        args: [context]
+    });
     if (context.allowSave) {
         modules.push({
             member: 'workbookSave',
@@ -55,6 +59,18 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
     }
     if (context.allowFiltering) {
         modules.push({ member: 'workbookFilter', args: [context] });
+    }
+    if (context.allowFindAndReplace) {
+        modules.push({ member: 'workbookfindAndReplace', args: [context] });
+    }
+    if (context.allowInsert) {
+        modules.push({ member: 'workbookinsert', args: [context] });
+    }
+    if (context.allowDelete) {
+        modules.push({ member: 'workbookdelete', args: [context] });
+    }
+    if (context.allowDataValidation) {
+        modules.push({ member: 'workbookDataValidation', args: [context] });
     }
     return modules;
 }

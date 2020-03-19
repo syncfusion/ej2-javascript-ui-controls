@@ -174,7 +174,7 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].pointers[0].value = 200;
             gauge.refresh();
         });
-
+       
         it('Checking pointer customization needle', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
@@ -215,7 +215,7 @@ describe('Circular-Gauge Control', () => {
                 expect(svg.getAttribute('stroke-width') == '1').toBe(true);
                 done();
             };
-
+            
             gauge.axes[0].pointers[0].needleTail.color = 'black';
             gauge.axes[0].pointers[0].needleTail.border.color = 'yellow';
             gauge.axes[0].pointers[0].needleTail.border.width = 1;
@@ -261,7 +261,7 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].pointers[0].radius = '100%';
             gauge.refresh();
         });
-
+       
         it('Checking pointer width - given value', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 boundingRect = document.getElementById('container_Axis_0_Pointer_Needle_0').getBoundingClientRect();

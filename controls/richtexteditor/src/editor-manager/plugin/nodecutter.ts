@@ -39,7 +39,7 @@ export class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, false) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
                     let isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && isNOU(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node);
@@ -58,7 +58,7 @@ export class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, true) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
                     let isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && isNOU(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node, true);
@@ -76,6 +76,20 @@ export class NodeCutter {
         } else {
             return null;
         }
+    }
+    private isImgElm(fragment: DocumentFragment): boolean {
+        let result: boolean = true;
+        if (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG') {
+            let firstChild: Node = fragment.childNodes[0];
+            for (let i: number = 0; !isNOU(firstChild.childNodes) && i < firstChild.childNodes.length; i++) {
+                if (firstChild.childNodes[i].nodeName === 'IMG') {
+                    result = false;
+                }
+            }
+        } else {
+            result = true;
+        }
+        return result;
     }
     private spliceEmptyNode(fragment: DocumentFragment | Node, isStart: boolean): DocumentFragment | Node {
         let len: number;

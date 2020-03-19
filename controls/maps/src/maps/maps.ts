@@ -412,7 +412,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public bubbleMouseMove: EmitType<IBubbleMoveEventArgs>;
 
     /**
-     * Triggers after the animation completed.
+     * Triggers after the bubble animation completed.
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -551,8 +551,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public baseTranslatePoint: Point = new Point(0, 0);
     /** @public */
     public zoomTranslatePoint: Point = new Point(0, 0);
-    /** @public */
+    /** @private */
     public markerZoomFactor: number;
+    /** @private */
+    public markerZoomCenterPoint: CenterPositionModel;
+    /** @private */
+    public markerZoomedState: boolean = true;
+    /** @private */
+    public zoomPersistence: boolean = false;
+    /** @private */
+    public defaultState: boolean = true;
     /** @private */
     public markerCenterLatitude: number;
     /** @private */
@@ -573,6 +581,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public shouldZoomPreviousFactor: number;
     /** @private */
     public markerNullCount: number = 0;
+    /** @private */
+    public translateType: string;
     /** @public */
     public previousProjection: String;
     /** @private */
@@ -586,6 +596,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public tileZoomLevel: number;
     /** @private */
+    public tileZoomScale: number;
+    /** @private */
     public staticMapZoom: number = this.zoomSettings.enable ? this.zoomSettings.zoomFactor : 0;
     /** @private */
     public serverProcess: Object;
@@ -595,16 +607,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public previousPoint: Point;
     /** @private */
     public centerLatOfGivenLocation: number;
-     /** @private */
+    /** @private */
     public centerLongOfGivenLocation: number;
-       /** @private */
-       public minLatOfGivenLocation: number;
-       /** @private */
-      public minLongOfGivenLocation: number;
-         /** @private */
+    /** @private */
+    public minLatOfGivenLocation: number;
+    /** @private */
+    public minLongOfGivenLocation: number;
+    /** @private */
     public maxLatOfGivenLocation: number;
     /** @private */
-   public maxLongOfGivenLocation: number;
+    public maxLongOfGivenLocation: number;
     /** @private */
     public scaleOfGivenLocation: number;
     /** @private */
@@ -649,6 +661,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public toggledShapeElementId: string[] = [];
     /** @private */
     public checkInitialRender: boolean = true;
+    /** @private */
+    public widthBeforeRefresh: number;
+    /** @private */
+    public heightBeforeRefresh: number;
+    /** @private */
+    public previousTranslate: Point;
+    /** @private */
+    public initialTileTranslate: Point = new Point(0, 0);
+    /** @private */
+    public previousTileWidth: number;
+    /** @private */
+    public previousTileHeight: number;
+    /** @private */
+    public initialZoomLevel: number;
+    /** @private */
+    public initialCheck: boolean = true;
+    /** @private */
+    public applyZoomReset: boolean = false;
 
     /**
      * Constructor for creating the widget
@@ -789,7 +819,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private renderMap(): void {
-
         if (this.legendModule && this.legendSettings.visible) {
             if (!this.isTileMap) {
                 this.legendModule.renderLegend();
@@ -802,33 +831,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.createTile();
-
         if (this.zoomSettings.enable && this.zoomModule) {
-
             this.zoomModule.createZoomingToolbars();
-
         }
         if (!isNullOrUndefined(this.dataLabelModule)) {
             this.dataLabelModule.dataLabelCollections = [];
             this.dataLabelShape = [];
         }
-
         this.mapLayerPanel.measureLayerPanel();
-
         this.element.appendChild(this.svgObject);
 
 
-        for (let i: number = 0 ; i < this.layers.length ; i++) {
+        for (let i: number = 0; i < this.layers.length; i++) {
             if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
-               this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
-                    let checkSelection: boolean = this.layers[i].selectionSettings.enableMultiSelect;
-                    this.layers[i].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
-                    let shapeSelection : InitialShapeSelectionSettingsModel[] = this.layers[i].initialShapeSelection;
-                    for (let j : number = 0 ; j < this.layers[i].initialShapeSelection.length ; j++) {
-                        this.shapeSelection(i, shapeSelection[j].shapePath, shapeSelection[j].shapeValue, true);
-                    }
-                    this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
-                    if (i === this.layers.length - 1) { this.checkInitialRender = false; }
+                this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
+                let checkSelection: boolean = this.layers[i].selectionSettings.enableMultiSelect;
+                this.layers[i].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
+                let shapeSelection: InitialShapeSelectionSettingsModel[] = this.layers[i].initialShapeSelection;
+                for (let j: number = 0; j < this.layers[i].initialShapeSelection.length; j++) {
+                    this.shapeSelection(i, shapeSelection[j].shapePath, shapeSelection[j].shapeValue, true);
+                }
+                this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
+                if (i === this.layers.length - 1) { this.checkInitialRender = false; }
             }
         }
 
@@ -836,8 +860,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             let svg: ClientRect = this.svgObject.getBoundingClientRect();
             let element: HTMLElement = document.getElementById(this.element.id);
             let tileElement: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+            let tileElement1: HTMLElement = document.getElementById(this.element.id + '_tiles');
             let tile: ClientRect = tileElement.getBoundingClientRect();
-            let bottom : number; let top : number; let left : number;
+            let bottom: number; let top: number; let left: number;
             left = parseFloat(tileElement.style.left) + element.offsetLeft;
             let titleTextSize: Size = measureText(
                 this.titleSettings.text,
@@ -872,6 +897,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             left = (bottom <= 11) ? left : (left * 2);
             tileElement.style.top = top + 'px';
             tileElement.style.left = left + 'px';
+            tileElement1.style.top = top + 'px';
+            tileElement1.style.left = left + 'px';
         }
 
         this.arrangeTemplate();
@@ -892,8 +919,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To append blazor templates
+     * @private
      */
-    private blazorTemplates(): void {
+    public blazorTemplates(): void {
         let layerLength: number = this.layers.length - 1;
         let markerLength: number = this.layers[layerLength].markerSettings.length - 1;
         if (markerLength >= 0) {
@@ -982,7 +1010,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             }
-            if (this.zoomModule && ((this.previousScale !== this.scale))) {
+            if (this.zoomModule && (this.previousScale !== this.scale)) {
                 this.zoomModule.applyTransform(true);
             }
         }
@@ -992,19 +1020,22 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             let secondaryElement: Element = createElement('div', {
                 id: this.element.id + '_Secondary_Element',
-                styles: 'position: absolute;z-index:1;'
+                styles: 'position: absolute;z-index:2;'
             });
             this.element.appendChild(secondaryElement);
         }
     }
 
-    private arrangeTemplate(): void {
-        let secondaryEle: HTMLElement = <HTMLElement>getElementByID(this.element.id + '_Secondary_Element');
+    /**
+     * @private
+     */
+    public arrangeTemplate(): void {
         if (document.getElementById(this.element.id + '_Legend_Border')) {
             document.getElementById(this.element.id + '_Legend_Border').style.pointerEvents = 'none';
         }
         let templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName('template');
-        if (!isNullOrUndefined(templateElements) && templateElements.length > 0 && getElementByID(this.element.id + '_Layer_Collections')) {
+        if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
+            getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
             for (let i: number = 0; i < templateElements.length; i++) {
                 let templateGroupEle: Element = templateElements[i] as Element;
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
@@ -1031,17 +1062,22 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
             mainLayer.layerType === 'GoogleStaticMap')) {
             removeElement(this.element.id + '_tile_parent');
-            // let elementRect: ClientRect = this.element.getBoundingClientRect();
-            // let parentRect: ClientRect = this.element.parentElement.getBoundingClientRect();
-            // let left: number = Math.abs(elementRect.left - parentRect.left);
-            // let top: number = Math.abs(elementRect.top - parentRect.top);
+            removeElement(this.element.id + '_tiles');
+            removeElement('animated_tiles');
             let ele: Element = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
                     (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
+            let ele1: Element = createElement('div', {
+                id: this.element.id + '_tiles', styles: 'position: absolute; left: ' +
+                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
+                    (this.mapAreaRect.height) + 'px; width: '
+                    + (this.mapAreaRect.width) + 'px; overflow: hidden;'
+            });
             this.element.appendChild(ele);
+            this.element.appendChild(ele1);
         }
     }
 
@@ -1167,6 +1203,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
+        removeElement(this.element.id + '_tiles');
         if (document.getElementsByClassName('e-tooltip-wrap')[0]) {
             remove(document.getElementsByClassName('e-tooltip-wrap')[0]);
         }
@@ -1463,7 +1500,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.availableSize.width, this.availableSize.height,
                 { x: centerPosition.longitude, y: centerPosition.latitude }
             );
-            this.mapLayerPanel.generateTiles(zoomFactor, this.tileTranslatePoint, new BingMap(this));
+            this.mapLayerPanel.generateTiles(zoomFactor, this.tileTranslatePoint, null, new BingMap(this));
         }
     }
 
@@ -1549,8 +1586,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             let shapeData: Object[] = <Object[]>this.layers[layerIndex].shapeData['features'];
             for (let i: number = 0; i < shapeData.length; i++) {
                 if (shapeData[i]['properties'][propertyName] === name) {
-                    let k: number = checkShapeDataFields(<Object[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
-                                                         this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath);
+                    let k: number = checkShapeDataFields(
+                        <Object[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
+                        this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath,
+                        this.layers[layerIndex]);
                     targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
                         (k ? k.toString() : 'undefined');
                     targetEle = getElement(targetId);
@@ -1580,7 +1619,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         }
                     } else {
                         this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
-                                               true : this.legendSelection;
+                            true : this.legendSelection;
                         if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
                             targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
                             this.legendModule.shapeHighLightAndSelection(
@@ -1710,7 +1749,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint', 'scale'];
+        let keyEntity: string[] = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint',
+            'scale', 'zoomPersistence', 'defaultState', 'markerZoomedState', 'initialCheck', 'initialZoomLevel', 'initialTileTranslate',
+            'applyZoomReset', 'markerZoomFactor'];
         return this.addOnPersist(keyEntity);
     }
 
@@ -1719,10 +1760,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public onPropertyChanged(newProp: MapsModel, oldProp: MapsModel): void {
-        let render: boolean = false; let isMarker : boolean = false;
-        let isStaticMapType : boolean = false;
-        let newLayerLength: number = Object.keys(newProp).length;
-        let layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
+        let render: boolean = false; let isMarker: boolean = false;
+        let isStaticMapType: boolean = false;
+        let layerEle: Element;
+        if (newProp['layers']) {
+            let newLayerLength: number = Object.keys(newProp['layers']).length;
+            layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
+        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'background':
@@ -2045,8 +2089,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let container: HTMLElement = document.getElementById(this.element.id);
         let latLong: Object;
         let ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
-        let lastTile: Tile = this.mapLayerPanel.tiles[this.mapLayerPanel.tiles.length - 1];
-        let tile0: Tile = this.mapLayerPanel.tiles[0];
         latLong = this.pointToLatLong(
             location.layerX + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
             location.layerY + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));

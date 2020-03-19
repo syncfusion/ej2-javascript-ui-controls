@@ -451,6 +451,12 @@ export type LegendShape =
     'Diamond' |
     /** Render a Cross. */
     'Cross' |
+     /** Render a Cross. */
+     'Multiply' |
+     /** Render a actual bar. */
+     'ActualRect' |
+     /** Render a target bar. */
+     'TargetRect' |
     /** Render a HorizontalLine. */
     'HorizontalLine' |
     /** Render a VerticalLine. */
@@ -786,3 +792,20 @@ export type BorderType =
     'WithoutTopandBottomBorder' |
     /** CurlyBrace */
     'CurlyBrace';
+
+ /**
+  * Defines the SelectionMode, They are.
+  * * none - Disable the selection.
+  * * series - To select a series.
+  * * point - To select a point.
+  * * cluster - To select a cluster of point.
+  */
+export type HighlightMode =
+    /** Disable the selection. */
+    'None' |
+    /** To select a series. */
+    'Series' |
+    /** To select a point. */
+    'Point' |
+    /** To select a cluster of point. */
+    'Cluster';

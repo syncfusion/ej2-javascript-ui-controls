@@ -1,6 +1,6 @@
 import { Chart } from '../chart';
 import { extend, Browser, remove } from '@syncfusion/ej2-base';
-import { PointData, ChartLocation,  getUnicodeText} from '../../common/utils/helper';
+import { PointData, ChartLocation } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { valueToCoefficient, removeElement, valueToPolarCoefficient, withInBounds } from '../../common/utils/helper';
 import { Axis } from '../axis/axis';
@@ -9,7 +9,7 @@ import { BaseTooltip } from '../../common/user-interaction/tooltip';
 import { ChartShape } from '../utils/enum';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { ITooltipRenderEventArgs } from '../model/chart-interface';
-import { tooltipRender, regSub, regSup } from '../../common/model/constants';
+import { tooltipRender } from '../../common/model/constants';
 
 /**
  * `Tooltip` module is used to render the tooltip for chart series.
@@ -93,7 +93,7 @@ export class Tooltip extends BaseTooltip {
      */
     public tooltip(): void {
         if ((this.chart.stockChart && this.chart.stockChart.onPanning)) { this.removeTooltip(1000); return null; }
-        let svgElement: HTMLElement ;
+        let svgElement: HTMLElement;
         let elementId: string = this.chart.enableCanvas ? this.element.id + '_tooltip_group' : this.element.id + '_tooltip_svg';
         svgElement = this.getElement(elementId);
         // To prevent the disappearance of the tooltip, while resize the stock chart.
@@ -116,12 +116,6 @@ export class Tooltip extends BaseTooltip {
             return '';
         }
         this.header = this.parseTemplate(data.point, data.series, this.header, data.series.xAxis, data.series.yAxis);
-        if (regSub.test(this.header)) {
-            this.header = getUnicodeText(this.header, regSub);
-        }
-        if (regSup.test(this.header)) {
-            this.header = getUnicodeText(this.header, regSup);
-        }
         if (this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
             return this.header;
         }
@@ -192,8 +186,7 @@ export class Tooltip extends BaseTooltip {
                                    point.series.clipRect, point.point, this.findShapes(),
                                    this.findMarkerHeight(<PointData>this.currentPoints[0]),
                                    this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point),
-                                   this.chart.tooltip.template ? argsData.template : '',
-                                   this.chart.tooltip.position);
+                                   this.chart.tooltip.template ? argsData.template : '');
             } else {
                 this.removeHighlight(this.control);
                 remove(this.getElement(this.element.id + '_tooltip'));

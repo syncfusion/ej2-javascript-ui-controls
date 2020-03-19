@@ -16,7 +16,7 @@ L10n.load({
     }
 });
 
-let serviceUrl: string = 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData';
+let serviceUrl: string = 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData';
 
 let stringData1: string[] = ['Badminton', 'Basketball', 'Cricket', 'Football', 'Golf'];
 let stringData2: { [key: string]: Object }[] = [

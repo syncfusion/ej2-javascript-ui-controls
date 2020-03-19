@@ -344,7 +344,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     @Property(1)
     public columns: number;
     /**
-     * 
+     * Enables or disables the grid lines for the Dashboard Layout panels.
      * *
      * @default false
      */
@@ -2191,6 +2191,13 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
     }
 
+    protected ensureDrag(): void {
+        this.checkDragging(this.dragCollection);
+        let dragPanels: NodeListOf<Element> = this.element.querySelectorAll('.' + drag);
+        removeClass(dragPanels, [drag]);
+        this.setClasses(this.panelCollection);
+    }
+
     protected setClasses(panelCollection: HTMLElement[]): void {
         for (let i: number = 0; i < panelCollection.length; i++) {
             let element: HTMLElement = panelCollection[i];
@@ -2616,6 +2623,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (this.allowDragging &&
             this.mediaQuery ? !(this.checkMediaQuery()) : false) {
             this.enableDraggingContent([document.getElementById(panelProp.id)]);
+            this.setClasses(this.panelCollection);
         }
         if (this.allowFloating) {
             this.moveItemsUpwards();
@@ -2916,17 +2924,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected setEnableRtl(): void {
         this.enableRtl ? addClass([this.element], 'e-rtl') : removeClass([this.element], 'e-rtl');
     }
-    protected getDragInstance(id: string): Draggable {
-        let draggableInstance: Draggable;
-        let ele: HTMLElement = document.getElementById(id);
-        for (let i: number = 0; i < this.dragCollection.length; i++) {
-            draggableInstance = this.dragCollection[i].element === ele ? this.dragCollection[i] : null;
-            if (draggableInstance) {
-                return draggableInstance;
-            }
-        }
-        return draggableInstance;
-    }
 
     /**
      * Called internally if any of the property value changed.
@@ -2992,7 +2989,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     break;
                 case 'allowDragging':
                     this.setProperties({ allowDragging: newProp.allowDragging }, true);
-                    this.checkDragging(this.dragCollection);
+                    this.ensureDrag();
                     break;
                 case 'allowResizing':
                     this.setProperties({ allowResizing: newProp.allowResizing }, true);
@@ -3019,14 +3016,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     break;
                 case 'draggableHandle':
                     this.setProperties({ draggableHandle: newProp.draggableHandle }, true);
-                    for (let i: number = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
-                        let ele: HTMLElement = <HTMLElement>this.element.querySelectorAll('.e-panel')[i];
-                        let draggableInstance: Draggable = this.getDragInstance(ele.id);
-                        draggableInstance.handle = this.draggableHandle;
-                    }
-                    let dragPanels: NodeListOf<Element> = this.element.querySelectorAll('.' + drag);
-                    removeClass(dragPanels, [drag]);
-                    this.setClasses(this.panelCollection);
+                    this.ensureDrag();
                     break;
                 case 'allowFloating':
                     this.setProperties({ allowFloating: newProp.allowFloating }, true);

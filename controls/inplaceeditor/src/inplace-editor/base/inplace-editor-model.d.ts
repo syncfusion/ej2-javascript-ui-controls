@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption, Predicate } from '@syncfusion/ej2-data';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';import { Rte } from '../modules/rte';import { Slider } from '../modules/slider';import { ComboBox } from '../modules/combo-box';import { TimePicker } from '../modules/time-picker';import { MultiSelect } from '../modules/multi-select';import { ColorPicker } from '../modules/color-picker';import { AutoComplete } from '../modules/auto-complete';import { DateRangePicker } from '../modules/date-range-picker';import * as events from './events';import * as classes from './classes';import { PopupSettings, modulesList, localeConstant } from './models';import { PopupSettingsModel } from './models-model';import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';import { parseValue, getCompValue } from './util';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, getValue, isBlazor } from '@syncfusion/ej2-base';import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption, Predicate } from '@syncfusion/ej2-data';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';import { Rte } from '../modules/rte';import { Slider } from '../modules/slider';import { ComboBox } from '../modules/combo-box';import { TimePicker } from '../modules/time-picker';import { MultiSelect } from '../modules/multi-select';import { ColorPicker } from '../modules/color-picker';import { AutoComplete } from '../modules/auto-complete';import { DateRangePicker } from '../modules/date-range-picker';import * as events from './events';import * as classes from './classes';import { PopupSettings, modulesList, localeConstant } from './models';import { PopupSettingsModel } from './models-model';import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';import { parseValue, getCompValue } from './util';
 import {RenderMode,AdaptorType,InputType,EditableType,textOptionType,ActionBlur,BeforeSanitizeHtmlArgs} from "./inplace-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -10,12 +10,18 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * * Specifies the name of the field which is used to map data to the server. 
      * If name is not given, then component ID is taken as mapping field name.
+     * 
+     * {% codeBlock src='inplace-editor/name/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     name?: string;
 
     /**
      * Specifies the display value for input when original input value is empty.
+     * 
+     * {% codeBlock src='inplace-editor/value/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      * @isGenericType true
      */
@@ -23,6 +29,9 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
+     * 
+     * {% codeBlock src='inplace-editor/template/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      * @blazorType string
      */
@@ -42,18 +51,27 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
+     * 
+     * {% codeBlock src='inplace-editor/primary-key/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     primaryKey?: string | number;
 
     /**
      * Sets the text to be shown when an element has 'Empty' value.
+     * 
+     * {% codeBlock src='inplace-editor/empty-text/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Empty'
      */
     emptyText?: string;
 
     /**
      * Gets the url for server submit action.
+     * 
+     * {% codeBlock src='inplace-editor/url/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     url?: string;
@@ -63,6 +81,9 @@ export interface InPlaceEditorModel extends ComponentModel{
      * 
      * - `Inline`: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
      * - `Popup`: Editable content and ok/cancel buttons are displayed inside popup while editing.
+     * 
+     * {% codeBlock src='inplace-editor/mode/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Popup'
      */
     mode?: RenderMode;
@@ -73,12 +94,18 @@ export interface InPlaceEditorModel extends ComponentModel{
      * - `UrlAdaptor`: Base adaptor for interacting with remote data services.
      * - `ODataV4Adaptor`: Used to interact with ODataV4 service.
      * - `WebApiAdaptor`: Used to interact with Web api created with OData endpoint.
+     * 
+     * {% codeBlock src='inplace-editor/adaptor/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'UrlAdaptor'
      */
     adaptor?: AdaptorType;
 
     /**
      * Specifies the type of components that integrated with In-place editor to make it as editable.
+     * 
+     * {% codeBlock src='inplace-editor/type/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Text'
      */
     type?: InputType;
@@ -89,6 +116,9 @@ export interface InPlaceEditorModel extends ComponentModel{
      * - `Click`: Do the single click action on input to enter into the edit mode.
      * - `DblClick`: Do the single double click action on input to enter into the edit mode.
      * - `EditIconClick`: Disables the editing of event action of input and allows user to edit only through edit icon.
+     * 
+     * {% codeBlock src='inplace-editor/editable-on/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Click'
      */
     editableOn?: EditableType;
@@ -118,6 +148,9 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
+     * 
+     * {% codeBlock src='inplace-editor/enable-persistence/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     enablePersistence?: boolean;
@@ -130,48 +163,72 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Used to show/hide the ok/cancel buttons of In-place editor.
+     * 
+     * {% codeBlock src='inplace-editor/show-buttons/index.md' %}{% endcodeBlock %}
+     * 
      * @default true
      */
     showButtons?: boolean;
 
     /**
      * Specifies to show/hide the editing mode.
+     * 
+     * {% codeBlock src='inplace-editor/enable-edit-mode/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     enableEditMode?: boolean;
 
     /**
      * Sets to trigger the submit action with enter key pressing of input.
+     * 
+     * {% codeBlock src='inplace-editor/submit-on-enter/index.md' %}{% endcodeBlock %}
+     * 
      * @default true
      */
     submitOnEnter?: boolean;
 
     /**
      * Specifies the object to customize popup display settings like positions, animation etc.
+     * 
+     * {% codeBlock src='inplace-editor/popup-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default {}
      */
     popupSettings?: PopupSettingsModel;
 
     /**
      * Specifies the model object configuration for the integrated components like AutoComplete, DatePicker,NumericTextBox, etc.
+     * 
+     * {% codeBlock src='inplace-editor/model/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     model?: AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePickerModel | DateRangePickerModel | DateTimePickerModel | DropDownListModel | MaskedTextBoxModel | MultiSelectModel | NumericTextBoxModel | RichTextEditorModel | SliderModel | TextBoxModel | TimePickerModel;
 
     /**
      * Used to customize the "Save" button UI appearance by defining Button model configuration.
+     *
+     * {% codeBlock src='inplace-editor/save-button/index.md' %}{% endcodeBlock %}
+     *
      * @default { iconCss: 'e-icons e-save-icon' }
      */
     saveButton?: ButtonModel;
 
     /**
      * Used to customize the "Cancel" button UI appearance by defining Button model configuration.
+     * 
+     * {% codeBlock src='inplace-editor/cancel-button/index.md' %}{% endcodeBlock %}
+     * 
      * @default { iconCss: 'e-icons e-cancel-icon' }
      */
     cancelButton?: ButtonModel;
 
     /**
      * Maps the validation rules for the input.
+     * 
+     * {% codeBlock src='inplace-editor/validation-rules/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     validationRules?: { [name: string]: { [rule: string]: Object } };

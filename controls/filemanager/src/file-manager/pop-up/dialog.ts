@@ -467,7 +467,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             break;
         case 'details':
             options.dialogName = 'File Details';
-            let intl: Internationalization = new Internationalization();
+            let intl: Internationalization = new Internationalization(parent.locale);
             let formattedString: string = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
             let permission: string = '';
             if (!isNOU(details.permission)) {

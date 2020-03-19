@@ -1,5 +1,5 @@
-import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Aggregate, CellType, Clipboard, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -259,6 +259,10 @@ var contextMenuOpen = 'contextMenuOpen';
 /** @hidden */
 var contextMenuClick = 'contextMenuClick';
 /** @hidden */
+var beforeCopy = 'beforeCopy';
+/** @hidden */
+var beforePaste = 'beforePaste';
+/** @hidden */
 var savePreviousRowPosition = 'savePreviousRowPosition';
 /** @hidden */
 var crudAction = 'crudAction';
@@ -280,6 +284,8 @@ var batchDelete = 'batchDelete';
 var batchCancel = 'batchCancel';
 /** @hidden */
 var batchAdd = 'batchAdd';
+/** @hidden */
+var beforeBatchDelete = 'beforeBatchDelete';
 /** @hidden */
 var beforeBatchAdd = 'beforeBatchAdd';
 /** @hidden */
@@ -325,6 +331,182 @@ var rowdraging = 'row-draging';
 /** @hidden */
 var rowDropped = 'row-dropped';
 
+var __extends$3 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * The `Clipboard` module is used to handle clipboard copy action.
+ */
+var TreeClipboard = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(TreeClipboard, _super);
+    function TreeClipboard(parent) {
+        var _this = _super.call(this, parent.grid) || this;
+        _this.treeCopyContent = '';
+        _this.copiedUniqueIdCollection = [];
+        _this.treeGridParent = parent;
+        return _this;
+    }
+    TreeClipboard.prototype.setCopyData = function (withHeader) {
+        var copyContent = 'copyContent';
+        var getCopyData = 'getCopyData';
+        var isSelect = 'isSelect';
+        var uniqueID = 'uniqueID';
+        var currentRecords = this.treeGridParent.getCurrentViewRecords();
+        if (window.getSelection().toString() === '') {
+            this.clipBoardTextArea.value = this[copyContent] = '';
+            var rows = this.treeGridParent.grid.getRows();
+            if (this.treeGridParent.selectionSettings.mode !== 'Cell') {
+                var selectedIndexes = this.treeGridParent.getSelectedRowIndexes().sort(function (a, b) {
+                    return a - b;
+                });
+                for (var i = 0; i < selectedIndexes.length; i++) {
+                    if (i > 0) {
+                        this.treeCopyContent += '\n';
+                    }
+                    if (!rows[selectedIndexes[i]].classList.contains('e-summaryrow')) {
+                        var cells = [].slice.call(rows[selectedIndexes[i]].querySelectorAll('.e-rowcell'));
+                        var uniqueid = this.treeGridParent.getSelectedRecords()[i][uniqueID];
+                        if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
+                            if (this.treeGridParent.copyHierarchyMode === 'Parent' || this.treeGridParent.copyHierarchyMode === 'Both') {
+                                this.parentContentData(currentRecords, selectedIndexes[i], rows, withHeader, i);
+                            }
+                            this[getCopyData](cells, false, '\t', withHeader);
+                            this.treeCopyContent += this[copyContent];
+                            this.copiedUniqueIdCollection.push(uniqueid);
+                            this[copyContent] = '';
+                            if (this.treeGridParent.copyHierarchyMode === 'Child' || this.treeGridParent.copyHierarchyMode === 'Both') {
+                                this.childContentData(currentRecords, selectedIndexes[i], rows, withHeader);
+                            }
+                        }
+                    }
+                }
+                if (withHeader) {
+                    var headerTextArray = [];
+                    for (var i = 0; i < this.treeGridParent.getVisibleColumns().length; i++) {
+                        headerTextArray[i] = this.treeGridParent.getVisibleColumns()[i].headerText;
+                    }
+                    this[getCopyData](headerTextArray, false, '\t', withHeader);
+                    this.treeCopyContent = this[copyContent] + '\n' + this.treeCopyContent;
+                }
+                var args = {
+                    data: this.treeCopyContent,
+                    cancel: false,
+                };
+                this.treeGridParent.trigger(beforeCopy, args);
+                if (args.cancel) {
+                    return;
+                }
+                this.clipBoardTextArea.value = this[copyContent] = args.data;
+                if (!Browser.userAgent.match(/ipad|ipod|iphone/i)) {
+                    this.clipBoardTextArea.select();
+                }
+                else {
+                    this.clipBoardTextArea.setSelectionRange(0, this.clipBoardTextArea.value.length);
+                }
+                this[isSelect] = true;
+                this.copiedUniqueIdCollection = [];
+                this.treeCopyContent = '';
+            }
+            else {
+                _super.prototype.setCopyData.call(this, withHeader);
+            }
+        }
+    };
+    TreeClipboard.prototype.parentContentData = function (currentRecords, selectedIndex, rows, withHeader, index) {
+        var getCopyData = 'getCopyData';
+        var copyContent = 'copyContent';
+        var parentItem = 'parentItem';
+        var uniqueID = 'uniqueID';
+        var level = 'level';
+        if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem])) {
+            var treeLevel = currentRecords[selectedIndex][parentItem][level];
+            for (var i = 0; i < treeLevel + 1; i++) {
+                for (var j = 0; j < currentRecords.length; j++) {
+                    if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem]) &&
+                        currentRecords[j][uniqueID] === currentRecords[selectedIndex][parentItem][uniqueID]) {
+                        selectedIndex = j;
+                        var cells = [].slice.call(rows[selectedIndex].querySelectorAll('.e-rowcell'));
+                        var uniqueid = currentRecords[j][uniqueID];
+                        if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
+                            this[getCopyData](cells, false, '\t', withHeader);
+                            if (index > 0) {
+                                this.treeCopyContent = this.treeCopyContent + this[copyContent] + '\n';
+                            }
+                            else {
+                                this.treeCopyContent = this[copyContent] + '\n' + this.treeCopyContent;
+                            }
+                            this.copiedUniqueIdCollection.push(uniqueid);
+                            this[copyContent] = '';
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    TreeClipboard.prototype.copy = function (withHeader) {
+        _super.prototype.copy.call(this, withHeader);
+    };
+    TreeClipboard.prototype.paste = function (data, rowIndex, colIndex) {
+        _super.prototype.paste.call(this, data, rowIndex, colIndex);
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    TreeClipboard.prototype.getModuleName = function () {
+        return 'clipboard';
+    };
+    
+    /**
+     * To destroy the clipboard
+     * @return {void}
+     * @hidden
+     */
+    TreeClipboard.prototype.destroy = function () {
+        _super.prototype.destroy.call(this);
+    };
+    TreeClipboard.prototype.childContentData = function (currentRecords, selectedIndex, rows, withHeader) {
+        var getCopyData = 'getCopyData';
+        var copyContent = 'copyContent';
+        var childRecords = 'childRecords';
+        var hasChildRecords = 'hasChildRecords';
+        var uniqueID = 'uniqueID';
+        if (currentRecords[selectedIndex][hasChildRecords]) {
+            var childData = currentRecords[selectedIndex][childRecords];
+            for (var i = 0; i < childData.length; i++) {
+                for (var j = 0; j < currentRecords.length; j++) {
+                    if (!isNullOrUndefined(childData[i][uniqueID]) && currentRecords[j][uniqueID] === childData[i][uniqueID]) {
+                        if ((!isNullOrUndefined(rows[j])) && !rows[j].classList.contains('e-summaryrow')) {
+                            var cells = [].slice.call(rows[j].querySelectorAll('.e-rowcell'));
+                            var uniqueid = currentRecords[j][uniqueID];
+                            if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
+                                this[getCopyData](cells, false, '\t', withHeader);
+                                this.treeCopyContent += ('\n' + this[copyContent]);
+                                this[copyContent] = '';
+                                this.copiedUniqueIdCollection.push(uniqueid);
+                                this.childContentData(currentRecords, j, rows, withHeader);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    };
+    return TreeClipboard;
+}(Clipboard));
+
 function isRemoteData(parent) {
     if (parent.dataSource instanceof DataManager) {
         var adaptor = parent.dataSource.adaptor;
@@ -337,6 +519,14 @@ function isRemoteData(parent) {
 function isCountRequired(parent) {
     if (parent.dataSource && 'result' in parent.dataSource) {
         return true;
+    }
+    return false;
+}
+function isCheckboxcolumn(parent) {
+    for (var i = 0; i < parent.columns.length; i++) {
+        if (parent.columns[i].showCheckbox) {
+            return true;
+        }
     }
     return false;
 }
@@ -518,7 +708,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             var rowIndex = void 0;
             rowIndex = [];
-            rowIndex.push(+target.closest('tr').getAttribute('aria-rowindex'));
+            rowIndex.push(target.closest('tr').rowIndex);
             this.selectCheckboxes(rowIndex);
             this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
         }
@@ -528,30 +718,6 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.headerSelection(checkBoxvalue);
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
-        }
-        var summaryLength = Object.keys(this.parent.aggregates).length;
-        var childSummary;
-        for (var i = 0; i < summaryLength; i++) {
-            if (this.parent.aggregates[i].showChildSummary) {
-                childSummary = true;
-                break;
-            }
-        }
-        if (childSummary) {
-            var checkedLen = this.parent.getSelectedRowIndexes().length;
-            var totalRecords = [];
-            var isSummaryRow = 'isSummaryRow';
-            for (var i = 0; i < this.parent.getCurrentViewRecords().length; i++) {
-                if (!this.parent.getCurrentViewRecords()[i][isSummaryRow]) {
-                    totalRecords.push(this.parent.getCurrentViewRecords()[i]);
-                }
-            }
-            if (checkedLen === totalRecords.length) {
-                var getCheckAllBox = 'getCheckAllBox';
-                var spanEle = this.parent.grid.selectionModule[getCheckAllBox]().nextElementSibling;
-                removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
-                addClass([spanEle], ['e-check']);
-            }
         }
     };
     Selection.prototype.triggerChkChangeEvent = function (checkBox, checkState, rowElement) {
@@ -595,6 +761,13 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             if (this.parent.autoCheckHierarchy) {
                 this.headerSelection();
+            }
+        }
+        else if (this.columnIndex > -1 && this.parent.getHeaderContent().querySelectorAll('.e-treeselectall').length > 0) {
+            var checkWrap = this.parent.getHeaderContent().querySelectorAll('.e-checkbox-wrapper')[0];
+            var checkBoxvalue = checkWrap.querySelector('.e-frame').classList.contains('e-check');
+            if (this.parent.autoCheckHierarchy && checkBoxvalue) {
+                this.headerSelection(checkBoxvalue);
             }
         }
     };
@@ -734,13 +907,14 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.headerSelection = function (checkAll) {
+        var _this = this;
         var adaptorName = 'adaptorName';
         var index = -1;
         var length = 0;
         var data = (!isNullOrUndefined(this.parent.filterModule) &&
             this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
             this.parent.flatData;
-        data = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+        data = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') || isRemoteData(this.parent) ?
             this.parent.getCurrentViewRecords() : data;
         if (!isNullOrUndefined(checkAll)) {
             for (var i = 0; i < data.length; i++) {
@@ -763,10 +937,18 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        if (checkAll === false && this.parent.enableVirtualization) {
+            this.selectedItems = [];
+            this.selectedIndexes = [];
+            data.filter(function (rec) {
+                rec.checkboxState = 'uncheck';
+                _this.updateSelectedItems(rec, rec.checkboxState);
+            });
+        }
         length = this.selectedItems.length;
         var checkbox = this.parent.getHeaderContent().querySelectorAll('.e-frame')[0];
         if (length > 0 && data.length > 0) {
-            if (length !== data.length) {
+            if (length !== data.length && !checkAll) {
                 removeClass([checkbox], ['e-check']);
                 checkbox.classList.add('e-stop');
             }
@@ -840,55 +1022,59 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.updateGridActions = function (args) {
+        var _this = this;
         var requestType = args.requestType;
         var childData;
         var childLength;
-        if (this.parent.autoCheckHierarchy) {
-            if ((requestType === 'sorting' || requestType === 'paging')) {
-                childData = this.parent.getCurrentViewRecords();
-                childLength = childData.length;
-                this.selectedIndexes = [];
-                for (var i = 0; i < childLength; i++) {
-                    this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+        if (isCheckboxcolumn(this.parent)) {
+            if (this.parent.autoCheckHierarchy) {
+                if ((requestType === 'sorting' || requestType === 'paging')) {
+                    childData = this.parent.getCurrentViewRecords();
+                    childLength = childData.length;
+                    this.selectedIndexes = [];
+                    for (var i = 0; i < childLength; i++) {
+                        this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+                    }
                 }
-            }
-            else if (requestType === 'delete' || args.action === 'add') {
-                var updatedData = [];
-                if (requestType === 'delete') {
-                    updatedData = args.data;
-                }
-                else {
-                    updatedData.push(args.data);
-                }
-                for (var i = 0; i < updatedData.length; i++) {
+                else if (requestType === 'delete' || args.action === 'add') {
+                    var updatedData = [];
                     if (requestType === 'delete') {
-                        var index = this.parent.flatData.indexOf(updatedData[i]);
-                        var checkedIndex = this.selectedIndexes.indexOf(index);
-                        this.selectedIndexes.splice(checkedIndex, 1);
-                        this.updateSelectedItems(updatedData[i], 'uncheck');
-                    }
-                    if (!isNullOrUndefined(updatedData[i].parentItem)) {
-                        this.updateParentSelection(updatedData[i].parentItem);
-                    }
-                }
-            }
-            else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
-                args.data.checkboxState = 'uncheck';
-            }
-            else if (requestType === 'filtering' || requestType === 'searching' || requestType === 'refresh') {
-                this.selectedItems = [];
-                this.selectedIndexes = [];
-                childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
-                    this.parent.getCurrentViewRecords() : this.parent.flatData;
-                for (var i = 0; i < childData.length; i++) {
-                    if (childData[i].hasChildRecords) {
-                        this.updateParentSelection(childData[i]);
+                        updatedData = args.data;
                     }
                     else {
-                        this.updateSelectedItems(childData[i], childData[i].checkboxState);
+                        updatedData.push(args.data);
+                    }
+                    for (var i = 0; i < updatedData.length; i++) {
+                        if (requestType === 'delete') {
+                            var index = this.parent.flatData.indexOf(updatedData[i]);
+                            var checkedIndex = this.selectedIndexes.indexOf(index);
+                            this.selectedIndexes.splice(checkedIndex, 1);
+                            this.updateSelectedItems(updatedData[i], 'uncheck');
+                        }
+                        if (!isNullOrUndefined(updatedData[i].parentItem)) {
+                            this.updateParentSelection(updatedData[i].parentItem);
+                        }
                     }
                 }
-                this.headerSelection();
+                else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
+                    args.data.checkboxState = 'uncheck';
+                }
+                else if (requestType === 'filtering' || requestType === 'searching' || requestType === 'refresh'
+                    && !isRemoteData(this.parent)) {
+                    this.selectedItems = [];
+                    this.selectedIndexes = [];
+                    childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
+                        this.parent.getCurrentViewRecords() : this.parent.flatData;
+                    childData.forEach(function (record) {
+                        if (record.hasChildRecords) {
+                            _this.updateParentSelection(record);
+                        }
+                        else {
+                            _this.updateSelectedItems(record, record.checkboxState);
+                        }
+                    });
+                    this.headerSelection();
+                }
             }
         }
     };
@@ -952,7 +1138,7 @@ var Print$1 = /** @__PURE__ @class */ (function () {
     return Print$$1;
 }());
 
-var __extends$3 = (undefined && undefined.__extends) || (function () {
+var __extends$4 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -975,7 +1161,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the filtering behavior of the TreeGrid.
  */
 var SearchSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$3(SearchSettings, _super);
+    __extends$4(SearchSettings, _super);
     function SearchSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -997,7 +1183,7 @@ var SearchSettings = /** @__PURE__ @class */ (function (_super) {
     return SearchSettings;
 }(ChildProperty));
 
-var __extends$4 = (undefined && undefined.__extends) || (function () {
+var __extends$5 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1020,7 +1206,7 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the selection behavior of the TreeGrid.
  */
 var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$4(SelectionSettings, _super);
+    __extends$5(SelectionSettings, _super);
     function SelectionSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -1095,9 +1281,6 @@ var Render = /** @__PURE__ @class */ (function () {
         //addClass([args.row], 'e-gridrowindex' + index + 'level' + (<ITreeData>args.data).level);
         var summaryRow = getObject('isSummaryRow', args.data);
         if (summaryRow) {
-            if (args.row.querySelector('.e-gridchkbox')) {
-                args.row.querySelector('.e-gridchkbox').innerHTML = '';
-            }
             addClass([args.row], 'e-summaryrow');
         }
         if (args.row.querySelector('.e-treegridexpand')) {
@@ -1445,6 +1628,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                         records[rec].level = 0;
                         records[rec].index = Math.ceil(Math.random() * 1000);
                         records[rec].hasChildRecords = true;
+                        records[rec].checkboxState = 'uncheck';
                     }
                 }
             }
@@ -1542,7 +1726,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 setValue('action', 'beforecontentrender', e);
                 _this.parent.trigger(actionComplete, e);
                 hideSpinner(_this.parent.element);
-                if (_this.parent.grid.aggregates.length > 0) {
+                if (_this.parent.grid.aggregates.length > 0 && !_this.parent.enableVirtualization) {
                     var gridQuery = getObject('query', e);
                     var result_1 = 'result';
                     if (isNullOrUndefined(gridQuery)) {
@@ -1554,9 +1738,23 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     }
                 }
                 e.count = _this.parent.grid.pageSettings.totalRecordsCount;
-                getValue('grid.renderModule', _this.parent).dataManagerSuccess(e);
+                var virtualArgs = {};
+                if (_this.parent.enableVirtualization) {
+                    _this.remoteVirtualAction(virtualArgs);
+                }
+                getValue('grid.renderModule', _this.parent).dataManagerSuccess(e, virtualArgs);
                 _this.parent.trigger(expanded, args);
             });
+        }
+    };
+    DataManipulation.prototype.remoteVirtualAction = function (virtualArgs) {
+        virtualArgs.requestType = 'refresh';
+        setValue('isExpandCollapse', true, virtualArgs);
+        var contentModule = getValue('grid.contentModule', this.parent);
+        var currentInfo = getValue('currentInfo', contentModule);
+        var prevInfo = getValue('prevInfo', contentModule);
+        if (currentInfo.loadNext && this.parent.grid.pageSettings.currentPage === currentInfo.nextInfo.page) {
+            this.parent.grid.pageSettings.currentPage = prevInfo.page;
         }
     };
     DataManipulation.prototype.beginSorting = function () {
@@ -1818,7 +2016,7 @@ var ContextMenuItems;
     ContextMenuItems[ContextMenuItems["AddRow"] = 15] = "AddRow";
 })(ContextMenuItems || (ContextMenuItems = {}));
 
-var __extends$5 = (undefined && undefined.__extends) || (function () {
+var __extends$6 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1841,7 +2039,7 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the paging behavior of the TreeGrid.
  */
 var PageSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$5(PageSettings, _super);
+    __extends$6(PageSettings, _super);
     function PageSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -1872,7 +2070,7 @@ var PageSettings = /** @__PURE__ @class */ (function (_super) {
     return PageSettings;
 }(ChildProperty));
 
-var __extends$6 = (undefined && undefined.__extends) || (function () {
+var __extends$7 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1895,7 +2093,7 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the TreeGrid's aggregate column.
  */
 var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(AggregateColumn, _super);
+    __extends$7(AggregateColumn, _super);
     function AggregateColumn() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.intl = new Internationalization();
@@ -1970,7 +2168,7 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
     return AggregateColumn;
 }(ChildProperty));
 var AggregateRow = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(AggregateRow, _super);
+    __extends$7(AggregateRow, _super);
     function AggregateRow() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -1983,7 +2181,7 @@ var AggregateRow = /** @__PURE__ @class */ (function (_super) {
     return AggregateRow;
 }(ChildProperty));
 
-var __extends$7 = (undefined && undefined.__extends) || (function () {
+var __extends$8 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2006,7 +2204,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the edit behavior of the TreeGrid.
  */
 var EditSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(EditSettings, _super);
+    __extends$8(EditSettings, _super);
     function EditSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -2043,7 +2241,7 @@ var EditSettings = /** @__PURE__ @class */ (function (_super) {
     return EditSettings;
 }(ChildProperty));
 
-var __extends$8 = (undefined && undefined.__extends) || (function () {
+var __extends$9 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2066,7 +2264,7 @@ var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, 
  * Represents the field name and direction of sort column.
  */
 var SortDescriptor = /** @__PURE__ @class */ (function (_super) {
-    __extends$8(SortDescriptor, _super);
+    __extends$9(SortDescriptor, _super);
     function SortDescriptor() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -2082,7 +2280,7 @@ var SortDescriptor = /** @__PURE__ @class */ (function (_super) {
  * Configures the sorting behavior of TreeGrid.
  */
 var SortSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$8(SortSettings, _super);
+    __extends$9(SortSettings, _super);
     function SortSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -2132,6 +2330,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         _this.uniqueIDCollection = {};
         _this.uniqueIDFilterCollection = {};
         _this.changedRecords = 'changedRecords';
+        _this.deletedRecords = 'deletedRecords';
+        _this.addedRecords = 'addedRecords';
         TreeGrid_1.Inject(Selection);
         setValue('mergePersistData', _this.mergePersistTreeGridData, _this);
         _this.grid = new Grid();
@@ -2580,8 +2780,15 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.clearTemplate(args);
         };
         if (isBlazor() && this.isServerRendered) {
-            gridObserver.on('component-rendered', this.gridRendered, this);
+            var fn_1 = function (args) { return _this.gridRendered(args, fn_1); };
+            gridObserver.on('component-rendered', fn_1, this);
         }
+    };
+    TreeGrid.prototype.afterGridRender = function () {
+        if (!isNullOrUndefined(this.grid.clipboardModule)) {
+            this.grid.clipboardModule.destroy();
+        }
+        this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
     };
     TreeGrid.prototype.gridRendered = function (args, fn) {
         if (args.id === this.element.id + '_gridcontrol') {
@@ -2604,6 +2811,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             this.columns[i].uid = this.grid.columns[i].uid;
         }
         this.wireEvents();
+        this.afterGridRender();
         var processModel = 'processModel';
         this.grid[processModel]();
         gridObserver.off('component-rendered', this.gridRendered);
@@ -2783,8 +2991,30 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.columnDragStart = this.triggerEvents.bind(this);
         this.grid.columnDrop = this.triggerEvents.bind(this);
         this.grid.beforePrint = this.triggerEvents.bind(this);
+        this.grid.beforeCopy = this.triggerEvents.bind(this);
+        this.grid.beforePaste = function (args) {
+            var rows = _this.getRows();
+            var rowIndex = 'rowIndex';
+            while (rows[args[rowIndex]].classList.contains('e-summaryrow')) {
+                args[rowIndex]++;
+            }
+            _this.trigger(beforePaste, args);
+        };
+        this.grid.load = function () {
+            treeGrid.grid.on('initial-end', treeGrid.afterGridRender, treeGrid);
+        };
         this.grid.printComplete = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
+        this.extendedGridDataBoundEvent();
+        this.extendedGridEvents();
+        this.extendedGridActionEvents();
+        this.extendedGridEditEvents();
+        this.bindGridDragEvents();
+        this.bindCallBackEvents();
+    };
+    TreeGrid.prototype.extendedGridDataBoundEvent = function () {
+        var _this = this;
+        var treeGrid = this;
         this.grid.dataBound = function (args) {
             _this.updateRowTemplate(args);
             _this.updateColumnModel();
@@ -2828,11 +3058,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 return callBackPromise_1;
             }
         };
-        this.extendedGridEvents();
-        this.extendedGridActionEvents();
-        this.extendedGridEditEvents();
-        this.bindGridDragEvents();
-        this.bindCallBackEvents();
     };
     TreeGrid.prototype.bindCallBackEvents = function () {
         var _this = this;
@@ -2919,10 +3144,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             });
             return callBackPromise;
         };
-        // this.grid.cellSaved = (args: CellSaveArgs): void => {
-        //   this.trigger(events.cellSaved, args);
-        //   this.notify(events.cellSaved, args);
-        // };
+        this.grid.cellSaved = function (args) {
+            _this.trigger(cellSaved, args);
+            _this.notify(cellSaved, args);
+        };
         this.grid.cellEdit = function (args) {
             if (isBlazor() && _this.isServerRendered) {
                 if (cellEdit$$1 && typeof cellEdit$$1 === 'function' && cellEdit$$1[name] === 'bound triggerEJEvents') {
@@ -2935,22 +3160,26 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.notify(cellEdit, args);
             return promise;
         };
-        // this.grid.batchAdd = (args: BatchAddArgs): void => {
-        //   this.trigger(events.batchAdd, args);
-        //   this.notify(events.batchAdd, args);
-        // }
+        this.grid.batchAdd = function (args) {
+            _this.trigger(batchAdd, args);
+            _this.notify(batchAdd, args);
+        };
         this.grid.beforeBatchSave = function (args) {
             _this.trigger(beforeBatchSave, args);
             _this.notify(beforeBatchSave, args);
         };
-        // this.grid.beforeBatchAdd = (args: BeforeBatchAddArgs): void => {
-        //   this.trigger(events.beforeBatchAdd, args);
-        //   this.notify(events.beforeBatchAdd, args);
-        // }
-        // this.grid.batchDelete = (args: BatchDeleteArgs): void => {
-        //   this.trigger(events.batchDelete, args);
-        //   this.notify(events.batchDelete, args);
-        // }
+        this.grid.beforeBatchAdd = function (args) {
+            _this.trigger(beforeBatchAdd, args);
+            _this.notify(beforeBatchAdd, args);
+        };
+        this.grid.batchDelete = function (args) {
+            _this.trigger(batchDelete, args);
+            _this.notify(batchDelete, args);
+        };
+        this.grid.beforeBatchDelete = function (args) {
+            _this.trigger(beforeBatchDelete, args);
+            _this.notify(beforeBatchDelete, args);
+        };
         this.grid.batchCancel = function (args) {
             if (_this.editSettings.mode !== 'Cell') {
                 _this.trigger(batchCancel, args);
@@ -3137,6 +3366,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         };
     };
     TreeGrid.prototype.bindGridDragEvents = function () {
+        var _this = this;
         var treeGrid = this;
         this.grid.rowDragStartHelper = function (args) {
             treeGrid.trigger(rowDragStartHelper, args);
@@ -3145,10 +3375,18 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             treeGrid.trigger(rowDragStart, args);
         };
         this.grid.rowDrag = function (args) {
+            if (_this.grid.isEdit) {
+                args.cancel = true;
+                return;
+            }
             treeGrid.notify(rowdraging, args);
             treeGrid.trigger(rowDrag, args);
         };
         this.grid.rowDrop = function (args) {
+            if (_this.grid.isEdit) {
+                args.cancel = true;
+                return;
+            }
             treeGrid.notify(rowDropped, args);
             args.cancel = true;
         };
@@ -3407,6 +3645,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     }
                     else {
                         this.bindedDataSource();
+                        if (this.enableVirtualization) {
+                            this.grid.contentModule.removeEventListener();
+                            this.grid.contentModule.eventListener('on');
+                            this.grid.contentModule.renderTable();
+                        }
                     }
                     break;
                 case 'query':
@@ -3520,7 +3763,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.destroy.call(this);
         this.grid.destroy();
         this.dataModule.destroy();
-        var modules = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule',
+        var modules = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule', 'clipboardModule',
             'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
             'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule', 'virtualScrollModule',
             'selectionModule', 'detailRow', 'rowDragAndDropModule', 'freezeModule'];
@@ -3634,6 +3877,35 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     */
+    TreeGrid.prototype.saveCell = function () {
+        if (this.grid.editModule) {
+            this.grid.editModule.saveCell();
+        }
+    };
+    /**
+     * To update the specified cell by given value without changing into edited state.
+     * @param {number} rowIndex Defines the row index.
+     * @param {string} field Defines the column field.
+     * @param {string | number | boolean | Date} value - Defines the value to be changed.
+     */
+    TreeGrid.prototype.updateCell = function (rowIndex, field, value) {
+        if (this.grid.editModule) {
+            this.grid.editModule.updateCell(rowIndex, field, value);
+        }
+    };
+    /**
+     * To update the specified row by given values without changing into edited state.
+     * @param {number} index Defines the row index.
+     * @param {Object} data Defines the data object to be updated.
+     */
+    TreeGrid.prototype.updateRow = function (index, data) {
+        if (this.grid.editModule) {
+            this.grid.editModule.updateRow(index, data);
+        }
+    };
+    /**
      * Delete a record with Given options. If fieldName and data is not given then TreeGrid will delete the selected record.
      * > `editSettings.allowDeleting` should be true.
      * @param {string} fieldName - Defines the primary key field, 'Name of the column'.
@@ -3714,7 +3986,32 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      *  @param {Object} rowData - To update new data for the particular row.
      */
     TreeGrid.prototype.setRowData = function (key, rowData) {
-        this.grid.setRowData(key, rowData);
+        var currentRecords = this.getCurrentViewRecords();
+        var primaryKey = this.grid.getPrimaryKeyFieldNames()[0];
+        var level = 0;
+        var record = {};
+        currentRecords.some(function (value, i, e) {
+            if (value[primaryKey] === key) {
+                record = value;
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+        level = record.level;
+        var data = rowData;
+        data.level = level;
+        data.index = record.index;
+        data.childRecords = record.childRecords;
+        data.taskData = record.taskData;
+        data.uniqueID = record.uniqueID;
+        data.parentItem = record.parentItem;
+        data.checkboxState = record.checkboxState;
+        data.hasChildRecords = record.hasChildRecords;
+        data.parentUniqueID = record.parentUniqueID;
+        data.expanded = record.expanded;
+        this.grid.setRowData(key, data);
     };
     /**
      * Navigates to the specified target page.
@@ -3819,7 +4116,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.showColumns = function (keys, showBy) {
-        return this.grid.showColumns(keys, showBy);
+        this.grid.showColumns(keys, showBy);
+        this.updateColumnModel();
     };
     /**
      * Hides a column by column name.
@@ -3828,7 +4126,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.hideColumns = function (keys, hideBy) {
-        return this.grid.hideColumns(keys, hideBy);
+        this.grid.hideColumns(keys, hideBy);
+        this.updateColumnModel();
     };
     /**
      * Gets a column header by column name.
@@ -3886,19 +4185,19 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.updateColumnModel = function (column) {
         this.columnModel = [];
         var stackedHeader = false;
-        if (!isBlazor() || !this.isServerRendered) {
-            var gridColumns = isNullOrUndefined(column) ? this.grid.getColumns() : column;
-            var gridColumn = void 0;
-            for (var i = 0; i < gridColumns.length; i++) {
-                gridColumn = {};
-                for (var _i = 0, _a = Object.keys(gridColumns[i]); _i < _a.length; _i++) {
-                    var prop = _a[_i];
-                    if (!isBlazor() || prop !== 'edit') {
-                        gridColumn[prop] = gridColumns[i][prop];
-                    }
+        var gridColumns = isNullOrUndefined(column) ? this.grid.getColumns() : column;
+        var gridColumn;
+        for (var i = 0; i < gridColumns.length; i++) {
+            gridColumn = {};
+            for (var _i = 0, _a = Object.keys(gridColumns[i]); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                if (!isBlazor() || prop !== 'edit') {
+                    gridColumn[prop] = gridColumns[i][prop];
                 }
-                this.columnModel.push(new Column(gridColumn));
             }
+            this.columnModel.push(new Column(gridColumn));
+        }
+        if (!isBlazor() || !this.isServerRendered) {
             var merge$$1 = 'deepMerge';
             this[merge$$1] = ['columns']; // Workaround for blazor updateModel
             if (this.grid.columns.length !== this.columnModel.length) {
@@ -3927,12 +4226,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid[persist2].apply(this, [storedColumn, columns]);
     };
     TreeGrid.prototype.updateTreeGridModel = function () {
-        if (!isBlazor() || !this.isServerRendered) {
-            this.setProperties({ filterSettings: getObject('properties', this.grid.filterSettings) }, true);
-            this.setProperties({ pageSettings: getObject('properties', this.grid.pageSettings) }, true);
-            this.setProperties({ searchSettings: getObject('properties', this.grid.searchSettings) }, true);
-            this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
-        }
+        this.setProperties({ filterSettings: getObject('properties', this.grid.filterSettings) }, true);
+        this.setProperties({ pageSettings: getObject('properties', this.grid.pageSettings) }, true);
+        this.setProperties({ searchSettings: getObject('properties', this.grid.searchSettings) }, true);
+        this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
     };
     /**
      * Gets the content table of the TreeGrid.
@@ -4088,7 +4385,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         if (this.editSettings.mode === 'Batch') {
             var obj = 'dialogObj';
             var showDialog = 'showDialog';
-            if (this.getBatchChanges()[this.changedRecords].length) {
+            if (this.getBatchChanges()[this.changedRecords].length ||
+                this.getBatchChanges()[this.deletedRecords].length || this.getBatchChanges()[this.addedRecords].length) {
                 var dialogObj = this.grid.editModule[obj];
                 this.grid.editModule[showDialog]('CancelEdit', dialogObj);
                 this.targetElement = target;
@@ -4158,7 +4456,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             if (!collapsingArgs.cancel) {
                 _this.expandCollapse('collapse', row, record);
                 var collapseArgs = { data: record, row: row };
-                _this.trigger(collapsed, collapseArgs);
+                if (!isRemoteData(_this)) {
+                    _this.trigger(collapsed, collapseArgs);
+                }
             }
         });
     };
@@ -4516,6 +4816,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.addListener = function () {
         this.on('updateResults', this.updateResultModel, this);
+        this.grid.on('initial-end', this.afterGridRender, this);
     };
     TreeGrid.prototype.updateResultModel = function (returnResult) {
         this.dataResults = returnResult;
@@ -4528,6 +4829,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.off('updateResults', this.updateResultModel);
+        this.grid.off('initial-end', this.afterGridRender);
     };
     /**
      * Filters TreeGrid row by column name with the given options.
@@ -4586,6 +4888,22 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.clearSelection = function () {
         this.grid.clearSelection();
+    };
+    /**
+     * Copy the selected rows or cells data into clipboard.
+     * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
+     */
+    TreeGrid.prototype.copy = function (withHeader) {
+        this.clipboardModule.copy(withHeader);
+    };
+    /**
+     * Paste data from clipboard to selected cells.
+     * @param {boolean} data - Specifies the date for paste.
+     * @param {boolean} rowIndex - Specifies the row index.
+     * @param {boolean} colIndex - Specifies the column index.
+     */
+    TreeGrid.prototype.paste = function (data, rowIndex, colIndex) {
+        this.clipboardModule.paste(data, rowIndex, colIndex);
     };
     /**
      * Selects a cell by the given index.
@@ -4695,6 +5013,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(0)
     ], TreeGrid.prototype, "frozenColumns", void 0);
+    __decorate([
+        Property('Ellipsis')
+    ], TreeGrid.prototype, "clipMode", void 0);
     __decorate([
         Property([])
     ], TreeGrid.prototype, "columns", void 0);
@@ -4813,6 +5134,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         Property()
     ], TreeGrid.prototype, "rowTemplate", void 0);
     __decorate([
+        Property('Parent')
+    ], TreeGrid.prototype, "copyHierarchyMode", void 0);
+    __decorate([
         Property(null)
     ], TreeGrid.prototype, "rowHeight", void 0);
     __decorate([
@@ -4862,6 +5186,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     ], TreeGrid.prototype, "cellSave", void 0);
     __decorate([
         Event()
+    ], TreeGrid.prototype, "cellSaved", void 0);
+    __decorate([
+        Event()
     ], TreeGrid.prototype, "actionBegin", void 0);
     __decorate([
         Event()
@@ -4869,6 +5196,24 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], TreeGrid.prototype, "beginEdit", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "batchAdd", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "batchDelete", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "batchCancel", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "beforeBatchAdd", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "beforeBatchDelete", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "beforeBatchSave", void 0);
     __decorate([
         Event()
     ], TreeGrid.prototype, "cellEdit", void 0);
@@ -4973,6 +5318,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     ], TreeGrid.prototype, "contextMenuClick", void 0);
     __decorate([
         Event()
+    ], TreeGrid.prototype, "beforeCopy", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "beforePaste", void 0);
+    __decorate([
+        Event()
     ], TreeGrid.prototype, "rowDrag", void 0);
     __decorate([
         Event()
@@ -5026,10 +5377,1318 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
 }(Component));
 
 /**
+ * TreeGrid Reorder module
+ * @hidden
+ */
+var Reorder$1 = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Reorder module
+     */
+    function Reorder$$1(parent, treeColumn) {
+        Grid.Inject(Reorder);
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    Reorder$$1.prototype.getModuleName = function () {
+        return 'reorder';
+    };
+    /**
+     * @hidden
+     */
+    Reorder$$1.prototype.addEventListener = function () {
+        this.parent.on('getColumnIndex', this.getTreeColumn, this);
+    };
+    Reorder$$1.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('getColumnIndex', this.getTreeColumn);
+    };
+    /**
+     * To destroy the Reorder
+     * @return {void}
+     * @hidden
+     */
+    Reorder$$1.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    Reorder$$1.prototype.getTreeColumn = function () {
+        var columnModel = 'columnModel';
+        var treeColumn = this.parent[columnModel][this.parent.treeColumnIndex];
+        var treeIndex;
+        var updatedCols = this.parent.getColumns();
+        for (var f = 0; f < updatedCols.length; f++) {
+            var treeColumnfield = getObject('field', treeColumn);
+            var parentColumnfield = getObject('field', updatedCols[f]);
+            if (treeColumnfield === parentColumnfield) {
+                treeIndex = f;
+                break;
+            }
+        }
+        this.parent.setProperties({ treeColumnIndex: treeIndex }, true);
+    };
+    return Reorder$$1;
+}());
+
+/**
+ * TreeGrid Resize module
+ * @hidden
+ */
+var Resize$1 = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Resize module
+     */
+    function Resize$$1(parent) {
+        Grid.Inject(Resize);
+        this.parent = parent;
+    }
+    /**
+     * Resize by field names.
+     * @param  {string|string[]} fName - Defines the field name.
+     * @return {void}
+     */
+    Resize$$1.prototype.autoFitColumns = function (fName) {
+        this.parent.grid.autoFitColumns(fName);
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    Resize$$1.prototype.getModuleName = function () {
+        return 'resize';
+    };
+    /**
+     * Destroys the Resize.
+     * @method destroy
+     * @return {void}
+     */
+    Resize$$1.prototype.destroy = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.grid.resizeModule.destroy();
+    };
+    return Resize$$1;
+}());
+
+function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord) {
+    var value = details.value;
+    var action = details.action;
+    var changedRecords = 'changedRecords';
+    var i;
+    var j;
+    var addedRecords = 'addedRecords';
+    var batchChanges;
+    var key = control.grid.getPrimaryKeyFieldNames()[0];
+    var treeData = control.dataSource instanceof DataManager ?
+        control.dataSource.dataSource.json : control.dataSource;
+    var modifiedData = [];
+    var originalData = value;
+    var isSkip = false;
+    if (control.editSettings.mode === 'Batch') {
+        batchChanges = control.grid.editModule.getBatchChanges();
+    }
+    if (action === 'add' || (action === 'batchsave' && (control.editSettings.mode === 'Batch'
+        && batchChanges[addedRecords].length))) {
+        var addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord);
+        value = addAct.value;
+        isSkip = addAct.isSkip;
+    }
+    if (value instanceof Array) {
+        modifiedData = extendArray(value);
+    }
+    else {
+        modifiedData.push(extend({}, value));
+    }
+    if (!isSkip && (action !== 'add' ||
+        (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
+        for (var k = 0; k < modifiedData.length; k++) {
+            if (typeof (modifiedData[k][key]) === 'object') {
+                modifiedData[k] = modifiedData[k][key];
+            }
+            var keys = Object.keys(modifiedData[k].taskData);
+            i = treeData.length;
+            var _loop_1 = function () {
+                if (treeData[i][key] === modifiedData[k][key]) {
+                    if (action === 'delete') {
+                        var currentData_1 = treeData[i];
+                        treeData.splice(i, 1);
+                        if (isSelfReference) {
+                            if (!isNullOrUndefined(currentData_1[control.parentIdMapping])) {
+                                var parentData = control.flatData.filter(function (e) {
+                                    return e[control.idMapping] === currentData_1[control.parentIdMapping];
+                                })[0];
+                                var childRecords = parentData ? parentData[control.childMapping] : [];
+                                for (var p = childRecords.length - 1; p >= 0; p--) {
+                                    if (childRecords[p][control.idMapping] === currentData_1[control.idMapping]) {
+                                        childRecords.splice(p, 1);
+                                        if (!childRecords.length) {
+                                            parentData.hasChildRecords = false;
+                                            updateParentRow(key, parentData, action, control, isSelfReference);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            return "break";
+                        }
+                    }
+                    else {
+                        if (action === 'edit') {
+                            for (j = 0; j < keys.length; j++) {
+                                if (treeData[i].hasOwnProperty(keys[j]) && ((control.editSettings.mode !== 'Cell'
+                                    || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
+                                    || keys[j] === columnName)) {
+                                    var editedData = getParentData(control, modifiedData[k].uniqueID);
+                                    editedData.taskData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                }
+                            }
+                        }
+                        else if (action === 'add' || action === 'batchsave') {
+                            var index = void 0;
+                            if (control.editSettings.newRowPosition === 'Child') {
+                                if (isSelfReference) {
+                                    originalData.taskData[control.parentIdMapping] = treeData[i][control.idMapping];
+                                    treeData.splice(i + 1, 0, originalData.taskData);
+                                }
+                                else {
+                                    if (!treeData[i].hasOwnProperty(control.childMapping)) {
+                                        treeData[i][control.childMapping] = [];
+                                    }
+                                    treeData[i][control.childMapping].push(originalData.taskData);
+                                    updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                                }
+                            }
+                            else if (control.editSettings.newRowPosition === 'Below') {
+                                treeData.splice(i + 1, 0, originalData.taskData);
+                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                            }
+                            else if (!addRowIndex) {
+                                index = 0;
+                                treeData.splice(index, 0, originalData.taskData);
+                            }
+                            else if (control.editSettings.newRowPosition === 'Above') {
+                                treeData.splice(i, 0, originalData.taskData);
+                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                            }
+                        }
+                        return "break";
+                    }
+                }
+                else if (!isNullOrUndefined(treeData[i][control.childMapping])) {
+                    if (removeChildRecords(treeData[i][control.childMapping], modifiedData[k], action, key, control, isSelfReference, originalData, columnName)) {
+                        updateParentRow(key, treeData[i], action, control, isSelfReference);
+                    }
+                }
+            };
+            while (i-- && i >= 0) {
+                var state_1 = _loop_1();
+                if (state_1 === "break")
+                    break;
+            }
+        }
+    }
+}
+function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord) {
+    var value;
+    var isSkip = false;
+    var currentViewRecords = control.grid.getCurrentViewRecords();
+    value = extend({}, details.value);
+    value = getPlainData(value);
+    switch (control.editSettings.newRowPosition) {
+        case 'Top':
+            treeData.unshift(value);
+            isSkip = true;
+            break;
+        case 'Bottom':
+            treeData.push(value);
+            isSkip = true;
+            break;
+        case 'Above':
+            if (!isNullOrUndefined(addRowRecord)) {
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
+            }
+            else {
+                value = extend({}, currentViewRecords[addRowIndex + 1]);
+                value = getPlainData(value);
+            }
+            break;
+        case 'Below':
+        case 'Child':
+            if (!isNullOrUndefined(addRowRecord)) {
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
+            }
+            else {
+                value = extend({}, currentViewRecords[addRowIndex]);
+                value = getPlainData(value);
+            }
+            if (selectedIndex === -1) {
+                treeData.unshift(value);
+                isSkip = true;
+            }
+    }
+    return { value: value, isSkip: isSkip };
+}
+function removeChildRecords(childRecords, modifiedData, action, key, control, isSelfReference, originalData, columnName) {
+    var isChildAll = false;
+    var j = childRecords.length;
+    while (j-- && j >= 0) {
+        if (childRecords[j][key] === modifiedData[key] ||
+            (isSelfReference && childRecords[j][control.parentIdMapping] === modifiedData[control.idMapping])) {
+            if (action === 'edit') {
+                var keys = Object.keys(modifiedData);
+                var editedData = getParentData(control, modifiedData.uniqueID);
+                for (var i = 0; i < keys.length; i++) {
+                    if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
+                        editedData[keys[i]] = editedData.taskData[keys[i]] = childRecords[j][keys[i]] = modifiedData[keys[i]];
+                    }
+                }
+                break;
+            }
+            else if (action === 'add' || action === 'batchsave') {
+                if (control.editSettings.newRowPosition === 'Child') {
+                    if (isSelfReference) {
+                        originalData[control.parentIdMapping] = childRecords[j][control.idMapping];
+                        childRecords.splice(j + 1, 0, originalData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                    }
+                    else {
+                        if (!childRecords[j].hasOwnProperty(control.childMapping)) {
+                            childRecords[j][control.childMapping] = [];
+                        }
+                        childRecords[j][control.childMapping].push(originalData.taskData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                    }
+                }
+                else if (control.editSettings.newRowPosition === 'Above') {
+                    childRecords.splice(j, 0, originalData.taskData);
+                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                }
+                else if (control.editSettings.newRowPosition === 'Below') {
+                    childRecords.splice(j + 1, 0, originalData.taskData);
+                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                }
+            }
+            else {
+                var parentItem = childRecords[j].parentItem;
+                childRecords.splice(j, 1);
+                if (!childRecords.length) {
+                    isChildAll = true;
+                }
+            }
+        }
+        else if (!isNullOrUndefined(childRecords[j][control.childMapping])) {
+            if (removeChildRecords(childRecords[j][control.childMapping], modifiedData, action, key, control, isSelfReference, originalData, columnName)) {
+                updateParentRow(key, childRecords[j], action, control, isSelfReference);
+            }
+        }
+    }
+    return isChildAll;
+}
+function updateParentRow(key, record, action, control, isSelfReference, child) {
+    if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
+        && ((action === 'add' || action === 'batchsave')) && !isNullOrUndefined(child.parentItem)) {
+        var parentData = getParentData(control, child.parentItem.uniqueID);
+        parentData.childRecords.push(child);
+    }
+    else {
+        var currentRecords = control.grid.getCurrentViewRecords();
+        var index_1;
+        currentRecords.map(function (e, i) { if (e[key] === record[key]) {
+            index_1 = i;
+            return;
+        } });
+        record = currentRecords[index_1];
+        record.hasChildRecords = false;
+        if (action === 'add' || action === 'batchsave') {
+            record.expanded = true;
+            record.hasChildRecords = true;
+            if (control.sortSettings.columns.length && isNullOrUndefined(child)) {
+                child = currentRecords.filter(function (e) {
+                    if (e.parentUniqueID === record.uniqueID) {
+                        return e;
+                    }
+                    else {
+                        return null;
+                    }
+                });
+            }
+            var childRecords = child ? child instanceof Array ? child[0] : child : currentRecords[index_1 + 1];
+            if (control.editSettings.newRowPosition !== 'Below') {
+                if (!record.hasOwnProperty('childRecords')) {
+                    record.childRecords = [];
+                }
+                else {
+                    if (!isNullOrUndefined(child) && record[key] !== child[key]) {
+                        record.childRecords.push(child);
+                    }
+                }
+                if (record.childRecords.indexOf(childRecords) === -1 && record[key] !== child[key]) {
+                    record.childRecords.unshift(childRecords);
+                }
+                if (isSelfReference) {
+                    if (!record.hasOwnProperty(control.childMapping)) {
+                        record[control.childMapping] = [];
+                    }
+                    if (record[control.childMapping].indexOf(childRecords) === -1 && record[key] !== child[key]) {
+                        record[control.childMapping].unshift(childRecords);
+                    }
+                }
+            }
+        }
+        var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
+        var data = control.grid.dataSource instanceof DataManager ?
+            control.grid.dataSource.dataSource.json : control.grid.dataSource;
+        for (var i = 0; i < data.length; i++) {
+            if (data[i][primaryKeys] === record[primaryKeys]) {
+                data[i] = record;
+                break;
+            }
+        }
+        control.grid.setRowData(key, record);
+        var row = control.getRowByIndex(index_1);
+        if (control.editSettings.mode === 'Batch') {
+            row = control.getRows()[control.grid.getRowIndexByPrimaryKey(record[key])];
+        }
+        var movableRow = void 0;
+        if (control.frozenRows || control.getFrozenColumns()) {
+            movableRow = control.getMovableRowByIndex(index_1);
+        }
+        control.renderModule.cellRender({
+            data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
+                : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
+            column: control.grid.getColumns()[control.treeColumnIndex],
+            requestType: action
+        });
+    }
+}
+
+/**
+ * TreeGrid RowDragAndDrop module
+ * @hidden
+ */
+var RowDD$1 = /** @__PURE__ @class */ (function () {
+    /**
+     *
+     * Constructor for render module
+     */
+    function RowDD$$1(parent) {
+        /** @hidden */
+        this.canDrop = true;
+        /** @hidden */
+        this.isDraggedWithChild = false;
+        /** @hidden */
+        this.isaddtoBottom = false;
+        Grid.Inject(RowDD);
+        this.parent = parent;
+        this.addEventListener();
+    }
+    RowDD$$1.prototype.getChildrecordsByParentID = function (id) {
+        var treeGridDataSource;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            treeGridDataSource = this.parent.grid.dataSource.dataSource.json;
+        }
+        else {
+            treeGridDataSource = this.parent.grid.dataSource;
+        }
+        var record = treeGridDataSource.filter(function (e) {
+            return e.uniqueID === id;
+        });
+        return record;
+    };
+    /**
+     * @hidden
+     */
+    RowDD$$1.prototype.addEventListener = function () {
+        this.parent.on(rowdraging, this.Rowdraging, this);
+        this.parent.on(rowDropped, this.rowDropped, this);
+        this.parent.on(rowsAdd, this.rowsAdded, this);
+        this.parent.on(rowsRemove, this.rowsRemoved, this);
+    };
+    /**
+     * Reorder the rows based on given indexes and position
+     */
+    RowDD$$1.prototype.reorderRows = function (fromIndexes, toIndex, position) {
+        if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
+            if (position === 'above') {
+                this.dropPosition = 'topSegment';
+            }
+            if (position === 'below') {
+                this.dropPosition = 'bottomSegment';
+            }
+            if (position === 'child') {
+                this.dropPosition = 'middleSegment';
+            }
+            var data = [];
+            for (var i = 0; i < fromIndexes.length; i++) {
+                data[i] = this.parent.getCurrentViewRecords()[fromIndexes[i]];
+            }
+            var isByMethod = true;
+            var args = {
+                data: data,
+                dropIndex: toIndex
+            };
+            this.dropRows(args, isByMethod);
+            //this.refreshGridDataSource();
+            this.parent.refresh();
+        }
+        else {
+            return;
+        }
+    };
+    RowDD$$1.prototype.rowsAdded = function (e) {
+        var draggedRecord;
+        var dragRecords = e.records;
+        for (var i = e.records.length - 1; i > -1; i--) {
+            draggedRecord = dragRecords[i];
+            if (draggedRecord.parentUniqueID) {
+                var record = dragRecords.filter(function (data) {
+                    return data.uniqueID === draggedRecord.parentUniqueID;
+                });
+                if (record.length) {
+                    var index = record[0].childRecords.indexOf(draggedRecord);
+                    var parentRecord = record[0];
+                    if (index !== -1) {
+                        parentRecord.childRecords.splice(index, 1);
+                        if (!parentRecord.childRecords.length) {
+                            parentRecord.hasChildRecords = false;
+                            parentRecord.hasFilteredChildRecords = false;
+                        }
+                        this.isDraggedWithChild = true;
+                    }
+                }
+            }
+        }
+        if (!this.parent.dataSource.length) {
+            var tObj = this.parent;
+            var draggedRecord_1;
+            var dragRecords_1 = e.records;
+            var dragLength = e.records.length;
+            for (var i = dragLength - 1; i > -1; i--) {
+                draggedRecord_1 = dragRecords_1[i];
+                var recordIndex1 = 0;
+                if (!draggedRecord_1.taskData.hasOwnProperty(tObj.childMapping)) {
+                    draggedRecord_1.taskData[tObj.childMapping] = [];
+                }
+                tObj.dataSource.splice(recordIndex1, 0, draggedRecord_1.taskData);
+                tObj.setProperties({ dataSource: tObj.dataSource }, false);
+            }
+        }
+        else {
+            for (var i = 0; i < dragRecords.length; i++) {
+                setValue('uniqueIDCollection.' + dragRecords[i].uniqueID, dragRecords[i], this.parent);
+            }
+            var args = { data: e.records, dropIndex: e.toIndex };
+            if (this.parent.dataSource instanceof DataManager) {
+                this.treeGridData = this.parent.dataSource.dataSource.json;
+            }
+            else {
+                this.treeGridData = this.parent.grid.dataSource;
+            }
+            this.dropRows(args);
+        }
+    };
+    RowDD$$1.prototype.rowsRemoved = function (e) {
+        for (var i = 0; i < e.records.length; i++) {
+            this.draggedRecord = e.records[i];
+            if (this.draggedRecord.hasChildRecords || this.draggedRecord.parentItem &&
+                this.parent.grid.dataSource.
+                    indexOf(this.getChildrecordsByParentID(this.draggedRecord.parentUniqueID)[0]) !== -1 ||
+                this.draggedRecord.level === 0) {
+                this.deleteDragRow();
+            }
+        }
+    };
+    RowDD$$1.prototype.refreshGridDataSource = function () {
+        var draggedRecord = this.draggedRecord;
+        var droppedRecord = this.droppedRecord;
+        var proxy = this.parent;
+        var tempDataSource;
+        var idx;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            tempDataSource = proxy.dataSource.dataSource.json;
+        }
+        else {
+            tempDataSource = proxy.dataSource;
+        }
+        if (tempDataSource && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem)) {
+            for (var i = 0; i < Object.keys(tempDataSource).length; i++) {
+                if (tempDataSource[i][this.parent.childMapping] === droppedRecord.taskData[this.parent.childMapping]) {
+                    idx = i;
+                }
+            }
+            if (this.dropPosition === 'topSegment') {
+                if (!this.parent.idMapping) {
+                    tempDataSource.splice(idx, 0, draggedRecord.taskData);
+                }
+            }
+            else if (this.dropPosition === 'bottomSegment') {
+                if (!this.parent.idMapping) {
+                    tempDataSource.splice(idx + 1, 0, draggedRecord.taskData);
+                }
+            }
+        }
+        else if (!this.parent.parentIdMapping && (!isNullOrUndefined(droppedRecord) && droppedRecord.parentItem)) {
+            if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
+                var record = this.getChildrecordsByParentID(droppedRecord.parentUniqueID)[0];
+                var childRecords = record.childRecords;
+                for (var i = 0; i < childRecords.length; i++) {
+                    droppedRecord.parentItem.taskData[this.parent.childMapping][i] = childRecords[i].taskData;
+                }
+            }
+        }
+        if (this.parent.parentIdMapping) {
+            if (draggedRecord.parentItem) {
+                if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
+                    draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
+                    draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
+                }
+                else {
+                    draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
+                    draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
+                }
+            }
+            else {
+                draggedRecord.taskData[this.parent.parentIdMapping] = null;
+                draggedRecord[this.parent.parentIdMapping] = null;
+            }
+        }
+    };
+    RowDD$$1.prototype.removeFirstrowBorder = function (element, isRemove) {
+        var canremove = this.dropPosition === 'bottomSegment';
+        if (this.parent.element.getElementsByClassName('e-firstrow-border').length > 0 && element &&
+            (element.rowIndex !== 0 || canremove)) {
+            this.parent.element.getElementsByClassName('e-firstrow-border')[0].remove();
+        }
+    };
+    RowDD$$1.prototype.removeLastrowBorder = function (element, isRemove) {
+        var isEmptyRow = element && (element.classList.contains('e-emptyrow') || element.classList.contains('e-columnheader'));
+        var islastRowIndex = element && !isEmptyRow &&
+            this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') !==
+                element.getAttribute('data-uid');
+        var canremove = islastRowIndex || this.dropPosition === 'topSegment';
+        if (this.parent.element.getElementsByClassName('e-lastrow-border').length > 0 && element && (islastRowIndex || canremove)) {
+            this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
+        }
+    };
+    RowDD$$1.prototype.updateIcon = function (row, index, args) {
+        var rowEle = args.target ? closest(args.target, 'tr') : null;
+        this.dropPosition = undefined;
+        var rowPositionHeight = 0;
+        this.removeFirstrowBorder(rowEle);
+        this.removeLastrowBorder(rowEle);
+        for (var i = 0; i < args.rows.length; i++) {
+            if (!isNullOrUndefined(rowEle) && rowEle.getAttribute('data-uid') === args.rows[i].getAttribute('data-uid')
+                || !parentsUntil(args.target, 'e-gridcontent')) {
+                this.dropPosition = 'Invalid';
+                this.addErrorElem();
+            }
+        }
+        // To get the corresponding drop position related to mouse position 
+        var tObj = this.parent;
+        var rowTop = 0;
+        var roundOff = 0;
+        var toolHeight = tObj.toolbar && tObj.toolbar.length ?
+            document.getElementById(tObj.element.id + '_gridcontrol_toolbarItems').offsetHeight : 0;
+        // tObj.lastRow = tObj.getRowByIndex(tObj.getCurrentViewRecords().length - 1);
+        var positionOffSet = this.getOffset(tObj.element);
+        // let contentHeight1: number = (tObj.element.offsetHeight  - (tObj.getContent() as HTMLElement).offsetHeight) + positionOffSet.top;
+        var contentHeight = tObj.getHeaderContent().offsetHeight + positionOffSet.top + toolHeight;
+        var scrollTop = tObj.getContent().firstElementChild.scrollTop;
+        if (!isNullOrUndefined(rowEle)) {
+            rowPositionHeight = rowEle.offsetTop - scrollTop;
+        }
+        // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
+        if (tObj.allowTextWrap) {
+            rowTop = row[0].offsetHeight;
+        }
+        else {
+            rowTop = rowPositionHeight + contentHeight + roundOff;
+        }
+        var rowBottom = rowTop + row[0].offsetHeight;
+        var difference = rowBottom - rowTop;
+        var divide = difference / 3;
+        var topRowSegment = rowTop + divide;
+        var middleRowSegment = topRowSegment + divide;
+        var bottomRowSegment = middleRowSegment + divide;
+        var posx = positionOffSet.left;
+        var mouseEvent = getObject('originalEvent.event', args);
+        var posy = mouseEvent.pageY;
+        var isTopSegment = posy <= topRowSegment;
+        var isMiddleRowSegment = (posy > topRowSegment && posy <= middleRowSegment);
+        var isBottomRowSegment = (posy > middleRowSegment && posy <= bottomRowSegment);
+        if (isTopSegment || isMiddleRowSegment || isBottomRowSegment) {
+            if (isTopSegment && this.dropPosition !== 'Invalid') {
+                this.removeChildBorder();
+                this.dropPosition = 'topSegment';
+                this.removetopOrBottomBorder();
+                this.addFirstrowBorder(rowEle);
+                this.removeErrorElem();
+                this.removeLastrowBorder(rowEle);
+                this.topOrBottomBorder(args.target);
+            }
+            if (isMiddleRowSegment && this.dropPosition !== 'Invalid') {
+                this.removetopOrBottomBorder();
+                var element = void 0;
+                var rowElement = [];
+                element = closest(args.target, 'tr');
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                if (rowElement.length > 0) {
+                    this.addRemoveClasses(rowElement, true, 'e-childborder');
+                }
+                this.addLastRowborder(rowEle);
+                this.addFirstrowBorder(rowEle);
+                this.dropPosition = 'middleSegment';
+            }
+            if (isBottomRowSegment && this.dropPosition !== 'Invalid') {
+                this.removeErrorElem();
+                this.removetopOrBottomBorder();
+                this.removeChildBorder();
+                this.dropPosition = 'bottomSegment';
+                this.addLastRowborder(rowEle);
+                this.removeFirstrowBorder(rowEle);
+                this.topOrBottomBorder(args.target);
+            }
+        }
+        return this.dropPosition;
+    };
+    RowDD$$1.prototype.removeChildBorder = function () {
+        var borderElem = [];
+        borderElem = [].slice.call(this.parent.element.querySelectorAll('.e-childborder'));
+        if (borderElem.length > 0) {
+            this.addRemoveClasses(borderElem, false, 'e-childborder');
+        }
+    };
+    RowDD$$1.prototype.addFirstrowBorder = function (targetRow) {
+        var node = this.parent.element;
+        var tObj = this.parent;
+        if (targetRow && targetRow.rowIndex === 0 && !targetRow.classList.contains('e-emptyrow')) {
+            var div = this.parent.createElement('div', { className: 'e-firstrow-border' });
+            var gridheaderEle = this.parent.getHeaderContent();
+            var toolbarHeight = 0;
+            if (tObj.toolbar) {
+                toolbarHeight = tObj.toolbarModule.getToolbar().offsetHeight;
+            }
+            var multiplegrid = !isNullOrUndefined(this.parent.rowDropSettings.targetID);
+            if (multiplegrid) {
+                div.style.top = this.parent.grid.element.getElementsByClassName('e-gridheader')[0].offsetHeight
+                    + toolbarHeight + 'px';
+            }
+            div.style.width = multiplegrid ? node.offsetWidth + 'px' :
+                node.offsetWidth - this.getScrollWidth() + 'px';
+            if (!gridheaderEle.querySelectorAll('.e-firstrow-border').length) {
+                gridheaderEle.appendChild(div);
+            }
+        }
+    };
+    RowDD$$1.prototype.addLastRowborder = function (trElement) {
+        var isEmptyRow = trElement && (trElement.classList.contains('e-emptyrow') ||
+            trElement.classList.contains('e-columnheader'));
+        if (trElement && !isEmptyRow && this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') ===
+            trElement.getAttribute('data-uid')) {
+            var bottomborder = this.parent.createElement('div', { className: 'e-lastrow-border' });
+            var gridcontentEle = this.parent.getContent();
+            bottomborder.style.width = this.parent.element.offsetWidth - this.getScrollWidth() + 'px';
+            if (!gridcontentEle.querySelectorAll('.e-lastrow-border').length) {
+                gridcontentEle.classList.add('e-treegrid-relative');
+                gridcontentEle.appendChild(bottomborder);
+                bottomborder.style.bottom = this.getScrollWidth() + 'px';
+            }
+        }
+    };
+    RowDD$$1.prototype.getScrollWidth = function () {
+        var scrollElem = this.parent.getContent().firstElementChild;
+        return scrollElem.scrollWidth > scrollElem.offsetWidth ? Scroll.getScrollBarWidth() : 0;
+    };
+    RowDD$$1.prototype.addErrorElem = function () {
+        var dragelem = document.getElementsByClassName('e-cloneproperties')[0];
+        var errorelem = dragelem.querySelectorAll('.e-errorelem').length;
+        if (!errorelem && !this.parent.rowDropSettings.targetID) {
+            var ele = document.createElement('div');
+            classList(ele, ['e-errorcontainer'], []);
+            classList(ele, ['e-icons', 'e-errorelem'], []);
+            var errorVal = dragelem.querySelector('.errorValue');
+            var content = dragelem.querySelector('.e-rowcell').innerHTML;
+            if (errorVal) {
+                content = errorVal.innerHTML;
+                errorVal.parentNode.removeChild(errorVal);
+            }
+            dragelem.querySelector('.e-rowcell').innerHTML = '';
+            var spanContent = document.createElement('span');
+            spanContent.className = 'errorValue';
+            spanContent.style.paddingLeft = '16px';
+            spanContent.innerHTML = content;
+            dragelem.querySelector('.e-rowcell').appendChild(ele);
+            dragelem.querySelector('.e-rowcell').appendChild(spanContent);
+        }
+    };
+    RowDD$$1.prototype.removeErrorElem = function () {
+        var errorelem = document.querySelector('.e-errorelem');
+        if (errorelem) {
+            errorelem.remove();
+        }
+    };
+    RowDD$$1.prototype.topOrBottomBorder = function (target) {
+        var element;
+        var multiplegrid = !isNullOrUndefined(this.parent.rowDropSettings.targetID);
+        var rowElement = [];
+        element = closest(target, 'tr');
+        rowElement = element ? [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')) : [];
+        if (rowElement.length) {
+            if (this.dropPosition === 'topSegment') {
+                this.addRemoveClasses(rowElement, true, 'e-droptop');
+                if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0) {
+                    this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();
+                }
+            }
+            if (this.dropPosition === 'bottomSegment') {
+                this.addRemoveClasses(rowElement, true, 'e-dropbottom');
+            }
+        }
+    };
+    RowDD$$1.prototype.removetopOrBottomBorder = function () {
+        var border = [];
+        border = [].slice.call(this.parent.element.querySelectorAll('.e-dropbottom, .e-droptop'));
+        if (border.length) {
+            this.addRemoveClasses(border, false, 'e-dropbottom');
+            this.addRemoveClasses(border, false, 'e-droptop');
+        }
+    };
+    RowDD$$1.prototype.addRemoveClasses = function (cells, add, className) {
+        for (var i = 0, len = cells.length; i < len; i++) {
+            if (add) {
+                cells[i].classList.add(className);
+            }
+            else {
+                cells[i].classList.remove(className);
+            }
+        }
+    };
+    RowDD$$1.prototype.getOffset = function (element) {
+        var box = element.getBoundingClientRect();
+        var body = document.body;
+        var docElem = document.documentElement;
+        var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+        var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+        var clientTop = docElem.clientTop || body.clientTop || 0;
+        var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+        var top = box.top + scrollTop - clientTop;
+        var left = box.left + scrollLeft - clientLeft;
+        return { top: Math.round(top), left: Math.round(left) };
+    };
+    RowDD$$1.prototype.Rowdraging = function (args) {
+        var tObj = this.parent;
+        var cloneElement = this.parent.element.querySelector('.e-cloneproperties');
+        cloneElement.style.cursor = '';
+        var rowEle = args.target ? closest(args.target, 'tr') : null;
+        var rowIdx = rowEle ? rowEle.rowIndex : -1;
+        var dragRecords = [];
+        var droppedRecord = tObj.getCurrentViewRecords()[rowIdx];
+        this.removeErrorElem();
+        this.canDrop = true;
+        if (!args.data[0]) {
+            dragRecords.push(args.data);
+        }
+        else {
+            dragRecords = args.data;
+        }
+        if (rowIdx !== -1) {
+            this.ensuredropPosition(dragRecords, droppedRecord);
+        }
+        else {
+            this.canDrop = false;
+            this.addErrorElem();
+        }
+        if (!tObj.rowDropSettings.targetID && this.canDrop) {
+            tObj.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
+        }
+        if (tObj.rowDropSettings.targetID) {
+            var dropElement = parentsUntil(args.target, 'e-treegrid');
+            if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
+                var srcControl = dropElement.ej2_instances[0];
+                srcControl.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
+            }
+        }
+        if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID)) {
+            var dropElement = parentsUntil(args.target, 'e-treegrid');
+            if (!dropElement) {
+                cloneElement.style.cursor = 'default';
+            }
+        }
+    };
+    RowDD$$1.prototype.rowDropped = function (args) {
+        var tObj = this.parent;
+        if (!tObj.rowDropSettings.targetID) {
+            if (parentsUntil(args.target, 'e-content')) {
+                if (this.parent.element.querySelector('.e-errorelem')) {
+                    this.dropPosition = 'Invalid';
+                }
+                setValue('dropPosition', this.dropPosition, args);
+                tObj.trigger(rowDrop, args);
+                if (!args.cancel) {
+                    this.dropRows(args);
+                    tObj.refresh();
+                    if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
+                        tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
+                    }
+                }
+            }
+        }
+        else {
+            if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID) || parentsUntil(args.target, 'e-treegrid') &&
+                parentsUntil(args.target, 'e-treegrid').id === tObj.rowDropSettings.targetID) {
+                setValue('dropPosition', this.dropPosition, args);
+                tObj.trigger(rowDrop, args);
+                if (!args.cancel && tObj.rowDropSettings.targetID) {
+                    this.dragDropGrid(args);
+                }
+            }
+        }
+        this.removetopOrBottomBorder();
+        this.removeChildBorder();
+        if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-firstrow-border')[0])) {
+            this.parent.element.getElementsByClassName('e-firstrow-border')[0].remove();
+        }
+        else if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-lastrow-border')[0])) {
+            this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
+        }
+    };
+    RowDD$$1.prototype.dragDropGrid = function (args) {
+        var tObj = this.parent;
+        var targetRow = closest(args.target, 'tr');
+        var targetIndex = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
+        var dropElement = parentsUntil(args.target, 'e-treegrid');
+        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)) {
+            var srcControl = dropElement.ej2_instances[0];
+            var records = tObj.getSelectedRecords();
+            var indexes = [];
+            for (var i = 0; i < records.length; i++) {
+                indexes[i] = records[i].index;
+            }
+            tObj.notify(rowsRemove, { indexes: indexes, records: records });
+            srcControl.notify(rowsAdd, { toIndex: targetIndex, records: records });
+            tObj.refresh();
+            srcControl.refresh();
+            if (srcControl.grid.dataSource.length > 1) {
+                srcControl.refresh();
+                if (!isNullOrUndefined(srcControl.getHeaderContent().querySelector('.e-firstrow-border'))) {
+                    srcControl.getHeaderContent().querySelector('.e-firstrow-border').remove();
+                }
+                if (!isNullOrUndefined(srcControl.getContent().querySelector('.e-lastrow-border'))) {
+                    srcControl.getContent().querySelector('.e-lastrow-border').remove();
+                }
+            }
+        }
+    };
+    RowDD$$1.prototype.getTargetIdx = function (targetRow) {
+        return targetRow ? parseInt(targetRow.getAttribute('aria-rowindex'), 10) : 0;
+    };
+    RowDD$$1.prototype.getParentData = function (record) {
+        var parentItem = record.parentItem;
+        if (this.dropPosition === 'bottomSegment') {
+            var selectedRecord = this.parent.getSelectedRecords()[0];
+            this.droppedRecord = getParentData(this.parent, selectedRecord.parentItem.uniqueID);
+        }
+        if (this.dropPosition === 'middleSegment') {
+            var level = this.parent.getSelectedRecords()[0].level;
+            if (level === parentItem.level) {
+                this.droppedRecord = getParentData(this.parent, parentItem.uniqueID);
+            }
+            else {
+                this.getParentData(parentItem);
+            }
+        }
+    };
+    RowDD$$1.prototype.dropRows = function (args, isByMethod) {
+        if (this.dropPosition !== 'Invalid' && !isRemoteData(this.parent)) {
+            var tObj = this.parent;
+            var draggedRecord = void 0;
+            var droppedRecord = void 0;
+            if (isNullOrUndefined(args.dropIndex)) {
+                var rowIndex = tObj.getSelectedRowIndexes()[0] - 1;
+                var record = tObj.getCurrentViewRecords()[rowIndex];
+                this.getParentData(record);
+            }
+            else {
+                this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
+            }
+            var dragRecords = [];
+            droppedRecord = this.droppedRecord;
+            if (!args.data[0]) {
+                dragRecords.push(args.data);
+            }
+            else {
+                dragRecords = args.data;
+            }
+            var count = 0;
+            var multiplegrid = this.parent.rowDropSettings.targetID;
+            this.isMultipleGrid = multiplegrid;
+            var addToBottom = false;
+            if (!multiplegrid) {
+                this.ensuredropPosition(dragRecords, droppedRecord);
+            }
+            else {
+                this.isaddtoBottom = addToBottom = multiplegrid && this.isDraggedWithChild;
+            }
+            var dragLength = dragRecords.length;
+            for (var i = 0; i < dragLength; i++) {
+                draggedRecord = dragRecords[i];
+                this.draggedRecord = draggedRecord;
+                var recordIndex = args.dropIndex;
+                var isSelfReference = !isNullOrUndefined(tObj.parentIdMapping);
+                if (this.dropPosition !== 'Invalid') {
+                    if (!tObj.rowDropSettings.targetID || isByMethod) {
+                        this.deleteDragRow();
+                    }
+                    var recordIndex1 = this.treeGridData.indexOf(droppedRecord);
+                    this.dropAtTop(recordIndex1, isSelfReference, i);
+                    if (this.dropPosition === 'bottomSegment') {
+                        if (!droppedRecord.hasChildRecords) {
+                            if (this.parent.parentIdMapping) {
+                                this.treeData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                            }
+                            this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                        }
+                        else {
+                            count = this.getChildCount(droppedRecord, 0);
+                            if (this.parent.parentIdMapping) {
+                                this.treeData.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                            }
+                            this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
+                        }
+                        draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
+                        draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
+                        draggedRecord.level = this.treeGridData[recordIndex1].level;
+                        if (draggedRecord.hasChildRecords) {
+                            var level = 1;
+                            this.updateChildRecordLevel(draggedRecord, level);
+                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
+                        }
+                        if (droppedRecord.parentItem) {
+                            var rec = this.getChildrecordsByParentID(droppedRecord.parentUniqueID);
+                            var childRecords = rec[0].childRecords;
+                            var droppedRecordIndex = childRecords.indexOf(droppedRecord) + 1;
+                            childRecords.splice(droppedRecordIndex, 0, draggedRecord);
+                        }
+                    }
+                    this.dropMiddle(recordIndex, recordIndex1, args, isByMethod, isSelfReference, i);
+                }
+                if (isNullOrUndefined(draggedRecord.parentItem)) {
+                    var parentRecords = tObj.parentData;
+                    var newParentIndex = parentRecords.indexOf(this.droppedRecord);
+                    if (this.dropPosition === 'bottomSegment') {
+                        parentRecords.splice(newParentIndex + 1, 0, draggedRecord);
+                    }
+                    else if (this.dropPosition === 'topSegment') {
+                        parentRecords.splice(newParentIndex, 0, draggedRecord);
+                    }
+                }
+                tObj.rowDragAndDropModule.refreshGridDataSource();
+            }
+        }
+    };
+    RowDD$$1.prototype.dropMiddle = function (recordIndex, recordIndex1, args, isSelfReference, isByMethod, i) {
+        var tObj = this.parent;
+        var childRecords = findChildrenRecords(this.droppedRecord);
+        var childRecordsLength = (isNullOrUndefined(childRecords) ||
+            childRecords.length === 0) ? recordIndex1 + 1 :
+            childRecords.length + recordIndex1 + 1;
+        if (this.dropPosition === 'middleSegment') {
+            if (tObj.parentIdMapping) {
+                this.treeData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
+                this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
+            }
+            else {
+                this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
+            }
+            this.recordLevel();
+            if (this.draggedRecord.hasChildRecords) {
+                this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
+            }
+        }
+    };
+    RowDD$$1.prototype.dropAtTop = function (recordIndex1, isSelfReference, i) {
+        var tObj = this.parent;
+        if (this.dropPosition === 'topSegment') {
+            if (tObj.parentIdMapping) {
+                this.treeData.splice(recordIndex1, 0, this.draggedRecord.taskData);
+            }
+            this.draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
+            this.draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
+            this.draggedRecord.level = this.treeGridData[recordIndex1].level;
+            this.treeGridData.splice(recordIndex1, 0, this.draggedRecord);
+            if (this.draggedRecord.hasChildRecords) {
+                var level = 1;
+                this.updateChildRecord(this.draggedRecord, recordIndex1);
+                this.updateChildRecordLevel(this.draggedRecord, level);
+            }
+            if (this.droppedRecord.parentItem) {
+                var rec = this.getChildrecordsByParentID(this.droppedRecord.parentUniqueID);
+                var childRecords = rec[0].childRecords;
+                var droppedRecordIndex = childRecords.indexOf(this.droppedRecord);
+                childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
+            }
+        }
+    };
+    RowDD$$1.prototype.recordLevel = function () {
+        var tObj = this.parent;
+        var draggedRecord = this.draggedRecord;
+        var droppedRecord = this.droppedRecord;
+        var childItem = tObj.childMapping;
+        if (!droppedRecord.hasChildRecords) {
+            droppedRecord.hasChildRecords = true;
+            droppedRecord.hasFilteredChildRecords = true;
+            if (isNullOrUndefined(droppedRecord.childRecords)) {
+                droppedRecord.childRecords = [];
+                if (!tObj.parentIdMapping && isNullOrUndefined(droppedRecord.taskData[childItem])) {
+                    droppedRecord.taskData[childItem] = [];
+                }
+            }
+        }
+        if (this.dropPosition === 'middleSegment') {
+            var parentItem = extend({}, droppedRecord);
+            delete parentItem.childRecords;
+            draggedRecord.parentItem = parentItem;
+            draggedRecord.parentUniqueID = droppedRecord.uniqueID;
+            droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
+            if (!isNullOrUndefined(draggedRecord) && !tObj.parentIdMapping && !isNullOrUndefined(droppedRecord.taskData[childItem])) {
+                droppedRecord.taskData[tObj.childMapping].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
+            }
+            if (!draggedRecord.hasChildRecords) {
+                draggedRecord.level = droppedRecord.level + 1;
+            }
+            else {
+                var level = 1;
+                draggedRecord.level = droppedRecord.level + 1;
+                this.updateChildRecordLevel(draggedRecord, level);
+            }
+            droppedRecord.expanded = true;
+            // if (tObj.isLocalData) {
+            //     tObj.parentData.push(droppedRecord);
+            // }
+        }
+    };
+    RowDD$$1.prototype.deleteDragRow = function () {
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            this.treeGridData = this.parent.grid.dataSource.dataSource.json;
+            this.treeData = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            this.treeGridData = this.parent.grid.dataSource;
+            this.treeData = this.parent.dataSource;
+        }
+        var deletedRow;
+        deletedRow = getParentData(this.parent, this.draggedRecord.uniqueID);
+        this.removeRecords(deletedRow);
+    };
+    RowDD$$1.prototype.updateChildRecord = function (record, count, expanded$$1) {
+        var currentRecord;
+        var tObj = this.parent;
+        var length = 0;
+        if (!record.hasChildRecords) {
+            return 0;
+        }
+        length = record.childRecords.length;
+        for (var i = 0; i < length; i++) {
+            currentRecord = record.childRecords[i];
+            count++;
+            tObj.flatData.splice(count, 0, currentRecord);
+            if (tObj.parentIdMapping) {
+                this.treeData.splice(count, 0, currentRecord.taskData);
+            }
+            if (currentRecord.hasChildRecords) {
+                count = this.updateChildRecord(currentRecord, count);
+            }
+        }
+        return count;
+    };
+    RowDD$$1.prototype.updateChildRecordLevel = function (record, level) {
+        var length = 0;
+        var currentRecord;
+        level++;
+        if (!record.hasChildRecords) {
+            return 0;
+        }
+        length = record.childRecords.length;
+        for (var i = 0; i < length; i++) {
+            currentRecord = record.childRecords[i];
+            var parentData = void 0;
+            if (record.parentItem) {
+                parentData = getParentData(this.parent, record.parentItem.uniqueID);
+            }
+            currentRecord.level = record.parentItem ? parentData.level + level : record.level + 1;
+            if (currentRecord.hasChildRecords) {
+                level--;
+                level = this.updateChildRecordLevel(currentRecord, level);
+            }
+        }
+        return level;
+    };
+    RowDD$$1.prototype.removeRecords = function (record) {
+        var tObj = this.parent;
+        var dataSource;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            dataSource = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            dataSource = this.parent.dataSource;
+        }
+        var deletedRow = record;
+        var isSelfReference = !isNullOrUndefined(tObj.parentIdMapping);
+        var flatParentData = this.getChildrecordsByParentID(deletedRow.parentUniqueID)[0];
+        if (deletedRow) {
+            if (deletedRow.parentItem) {
+                var childRecords = flatParentData ? flatParentData.childRecords : [];
+                var childIndex = 0;
+                if (childRecords && childRecords.length > 0) {
+                    childIndex = childRecords.indexOf(deletedRow);
+                    flatParentData.childRecords.splice(childIndex, 1);
+                    if (!this.parent.parentIdMapping) {
+                        editAction({ value: deletedRow, action: 'delete' }, this.parent, isSelfReference, deletedRow.index, deletedRow.index);
+                    }
+                }
+            }
+            if (tObj.parentIdMapping) {
+                if (deletedRow.hasChildRecords && deletedRow.childRecords.length > 0) {
+                    this.removeChildItem(deletedRow);
+                }
+                var idx = void 0;
+                var treeGridData = dataSource;
+                for (var i = 0; i < treeGridData.length; i++) {
+                    if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                        idx = i;
+                    }
+                }
+                if (idx !== -1) {
+                    dataSource.splice(idx, 1);
+                    this.treeGridData.splice(idx, 1);
+                }
+            }
+            var recordIndex_1 = this.treeGridData.indexOf(deletedRow);
+            if (!tObj.parentIdMapping) {
+                var parentIndex = this.parent.parentData.indexOf(deletedRow);
+                if (parentIndex !== -1) {
+                    tObj.parentData.splice(parentIndex, 1);
+                    dataSource.splice(parentIndex, 1);
+                }
+            }
+            if (recordIndex_1 === -1 && !tObj.parentIdMapping) {
+                var primaryKeyField = tObj.getPrimaryKeyFieldNames()[0];
+                for (var j = 0; j < this.treeGridData.length; j++) {
+                    if (this.treeGridData[j][primaryKeyField] === deletedRow[primaryKeyField]) {
+                        recordIndex_1 = j;
+                    }
+                }
+            }
+            if (!tObj.parentIdMapping) {
+                var deletedRecordCount = this.getChildCount(deletedRow, 0);
+                this.treeGridData.splice(recordIndex_1, deletedRecordCount + 1);
+            }
+            if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
+                flatParentData.expanded = false;
+                flatParentData.hasChildRecords = false;
+                flatParentData.hasFilteredChildRecords = false;
+            }
+        }
+    };
+    RowDD$$1.prototype.removeChildItem = function (record) {
+        var tObj = this.parent;
+        var currentRecord;
+        var idx;
+        for (var i = 0; i < record.childRecords.length; i++) {
+            currentRecord = record.childRecords[i];
+            var treeGridData = void 0;
+            if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+                treeGridData = this.parent.dataSource.dataSource.json;
+            }
+            else {
+                treeGridData = this.parent.dataSource;
+            }
+            for (var i_1 = 0; i_1 < treeGridData.length; i_1++) {
+                if (treeGridData[i_1][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
+                    idx = i_1;
+                }
+            }
+            if (idx !== -1) {
+                this.treeData.splice(idx, 1);
+                this.treeGridData.splice(idx, 1);
+            }
+            if (currentRecord.hasChildRecords) {
+                this.removeChildItem(currentRecord);
+            }
+        }
+    };
+    RowDD$$1.prototype.getChildCount = function (record, count) {
+        var currentRecord;
+        if (!record.hasChildRecords) {
+            return 0;
+        }
+        for (var i = 0; i < record.childRecords.length; i++) {
+            currentRecord = record.childRecords[i];
+            count++;
+            if (currentRecord.hasChildRecords) {
+                count = this.getChildCount(currentRecord, count);
+            }
+        }
+        return count;
+    };
+    RowDD$$1.prototype.ensuredropPosition = function (draggedRecords, currentRecord) {
+        var tObj = this.parent;
+        var rowDragMoudule = this;
+        draggedRecords.filter(function (e) {
+            if (e.hasChildRecords && !isNullOrUndefined(e.childRecords)) {
+                var valid = e.childRecords.indexOf(currentRecord);
+                if (valid === -1) {
+                    rowDragMoudule.ensuredropPosition(e.childRecords, currentRecord);
+                }
+                else {
+                    rowDragMoudule.dropPosition = 'Invalid';
+                    rowDragMoudule.addErrorElem();
+                    rowDragMoudule.canDrop = false;
+                    return;
+                }
+            }
+        });
+    };
+    RowDD$$1.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    /**
+     * @hidden
+     */
+    RowDD$$1.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(rowdraging, this.Rowdraging);
+        this.parent.off(rowDropped, this.rowDropped);
+        this.parent.off(rowsAdd, this.rowsAdded);
+        this.parent.off(rowsRemove, this.rowsRemoved);
+    };
+    /**
+     * hidden
+     */
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    RowDD$$1.prototype.getModuleName = function () {
+        return 'rowDragAndDrop';
+    };
+    return RowDD$$1;
+}());
+
+/**
  * Base export
  */
 
-var __extends$9 = (undefined && undefined.__extends) || (function () {
+var __extends$10 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -5052,7 +6711,7 @@ var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the row drop settings of the TreeGrid.
  */
 var RowDropSettings$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$9(RowDropSettings$$1, _super);
+    __extends$10(RowDropSettings$$1, _super);
     function RowDropSettings$$1() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -5066,7 +6725,7 @@ var RowDropSettings$1 = /** @__PURE__ @class */ (function (_super) {
  * Models export
  */
 
-var __extends$10 = (undefined && undefined.__extends) || (function () {
+var __extends$11 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -5084,7 +6743,7 @@ var __extends$10 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var TreeVirtualRowModelGenerator = /** @__PURE__ @class */ (function (_super) {
-    __extends$10(TreeVirtualRowModelGenerator, _super);
+    __extends$11(TreeVirtualRowModelGenerator, _super);
     function TreeVirtualRowModelGenerator(parent) {
         var _this = _super.call(this, parent) || this;
         _this.addEventListener();
@@ -5097,22 +6756,44 @@ var TreeVirtualRowModelGenerator = /** @__PURE__ @class */ (function (_super) {
         this.visualData = args.data;
     };
     TreeVirtualRowModelGenerator.prototype.generateRows = function (data, notifyArgs) {
-        if (!isNullOrUndefined(notifyArgs.requestType) && notifyArgs.requestType.toString() === 'collapseAll') {
-            notifyArgs.requestType = 'refresh';
+        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') {
+            return _super.prototype.generateRows.call(this, data, notifyArgs);
         }
-        var rows = _super.prototype.generateRows.call(this, data, notifyArgs);
-        for (var r = 0; r < rows.length; r++) {
-            rows[r].index = (this.visualData).indexOf(rows[r].data);
+        else {
+            if (!isNullOrUndefined(notifyArgs.requestType) && notifyArgs.requestType.toString() === 'collapseAll') {
+                notifyArgs.requestType = 'refresh';
+            }
+            var rows = _super.prototype.generateRows.call(this, data, notifyArgs);
+            for (var r = 0; r < rows.length; r++) {
+                rows[r].index = (this.visualData).indexOf(rows[r].data);
+            }
+            return rows;
         }
-        return rows;
     };
     TreeVirtualRowModelGenerator.prototype.checkAndResetCache = function (action) {
-        var clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'virtualscroll', 'reorder',
+        var clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
             'save', 'delete'].some(function (value) { return action === value; });
-        if (clear) {
-            this.cache = {};
-            this.data = {};
-            this.groups = {};
+        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') {
+            var model = 'model';
+            var currentPage = this[model].currentPage;
+            if (clear) {
+                this.cache = {};
+                this.data = {};
+                this.groups = {};
+            }
+            else if (action === 'virtualscroll' && this.cache[currentPage] &&
+                this.cache[currentPage].length > (this.parent.contentModule).getBlockSize()) {
+                delete this.cache[currentPage];
+            }
+        }
+        else {
+            if (clear || action === 'virtualscroll') {
+                this.cache = {};
+                this.data = {};
+                this.groups = {};
+            }
         }
         return clear;
     };
@@ -5827,29 +7508,32 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.refreshToolbar = function (args) {
         var tObj = this.parent;
-        if (args.rowIndex === 0 || tObj.getSelectedRecords().length > 1) {
+        if (args.row.rowIndex === 0 || tObj.getSelectedRecords().length > 1) {
             this.enableItems([tObj.element.id + '_gridcontrol_indent', tObj.element.id + '_gridcontrol_outdent'], false);
         }
         else {
-            if (tObj.getCurrentViewRecords()[args.rowIndex].level >
-                tObj.getCurrentViewRecords()[args.rowIndex - 1].level) {
-                this.enableItems([tObj.element.id + '_gridcontrol_indent'], false);
-            }
-            else {
-                this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
-            }
-            if (tObj.getCurrentViewRecords()[args.rowIndex].level ===
-                tObj.getCurrentViewRecords()[args.rowIndex - 1].level) {
-                this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
-            }
-            if (tObj.getCurrentViewRecords()[args.rowIndex].level === 0) {
-                this.enableItems([tObj.element.id + '_gridcontrol_outdent'], false);
-            }
-            if (tObj.getCurrentViewRecords()[args.rowIndex].level !== 0) {
-                this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
+            if (!isNullOrUndefined(tObj.getCurrentViewRecords()[args.row.rowIndex])) {
+                if (!isNullOrUndefined(tObj.getCurrentViewRecords()[args.row.rowIndex]) &&
+                    (tObj.getCurrentViewRecords()[args.row.rowIndex].level >
+                        tObj.getCurrentViewRecords()[args.row.rowIndex - 1].level)) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], false);
+                }
+                else {
+                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
+                }
+                if (tObj.getCurrentViewRecords()[args.row.rowIndex].level ===
+                    tObj.getCurrentViewRecords()[args.row.rowIndex - 1].level) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
+                }
+                if (tObj.getCurrentViewRecords()[args.row.rowIndex].level === 0) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_outdent'], false);
+                }
+                if (tObj.getCurrentViewRecords()[args.row.rowIndex].level !== 0) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
+                }
             }
         }
-        if (args.rowIndex === 0 && !isNullOrUndefined(args.data.parentItem)) {
+        if (args.row.rowIndex === 0 && !isNullOrUndefined(args.data.parentItem)) {
             this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
         }
     };
@@ -6237,104 +7921,6 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * TreeGrid Reorder module
- * @hidden
- */
-var Reorder$1 = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for Reorder module
-     */
-    function Reorder$$1(parent, treeColumn) {
-        Grid.Inject(Reorder);
-        this.parent = parent;
-        this.addEventListener();
-    }
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    Reorder$$1.prototype.getModuleName = function () {
-        return 'reorder';
-    };
-    /**
-     * @hidden
-     */
-    Reorder$$1.prototype.addEventListener = function () {
-        this.parent.on('getColumnIndex', this.getTreeColumn, this);
-    };
-    Reorder$$1.prototype.removeEventListener = function () {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off('getColumnIndex', this.getTreeColumn);
-    };
-    /**
-     * To destroy the Reorder
-     * @return {void}
-     * @hidden
-     */
-    Reorder$$1.prototype.destroy = function () {
-        this.removeEventListener();
-    };
-    Reorder$$1.prototype.getTreeColumn = function () {
-        var treeColumn = this.parent.columns[this.parent.treeColumnIndex];
-        var treeIndex;
-        var updatedCols = this.parent.getColumns();
-        for (var f = 0; f < updatedCols.length; f++) {
-            var treeColumnfield = getObject('field', treeColumn);
-            var parentColumnfield = getObject('field', updatedCols[f]);
-            if (treeColumnfield === parentColumnfield) {
-                treeIndex = f;
-                break;
-            }
-        }
-        this.parent.setProperties({ treeColumnIndex: treeIndex }, true);
-    };
-    return Reorder$$1;
-}());
-
-/**
- * TreeGrid Resize module
- * @hidden
- */
-var Resize$1 = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for Resize module
-     */
-    function Resize$$1(parent) {
-        Grid.Inject(Resize);
-        this.parent = parent;
-    }
-    /**
-     * Resize by field names.
-     * @param  {string|string[]} fName - Defines the field name.
-     * @return {void}
-     */
-    Resize$$1.prototype.autoFitColumns = function (fName) {
-        this.parent.grid.autoFitColumns(fName);
-    };
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    Resize$$1.prototype.getModuleName = function () {
-        return 'resize';
-    };
-    /**
-     * Destroys the Resize.
-     * @method destroy
-     * @return {void}
-     */
-    Resize$$1.prototype.destroy = function () {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.grid.resizeModule.destroy();
-    };
-    return Resize$$1;
-}());
-
-/**
  * TreeGrid ColumnMenu module
  * @hidden
  */
@@ -6437,325 +8023,481 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     return ContextMenu$$1;
 }());
 
-function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord) {
-    var value = details.value;
-    var action = details.action;
-    var changedRecords = 'changedRecords';
-    var i;
-    var j;
-    var addedRecords = 'addedRecords';
-    var batchChanges;
-    var key = control.grid.getPrimaryKeyFieldNames()[0];
-    var treeData = control.dataSource instanceof DataManager ?
-        control.dataSource.dataSource.json : control.dataSource;
-    var modifiedData = [];
-    var originalData = value;
-    var isSkip = false;
-    if (control.editSettings.mode === 'Batch') {
-        batchChanges = control.grid.editModule.getBatchChanges();
+/**
+ * `BatchEdit` module is used to handle batch editing actions.
+ * @hidden
+ */
+var BatchEdit = /** @__PURE__ @class */ (function () {
+    function BatchEdit(parent) {
+        this.batchChildCount = 0;
+        this.addedRecords = 'addedRecords';
+        this.deletedRecords = 'deletedRecords';
+        this.batchAddedRecords = [];
+        this.batchDeletedRecords = [];
+        this.batchAddRowRecord = [];
+        this.parent = parent;
+        this.isSelfReference = !isNullOrUndefined(parent.parentIdMapping);
+        this.batchRecords = [];
+        this.currentViewRecords = [];
+        this.isAdd = false;
+        this.addEventListener();
     }
-    if (action === 'add' || (action === 'batchsave' && (control.editSettings.mode === 'Batch'
-        && batchChanges[addedRecords].length))) {
-        var addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord);
-        value = addAct.value;
-        isSkip = addAct.isSkip;
-    }
-    if (value instanceof Array) {
-        modifiedData = extendArray(value);
-    }
-    else {
-        modifiedData.push(extend({}, value));
-    }
-    if (!isSkip && (action !== 'add' ||
-        (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
-        for (var k = 0; k < modifiedData.length; k++) {
-            if (typeof (modifiedData[k][key]) === 'object') {
-                modifiedData[k] = modifiedData[k][key];
-            }
-            var keys = Object.keys(modifiedData[k].taskData);
-            i = treeData.length;
-            var _loop_1 = function () {
-                if (treeData[i][key] === modifiedData[k][key]) {
-                    if (action === 'delete') {
-                        var currentData_1 = treeData[i];
-                        treeData.splice(i, 1);
-                        if (isSelfReference) {
-                            if (!isNullOrUndefined(currentData_1[control.parentIdMapping])) {
-                                var parentData = control.flatData.filter(function (e) {
-                                    return e[control.idMapping] === currentData_1[control.parentIdMapping];
-                                })[0];
-                                var childRecords = parentData ? parentData[control.childMapping] : [];
-                                for (var p = childRecords.length - 1; p >= 0; p--) {
-                                    if (childRecords[p][control.idMapping] === currentData_1[control.idMapping]) {
-                                        childRecords.splice(p, 1);
-                                        if (!childRecords.length) {
-                                            parentData.hasChildRecords = false;
-                                            updateParentRow(key, parentData, action, control, isSelfReference);
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                            return "break";
-                        }
-                    }
-                    else {
-                        if (action === 'edit') {
-                            for (j = 0; j < keys.length; j++) {
-                                if (treeData[i].hasOwnProperty(keys[j]) && ((control.editSettings.mode !== 'Cell'
-                                    || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
-                                    || keys[j] === columnName)) {
-                                    var editedData = getParentData(control, modifiedData[k].uniqueID);
-                                    editedData.taskData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
-                                }
-                            }
-                        }
-                        else if (action === 'add' || action === 'batchsave') {
-                            var index = void 0;
-                            if (control.editSettings.newRowPosition === 'Child') {
-                                if (isSelfReference) {
-                                    originalData.taskData[control.parentIdMapping] = treeData[i][control.idMapping];
-                                    treeData.splice(i + 1, 0, originalData.taskData);
-                                }
-                                else {
-                                    if (!treeData[i].hasOwnProperty(control.childMapping)) {
-                                        treeData[i][control.childMapping] = [];
-                                    }
-                                    treeData[i][control.childMapping].push(originalData.taskData);
-                                    updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
-                                }
-                            }
-                            else if (control.editSettings.newRowPosition === 'Below') {
-                                treeData.splice(i + 1, 0, originalData.taskData);
-                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
-                            }
-                            else if (!addRowIndex) {
-                                index = 0;
-                                treeData.splice(index, 0, originalData.taskData);
-                            }
-                            else if (control.editSettings.newRowPosition === 'Above') {
-                                treeData.splice(i, 0, originalData.taskData);
-                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
-                            }
-                        }
-                        return "break";
-                    }
-                }
-                else if (!isNullOrUndefined(treeData[i][control.childMapping])) {
-                    if (removeChildRecords(treeData[i][control.childMapping], modifiedData[k], action, key, control, isSelfReference, originalData, columnName)) {
-                        updateParentRow(key, treeData[i], action, control, isSelfReference);
-                    }
-                }
-            };
-            while (i-- && i >= 0) {
-                var state_1 = _loop_1();
-                if (state_1 === "break")
-                    break;
-            }
-        }
-    }
-}
-function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord) {
-    var value;
-    var isSkip = false;
-    var currentViewRecords = control.grid.getCurrentViewRecords();
-    value = extend({}, details.value);
-    value = getPlainData(value);
-    switch (control.editSettings.newRowPosition) {
-        case 'Top':
-            if (control.editSettings.mode === 'Batch') {
-                treeData.splice(treeData.length, 0, value);
-            }
-            else {
-                treeData.unshift(value);
-            }
-            isSkip = true;
-            break;
-        case 'Bottom':
-            treeData.push(value);
-            isSkip = true;
-            break;
-        case 'Above':
-            if (!isNullOrUndefined(addRowRecord)) {
-                value = extend({}, addRowRecord);
-                value = getPlainData(value);
-            }
-            else {
-                value = extend({}, currentViewRecords[addRowIndex + 1]);
-                value = getPlainData(value);
-            }
-            break;
-        case 'Below':
-        case 'Child':
-            if (!isNullOrUndefined(addRowRecord)) {
-                value = extend({}, addRowRecord);
-                value = getPlainData(value);
-            }
-            else {
-                value = extend({}, currentViewRecords[addRowIndex]);
-                value = getPlainData(value);
-            }
-            if (selectedIndex === -1) {
-                treeData.unshift(value);
-                isSkip = true;
-            }
-    }
-    return { value: value, isSkip: isSkip };
-}
-function removeChildRecords(childRecords, modifiedData, action, key, control, isSelfReference, originalData, columnName) {
-    var isChildAll = false;
-    var j = childRecords.length;
-    while (j-- && j >= 0) {
-        if (childRecords[j][key] === modifiedData[key] ||
-            (isSelfReference && childRecords[j][control.parentIdMapping] === modifiedData[control.idMapping])) {
-            if (action === 'edit') {
-                var keys = Object.keys(modifiedData);
-                var editedData = getParentData(control, modifiedData.uniqueID);
-                for (var i = 0; i < keys.length; i++) {
-                    if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
-                        editedData[keys[i]] = editedData.taskData[keys[i]] = childRecords[j][keys[i]] = modifiedData[keys[i]];
-                    }
-                }
-                break;
-            }
-            else if (action === 'add' || action === 'batchsave') {
-                if (control.editSettings.newRowPosition === 'Child') {
-                    if (isSelfReference) {
-                        originalData[control.parentIdMapping] = childRecords[j][control.idMapping];
-                        childRecords.splice(j + 1, 0, originalData);
-                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                    }
-                    else {
-                        if (!childRecords[j].hasOwnProperty(control.childMapping)) {
-                            childRecords[j][control.childMapping] = [];
-                        }
-                        childRecords[j][control.childMapping].push(originalData.taskData);
-                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                    }
-                }
-                else if (control.editSettings.newRowPosition === 'Above') {
-                    childRecords.splice(j, 0, originalData.taskData);
-                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                }
-                else if (control.editSettings.newRowPosition === 'Below') {
-                    childRecords.splice(j + 1, 0, originalData.taskData);
-                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                }
-            }
-            else {
-                var parentItem = childRecords[j].parentItem;
-                childRecords.splice(j, 1);
-                if (!childRecords.length) {
-                    isChildAll = true;
-                }
-            }
-        }
-        else if (!isNullOrUndefined(childRecords[j][control.childMapping])) {
-            if (removeChildRecords(childRecords[j][control.childMapping], modifiedData, action, key, control, isSelfReference, originalData, columnName)) {
-                updateParentRow(key, childRecords[j], action, control, isSelfReference);
-            }
-        }
-    }
-    return isChildAll;
-}
-function updateParentRow(key, record, action, control, isSelfReference, child) {
-    if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
-        && ((action === 'add' || action === 'batchsave')) && !isNullOrUndefined(child.parentItem)) {
-        var parentData = getParentData(control, child.parentItem.uniqueID);
-        if (parentData.childRecords.indexOf(child) === -1) {
-            parentData.childRecords.push(child);
-        }
-    }
-    else {
-        var currentRecords = control.grid.getCurrentViewRecords();
-        var index_1;
-        currentRecords.map(function (e, i) { if (e[key] === record[key]) {
-            index_1 = i;
+    BatchEdit.prototype.addEventListener = function () {
+        this.parent.on(cellSaved, this.cellSaved, this);
+        this.parent.on(batchAdd, this.batchAdd, this);
+        this.parent.on(beforeBatchAdd, this.beforeBatchAdd, this);
+        this.parent.on(batchSave, this.batchSave, this);
+        this.parent.on(beforeBatchDelete, this.beforeBatchDelete, this);
+        this.parent.on(beforeBatchSave, this.beforeBatchSave, this);
+        this.parent.on('batchPageAction', this.batchPageAction, this);
+        this.parent.on('batchCancelAction', this.batchCancelAction, this);
+    };
+    /**
+     * @hidden
+     */
+    BatchEdit.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
             return;
-        } });
-        record = currentRecords[index_1];
-        record.hasChildRecords = false;
-        if (action === 'add' || action === 'batchsave') {
-            record.expanded = true;
-            record.hasChildRecords = true;
-            if (control.sortSettings.columns.length && isNullOrUndefined(child)) {
-                child = currentRecords.filter(function (e) {
-                    if (e.parentUniqueID === record.uniqueID) {
-                        return e;
+        }
+        this.parent.off(cellSaved, this.cellSaved);
+        this.parent.off(batchAdd, this.batchAdd);
+        this.parent.off(batchSave, this.batchSave);
+        this.parent.off(beforeBatchAdd, this.beforeBatchAdd);
+        this.parent.off(beforeBatchDelete, this.beforeBatchDelete);
+        this.parent.off(beforeBatchSave, this.beforeBatchSave);
+        this.parent.off('batchPageAction', this.batchPageAction);
+        this.parent.off('batchCancelAction', this.batchCancelAction);
+    };
+    /**
+     * To destroy the editModule
+     * @return {void}
+     * @hidden
+     */
+    BatchEdit.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    /**
+     * @hidden
+     */
+    BatchEdit.prototype.getBatchRecords = function () {
+        return this.batchRecords;
+    };
+    /**
+     * @hidden
+     */
+    BatchEdit.prototype.getAddRowIndex = function () {
+        return this.addRowIndex;
+    };
+    /**
+     * @hidden
+     */
+    BatchEdit.prototype.getSelectedIndex = function () {
+        return this.selectedIndex;
+    };
+    /**
+     * @hidden
+     */
+    BatchEdit.prototype.getBatchChildCount = function () {
+        return this.batchChildCount;
+    };
+    BatchEdit.prototype.batchPageAction = function () {
+        var data = (this.parent.grid.dataSource instanceof DataManager ?
+            this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
+        var primaryKey = this.parent.grid.getPrimaryKeyFieldNames()[0];
+        var index;
+        if (!isNullOrUndefined(this.batchAddedRecords) && this.batchAddedRecords.length) {
+            for (var i = 0; i < this.batchAddedRecords.length; i++) {
+                index = data.map(function (e) { return e[primaryKey]; }).indexOf(this.batchAddedRecords[i][primaryKey]);
+                data.splice(index, 1);
+            }
+        }
+        this.batchAddedRecords = this.batchRecords = this.batchAddRowRecord = this.batchDeletedRecords = this.currentViewRecords = [];
+    };
+    BatchEdit.prototype.cellSaved = function (args) {
+        if (args.cell.cellIndex === this.parent.treeColumnIndex) {
+            this.parent.renderModule.cellRender({
+                data: args.rowData,
+                cell: args.cell,
+                column: this.parent.grid.getColumnByIndex(args.cell.cellIndex)
+            });
+        }
+        if (this.isAdd && this.parent.editSettings.mode === 'Batch' && this.parent.editSettings.newRowPosition !== 'Bottom') {
+            var data = (this.parent.grid.dataSource instanceof DataManager ?
+                this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
+            var added = void 0;
+            var level = 'level';
+            var primaryKey_1 = this.parent.grid.getPrimaryKeyFieldNames()[0];
+            var currentDataIndex = void 0;
+            var parentRecord = void 0;
+            var indexvalue = void 0;
+            var parentItem = 'parentItem';
+            var uniqueID = 'uniqueID';
+            parentRecord = this.selectedIndex > -1 ? this.batchRecords[this.addRowIndex][parentItem] : null;
+            var idMapping = void 0;
+            var parentUniqueID = void 0;
+            var parentIdMapping = void 0;
+            if (this.newBatchRowAdded) {
+                if (this.batchRecords.length) {
+                    idMapping = this.batchRecords[this.addRowIndex][this.parent.idMapping];
+                    parentIdMapping = this.batchRecords[this.addRowIndex][this.parent.parentIdMapping];
+                    if (this.batchRecords[this.addRowIndex][parentItem]) {
+                        parentUniqueID = this.batchRecords[this.addRowIndex][parentItem][uniqueID];
+                    }
+                }
+                this.batchAddedRecords = extendArray(this.batchAddedRecords);
+                this.batchAddRowRecord = extendArray(this.batchAddRowRecord);
+                this.batchAddRowRecord.push(this.batchRecords[this.addRowIndex]);
+                added = this.parent.grid.getRowsObject()[0].changes;
+                added.uniqueID = getUid(this.parent.element.id + '_data_');
+                setValue('uniqueIDCollection.' + added.uniqueID, added, this.parent);
+                if (!added.hasOwnProperty('level')) {
+                    this.batchIndex = this.selectedIndex === -1 ? 0 : this.batchIndex;
+                    if (this.parent.editSettings.newRowPosition === 'Child') {
+                        added.primaryParent = parentRecord;
+                        if (this.selectedIndex > -1) {
+                            added.parentItem = extend({}, this.batchRecords[this.addRowIndex]);
+                            added.parentUniqueID = added.parentItem.uniqueID;
+                            delete added.parentItem.childRecords;
+                            delete added.parentItem[this.parent.childMapping];
+                            added.level = added.parentItem.level + 1;
+                            added.index = this.batchIndex;
+                            var childRecordCount = findChildrenRecords(this.batchRecords[this.addRowIndex]).length;
+                            var record = findChildrenRecords(this.batchRecords[this.addRowIndex])[childRecordCount - 1];
+                            record = isNullOrUndefined(record) ? this.batchRecords[this.addRowIndex] : record;
+                            currentDataIndex = data.map(function (e) { return e[primaryKey_1]; }).indexOf(record[primaryKey_1]);
+                            if (this.isSelfReference) {
+                                added[this.parent.parentIdMapping] = idMapping;
+                            }
+                            updateParentRow(primaryKey_1, added.parentItem, 'add', this.parent, this.isSelfReference, added);
+                        }
+                    }
+                    else if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
+                        added.level = this.batchRecords[this.addRowIndex][level];
+                        if (added.level) {
+                            added.parentItem = parentRecord;
+                            added.parentUniqueID = parentUniqueID;
+                            delete added.parentItem.childRecords;
+                            delete added.parentItem[this.parent.childMapping];
+                        }
+                        added.index = this.parent.editSettings.newRowPosition === 'Below' ? this.batchIndex : this.batchIndex - 1;
+                        if (this.parent.editSettings.newRowPosition === 'Below' && this.selectedIndex > -1) {
+                            var childRecordCount = findChildrenRecords(this.batchRecords[this.addRowIndex]).length;
+                            var record = findChildrenRecords(this.batchRecords[this.addRowIndex])[childRecordCount - 1];
+                            record = isNullOrUndefined(record) ? this.batchRecords[this.addRowIndex] : record;
+                            currentDataIndex = data.map(function (e) { return e[primaryKey_1]; }).indexOf(record[primaryKey_1]);
+                        }
+                        if (this.parent.editSettings.newRowPosition === 'Above' && this.selectedIndex > -1) {
+                            var record = this.batchRecords[this.addRowIndex];
+                            currentDataIndex = data.map(function (e) { return e[primaryKey_1]; }).indexOf(record[primaryKey_1]);
+                        }
+                        if (this.isSelfReference) {
+                            added[this.parent.parentIdMapping] = parentIdMapping;
+                        }
+                    }
+                    added.index = added.index === -1 ? 0 : added.index;
+                    added.hasChildRecords = false;
+                    added.childRecords = [];
+                    this.batchRecords.splice(added.index, 0, added);
+                    this.currentViewRecords.splice(added.index, 0, added);
+                    if (currentDataIndex) {
+                        indexvalue = currentDataIndex;
                     }
                     else {
-                        return null;
+                        indexvalue = added.index;
                     }
-                });
+                    if (this.parent.editSettings.newRowPosition !== 'Above') {
+                        indexvalue = added.index === 0 ? indexvalue : indexvalue + 1;
+                    }
+                    data.splice(indexvalue, 0, added);
+                    this.batchAddedRecords.push(added);
+                }
+                this.parent.grid.getRowsObject()[0].data = added;
+                this.newBatchRowAdded = false;
             }
-            var childRecords = child ? child instanceof Array ? child[0] : child : currentRecords[index_1 + 1];
-            if (!record.hasOwnProperty('childRecords')) {
-                record.childRecords = [];
+        }
+    };
+    BatchEdit.prototype.beforeBatchAdd = function (e) {
+        this.selectedIndex = this.parent.grid.selectedRowIndex;
+        this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+        this.addRowRecord = this.parent.getSelectedRecords()[0];
+    };
+    BatchEdit.prototype.batchAdd = function (e) {
+        if (this.parent.editSettings.newRowPosition !== 'Bottom') {
+            this.isAdd = true;
+            this.newBatchRowAdded = true;
+            var actualIndex = 0;
+            if (!this.batchRecords.length) {
+                this.batchAddedRecords = [];
+                this.batchRecords = extendArray(this.parent.grid.getCurrentViewRecords());
+                this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
+            }
+            if (this.parent.editSettings.newRowPosition !== 'Top') {
+                var records = this.parent.grid.getCurrentViewRecords();
+                if (this.parent.editSettings.mode === 'Batch' && (this.parent.getBatchChanges()[this.addedRecords].length > 1
+                    || this.parent.getBatchChanges()[this.deletedRecords].length)) {
+                    records = this.batchRecords;
+                }
+                this.updateChildCount(records);
+                this.parent.notify(beginAdd, {});
+                this.batchChildCount = 0;
+            }
+            this.updateRowIndex();
+            // update focus module, need to refix this once grid source modified.
+            var focusModule = getValue('focusModule', this.parent.grid);
+            var table = this.parent.getContentTable();
+            if (this.parent.getBatchChanges()[this.deletedRecords].length && this.parent.editSettings.newRowPosition === 'Above') {
+                actualIndex = e.row.rowIndex;
+                focusModule.getContent().matrix.matrix = this.matrix;
             }
             else {
-                if (!isNullOrUndefined(child)) {
-                    record.childRecords.push(child);
+                actualIndex = table.getElementsByClassName('e-batchrow')[0].rowIndex;
+                if (this.parent.frozenRows || this.parent.frozenColumns) {
+                    actualIndex = this.batchIndex;
                 }
             }
-            if (record.childRecords.indexOf(childRecords) === -1) {
-                record.childRecords.unshift(childRecords);
+            focusModule.getContent().matrix.current = [actualIndex, focusModule.getContent().matrix.current[1]];
+        }
+    };
+    BatchEdit.prototype.beforeBatchDelete = function (e) {
+        if (!this.batchRecords.length) {
+            this.batchRecords = extendArray(this.parent.grid.getCurrentViewRecords());
+            this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
+        }
+        var focusModule = getValue('focusModule', this.parent.grid);
+        this.matrix = focusModule.getContent().matrix.matrix;
+        this.parent = this.parent;
+        var row = [];
+        var records;
+        var data;
+        var primarykey = this.parent.grid.getPrimaryKeyFieldNames()[0];
+        data = this.parent.grid.getSelectedRecords()[this.parent.grid.getSelectedRecords().length - 1];
+        var childs = findChildrenRecords(data);
+        if (childs.length) {
+            for (var i = 0; i < childs.length; i++) {
+                var index = this.parent.grid.getRowIndexByPrimaryKey(childs[i][primarykey]);
+                row.push(this.parent.grid.getRows()[index]);
             }
-            if (isSelfReference) {
-                if (!record.hasOwnProperty(control.childMapping)) {
-                    record[control.childMapping] = [];
+        }
+        if (!isNullOrUndefined(data.parentItem)) {
+            var parentItem = getParentData(this.parent, data.parentItem.uniqueID);
+            if (!isNullOrUndefined(parentItem) && parentItem.hasChildRecords) {
+                var childIndex = parentItem.childRecords.indexOf(data);
+                parentItem.childRecords.splice(childIndex, 1);
+            }
+            this.batchDeletedRecords = extendArray(this.batchDeletedRecords);
+            this.batchDeletedRecords.push(data);
+        }
+        childs.push(data);
+        records = childs;
+        for (var i = 0; i < records.length; i++) {
+            var indexvalue = this.batchRecords.map(function (e) { return e[primarykey]; }).indexOf(records[i][primarykey]);
+            if (indexvalue !== -1) {
+                this.batchRecords.splice(indexvalue, 1);
+            }
+        }
+        for (var i = 0; i < row.length; i++) {
+            if (!isNullOrUndefined(row[i])) {
+                this.parent.grid.selectionModule.selectedRecords.push(row[i]);
+            }
+        }
+    };
+    BatchEdit.prototype.updateRowIndex = function () {
+        var rows = this.parent.grid.getDataRows();
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].setAttribute('aria-rowindex', i.toString());
+        }
+    };
+    BatchEdit.prototype.updateChildCount = function (records) {
+        var primaryKey = this.parent.grid.getPrimaryKeyFieldNames()[0];
+        var addedRecords = 'addedRecords';
+        var parentItem = this.parent.editSettings.newRowPosition === 'Child' ? 'primaryParent' : 'parentItem';
+        for (var i = 1; i < this.parent.getBatchChanges()[addedRecords].length; i++) {
+            if (!isNullOrUndefined(this.parent.getBatchChanges()[addedRecords][i][parentItem])) {
+                if (this.parent.getBatchChanges()[addedRecords][i][parentItem][primaryKey] === records[this.addRowIndex][primaryKey]) {
+                    this.batchChildCount = this.batchChildCount + 1;
                 }
-                if (record[control.childMapping].indexOf(childRecords) === -1) {
-                    record[control.childMapping].unshift(childRecords);
+            }
+        }
+    };
+    BatchEdit.prototype.beforeBatchSave = function (e) {
+        var changeRecords = 'changedRecords';
+        var deleterecords = 'deletedRecords';
+        var changedRecords = e.batchChanges[changeRecords];
+        if (e.batchChanges[changeRecords].length) {
+            var columnName = void 0;
+            for (var i = 0; i < changedRecords.length; i++) {
+                editAction({ value: changedRecords[i], action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
+            }
+        }
+        if (e.batchChanges[deleterecords].length) {
+            var deletedRecords = e.batchChanges[deleterecords];
+            var record = deletedRecords;
+            for (var i = 0; i < record.length; i++) {
+                this.deleteUniqueID(record[i].uniqueID);
+                var childs = findChildrenRecords(record[i]);
+                for (var c = 0; c < childs.length; c++) {
+                    this.deleteUniqueID(childs[c].uniqueID);
+                }
+                e.batchChanges[deleterecords] = e.batchChanges[deleterecords].concat(childs);
+            }
+        }
+        this.isAdd = false;
+    };
+    BatchEdit.prototype.deleteUniqueID = function (value) {
+        var idFilter = 'uniqueIDFilterCollection';
+        delete this.parent[idFilter][value];
+        var id = 'uniqueIDCollection';
+        delete this.parent[id][value];
+    };
+    BatchEdit.prototype.batchCancelAction = function () {
+        var targetElement = 'targetElement';
+        var index;
+        var parentItem = 'parentItem';
+        var indexvalue = 'index';
+        var currentViewRecords = this.parent.grid.getCurrentViewRecords();
+        var childRecords = 'childRecords';
+        var data = (this.parent.grid.dataSource instanceof DataManager ?
+            this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
+        var primaryKey = this.parent.grid.getPrimaryKeyFieldNames()[0];
+        if (!isNullOrUndefined(this.parent[targetElement])) {
+            var row = this.parent[targetElement].closest('tr');
+            this.parent.collapseRow(row);
+            this.parent[targetElement] = null;
+        }
+        if (!isNullOrUndefined(this.batchAddedRecords)) {
+            for (var i = 0; i < this.batchAddedRecords.length; i++) {
+                index = data.map(function (e) { return e[primaryKey]; }).indexOf(this.batchAddedRecords[i][primaryKey]);
+                data.splice(index, 1);
+                if (this.parent.editSettings.newRowPosition === 'Child') {
+                    index = currentViewRecords.map(function (e) { return e[primaryKey]; })
+                        .indexOf(this.batchAddedRecords[i][parentItem][primaryKey]);
+                    var children = currentViewRecords[index][childRecords];
+                    for (var j = 0; j < children.length; j++) {
+                        if (children[j][primaryKey] === this.batchAddedRecords[i][primaryKey]) {
+                            currentViewRecords[index][childRecords].splice(j, 1);
+                        }
+                    }
                 }
             }
         }
-        var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
-        var data = control.grid.dataSource instanceof DataManager ?
-            control.grid.dataSource.dataSource.json : control.grid.dataSource;
-        for (var i = 0; i < data.length; i++) {
-            if (data[i][primaryKeys] === record[primaryKeys]) {
-                data[i] = record;
-                break;
+        if (!isNullOrUndefined(this.batchDeletedRecords)) {
+            for (var i = 0; i < this.batchDeletedRecords.length; i++) {
+                if (!isNullOrUndefined(this.batchDeletedRecords[i][parentItem])) {
+                    index = currentViewRecords.map(function (e) { return e[primaryKey]; })
+                        .indexOf(this.batchDeletedRecords[i][parentItem][primaryKey]);
+                    var positionIndex = this.batchDeletedRecords[i][indexvalue] === 0 ? this.batchDeletedRecords[i][indexvalue] :
+                        this.batchDeletedRecords[i][indexvalue] - 1;
+                    currentViewRecords[index][childRecords].splice(positionIndex, 0, this.batchDeletedRecords[i]);
+                }
             }
         }
-        control.grid.setRowData(key, record);
-        var row = control.getRowByIndex(index_1);
-        var movableRow = void 0;
-        if (control.frozenRows || control.getFrozenColumns()) {
-            movableRow = control.getMovableRowByIndex(index_1);
+        this.batchAddedRecords = this.batchRecords = this.batchAddRowRecord = this.currentViewRecords = [];
+        this.batchRecords = extendArray(this.parent.grid.getCurrentViewRecords());
+        this.batchIndex = 0;
+        this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
+        this.batchDeletedRecords = [];
+        this.parent.refresh();
+    };
+    BatchEdit.prototype.batchSave = function (args) {
+        if (this.parent.editSettings.mode === 'Batch') {
+            var i = void 0;
+            var batchChanges = this.parent.getBatchChanges();
+            var deletedRecords = 'deletedRecords';
+            var addedRecords = 'addedRecords';
+            var index = 'index';
+            var uniqueID = 'uniqueID';
+            var data = (this.parent.grid.dataSource instanceof DataManager ?
+                this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
+            var currentViewRecords = this.parent.grid.getCurrentViewRecords();
+            var primarykey_1 = this.parent.grid.getPrimaryKeyFieldNames()[0];
+            var level = 'level';
+            var addRecords = batchChanges[addedRecords];
+            var parentItem = 'parentItem';
+            var selectedIndex = void 0;
+            var addRowIndex = void 0;
+            var columnName = void 0;
+            var addRowRecord = void 0;
+            var childRecords = 'childRecords';
+            if (addRecords.length > 1 && this.parent.editSettings.newRowPosition !== 'Bottom') {
+                addRecords.reverse();
+            }
+            if (this.parent.editSettings.newRowPosition !== 'Bottom') {
+                data.splice(data.length - addRecords.length, addRecords.length);
+                if (!this.parent.allowPaging) {
+                    if (currentViewRecords.length > addRecords.length) {
+                        currentViewRecords.splice(currentViewRecords.length - addRecords.length, addRecords.length);
+                    }
+                }
+                else {
+                    var totalRecords = extendArray(data);
+                    var startIndex = totalRecords.map(function (e) { return e[primarykey_1]; })
+                        .indexOf(currentViewRecords[0][primarykey_1]);
+                    var endIndex = startIndex + this.parent.grid.pageSettings.pageSize;
+                    currentViewRecords = totalRecords.splice(startIndex, endIndex);
+                }
+            }
+            for (i = 0; i < addRecords.length; i++) {
+                var taskData = extend({}, addRecords[i]);
+                delete taskData.parentItem;
+                delete taskData.uniqueID;
+                delete taskData.index;
+                delete taskData.level;
+                delete taskData.hasChildRecords;
+                delete taskData.childRecords;
+                delete taskData.parentUniqueID;
+                if (!isNullOrUndefined(taskData.primaryParent)) {
+                    delete taskData.primaryParent;
+                }
+                addRecords[i].taskData = taskData;
+                addRowRecord = this.batchAddRowRecord[i];
+                if (isNullOrUndefined(addRowRecord)) {
+                    addRowRecord = this.batchAddRowRecord[i - 1];
+                }
+                if (this.isSelfReference) {
+                    if (!isNullOrUndefined(addRecords[i].parentItem)) {
+                        updateParentRow(primarykey_1, addRecords[i].parentItem, 'add', this.parent, this.isSelfReference, addRecords[i]);
+                    }
+                }
+                if (!isNullOrUndefined(addRowRecord)) {
+                    addRowIndex = addRowRecord.index;
+                }
+                if (this.parent.editSettings.newRowPosition !== 'Top' && this.parent.editSettings.newRowPosition !== 'Bottom') {
+                    if (isNullOrUndefined(addRecords[i].parentItem) && this.selectedIndex === -1) {
+                        selectedIndex = -1;
+                        addRowRecord = null;
+                    }
+                }
+                editAction({ value: addRecords[i], action: 'add' }, this.parent, this.isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord);
+                selectedIndex = null;
+                if (this.parent.editSettings.newRowPosition === 'Child' && !isNullOrUndefined(addRecords[i][parentItem])) {
+                    var indexValue = currentViewRecords.map(function (e) { return e[primarykey_1]; })
+                        .indexOf(addRecords[i][parentItem][primarykey_1]);
+                    var children = currentViewRecords[indexValue][childRecords];
+                    for (var j = 0; j < children.length; j++) {
+                        if (children[j][primarykey_1] === addRecords[i][primarykey_1]) {
+                            currentViewRecords[indexValue][childRecords].splice(j, 1);
+                        }
+                    }
+                }
+            }
+            if (batchChanges[deletedRecords].length) {
+                for (i = 0; i < batchChanges[deletedRecords].length; i++) {
+                    editAction({ value: batchChanges[deletedRecords][i], action: 'delete' }, this.parent, this.isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord);
+                }
+            }
+            this.parent.parentData = [];
+            for (var i_1 = 0; i_1 < data.length; i_1++) {
+                data[i_1][index] = i_1;
+                setValue('uniqueIDCollection.' + data[i_1][uniqueID] + '.index', i_1, this.parent);
+                if (!data[i_1][level]) {
+                    this.parent.parentData.push(data[i_1]);
+                }
+            }
         }
-        control.renderModule.cellRender({
-            data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
-                : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
-            column: control.grid.getColumns()[control.treeColumnIndex],
-            requestType: action
-        });
-    }
-}
-
-function batchSaveAction(control) {
-    var i;
-    var batchChanges = control.getBatchChanges();
-    var addedRecords = 'addedRecords';
-    if (batchChanges[addedRecords].length) {
-        for (i = 0; i < batchChanges[addedRecords].length; i++) {
-            control.notify(crudAction, { value: batchChanges[addedRecords][i], action: 'batchsave' });
-        }
-    }
-}
-function beforeBatchSaveAction(e, control) {
-    var changeRecords = 'changedRecords';
-    var changedRecords = e.batchChanges[changeRecords];
-    if (e.batchChanges[changeRecords].length) {
-        var selectedIndex = void 0;
-        var addRowIndex = void 0;
-        var columnName = void 0;
-        var isSelfReference = !isNullOrUndefined(control.parentIdMapping);
-        for (var i = 0; i < changedRecords.length; i++) {
-            editAction({ value: changedRecords[i], action: 'edit' }, control, isSelfReference, addRowIndex, selectedIndex, columnName);
-        }
-    }
-}
+        this.batchAddRowRecord = this.batchAddedRecords = this.batchRecords = this.batchDeletedRecords = this.currentViewRecords = [];
+    };
+    return BatchEdit;
+}());
 
 /**
  * TreeGrid Edit Module
@@ -6766,14 +8508,14 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
      * Constructor for Edit module
      */
     function Edit$$1(parent) {
+        this.addedRecords = 'addedRecords';
+        this.deletedRecords = 'deletedRecords';
         Grid.Inject(Edit);
         this.parent = parent;
         this.isSelfReference = !isNullOrUndefined(parent.parentIdMapping);
-        // this.batchDeleted = {};
-        // this.batchRecords = [];
-        // this.isAdd = false;
         this.previousNewRowPosition = null;
         this.internalProperties = {};
+        this.batchEditModule = new BatchEdit(this.parent);
         this.addEventListener();
     }
     /**
@@ -6802,15 +8544,8 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.grid.on('dblclick', this.gridDblClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
-        // this.parent.on(events.cellSaved, this.cellSaved, this);
-        // this.parent.on(events.batchDelete, this.batchDelete, this);
-        // this.parent.on(events.batchAdd, this.batchAdd, this);
-        // this.parent.on(events.beforeBatchAdd, this.beforeBatchAdd, this);
-        this.parent.on(beforeBatchSave, this.beforeBatchSave, this);
-        this.parent.on(batchSave, this.batchSave, this);
         this.parent.grid.on(beforeStartEdit, this.beforeStartEdit, this);
         this.parent.grid.on(beforeBatchCancel, this.beforeBatchCancel, this);
-        //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
     };
     Edit$$1.prototype.gridDblClick = function (e) {
         this.doubleClickTarget = e.target;
@@ -6819,11 +8554,10 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.trigger(actionBegin, args);
     };
     Edit$$1.prototype.beforeBatchCancel = function (args) {
-        this.parent.trigger(actionComplete, args);
+        if (this.parent.editSettings.mode === 'Cell') {
+            this.parent.trigger(actionComplete, args);
+        }
     };
-    /*private batchEditFormRendered(args: Object):void {
-      this.parent.trigger(events.actionComplete, args);
-    }*/
     /**
      * @hidden
      */
@@ -6832,12 +8566,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.off(crudAction, this.crudAction);
-        this.parent.off(beforeBatchSave, this.beforeBatchSave);
-        this.parent.off(batchSave, this.batchSave);
         this.parent.off(beginEdit, this.beginEdit);
         this.parent.off(beginAdd, this.beginAdd);
         this.parent.off(recordDoubleClick, this.recordDoubleClick);
-        this.parent.off(cellSave, this.cellSave);
         this.parent.off(batchCancel, this.batchCancel);
         this.parent.grid.off(keyPressed, this.keyPressed);
         this.parent.grid.off('content-ready', this.contentready);
@@ -6850,7 +8581,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
         this.parent.grid.off('dblclick', this.gridDblClick);
         //this.parent.grid.off('click', this.gridSingleClick);
-        //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
     };
     /**
      * To destroy the editModule
@@ -6891,6 +8621,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        if (this.parent.editSettings.mode === 'Batch' && eventArgs.requestType === 'paging') {
+            this.parent.notify('batchPageAction', {});
+        }
     };
     Edit$$1.prototype.recordDoubleClick = function (args) {
         var target = args.target;
@@ -6899,7 +8632,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         }
         var column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
-            column.allowEditing && this.parent.editSettings.allowEditing && !(target.classList.contains('e-treegridexpand') ||
+            column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
             target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
@@ -6975,46 +8708,17 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         if (this.parent.editSettings.mode === 'Cell') {
             var cellDetails = getValue('editModule.cellDetails', this.parent.grid.editModule);
             var selectRowIndex = cellDetails.rowIndex;
-            var treeColumnIndexValue = void 0;
-            if (this.parent.allowRowDragAndDrop) {
-                treeColumnIndexValue = this.parent.treeColumnIndex + 1;
-            }
-            else {
-                treeColumnIndexValue = this.parent.treeColumnIndex;
-            }
             this.parent.renderModule.cellRender({
                 data: cellDetails.rowData,
-                cell: this.parent.getRows()[selectRowIndex].cells[treeColumnIndexValue],
+                cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
                 column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
             });
             this.updateGridEditMode('Normal');
             this.isOnBatch = false;
         }
         if (this.parent.editSettings.mode === 'Batch') {
-            var targetElement = 'targetElement';
-            if (!isNullOrUndefined(this.parent[targetElement])) {
-                var row = this.parent[targetElement].closest('tr');
-                this.parent.collapseRow(row);
-                this.parent[targetElement] = null;
-            }
+            this.parent.notify('batchCancelAction', {});
         }
-        // this.batchRecords = [];
-        // let keys: string[] = Object.keys(this.batchDeleted);
-        // let primaryLey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
-        // let currentViewRecords: ITreeData[] = this.parent.grid.getCurrentViewRecords();
-        // for (let i: number = 0; i < keys.length; i++) {
-        //   let index: number;
-        //   currentViewRecords.map((e: ITreeData, j: number) => {
-        //     if (this.batchDeleted.hasOwnProperty(keys[i]) && e[primaryLey] === this.batchDeleted[keys[i]][primaryLey]) {
-        //       index = j; return;
-        //     }
-        //   });
-        //   this.parent.renderModule.cellRender({
-        //     data: currentViewRecords[index],
-        //     cell: (<HTMLTableRowElement>this.parent.getRowByIndex(index)).cells[this.parent.treeColumnIndex],
-        //     column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
-        //   });
-        // }
     };
     Edit$$1.prototype.cellSave = function (args) {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
@@ -7063,6 +8767,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 this.enableToolbarItems('save');
                 removeClass([row], ['e-editedrow', 'e-batchrow']);
                 removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+                this.parent.grid.focusModule.restoreFocus();
                 editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
                 var saveArgs = {
                     type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
@@ -7177,6 +8882,14 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         var position;
         var index = this.addRowIndex;
         var records = this.parent.grid.getCurrentViewRecords();
+        if (this.parent.editSettings.mode === 'Batch') {
+            index = this.batchEditModule.getAddRowIndex();
+            this.selectedIndex = this.batchEditModule.getSelectedIndex();
+            if (this.parent.getBatchChanges()[this.addedRecords].length > 1
+                || this.parent.getBatchChanges()[this.deletedRecords].length) {
+                records = this.batchEditModule.getBatchRecords();
+            }
+        }
         var rows = this.parent.grid.getDataRows();
         var movableRows;
         if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
@@ -7186,12 +8899,22 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             if (this.parent.editSettings.newRowPosition === 'Above') {
                 position = 'before';
             }
-            else if ((this.parent.editSettings.newRowPosition === 'Below' || this.parent.editSettings.newRowPosition === 'Child')
+            else if ((this.parent.editSettings.newRowPosition === 'Below' ||
+                this.parent.editSettings.newRowPosition === 'Child')
                 && this.selectedIndex > -1) {
                 position = 'after';
-                // let records: Object[] = this.batchRecords.length ? this.batchRecords : this.parent.grid.getCurrentViewRecords();
                 if (records[index].expanded) {
-                    index += findChildrenRecords(records[index]).length;
+                    if (this.parent.editSettings.mode === 'Batch' && (this.parent.getBatchChanges()[this.addedRecords].length > 1
+                        || this.parent.getBatchChanges()[this.deletedRecords].length)) {
+                        index += findChildrenRecords(records[index]).length;
+                        if (this.parent.editSettings.newRowPosition !== 'Child') {
+                            var batchChildCount = this.batchEditModule.getBatchChildCount();
+                            index = index + batchChildCount;
+                        }
+                    }
+                    else {
+                        index += findChildrenRecords(records[index]).length;
+                    }
                 }
             }
             if (this.selectedIndex > -1 && (index || (this.parent.editSettings.newRowPosition === 'Child'
@@ -7201,8 +8924,10 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 }
                 var focussedElement = document.activeElement;
                 rows[index + 1][position](rows[0]);
+                setValue('batchIndex', index + 1, this.batchEditModule);
                 if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
                     movableRows[index + 1][position](movableRows[0]);
+                    setValue('batchIndex', index + 1, this.batchEditModule);
                 }
                 if (this.parent.editSettings.mode === 'Row' || this.parent.editSettings.mode === 'Cell') {
                     var errors = this.parent.grid.getContentTable().querySelectorAll('.e-griderror');
@@ -7448,14 +9173,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             this.parent.grid.editModule.editCell(rowIndex, field);
         }
     };
-    Edit$$1.prototype.beforeBatchSave = function (e) {
-        beforeBatchSaveAction(e, this.parent);
-    };
-    Edit$$1.prototype.batchSave = function (args) {
-        if (this.parent.editSettings.mode === 'Batch') {
-            batchSaveAction(this.parent);
-        }
-    };
     return Edit$$1;
 }());
 
@@ -7601,7 +9318,7 @@ var DetailRow$1 = /** @__PURE__ @class */ (function () {
     return DetailRow$$1;
 }());
 
-var __extends$12 = (undefined && undefined.__extends) || (function () {
+var __extends$13 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7618,7 +9335,7 @@ var __extends$12 = (undefined && undefined.__extends) || (function () {
  * Content renderer for TreeGrid
  */
 var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$12(VirtualTreeContentRenderer, _super);
+    __extends$13(VirtualTreeContentRenderer, _super);
     function VirtualTreeContentRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.isExpandCollapse = false;
@@ -7627,6 +9344,8 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
         /** @hidden */
         _this.startIndex = -1;
         _this.endIndex = -1;
+        _this.preTranslate = 0;
+        _this.isRemoteExpand = false;
         _this.addEventListener();
         return _this;
     }
@@ -7656,30 +9375,58 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualTreeContentRenderer.prototype.eventListener = function (action) {
         var _this = this;
-        this.parent[action]('data-ready', this.onDataReady, this);
-        //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
-        var fn = function () {
-            _this.observers.observes(function (scrollArgs) { return _this.scrollListeners(scrollArgs); });
-            _this.parent.off('content-ready', fn);
-        };
-        this.parent.on('content-ready', fn, this);
+        if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '')) {
+            this.parent[action]('data-ready', this.onDataReady, this);
+            //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
+            this.fn = function () {
+                _this.observers.observes(function (scrollArgs) { return _this.scrollListeners(scrollArgs); });
+                _this.parent.off('content-ready', _this.fn);
+            };
+            this.parent.on('content-ready', this.fn, this);
+        }
+        else {
+            _super.prototype.eventListener.call(this, 'on');
+        }
     };
     VirtualTreeContentRenderer.prototype.onDataReady = function (e) {
         _super.prototype.onDataReady.call(this, e);
-        if (!isNullOrUndefined(e.count)) {
-            this.totalRecords = e.count;
-            getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
-             // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
-        }
-        if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
-            this.contents.scrollTop = 0;
+        if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '')) {
+            if (!isNullOrUndefined(e.count)) {
+                this.totalRecords = e.count;
+                getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
+                 // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
+            }
+            if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
+                this.contents.scrollTop = 0;
+            }
         }
     };
     VirtualTreeContentRenderer.prototype.renderTable = function () {
         _super.prototype.renderTable.call(this);
-        getValue('observer', this).options.debounceEvent = false;
-        this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
-        this.contents = this.getPanel().firstChild;
+        if (!(this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '')) {
+            getValue('observer', this).options.debounceEvent = false;
+            this.observers = new TreeInterSectionObserver(this.parent, getValue('observer', this).element, getValue('observer', this).options);
+            this.contents = this.getPanel().firstChild;
+        }
+    };
+    VirtualTreeContentRenderer.prototype.getTranslateY = function (sTop, cHeight, info, isOnenter) {
+        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') {
+            if (this.isRemoteExpand) {
+                this.isRemoteExpand = false;
+                return this.preTranslate;
+            }
+            else {
+                this.preTranslate = _super.prototype.getTranslateY.call(this, sTop, cHeight, info, isOnenter);
+                return _super.prototype.getTranslateY.call(this, sTop, cHeight, info, isOnenter);
+            }
+        }
+        else {
+            return _super.prototype.getTranslateY.call(this, sTop, cHeight, info, isOnenter);
+        }
     };
     VirtualTreeContentRenderer.prototype.scrollListeners = function (scrollArgs) {
         var info = scrollArgs.sentinel;
@@ -7739,27 +9486,46 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VirtualTreeContentRenderer.prototype.appendContent = function (target, newChild, e) {
-        var info = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && getValue('currentInfo', this).page &&
-            getValue('currentInfo', this).page !== e.virtualInfo.page ? getValue('currentInfo', this) : e.virtualInfo;
-        var cBlock = (info.columnIndexes[0]) - 1;
-        var cOffset = this.getColumnOffset(cBlock);
-        //this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
-        target = this.parent.createElement('tbody');
-        target.appendChild(newChild);
-        var replace = 'replaceWith';
-        this.getTable().querySelector('tbody')[replace](target);
-        if (!this.isExpandCollapse || this.translateY === 0) {
-            getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
+        if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.url !== undefined
+            && this.parent.dataSource.dataSource.url !== '') {
+            if (getValue('isExpandCollapse', e)) {
+                this.isRemoteExpand = true;
+            }
+            _super.prototype.appendContent.call(this, target, newChild, e);
         }
         else {
-            this.isExpandCollapse = false;
+            var info = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' &&
+                getValue('currentInfo', this).page && getValue('currentInfo', this).page !== e.virtualInfo.page ?
+                getValue('currentInfo', this) : e.virtualInfo;
+            var cBlock = (info.columnIndexes[0]) - 1;
+            var cOffset = this.getColumnOffset(cBlock);
+            //this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
+            target = this.parent.createElement('tbody');
+            target.appendChild(newChild);
+            var replace = 'replaceWith';
+            this.getTable().querySelector('tbody')[replace](target);
+            if (!this.isExpandCollapse || this.translateY === 0) {
+                getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
+            }
+            else {
+                this.isExpandCollapse = false;
+            }
+            setValue('prevInfo', info, this);
         }
-        setValue('prevInfo', info, this);
+    };
+    VirtualTreeContentRenderer.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('data-ready', this.onDataReady);
+        this.parent.off('content-ready', this.fn);
+        this.parent.off(virtualActionArgs, this.virtualOtherAction);
+        this.parent.off(indexModifier, this.indexModifier);
     };
     return VirtualTreeContentRenderer;
 }(VirtualContentRenderer));
 var TreeInterSectionObserver = /** @__PURE__ @class */ (function (_super) {
-    __extends$12(TreeInterSectionObserver, _super);
+    __extends$13(TreeInterSectionObserver, _super);
     function TreeInterSectionObserver() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.isWheeling = false;
@@ -7815,7 +9581,7 @@ var TreeInterSectionObserver = /** @__PURE__ @class */ (function (_super) {
     return TreeInterSectionObserver;
 }(InterSectionObserver));
 
-var __extends$11 = (undefined && undefined.__extends) || (function () {
+var __extends$12 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7952,7 +9718,7 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
     return VirtualScroll$$1;
 }());
 var TreeVirtual = /** @__PURE__ @class */ (function (_super) {
-    __extends$11(TreeVirtual, _super);
+    __extends$12(TreeVirtual, _super);
     function TreeVirtual(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         getValue('parent', _this).off('initial-load', getValue('instantiateRenderer', _this), _this);
@@ -8067,934 +9833,6 @@ var Freeze$1 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * TreeGrid RowDragAndDrop module
- * @hidden
- */
-var RowDD$1 = /** @__PURE__ @class */ (function () {
-    /**
-     *
-     * Constructor for render module
-     */
-    function RowDD$$1(parent) {
-        /** @hidden */
-        this.canDrop = true;
-        /** @hidden */
-        this.isDraggedWithChild = false;
-        /** @hidden */
-        this.isaddtoBottom = false;
-        Grid.Inject(RowDD);
-        this.parent = parent;
-        this.addEventListener();
-    }
-    RowDD$$1.prototype.getChildrecordsByParentID = function (id) {
-        var treeGridDataSource;
-        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
-            treeGridDataSource = this.parent.grid.dataSource.dataSource.json;
-        }
-        else {
-            treeGridDataSource = this.parent.grid.dataSource;
-        }
-        var record = treeGridDataSource.filter(function (e) {
-            return e.uniqueID === id;
-        });
-        return record;
-    };
-    /**
-     * @hidden
-     */
-    RowDD$$1.prototype.addEventListener = function () {
-        this.parent.on(rowdraging, this.Rowdraging, this);
-        this.parent.on(rowDropped, this.rowDropped, this);
-        this.parent.on(rowsAdd, this.rowsAdded, this);
-        this.parent.on(rowsRemove, this.rowsRemoved, this);
-    };
-    /**
-     * Reorder the rows based on given indexes and position
-     */
-    RowDD$$1.prototype.reorderRows = function (fromIndexes, toIndex, position) {
-        if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
-            if (position === 'above') {
-                this.dropPosition = 'topSegment';
-            }
-            if (position === 'below') {
-                this.dropPosition = 'bottomSegment';
-            }
-            if (position === 'child') {
-                this.dropPosition = 'middleSegment';
-            }
-            var data = [];
-            for (var i = 0; i < fromIndexes.length; i++) {
-                data[i] = this.parent.getCurrentViewRecords()[fromIndexes[i]];
-            }
-            var isByMethod = true;
-            var args = {
-                data: data,
-                dropIndex: toIndex
-            };
-            this.dropRows(args, isByMethod);
-            //this.refreshGridDataSource();
-            this.parent.refresh();
-        }
-        else {
-            return;
-        }
-    };
-    RowDD$$1.prototype.rowsAdded = function (e) {
-        var draggedRecord;
-        var dragRecords = e.records;
-        for (var i = e.records.length - 1; i > -1; i--) {
-            draggedRecord = dragRecords[i];
-            if (draggedRecord.parentUniqueID) {
-                var record = dragRecords.filter(function (data) {
-                    return data.uniqueID === draggedRecord.parentUniqueID;
-                });
-                if (record.length) {
-                    var index = record[0].childRecords.indexOf(draggedRecord);
-                    var parentRecord = record[0];
-                    if (index !== -1) {
-                        parentRecord.childRecords.splice(index, 1);
-                        if (!parentRecord.childRecords.length) {
-                            parentRecord.hasChildRecords = false;
-                            parentRecord.hasFilteredChildRecords = false;
-                        }
-                        this.isDraggedWithChild = true;
-                    }
-                }
-            }
-        }
-        if (!this.parent.dataSource.length) {
-            var tObj = this.parent;
-            var draggedRecord_1;
-            var dragRecords_1 = e.records;
-            var dragLength = e.records.length;
-            for (var i = dragLength - 1; i > -1; i--) {
-                draggedRecord_1 = dragRecords_1[i];
-                var recordIndex1 = 0;
-                if (!draggedRecord_1.taskData.hasOwnProperty(tObj.childMapping)) {
-                    draggedRecord_1.taskData[tObj.childMapping] = [];
-                }
-                tObj.dataSource.splice(recordIndex1, 0, draggedRecord_1.taskData);
-                tObj.setProperties({ dataSource: tObj.dataSource }, false);
-            }
-        }
-        else {
-            for (var i = 0; i < dragRecords.length; i++) {
-                setValue('uniqueIDCollection.' + dragRecords[i].uniqueID, dragRecords[i], this.parent);
-            }
-            var args = { data: e.records, dropIndex: e.toIndex };
-            if (this.parent.dataSource instanceof DataManager) {
-                this.treeGridData = this.parent.dataSource.dataSource.json;
-            }
-            else {
-                this.treeGridData = this.parent.grid.dataSource;
-            }
-            this.dropRows(args);
-        }
-    };
-    RowDD$$1.prototype.rowsRemoved = function (e) {
-        for (var i = 0; i < e.records.length; i++) {
-            this.draggedRecord = e.records[i];
-            if (this.draggedRecord.hasChildRecords || this.draggedRecord.parentItem &&
-                this.parent.grid.dataSource.
-                    indexOf(this.getChildrecordsByParentID(this.draggedRecord.parentUniqueID)[0]) !== -1 ||
-                this.draggedRecord.level === 0) {
-                this.deleteDragRow();
-            }
-        }
-    };
-    RowDD$$1.prototype.refreshGridDataSource = function () {
-        var draggedRecord = this.draggedRecord;
-        var droppedRecord = this.droppedRecord;
-        var proxy = this.parent;
-        var tempDataSource;
-        var idx;
-        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
-            tempDataSource = proxy.dataSource.dataSource.json;
-        }
-        else {
-            tempDataSource = proxy.dataSource;
-        }
-        if (tempDataSource && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem)) {
-            for (var i = 0; i < Object.keys(tempDataSource).length; i++) {
-                if (tempDataSource[i][this.parent.childMapping] === droppedRecord.taskData[this.parent.childMapping]) {
-                    idx = i;
-                }
-            }
-            if (this.dropPosition === 'topSegment') {
-                if (!this.parent.idMapping) {
-                    tempDataSource.splice(idx, 0, draggedRecord.taskData);
-                }
-            }
-            else if (this.dropPosition === 'bottomSegment') {
-                if (!this.parent.idMapping) {
-                    tempDataSource.splice(idx + 1, 0, draggedRecord.taskData);
-                }
-            }
-        }
-        else if (!this.parent.parentIdMapping && (!isNullOrUndefined(droppedRecord) && droppedRecord.parentItem)) {
-            if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                var record = this.getChildrecordsByParentID(droppedRecord.parentUniqueID)[0];
-                var childRecords = record.childRecords;
-                for (var i = 0; i < childRecords.length; i++) {
-                    droppedRecord.parentItem.taskData[this.parent.childMapping][i] = childRecords[i].taskData;
-                }
-            }
-        }
-        if (this.parent.parentIdMapping) {
-            if (draggedRecord.parentItem) {
-                if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                    draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
-                    draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
-                }
-                else {
-                    draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
-                    draggedRecord.taskData[this.parent.parentIdMapping] = droppedRecord[this.parent.idMapping];
-                }
-            }
-            else {
-                draggedRecord.taskData[this.parent.parentIdMapping] = null;
-                draggedRecord[this.parent.parentIdMapping] = null;
-            }
-        }
-    };
-    RowDD$$1.prototype.removeFirstrowBorder = function (element, isRemove) {
-        var canremove = this.dropPosition === 'bottomSegment';
-        if (this.parent.element.getElementsByClassName('e-firstrow-border').length > 0 && element &&
-            (element.rowIndex !== 0 || canremove)) {
-            this.parent.element.getElementsByClassName('e-firstrow-border')[0].remove();
-        }
-    };
-    RowDD$$1.prototype.removeLastrowBorder = function (element, isRemove) {
-        var isEmptyRow = element && (element.classList.contains('e-emptyrow') || element.classList.contains('e-columnheader'));
-        var islastRowIndex = element && !isEmptyRow &&
-            this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') !==
-                element.getAttribute('data-uid');
-        var canremove = islastRowIndex || this.dropPosition === 'topSegment';
-        if (this.parent.element.getElementsByClassName('e-lastrow-border').length > 0 && element && (islastRowIndex || canremove)) {
-            this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
-        }
-    };
-    RowDD$$1.prototype.updateIcon = function (row, index, args) {
-        var rowEle = args.target ? closest(args.target, 'tr') : null;
-        this.dropPosition = undefined;
-        var rowPositionHeight = 0;
-        this.removeFirstrowBorder(rowEle);
-        this.removeLastrowBorder(rowEle);
-        for (var i = 0; i < args.rows.length; i++) {
-            if (!isNullOrUndefined(rowEle) && rowEle.getAttribute('data-uid') === args.rows[i].getAttribute('data-uid')
-                || !parentsUntil(args.target, 'e-gridcontent')) {
-                this.dropPosition = 'Invalid';
-                this.addErrorElem();
-            }
-        }
-        // To get the corresponding drop position related to mouse position 
-        var tObj = this.parent;
-        var rowTop = 0;
-        var roundOff = 0;
-        var toolHeight = tObj.toolbar && tObj.toolbar.length ?
-            document.getElementById(tObj.element.id + '_gridcontrol_toolbarItems').offsetHeight : 0;
-        // tObj.lastRow = tObj.getRowByIndex(tObj.getCurrentViewRecords().length - 1);
-        var positionOffSet = this.getOffset(tObj.element);
-        // let contentHeight1: number = (tObj.element.offsetHeight  - (tObj.getContent() as HTMLElement).offsetHeight) + positionOffSet.top;
-        var contentHeight = tObj.getHeaderContent().offsetHeight + positionOffSet.top + toolHeight;
-        var scrollTop = tObj.getContent().firstElementChild.scrollTop;
-        if (!isNullOrUndefined(rowEle)) {
-            rowPositionHeight = rowEle.offsetTop - scrollTop;
-        }
-        // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        if (tObj.allowTextWrap) {
-            rowTop = row[0].offsetHeight;
-        }
-        else {
-            rowTop = rowPositionHeight + contentHeight + roundOff;
-        }
-        var rowBottom = rowTop + row[0].offsetHeight;
-        var difference = rowBottom - rowTop;
-        var divide = difference / 3;
-        var topRowSegment = rowTop + divide;
-        var middleRowSegment = topRowSegment + divide;
-        var bottomRowSegment = middleRowSegment + divide;
-        var posx = positionOffSet.left;
-        var mouseEvent = getObject('originalEvent.event', args);
-        var posy = mouseEvent.pageY;
-        var isTopSegment = posy <= topRowSegment;
-        var isMiddleRowSegment = (posy > topRowSegment && posy <= middleRowSegment);
-        var isBottomRowSegment = (posy > middleRowSegment && posy <= bottomRowSegment);
-        if (isTopSegment || isMiddleRowSegment || isBottomRowSegment) {
-            if (isTopSegment && this.dropPosition !== 'Invalid') {
-                this.removeChildBorder();
-                this.dropPosition = 'topSegment';
-                this.removetopOrBottomBorder();
-                this.addFirstrowBorder(rowEle);
-                this.removeErrorElem();
-                this.removeLastrowBorder(rowEle);
-                this.topOrBottomBorder(args.target);
-            }
-            if (isMiddleRowSegment && this.dropPosition !== 'Invalid') {
-                this.removetopOrBottomBorder();
-                var element = void 0;
-                var rowElement = [];
-                element = closest(args.target, 'tr');
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
-                if (rowElement.length > 0) {
-                    this.addRemoveClasses(rowElement, true, 'e-childborder');
-                }
-                this.addLastRowborder(rowEle);
-                this.addFirstrowBorder(rowEle);
-                this.dropPosition = 'middleSegment';
-            }
-            if (isBottomRowSegment && this.dropPosition !== 'Invalid') {
-                this.removeErrorElem();
-                this.removetopOrBottomBorder();
-                this.removeChildBorder();
-                this.dropPosition = 'bottomSegment';
-                this.addLastRowborder(rowEle);
-                this.removeFirstrowBorder(rowEle);
-                this.topOrBottomBorder(args.target);
-            }
-        }
-        return this.dropPosition;
-    };
-    RowDD$$1.prototype.removeChildBorder = function () {
-        var borderElem = [];
-        borderElem = [].slice.call(this.parent.element.querySelectorAll('.e-childborder'));
-        if (borderElem.length > 0) {
-            this.addRemoveClasses(borderElem, false, 'e-childborder');
-        }
-    };
-    RowDD$$1.prototype.addFirstrowBorder = function (targetRow) {
-        var node = this.parent.element;
-        var tObj = this.parent;
-        if (targetRow && targetRow.rowIndex === 0 && !targetRow.classList.contains('e-emptyrow')) {
-            var div = this.parent.createElement('div', { className: 'e-firstrow-border' });
-            var gridheaderEle = this.parent.getHeaderContent();
-            var toolbarHeight = 0;
-            if (tObj.toolbar) {
-                toolbarHeight = tObj.toolbarModule.getToolbar().offsetHeight;
-            }
-            var multiplegrid = !isNullOrUndefined(this.parent.rowDropSettings.targetID);
-            if (multiplegrid) {
-                div.style.top = this.parent.grid.element.getElementsByClassName('e-gridheader')[0].offsetHeight
-                    + toolbarHeight + 'px';
-            }
-            div.style.width = multiplegrid ? node.offsetWidth + 'px' :
-                node.offsetWidth - this.getScrollWidth() + 'px';
-            if (!gridheaderEle.querySelectorAll('.e-firstrow-border').length) {
-                gridheaderEle.appendChild(div);
-            }
-        }
-    };
-    RowDD$$1.prototype.addLastRowborder = function (trElement) {
-        var isEmptyRow = trElement && (trElement.classList.contains('e-emptyrow') ||
-            trElement.classList.contains('e-columnheader'));
-        if (trElement && !isEmptyRow && this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') ===
-            trElement.getAttribute('data-uid')) {
-            var bottomborder = this.parent.createElement('div', { className: 'e-lastrow-border' });
-            var gridcontentEle = this.parent.getContent();
-            bottomborder.style.width = this.parent.element.offsetWidth - this.getScrollWidth() + 'px';
-            if (!gridcontentEle.querySelectorAll('.e-lastrow-border').length) {
-                gridcontentEle.classList.add('e-treegrid-relative');
-                gridcontentEle.appendChild(bottomborder);
-                bottomborder.style.bottom = this.getScrollWidth() + 'px';
-            }
-        }
-    };
-    RowDD$$1.prototype.getScrollWidth = function () {
-        var scrollElem = this.parent.getContent().firstElementChild;
-        return scrollElem.scrollWidth > scrollElem.offsetWidth ? Scroll.getScrollBarWidth() : 0;
-    };
-    RowDD$$1.prototype.addErrorElem = function () {
-        var dragelem = document.getElementsByClassName('e-cloneproperties')[0];
-        var errorelem = dragelem.querySelectorAll('.e-errorelem').length;
-        if (!errorelem && !this.parent.rowDropSettings.targetID) {
-            var ele = document.createElement('div');
-            classList(ele, ['e-errorcontainer'], []);
-            classList(ele, ['e-icons', 'e-errorelem'], []);
-            var errorVal = dragelem.querySelector('.errorValue');
-            var content = dragelem.querySelector('.e-rowcell').innerHTML;
-            if (errorVal) {
-                content = errorVal.innerHTML;
-                errorVal.parentNode.removeChild(errorVal);
-            }
-            dragelem.querySelector('.e-rowcell').innerHTML = '';
-            var spanContent = document.createElement('span');
-            spanContent.className = 'errorValue';
-            spanContent.style.paddingLeft = '16px';
-            spanContent.innerHTML = content;
-            if (!isNullOrUndefined(spanContent.children) && spanContent.children.length >= 1
-                && spanContent.children[0].classList.contains('e-treecolumn-container')) {
-                spanContent.children[0].style.display = 'inline-block';
-                spanContent.children[0].style.verticalAlign = 'middle';
-                ele.style.display = 'inline-block';
-            }
-            dragelem.querySelector('.e-rowcell').appendChild(ele);
-            dragelem.querySelector('.e-rowcell').appendChild(spanContent);
-        }
-    };
-    RowDD$$1.prototype.removeErrorElem = function () {
-        var errorelem = document.querySelector('.e-errorelem');
-        if (errorelem) {
-            errorelem.remove();
-        }
-    };
-    RowDD$$1.prototype.topOrBottomBorder = function (target) {
-        var element;
-        var multiplegrid = !isNullOrUndefined(this.parent.rowDropSettings.targetID);
-        var rowElement = [];
-        element = closest(target, 'tr');
-        rowElement = element ? [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')) : [];
-        if (rowElement.length) {
-            if (this.dropPosition === 'topSegment') {
-                this.addRemoveClasses(rowElement, true, 'e-droptop');
-                if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0) {
-                    this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();
-                }
-            }
-            if (this.dropPosition === 'bottomSegment') {
-                this.addRemoveClasses(rowElement, true, 'e-dropbottom');
-            }
-        }
-    };
-    RowDD$$1.prototype.removetopOrBottomBorder = function () {
-        var border = [];
-        border = [].slice.call(this.parent.element.querySelectorAll('.e-dropbottom, .e-droptop'));
-        if (border.length) {
-            this.addRemoveClasses(border, false, 'e-dropbottom');
-            this.addRemoveClasses(border, false, 'e-droptop');
-        }
-    };
-    RowDD$$1.prototype.addRemoveClasses = function (cells, add, className) {
-        for (var i = 0, len = cells.length; i < len; i++) {
-            if (add) {
-                cells[i].classList.add(className);
-            }
-            else {
-                cells[i].classList.remove(className);
-            }
-        }
-    };
-    RowDD$$1.prototype.getOffset = function (element) {
-        var box = element.getBoundingClientRect();
-        var body = document.body;
-        var docElem = document.documentElement;
-        var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
-        var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-        var clientTop = docElem.clientTop || body.clientTop || 0;
-        var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-        var top = box.top + scrollTop - clientTop;
-        var left = box.left + scrollLeft - clientLeft;
-        return { top: Math.round(top), left: Math.round(left) };
-    };
-    RowDD$$1.prototype.Rowdraging = function (args) {
-        var tObj = this.parent;
-        var cloneElement = this.parent.element.querySelector('.e-cloneproperties');
-        cloneElement.style.cursor = '';
-        var rowEle = args.target ? closest(args.target, 'tr') : null;
-        var rowIdx = rowEle ? rowEle.rowIndex : -1;
-        var dragRecords = [];
-        var droppedRecord = tObj.getCurrentViewRecords()[rowIdx];
-        this.removeErrorElem();
-        this.canDrop = true;
-        if (!args.data[0]) {
-            dragRecords.push(args.data);
-        }
-        else {
-            dragRecords = args.data;
-        }
-        if (rowIdx !== -1) {
-            this.ensuredropPosition(dragRecords, droppedRecord);
-        }
-        else {
-            this.canDrop = false;
-            this.addErrorElem();
-        }
-        if (!tObj.rowDropSettings.targetID && this.canDrop) {
-            tObj.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
-        }
-        if (tObj.rowDropSettings.targetID) {
-            var dropElement = parentsUntil(args.target, 'e-treegrid');
-            if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
-                var srcControl = dropElement.ej2_instances[0];
-                srcControl.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
-            }
-        }
-        if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID)) {
-            var dropElement = parentsUntil(args.target, 'e-treegrid');
-            if (!dropElement) {
-                cloneElement.style.cursor = 'default';
-            }
-        }
-    };
-    RowDD$$1.prototype.rowDropped = function (args) {
-        var tObj = this.parent;
-        if (!tObj.rowDropSettings.targetID) {
-            if (parentsUntil(args.target, 'e-content')) {
-                if (this.parent.element.querySelector('.e-errorelem')) {
-                    this.dropPosition = 'Invalid';
-                }
-                setValue('dropPosition', this.dropPosition, args);
-                tObj.trigger(rowDrop, args);
-                if (!args.cancel) {
-                    this.dropRows(args);
-                    tObj.refresh();
-                    if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
-                        tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
-                    }
-                }
-            }
-        }
-        else {
-            if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID) || parentsUntil(args.target, 'e-treegrid') &&
-                parentsUntil(args.target, 'e-treegrid').id === tObj.rowDropSettings.targetID) {
-                setValue('dropPosition', this.dropPosition, args);
-                tObj.trigger(rowDrop, args);
-                if (!args.cancel && tObj.rowDropSettings.targetID) {
-                    this.dragDropGrid(args);
-                }
-            }
-        }
-        this.removetopOrBottomBorder();
-        this.removeChildBorder();
-        if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-firstrow-border')[0])) {
-            this.parent.element.getElementsByClassName('e-firstrow-border')[0].remove();
-        }
-        else if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-lastrow-border')[0])) {
-            this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
-        }
-    };
-    RowDD$$1.prototype.dragDropGrid = function (args) {
-        var tObj = this.parent;
-        var targetRow = closest(args.target, 'tr');
-        var targetIndex = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
-        var dropElement = parentsUntil(args.target, 'e-treegrid');
-        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)) {
-            var srcControl = dropElement.ej2_instances[0];
-            var records = tObj.getSelectedRecords();
-            var indexes = [];
-            for (var i = 0; i < records.length; i++) {
-                indexes[i] = records[i].index;
-            }
-            tObj.notify(rowsRemove, { indexes: indexes, records: records });
-            srcControl.notify(rowsAdd, { toIndex: targetIndex, records: records });
-            tObj.refresh();
-            srcControl.refresh();
-            if (srcControl.grid.dataSource.length > 1) {
-                srcControl.refresh();
-                if (!isNullOrUndefined(srcControl.getHeaderContent().querySelector('.e-firstrow-border'))) {
-                    srcControl.getHeaderContent().querySelector('.e-firstrow-border').remove();
-                }
-                if (!isNullOrUndefined(srcControl.getContent().querySelector('.e-lastrow-border'))) {
-                    srcControl.getContent().querySelector('.e-lastrow-border').remove();
-                }
-            }
-        }
-    };
-    RowDD$$1.prototype.getTargetIdx = function (targetRow) {
-        return targetRow ? parseInt(targetRow.getAttribute('aria-rowindex'), 10) : 0;
-    };
-    RowDD$$1.prototype.getParentData = function (record) {
-        var parentItem = record.parentItem;
-        if (this.dropPosition === 'bottomSegment') {
-            var selectedRecord = this.parent.getSelectedRecords()[0];
-            this.droppedRecord = getParentData(this.parent, selectedRecord.parentItem.uniqueID);
-        }
-        if (this.dropPosition === 'middleSegment') {
-            var level = this.parent.getSelectedRecords()[0].level;
-            if (level === parentItem.level) {
-                this.droppedRecord = getParentData(this.parent, parentItem.uniqueID);
-            }
-            else {
-                this.getParentData(parentItem);
-            }
-        }
-    };
-    RowDD$$1.prototype.dropRows = function (args, isByMethod) {
-        if (this.dropPosition !== 'Invalid' && !isRemoteData(this.parent)) {
-            var tObj = this.parent;
-            var draggedRecord = void 0;
-            var droppedRecord = void 0;
-            if (isNullOrUndefined(args.dropIndex)) {
-                var rowIndex = tObj.getSelectedRowIndexes()[0] - 1;
-                var record = tObj.getCurrentViewRecords()[rowIndex];
-                this.getParentData(record);
-            }
-            else {
-                this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
-            }
-            var dragRecords = [];
-            droppedRecord = this.droppedRecord;
-            if (!args.data[0]) {
-                dragRecords.push(args.data);
-            }
-            else {
-                dragRecords = args.data;
-            }
-            var count = 0;
-            var multiplegrid = this.parent.rowDropSettings.targetID;
-            this.isMultipleGrid = multiplegrid;
-            var addToBottom = false;
-            if (!multiplegrid) {
-                this.ensuredropPosition(dragRecords, droppedRecord);
-            }
-            else {
-                this.isaddtoBottom = addToBottom = multiplegrid && this.isDraggedWithChild;
-            }
-            var dragLength = dragRecords.length;
-            for (var i = 0; i < dragLength; i++) {
-                draggedRecord = dragRecords[i];
-                this.draggedRecord = draggedRecord;
-                var recordIndex = args.dropIndex;
-                var isSelfReference = !isNullOrUndefined(tObj.parentIdMapping);
-                if (this.dropPosition !== 'Invalid') {
-                    if (!tObj.rowDropSettings.targetID || isByMethod) {
-                        this.deleteDragRow();
-                    }
-                    var recordIndex1 = this.treeGridData.indexOf(droppedRecord);
-                    this.dropAtTop(recordIndex1, isSelfReference, i);
-                    if (this.dropPosition === 'bottomSegment') {
-                        if (!droppedRecord.hasChildRecords) {
-                            if (this.parent.parentIdMapping) {
-                                this.treeData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
-                            }
-                            this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                        }
-                        else {
-                            count = this.getChildCount(droppedRecord, 0);
-                            if (this.parent.parentIdMapping) {
-                                this.treeData.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
-                            }
-                            this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                        }
-                        draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                        draggedRecord.level = this.treeGridData[recordIndex1].level;
-                        if (draggedRecord.hasChildRecords) {
-                            var level = 1;
-                            this.updateChildRecordLevel(draggedRecord, level);
-                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
-                        }
-                        if (droppedRecord.parentItem) {
-                            var rec = this.getChildrecordsByParentID(droppedRecord.parentUniqueID);
-                            var childRecords = rec[0].childRecords;
-                            var droppedRecordIndex = childRecords.indexOf(droppedRecord) + 1;
-                            childRecords.splice(droppedRecordIndex, 0, draggedRecord);
-                        }
-                    }
-                    this.dropMiddle(recordIndex, recordIndex1, args, isByMethod, isSelfReference, i);
-                }
-                if (isNullOrUndefined(draggedRecord.parentItem)) {
-                    var parentRecords = tObj.parentData;
-                    var newParentIndex = parentRecords.indexOf(this.droppedRecord);
-                    if (this.dropPosition === 'bottomSegment') {
-                        parentRecords.splice(newParentIndex + 1, 0, draggedRecord);
-                    }
-                    else if (this.dropPosition === 'topSegment') {
-                        parentRecords.splice(newParentIndex, 0, draggedRecord);
-                    }
-                }
-                tObj.rowDragAndDropModule.refreshGridDataSource();
-            }
-        }
-    };
-    RowDD$$1.prototype.dropMiddle = function (recordIndex, recordIndex1, args, isSelfReference, isByMethod, i) {
-        var tObj = this.parent;
-        var childRecords = findChildrenRecords(this.droppedRecord);
-        var childRecordsLength = (isNullOrUndefined(childRecords) ||
-            childRecords.length === 0) ? recordIndex1 + 1 :
-            childRecords.length + recordIndex1 + 1;
-        if (this.dropPosition === 'middleSegment') {
-            if (tObj.parentIdMapping) {
-                this.treeData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
-                this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
-            }
-            else {
-                this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
-            }
-            this.recordLevel();
-            if (this.draggedRecord.hasChildRecords) {
-                this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
-            }
-        }
-    };
-    RowDD$$1.prototype.dropAtTop = function (recordIndex1, isSelfReference, i) {
-        var tObj = this.parent;
-        if (this.dropPosition === 'topSegment') {
-            if (tObj.parentIdMapping) {
-                this.treeData.splice(recordIndex1, 0, this.draggedRecord.taskData);
-            }
-            this.draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-            this.draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-            this.draggedRecord.level = this.treeGridData[recordIndex1].level;
-            this.treeGridData.splice(recordIndex1, 0, this.draggedRecord);
-            if (this.draggedRecord.hasChildRecords) {
-                var level = 1;
-                this.updateChildRecord(this.draggedRecord, recordIndex1);
-                this.updateChildRecordLevel(this.draggedRecord, level);
-            }
-            if (this.droppedRecord.parentItem) {
-                var rec = this.getChildrecordsByParentID(this.droppedRecord.parentUniqueID);
-                var childRecords = rec[0].childRecords;
-                var droppedRecordIndex = childRecords.indexOf(this.droppedRecord);
-                childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
-            }
-        }
-    };
-    RowDD$$1.prototype.recordLevel = function () {
-        var tObj = this.parent;
-        var draggedRecord = this.draggedRecord;
-        var droppedRecord = this.droppedRecord;
-        var childItem = tObj.childMapping;
-        if (!droppedRecord.hasChildRecords) {
-            droppedRecord.hasChildRecords = true;
-            droppedRecord.hasFilteredChildRecords = true;
-            if (isNullOrUndefined(droppedRecord.childRecords)) {
-                droppedRecord.childRecords = [];
-                if (!tObj.parentIdMapping && isNullOrUndefined(droppedRecord.taskData[childItem])) {
-                    droppedRecord.taskData[childItem] = [];
-                }
-            }
-        }
-        if (this.dropPosition === 'middleSegment') {
-            var parentItem = extend({}, droppedRecord);
-            delete parentItem.childRecords;
-            draggedRecord.parentItem = parentItem;
-            draggedRecord.parentUniqueID = droppedRecord.uniqueID;
-            droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
-            if (!isNullOrUndefined(draggedRecord) && !tObj.parentIdMapping && !isNullOrUndefined(droppedRecord.taskData[childItem])) {
-                droppedRecord.taskData[tObj.childMapping].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
-            }
-            if (!draggedRecord.hasChildRecords) {
-                draggedRecord.level = droppedRecord.level + 1;
-            }
-            else {
-                var level = 1;
-                draggedRecord.level = droppedRecord.level + 1;
-                this.updateChildRecordLevel(draggedRecord, level);
-            }
-            droppedRecord.expanded = true;
-            // if (tObj.isLocalData) {
-            //     tObj.parentData.push(droppedRecord);
-            // }
-        }
-    };
-    RowDD$$1.prototype.deleteDragRow = function () {
-        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
-            this.treeGridData = this.parent.grid.dataSource.dataSource.json;
-            this.treeData = this.parent.dataSource.dataSource.json;
-        }
-        else {
-            this.treeGridData = this.parent.grid.dataSource;
-            this.treeData = this.parent.dataSource;
-        }
-        var deletedRow;
-        deletedRow = getParentData(this.parent, this.draggedRecord.uniqueID);
-        this.removeRecords(deletedRow);
-    };
-    RowDD$$1.prototype.updateChildRecord = function (record, count, expanded$$1) {
-        var currentRecord;
-        var tObj = this.parent;
-        var length = 0;
-        if (!record.hasChildRecords) {
-            return 0;
-        }
-        length = record.childRecords.length;
-        for (var i = 0; i < length; i++) {
-            currentRecord = record.childRecords[i];
-            count++;
-            tObj.flatData.splice(count, 0, currentRecord);
-            if (tObj.parentIdMapping) {
-                this.treeData.splice(count, 0, currentRecord.taskData);
-            }
-            if (currentRecord.hasChildRecords) {
-                count = this.updateChildRecord(currentRecord, count);
-            }
-        }
-        return count;
-    };
-    RowDD$$1.prototype.updateChildRecordLevel = function (record, level) {
-        var length = 0;
-        var currentRecord;
-        level++;
-        if (!record.hasChildRecords) {
-            return 0;
-        }
-        length = record.childRecords.length;
-        for (var i = 0; i < length; i++) {
-            currentRecord = record.childRecords[i];
-            var parentData = void 0;
-            if (record.parentItem) {
-                parentData = getParentData(this.parent, record.parentItem.uniqueID);
-            }
-            currentRecord.level = record.parentItem ? parentData.level + level : record.level + 1;
-            if (currentRecord.hasChildRecords) {
-                level--;
-                level = this.updateChildRecordLevel(currentRecord, level);
-            }
-        }
-        return level;
-    };
-    RowDD$$1.prototype.removeRecords = function (record) {
-        var tObj = this.parent;
-        var dataSource;
-        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
-            dataSource = this.parent.dataSource.dataSource.json;
-        }
-        else {
-            dataSource = this.parent.dataSource;
-        }
-        var deletedRow = record;
-        var isSelfReference = !isNullOrUndefined(tObj.parentIdMapping);
-        var flatParentData = this.getChildrecordsByParentID(deletedRow.parentUniqueID)[0];
-        if (deletedRow) {
-            if (deletedRow.parentItem) {
-                var childRecords = flatParentData ? flatParentData.childRecords : [];
-                var childIndex = 0;
-                if (childRecords && childRecords.length > 0) {
-                    childIndex = childRecords.indexOf(deletedRow);
-                    flatParentData.childRecords.splice(childIndex, 1);
-                    if (!this.parent.parentIdMapping) {
-                        editAction({ value: deletedRow, action: 'delete' }, this.parent, isSelfReference, deletedRow.index, deletedRow.index);
-                    }
-                }
-            }
-            if (tObj.parentIdMapping) {
-                if (deletedRow.hasChildRecords && deletedRow.childRecords.length > 0) {
-                    this.removeChildItem(deletedRow);
-                }
-                var idx = void 0;
-                var idz = void 0;
-                var treeGridData = dataSource;
-                for (var i = 0; i < treeGridData.length; i++) {
-                    if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
-                        idx = i;
-                    }
-                }
-                for (var i = 0; i < this.treeGridData.length; i++) {
-                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
-                        idz = i;
-                        break;
-                    }
-                }
-                if (idx !== -1 || idz !== -1) {
-                    dataSource.splice(idx, 1);
-                    this.treeGridData.splice(idz, 1);
-                }
-            }
-            var recordIndex_1 = this.treeGridData.indexOf(deletedRow);
-            if (!tObj.parentIdMapping) {
-                var parentIndex = this.parent.parentData.indexOf(deletedRow);
-                if (parentIndex !== -1) {
-                    tObj.parentData.splice(parentIndex, 1);
-                    dataSource.splice(parentIndex, 1);
-                }
-            }
-            if (recordIndex_1 === -1 && !tObj.parentIdMapping) {
-                var primaryKeyField = tObj.getPrimaryKeyFieldNames()[0];
-                for (var j = 0; j < this.treeGridData.length; j++) {
-                    if (this.treeGridData[j][primaryKeyField] === deletedRow[primaryKeyField]) {
-                        recordIndex_1 = j;
-                    }
-                }
-            }
-            if (!tObj.parentIdMapping) {
-                var deletedRecordCount = this.getChildCount(deletedRow, 0);
-                this.treeGridData.splice(recordIndex_1, deletedRecordCount + 1);
-            }
-            if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
-                flatParentData.expanded = false;
-                flatParentData.hasChildRecords = false;
-                flatParentData.hasFilteredChildRecords = false;
-            }
-        }
-    };
-    RowDD$$1.prototype.removeChildItem = function (record) {
-        var tObj = this.parent;
-        var currentRecord;
-        var idx;
-        for (var i = 0; i < record.childRecords.length; i++) {
-            currentRecord = record.childRecords[i];
-            var treeGridData = void 0;
-            if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
-                treeGridData = this.parent.dataSource.dataSource.json;
-            }
-            else {
-                treeGridData = this.parent.dataSource;
-            }
-            for (var i_1 = 0; i_1 < treeGridData.length; i_1++) {
-                if (treeGridData[i_1][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
-                    idx = i_1;
-                }
-            }
-            if (idx !== -1) {
-                this.treeData.splice(idx, 1);
-                this.treeGridData.splice(idx, 1);
-            }
-            if (currentRecord.hasChildRecords) {
-                this.removeChildItem(currentRecord);
-            }
-        }
-    };
-    RowDD$$1.prototype.getChildCount = function (record, count) {
-        var currentRecord;
-        if (!record.hasChildRecords) {
-            return 0;
-        }
-        for (var i = 0; i < record.childRecords.length; i++) {
-            currentRecord = record.childRecords[i];
-            count++;
-            if (currentRecord.hasChildRecords) {
-                count = this.getChildCount(currentRecord, count);
-            }
-        }
-        return count;
-    };
-    RowDD$$1.prototype.ensuredropPosition = function (draggedRecords, currentRecord) {
-        var tObj = this.parent;
-        var rowDragMoudule = this;
-        draggedRecords.filter(function (e) {
-            if (e.hasChildRecords && !isNullOrUndefined(e.childRecords)) {
-                var valid = e.childRecords.indexOf(currentRecord);
-                if (valid === -1) {
-                    rowDragMoudule.ensuredropPosition(e.childRecords, currentRecord);
-                }
-                else {
-                    rowDragMoudule.dropPosition = 'Invalid';
-                    rowDragMoudule.addErrorElem();
-                    rowDragMoudule.canDrop = false;
-                    return;
-                }
-            }
-        });
-    };
-    RowDD$$1.prototype.destroy = function () {
-        this.removeEventListener();
-    };
-    /**
-     * @hidden
-     */
-    RowDD$$1.prototype.removeEventListener = function () {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off(rowdraging, this.Rowdraging);
-        this.parent.off(rowDropped, this.rowDropped);
-        this.parent.off(rowsAdd, this.rowsAdded);
-        this.parent.off(rowsRemove, this.rowsRemoved);
-    };
-    /**
-     * hidden
-     */
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    RowDD$$1.prototype.getModuleName = function () {
-        return 'rowDragAndDrop';
-    };
-    return RowDD$$1;
-}());
-
-/**
  * actions export
  */
 
@@ -9006,5 +9844,5 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, Reorder$1 as Reorder, Resize$1 as Resize, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze, RowDD$1 as RowDD };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, beforeCopy, beforePaste, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchDelete, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, RowDD$1 as RowDD, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isCheckboxcolumn, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, TreeClipboard, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze };
 //# sourceMappingURL=ej2-treegrid.es5.js.map

@@ -8,7 +8,7 @@ import * as cls from '../base/css-constant';
  */
 export class KanbanTooltip {
     private parent: Kanban;
-    private tooltipObj: Tooltip;
+    public tooltipObj: Tooltip;
 
     constructor(parent: Kanban) {
         this.parent = parent;
@@ -31,6 +31,10 @@ export class KanbanTooltip {
     }
 
     private onBeforeRender(args: TooltipEventArgs): void {
+        if (this.parent.dragAndDropModule.isDragging) {
+            args.cancel = true;
+            return;
+        }
         let tooltipContent: HTMLElement | string;
         if (this.parent.tooltipTemplate) {
             tooltipContent = createElement('div');

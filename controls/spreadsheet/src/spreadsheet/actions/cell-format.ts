@@ -1,8 +1,7 @@
 import { Spreadsheet } from '../../spreadsheet/index';
-import { rowHeightChanged } from '../common/index';
-import { CellFormatArgs, getRowHeight, setRowHeight, applyCellFormat, CellStyleModel } from '../../workbook/index';
-import { SheetModel } from '../../workbook/index';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel } from '../../workbook/index';
+import { SheetModel, isHiddenRow, getCell, getColumnWidth } from '../../workbook/index';
 /**
  * CellFormat module allows to format the cell styles.
  */
@@ -11,104 +10,171 @@ export class CellFormat {
     private checkHeight: boolean = false;
     private row: HTMLElement;
     constructor(parent: Spreadsheet) {
-        //Spreadsheet.Inject(WorkbookCellFormat);
         this.parent = parent;
         this.row = parent.createElement('tr', { className: 'e-row' });
-        this.addEventListener();
+        this.parent.on(initialLoad, this.addEventListener, this);
     }
     private applyCellFormat(args: CellFormatArgs): void {
         let keys: string[] = Object.keys(args.style);
-        if (args.lastCell && !this.row.childElementCount && !keys.length) { return; }
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        if (args.lastCell && getMaxHgt(sheet, args.rowIdx) <= 20 && !keys.length) { return; }
         let cell: HTMLElement = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
-            Object.assign(cell.style, args.style);
+            if (args.style.border !== undefined || args.style.borderTop !== undefined || args.style.borderLeft !== undefined) {
+                let curStyle: CellStyleModel = {};
+                Object.keys(args.style).forEach((key: string): void => { curStyle[key] = args.style[key]; });
+                if (curStyle.border !== undefined) {
+                    Object.assign(cell.style, <CellStyleModel>{ borderRight: args.style.border, borderBottom: args.style.border });
+                    this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    this.setTopBorder(
+                        args.style.border, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
+                        args.lastCell, args.manualUpdate);
+                    delete curStyle.border;
+                }
+                if (curStyle.borderTop !== undefined) {
+                    this.setTopBorder(
+                        args.style.borderTop, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
+                        args.lastCell, args.manualUpdate);
+                    delete curStyle.borderTop;
+                }
+                if (curStyle.borderLeft !== undefined) {
+                    this.setLeftBorder(args.style.borderLeft, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    delete curStyle.borderLeft;
+                }
+                if (Object.keys(curStyle).length) {
+                    if (curStyle.borderBottom !== undefined) {
+                        this.setThickBorderHeight(
+                            curStyle.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell,
+                            args.manualUpdate);
+                    }
+                    Object.assign(cell.style, curStyle);
+                }
+            } else {
+                if (args.style.borderBottom !== undefined) {
+                    this.setThickBorderHeight(
+                        args.style.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell,
+                        args.manualUpdate);
+                }
+                Object.assign(cell.style, args.style);
+            }
             if (args.isHeightCheckNeeded) {
-                if (!args.manualUpdate) {
-                    if (this.isHeightCheckNeeded(args.style)) {
-                        let clonedCell: HTMLElement = cell.cloneNode(true) as HTMLElement;
-                        if (!clonedCell.innerHTML) { clonedCell.textContent = 'Test'; }
-                        this.row.appendChild(clonedCell);
-                    }
-                    if (args.lastCell && this.row.childElementCount) {
-                        let sheet: SheetModel = this.parent.getActiveSheet();
-                        let row: HTMLElement = this.parent.getRow(args.rowIdx) || args.row;
-                        let prevHeight: number = getRowHeight(sheet, args.rowIdx);
-                        let height: number = this.getRowHeightOnInit();
-                        if (height > prevHeight) {
-                            row.style.height = `${height}px`;
-                            if (sheet.showHeaders) {
-                                (this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()) || args.hRow).style.height =
-                                    `${height}px`;
-                            }
-                            setRowHeight(sheet, args.rowIdx, height);
+                if (!sheet.rows[args.rowIdx] || !sheet.rows[args.rowIdx].customHeight) {
+                    if (!args.manualUpdate) {
+                        let cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
+                        if (!(cellModel && cellModel.wrap) && this.isHeightCheckNeeded(args.style)) {
+                            setMaxHgt(sheet, args.rowIdx, args.colIdx, getTextHeight(this.parent, args.style));
                         }
-                        this.row.innerHTML = '';
-                    }
-                } else {
-                    let idx: number;
-                    if (this.parent.scrollSettings.enableVirtualization) { idx = args.rowIdx - this.parent.viewport.topIndex; }
-                    if (!this.checkHeight) {
-                        this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
-                    }
-                    if (isNullOrUndefined(this.parent.getActiveSheet().rows[idx]) ||
-                        isNullOrUndefined(this.parent.getActiveSheet().rows[idx].customHeight)) {
-                        this.updateRowHeight(cell, args.rowIdx, args.lastCell, args.onActionUpdate);
+                        if (args.lastCell) {
+                            let height: number = getMaxHgt(sheet, args.rowIdx);
+                            if (height > 20 && height > getRowHeight(sheet, args.rowIdx)) {
+                                setRowEleHeight(this.parent, sheet, height, args.rowIdx, args.row, args.hRow, false);
+                            }
+                        }
                     } else {
-                        cell.parentElement.style.lineHeight = parseInt(cell.parentElement.style.height, 10) - 1 + 'px';
+                        if (!this.checkHeight) { this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate); }
+                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
                     }
                 }
             }
         } else {
-            this.updateRowHeight(cell, args.rowIdx, true, args.onActionUpdate);
+            this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate);
         }
     }
-    private updateRowHeight(cell: HTMLElement, rowIdx: number, isLastCell: boolean, onActionUpdate: boolean): void {
-        if (this.checkHeight && isLastCell) {
+    private updateRowHeight(rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, borderSize: number = 0): void {
+        if (this.checkHeight) {
             this.checkHeight = false;
+            let hgt: number = 0;
+            let maxHgt: number;
             let sheet: SheetModel = this.parent.getActiveSheet();
-            let row: HTMLElement = this.parent.getRow(rowIdx);
-            if (!row) { return; }
-            if (!cell) { cell = row.lastElementChild as HTMLElement; }
-            let test: boolean = false;
-            row.style.height = '';
-            if (!cell.innerHTML) { cell.textContent = 'test'; test = true; }
-            let height: number = Math.ceil(row.getBoundingClientRect().height);
-            if (test) { cell.textContent = ''; }
-            height = height < 20 ? 20 : height;
-            let prevHeight: number = getRowHeight(sheet, rowIdx);
-            let heightChanged: boolean = onActionUpdate ? height !== prevHeight : height > prevHeight;
-            if (heightChanged) {
-                row.style.height = `${height}px`;
-                if (sheet.showHeaders) {
-                    this.parent.getRow(rowIdx, this.parent.getRowHeaderTable()).style.height = `${height}px`;
+            let cell: CellModel = getCell(rowIdx, colIdx, sheet);
+            hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
+                getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
+            setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
+            if (isLastCell) {
+                let row: HTMLElement = this.parent.getRow(rowIdx);
+                if (!row) { return; }
+                let prevHeight: number = getRowHeight(sheet, rowIdx);
+                maxHgt = getMaxHgt(sheet, rowIdx);
+                let heightChanged: boolean = onActionUpdate ? maxHgt !== prevHeight : maxHgt > prevHeight;
+                if (heightChanged) {
+                    setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row);
                 }
-                setRowHeight(sheet, rowIdx, height);
-                this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - prevHeight });
-            } else {
-                row.style.height = `${prevHeight}px`;
             }
         }
     }
+
     private isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: boolean): boolean {
         let keys: string[] = Object.keys(style);
         return (onActionUpdate ? keys.indexOf('fontSize') > -1 : keys.indexOf('fontSize') > -1
             && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1;
     }
-    private getRowHeightOnInit(): number {
-        let table: HTMLElement = this.parent.createElement('table', { className: 'e-table e-test-table' });
-        let tBody: HTMLElement = table.appendChild(this.parent.createElement('tbody'));
-        tBody.appendChild(this.row);
-        this.parent.element.appendChild(table);
-        let height: number = Math.round(this.row.getBoundingClientRect().height);
-        this.parent.element.removeChild(table);
-        return height < 20 ? 20 : height;
+    private setLeftBorder(
+        border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string): void {
+        if (first.includes('Column')) { return; }
+        let prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
+        if (prevCell) {
+            if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
+                this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
+            }
+            prevCell.style.borderRight = border;
+        } else {
+            cell.style.borderLeft = border;
+        }
+    }
+    private setTopBorder(
+        border: string, cell: HTMLElement, rowIdx: number, colIdx: number, pRow: HTMLElement, pHRow: HTMLElement, actionUpdate: boolean,
+        first: string, lastCell: boolean, manualUpdate: boolean): void {
+        if (first.includes('Row')) { return; }
+        let prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx, <HTMLTableRowElement>pRow);
+        if (prevCell) {
+            if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
+                let index: number[] = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
+                if ((this.parent.getCellStyleValue(['bottomPriority'], index) as CellStyleExtendedModel).bottomPriority) { return; }
+            }
+            if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes(`${rowIdx + 1}`)) {
+                this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
+            }
+            this.setThickBorderHeight(border, rowIdx - 1, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+            prevCell.style.borderBottom = border;
+        } else {
+            cell.style.borderTop = border;
+        }
+    }
+    private setThickBorderHeight(
+        border: string, rowIdx: number, colIdx: number, cell: HTMLElement, row: HTMLElement, hRow: HTMLElement, actionUpdate: boolean,
+        lastCell: boolean, manualUpdate: boolean): void {
+        let size: number = border ? this.getBorderSize(border) : 1; let sheet: SheetModel = this.parent.getActiveSheet();
+        if (size > 2 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+            if (manualUpdate) {
+                if (!this.checkHeight) { this.checkHeight = true; }
+                this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+            } else {
+                let prevHeight: number = getRowHeight(sheet, rowIdx);
+                let height: number = Math.ceil(this.parent.calculateHeight(
+                    this.parent.getCellStyleValue(['fontFamily', 'fontSize'], [rowIdx, colIdx]), 1, 3));
+                if (height > prevHeight) {
+                    setRowEleHeight(this.parent, sheet, height, rowIdx, row, hRow, false);
+                    this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - 20 });
+                }
+            }
+        }
+        if (actionUpdate && (lastCell || !this.checkHeight) && size < 3 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+            if (!this.checkHeight) { this.checkHeight = true; }
+            this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+        }
+    }
+    private getBorderSize(border: string): number {
+        let size: string = border.split(' ')[0];
+        return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
+            (parseInt(size, 10) ? parseInt(size, 10) : 1)));
     }
     private addEventListener(): void {
-        this.parent.on(applyCellFormat, this.applyCellFormat.bind(this));
+        this.parent.on(applyCellFormat, this.applyCellFormat, this);
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.on(applyCellFormat, this.applyCellFormat.bind(this));
+            this.parent.off(initialLoad, this.addEventListener);
+            this.parent.off(applyCellFormat, this.applyCellFormat);
         }
     }
     /**

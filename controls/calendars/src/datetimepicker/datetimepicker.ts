@@ -10,7 +10,6 @@ import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderF
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
 import { TimePickerBase } from '../timepicker/timepicker';
 import { DateTimePickerModel } from './datetimepicker-model';
-import { cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 
 //class constant defination
 const DATEWRAPPER: string = 'e-date-wrapper';
@@ -40,7 +39,7 @@ const ACTIVE: string = 'e-active';
 const HOVER: string = 'e-hover';
 const ICONS: string = 'e-icons';
 const HALFPOSITION: number = 2;
-const LISTCLASS: string = ListBaseClasses.li;
+const LISTCLASS: string = 'e-list-item';
 const ANIMATIONDURATION: number = 100;
 const OVERFLOW: string = 'e-time-overflow';
 

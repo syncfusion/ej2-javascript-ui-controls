@@ -58,19 +58,20 @@ export class Action {
         }
     }
 
-    private cardClick(e: KeyboardEvent): void {
-        let target: Element = closest(e.target as Element, '.' + cls.CARD_CLASS);
+    public cardClick(e: KeyboardEvent, selectedCard?: HTMLElement): void {
+        let target: Element = closest((selectedCard) ? selectedCard : e.target as Element, '.' + cls.CARD_CLASS);
         let cardClickObj: { [key: string]: Object } = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardClickObj, element: target };
         let args: CardClickEventArgs = { data: cardClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardClick, args, (clickArgs: CardClickEventArgs) => {
             if (!clickArgs.cancel) {
-                if (target.classList.contains(cls.CARD_SELECTION_CLASS)) {
+                if (target.classList.contains(cls.CARD_SELECTION_CLASS) && e.type === 'click') {
                     removeClass([target], cls.CARD_SELECTION_CLASS);
+                    this.parent.layoutModule.disableAttributeSelection(target);
                 } else {
                     let isCtrlKey: boolean = e.ctrlKey;
                     if (this.parent.isAdaptive && this.parent.touchModule) {
-                        isCtrlKey = this.parent.touchModule.tabHold || e.ctrlKey;
+                        isCtrlKey = (this.parent.touchModule.mobilePopup && this.parent.touchModule.tabHold) || isCtrlKey;
                     }
                     this.cardSelection(target, isCtrlKey, e.shiftKey);
                 }
@@ -86,7 +87,11 @@ export class Action {
         let cardDoubleClickObj: { [key: string]: Object } = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
         let args: CardClickEventArgs = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
-        this.parent.trigger(events.cardDoubleClick, args);
+        this.parent.trigger(events.cardDoubleClick, args, (doubleClickArgs: CardClickEventArgs) => {
+            if (!doubleClickArgs.cancel && !this.parent.isBlazorRender()) {
+                this.parent.dialogModule.openDialog('Edit', args.data);
+            }
+        });
     }
 
     public rowExpandCollapse(e: Event | HTMLElement): void {
@@ -95,17 +100,22 @@ export class Action {
         this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
                 let target: HTMLTableRowElement = closest(headerTarget as Element, '.' + cls.SWIMLANE_ROW_CLASS) as HTMLTableRowElement;
+                let key: string = target.getAttribute('data-key');
                 let tgtRow: Element = this.parent.element.querySelector('.' + cls.CONTENT_ROW_CLASS + `:nth-child(${target.rowIndex + 2})`);
                 let targetIcon: Element = target.querySelector(`.${cls.SWIMLANE_ROW_EXPAND_CLASS},.${cls.SWIMLANE_ROW_COLLAPSE_CLASS}`);
-                if (target.classList.contains(cls.COLLAPSED_CLASS)) {
+                let isCollapsed: boolean = target.classList.contains(cls.COLLAPSED_CLASS) ? true : false;
+                if (isCollapsed) {
                     removeClass([tgtRow, target], cls.COLLAPSED_CLASS);
                     classList(targetIcon, [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
-                    this.parent.swimlaneToggleArray.splice(this.parent.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
+                    this.parent.swimlaneToggleArray.splice(this.parent.swimlaneToggleArray.indexOf(key), 1);
                 } else {
                     addClass([tgtRow, target], cls.COLLAPSED_CLASS);
                     classList(targetIcon, [cls.SWIMLANE_ROW_COLLAPSE_CLASS], [cls.SWIMLANE_ROW_EXPAND_CLASS]);
-                    this.parent.swimlaneToggleArray.push(target.getAttribute('data-key'));
+                    this.parent.swimlaneToggleArray.push(key);
                 }
+                targetIcon.setAttribute('aria-label', isCollapsed ? key + ' Expand' : key + ' Collapse');
+                target.setAttribute('aria-expanded', isCollapsed.toString());
+                tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
                 this.parent.notify(events.contentReady, {});
                 this.parent.trigger(events.actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -151,17 +161,20 @@ export class Action {
                 let targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}:nth-child(${colIndex + 1})`);
                 removeClass([targetCol, target], cls.COLLAPSED_CLASS);
                 remove(targetCol.querySelector('.' + cls.COLLAPSE_HEADER_TEXT_CLASS));
+                target.setAttribute('aria-expanded', 'true');
+                targetCol.setAttribute('aria-expanded', 'true');
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
             (this.parent.columns[colIndex] as Base<HTMLElement>).setProperties({ isExpanded: true }, true);
+            target.querySelector('.e-header-icon').setAttribute('aria-label', target.getAttribute('data-key') + ' Expand');
         } else {
             addClass(colGroup, cls.COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
                 colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(events.toggleWidth));
             }
             classList(targetIcon, [cls.COLUMN_COLLAPSE_CLASS], [cls.COLUMN_EXPAND_CLASS]);
+            let key: string = target.getAttribute('data-key');
             for (let row of targetRow) {
-                let key: string = target.getAttribute('data-key');
                 let targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 let index: number = (targetCol as HTMLTableCellElement).cellIndex;
                 targetCol.appendChild(createElement('div', {
@@ -169,9 +182,12 @@ export class Action {
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], cls.COLLAPSED_CLASS);
+                target.setAttribute('aria-expanded', 'false');
+                targetCol.setAttribute('aria-expanded', 'false');
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
             (this.parent.columns[colIndex] as Base<HTMLElement>).setProperties({ isExpanded: false }, true);
+            target.querySelector('.e-header-icon').setAttribute('aria-label', key + ' Collapse');
         }
     }
 
@@ -188,6 +204,7 @@ export class Action {
             }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
                 removeClass(cards, cls.CARD_SELECTION_CLASS);
+                this.parent.layoutModule.disableAttributeSelection(cards);
                 cards.forEach((el: Element) => {
                     this.selectionArray.splice(this.selectionArray.indexOf(el.getAttribute('data-id')), 1);
                     this.selectedCardsElement.splice(this.selectedCardsElement.indexOf(el), 1);
@@ -209,6 +226,7 @@ export class Action {
                 for (i = start; i <= end; i++) {
                     let card: HTMLElement = allCards[i];
                     addClass([card], cls.CARD_SELECTION_CLASS);
+                    card.setAttribute('aria-selected', 'true');
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -219,6 +237,7 @@ export class Action {
                 }
             } else {
                 addClass([target], cls.CARD_SELECTION_CLASS);
+                target.setAttribute('aria-selected', 'true');
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));

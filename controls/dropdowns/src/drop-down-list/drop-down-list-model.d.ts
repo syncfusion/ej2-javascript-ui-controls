@@ -164,7 +164,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 
@@ -172,6 +172,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Specifies whether to show or hide the clear button. 
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
      * @default false
+     * @blazorOverrideType virtual
      */
     showClearButton?: boolean;
 

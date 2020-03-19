@@ -48,8 +48,8 @@ export interface SearchSettingsModel {
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
      * @default 'contains'
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.Contains
+     * @blazorType Syncfusion.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.Blazor.Operator.Contains
      */
     operator?: string;
 

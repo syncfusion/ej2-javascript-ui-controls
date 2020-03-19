@@ -79,6 +79,7 @@
       padding: $editor-nrml-value-container-padding;
       position: relative;
       width: auto;
+      word-break: break-word;
 
       .e-editable-value {
         display: inline-block;
@@ -86,7 +87,7 @@
         font-size: $editor-nrml-value-text-font-size;
         margin: $editor-nrml-value-margin;
 
-        @if $skin-name == 'bootstrap4' {
+        @if $inplace-skin == 'bootstrap4' {
           line-height: 24px;
         }
       }
@@ -190,7 +191,7 @@
 
     .e-input-group+.e-editable-loading {
 
-      @if $skin-name == 'material' {
+      @if $inplace-skin == 'material' {
         .e-spinner-inner {
           top: 45%;
         }
@@ -204,7 +205,7 @@
 
         .e-btn-icon.e-icons {
 
-          @if $skin-name == 'bootstrap4' {
+          @if $inplace-skin == 'bootstrap4' {
             font-size: 16px;
           }
         }
@@ -217,7 +218,7 @@
 
     .e-input-group+.e-editable-loading {
 
-      @if $skin-name == 'material' {
+      @if $inplace-skin == 'material' {
         .e-spinner-inner {
           top: 35%;
         }
@@ -233,7 +234,7 @@
 
     .e-input-group+.e-editable-loading {
 
-      @if $skin-name == 'material' {
+      @if $inplace-skin == 'material' {
         .e-spinner-inner {
           top: 35%;
         }

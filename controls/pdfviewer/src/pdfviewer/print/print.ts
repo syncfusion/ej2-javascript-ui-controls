@@ -15,6 +15,8 @@ export class Print {
     private frameDoc: any;
     // tslint:disable-next-line
     private iframe: any;
+    private printWindow: Window;
+
     /**
      * @private
      */
@@ -34,15 +36,22 @@ export class Print {
                 id: this.pdfViewer.element.id + '_print_viewer_container',
                 className: 'e-pv-print-viewer-container'
             });
-            this.pdfViewerBase.showPrintLoadingIndicator(true);
-            this.iframe = document.createElement('iframe');
-            this.iframe.className = 'iframeprint';
-            this.iframe.id = 'iframePrint';
-            this.iframe.style.position = 'absolute';
-            this.iframe.style.top = '-100000000px';
-            document.body.appendChild(this.iframe);
-            this.frameDoc = this.iframe.contentWindow ? this.iframe.contentWindow : this.iframe.contentDocument;
-            this.frameDoc.document.open();
+            if (this.pdfViewer.printMode === 'Default') {
+                this.pdfViewerBase.showPrintLoadingIndicator(true);
+                this.iframe = document.createElement('iframe');
+                this.iframe.className = 'iframeprint';
+                this.iframe.id = 'iframePrint';
+                this.iframe.style.position = 'absolute';
+                this.iframe.style.top = '-100000000px';
+                document.body.appendChild(this.iframe);
+                this.frameDoc = this.iframe.contentWindow ? this.iframe.contentWindow : this.iframe.contentDocument;
+                this.frameDoc.document.open();
+            } else {
+                this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+                this.printWindow.moveTo(0, 0);
+                this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+                this.createPrintLoadingIndicator(this.printWindow.document.body);
+            }
             setTimeout(
                 () => {
                     for (pageIndex = 0; pageIndex < this.pdfViewerBase.pageCount; pageIndex++) {
@@ -80,7 +89,7 @@ export class Print {
             this.pdfViewerBase.validateForm = false;
             this.pdfViewerBase.showPrintLoadingIndicator(false);
         } else {
-        proxy.printRequestHandler.send(jsonObject);
+            proxy.printRequestHandler.send(jsonObject);
         }
         // tslint:disable-next-line
         proxy.printRequestHandler.onSuccess = function (result: any) {
@@ -116,15 +125,15 @@ export class Print {
                             // tslint:disable-next-line
                             let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
                             // tslint:disable-next-line:max-line-length
-                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, pageIndex, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
+                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
                         } else {
                             // tslint:disable-next-line:max-line-length
-                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, pageIndex, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
+                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
                         }
                     }
                     if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
                         // tslint:disable-next-line:max-line-length
-                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, pageIndex, null, null, null, null);
+                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null);
                     }
                 }
                 let currentPageNumber: number = printImage.pageNumber;
@@ -183,26 +192,33 @@ export class Print {
         let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         // tslint:disable-next-line
         let formFieldsData: any = JSON.parse(data);
-        for (let i: number = 0; i < formFieldsData.length; i++) {
-            // tslint:disable-next-line
-            let currentData: any = formFieldsData[i];
-            // tslint:disable-next-line
-            if (parseFloat(currentData['PageIndex']) === pageIndex) {
+        if (formFieldsData) {
+            for (let i: number = 0; i < formFieldsData.length; i++) {
                 // tslint:disable-next-line
-                let targetField: any = this.frameDoc.document.getElementById('fields_' + pageIndex);
+                let currentData: any = formFieldsData[i];
                 // tslint:disable-next-line
-                let inputField: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
-                if (inputField) {
+                if (parseFloat(currentData['PageIndex']) === pageIndex) {
                     // tslint:disable-next-line
-                    let bounds: any = currentData['LineBounds'];
-                    // tslint:disable-next-line
-                    let font: any = currentData['Font'];
-                    this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
-                    inputField.style.backgroundColor = 'transparent';
-                    if (!currentData.IsSignatureField) {
-                        inputField.style.borderColor = 'transparent';
+                    let targetField: any;
+                    if (this.pdfViewer.printMode === 'Default') {
+                        targetField = this.frameDoc.document.getElementById('fields_' + pageIndex);
+                    } else {
+                        targetField = this.printWindow.document.getElementById('fields_' + pageIndex);
                     }
-                    targetField.appendChild(inputField);
+                    // tslint:disable-next-line
+                    let inputField: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
+                    if (inputField) {
+                        // tslint:disable-next-line
+                        let bounds: any = currentData['LineBounds'];
+                        // tslint:disable-next-line
+                        let font: any = currentData['Font'];
+                        this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
+                        inputField.style.backgroundColor = 'transparent';
+                        if (!currentData.IsSignatureField) {
+                            inputField.style.borderColor = 'transparent';
+                        }
+                        targetField.appendChild(inputField);
+                    }
                 }
             }
         }
@@ -236,22 +252,29 @@ export class Print {
     }
     private printWindowOpen(): void {
         let browserUserAgent: string = navigator.userAgent;
+        // tslint:disable-next-line
+        let printDocument: any;
+        if (this.pdfViewer.printMode === 'Default') {
+            printDocument = this.frameDoc.document;
+        } else {
+            printDocument = this.printWindow.document;
+        }
         // tslint: disable-next-line:max-line-length
         if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Safari') !== -1) ||
             (browserUserAgent.indexOf('Firefox')) !== -1) {
             //chrome and firefox
-            this.frameDoc.document.write('<!DOCTYPE html>');
+            printDocument.write('<!DOCTYPE html>');
             // tslint: disable-next-line:max-line-length
-            this.frameDoc.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; }'
+            printDocument.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; }'
                 + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
                 + ' img { width:100%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; }'
                 // set default page Height and page Width for A4 size.
                 + ' div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center class="loader">');
         } else {
             //ie
-            this.frameDoc.document.write('<!DOCTYPE html>');
+            printDocument.write('<!DOCTYPE html>');
             // tslint: disable-next-line:max-line-length
-            this.frameDoc.document.write('<html><head>'
+            printDocument.write('<html><head>'
                 + '<style>html, body { height: 100%; } img { height: 100%; width: 100%; }@media print { body { margin: 0cm; }'
                 + 'img { width:100%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; } '
                 // set default page Height and page Width for A4 size.
@@ -260,7 +283,7 @@ export class Print {
         for (let i: number = 0; i < this.printViewerContainer.children.length; i++) {
             // tslint:disable-next-line:max-line-length
             let canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL();
-            this.frameDoc.document.write('<div style="margin:0mm;width:816px;height:1056px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:816px;height:1056px;z-index:2"></div></div>');
+            printDocument.write('<div style="margin:0mm;width:816px;height:1056px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:816px;height:1056px;z-index:2"></div></div>');
             if (this.pdfViewer.formFieldsModule) {
                 let pageWidth: number = this.pdfViewerBase.pageSize[i].width;
                 let pageHeight: number = this.pdfViewerBase.pageSize[i].height;
@@ -269,29 +292,97 @@ export class Print {
                 this.renderFieldsForPrint(i, heightRatio, widthRatio);
             }
         }
-        this.pdfViewerBase.showPrintLoadingIndicator(false);
         if (Browser.isIE || Browser.info.name === 'edge') {
             try {
-                this.iframe.contentWindow.document.execCommand('print', false, null);
+                if (this.pdfViewer.printMode === 'Default') {
+                    this.pdfViewerBase.showPrintLoadingIndicator(false);
+                    this.iframe.contentWindow.document.execCommand('print', false, null);
+                } else {
+                    this.printWindow.document.execCommand('print', false, null);
+                }
             } catch (e) {
-                this.iframe.contentWindow.print();
+                if (this.pdfViewer.printMode === 'Default') {
+                    this.pdfViewerBase.showPrintLoadingIndicator(false);
+                    this.iframe.contentWindow.print();
+                } else {
+                    this.printWindow.print();
+                }
             }
         } else {
             setTimeout(
                 () => {
-                    this.iframe.contentWindow.print();
-                    this.iframe.contentWindow.focus();
-                    document.body.removeChild(this.iframe);
+                    if (this.pdfViewer.printMode === 'Default') {
+                        this.pdfViewerBase.showPrintLoadingIndicator(false);
+                        this.iframe.contentWindow.print();
+                        this.iframe.contentWindow.focus();
+                        document.body.removeChild(this.iframe);
+                    } else {
+                        if (this.printWindow) {
+                            try {
+                                this.printWindow.print();
+                                this.printWindow.focus();
+                                this.printWindow.close();
+                            } catch (error) {
+                                return null;
+                            }
+                        }
+                    }
                 },
                 200);
         }
     }
+
+    // tslint:disable-next-line
+    private createPrintLoadingIndicator(element: any): void {
+        // tslint:disable-next-line
+        let printWindowContainer: any = createElement('div', {
+            id: this.pdfViewer.element.id + '_printWindowcontainer'
+        });
+        printWindowContainer.style.height = '100%';
+        printWindowContainer.style.width = '100%';
+        printWindowContainer.style.position = 'absolute';
+        printWindowContainer.style.zIndex = 2000;
+        printWindowContainer.style.left = 0;
+        printWindowContainer.style.top = 0;
+        printWindowContainer.style.overflow = 'auto';
+        printWindowContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+        element.appendChild(printWindowContainer);
+        let printWaitingPopup: HTMLElement = createElement('div', {
+            id: this.pdfViewer.element.id + '_printLoadingContainer'
+        });
+        printWaitingPopup.style.position = 'absolute';
+        printWaitingPopup.style.width = '50px';
+        printWaitingPopup.style.height = '50px';
+        printWaitingPopup.style.left = '46%';
+        printWaitingPopup.style.top =  '45%';
+        printWindowContainer.style.zIndex = 3000;
+        printWindowContainer.appendChild(printWaitingPopup);
+        // tslint:disable-next-line
+        let printImageContainer: any = new Image();
+        // tslint:disable-next-line
+        printImageContainer.src = 'data:image/gif;base64,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';
+        printImageContainer.style.width = '50px';
+        printImageContainer.style.height = '50px';
+        printWaitingPopup.appendChild(printImageContainer);
+        let printLabelContainer: HTMLElement = createElement('div', {
+            id: this.pdfViewer.element.id + '_printLabelContainer'
+        });
+        printLabelContainer.style.position = 'absolute';
+        printLabelContainer.textContent = 'Loading ...';
+        printLabelContainer.style.fontWeight = 'Bold';
+        printLabelContainer.style.left = '46%';
+        printLabelContainer.style.top =  '54.5%';
+        printLabelContainer.style.zIndex = '3000';
+        printWindowContainer.appendChild(printLabelContainer);
+    }
+
     /**
      * @private
      */
     public destroy(): void {
         this.printViewerContainer = undefined;
         this.frameDoc = undefined;
+        this.printWindow = undefined;
     }
     /**
      * @private

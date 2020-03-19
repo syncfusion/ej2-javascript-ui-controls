@@ -358,6 +358,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    /** @hidden */
+    public intToDate(val: string): Date {
+        let dateVal: number = Number(val);
+        dateVal = (dateVal > 0 && dateVal < 1) ? (1 + dateVal) : (dateVal === 0) ? 1 : dateVal;
+        if (dateVal > 60) {
+            dateVal -= 1; // Due to leap year issue of 1900 in MSExcel.
+        }
+
+        return new Date(((dateVal - 1) * (1000 * 3600 * 24)) + new Date('01/01/1900').getTime());
+    }
+
     public getFormulaInfoTable(): Map<string, FormulaInfo> {
         if (this.isSheetMember()) {
             let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
@@ -793,6 +804,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     let libFormula: string = sFormula.split(this.leftBracket)[0].split('q').join(this.emptyString);
                     let args: string[] = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
                         .split(this.getParseArgumentSeparator());
+                    if (this.getLibraryFormulas().get(libFormula.toUpperCase()).isCustom) {
+                        let j: number = 0;
+                        let customArgs: string[] = [];
+                        for (j = 0; j < args.length; j++) {
+                            customArgs.push(this.getValueFromArg(args[j]));
+                        }
+                        args = customArgs;
+                    }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
                         this.getFunction(libFormula)(...args);
                     if (nestedFormula) {
@@ -2369,6 +2388,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             family.tokenToParentObject.delete(token);
             family.parentObjectToToken.delete(model);
         }
+    };
+
+    /**
+     * @hidden
+     */
+    public computeExpression(formula: string): string| number {
+        let parsedFormula: string = this.parser.parseFormula(formula);
+        let calcValue: string | number = this.computeFormula(parsedFormula);
+        return calcValue;
     };
 
     private isSheetMember(): CalcSheetFamilyItem | boolean {

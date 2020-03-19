@@ -70,8 +70,8 @@ export class Predicate extends ChildProperty<Predicate> {
    * <br/>Number | Date<br/></td></tr> 
    * </table> 
    * @default null
-   * @blazorType Syncfusion.EJ2.Blazor.Operator
-   * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
+   * @blazorType Syncfusion.Blazor.Operator
+   * @blazorDefaultValue Syncfusion.Blazor.Operator.None
    */
   @Property()
   public operator: string;
@@ -174,7 +174,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.FilterBarMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.FilterBarMode
+     * @blazorType Syncfusion.Blazor.Grids.FilterBarMode
      */
     @Property()
     public mode: FilterBarMode;

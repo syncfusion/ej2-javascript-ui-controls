@@ -61,7 +61,10 @@ export interface ITreeData {
      * Specifies the main data
      */
     taskData?: ITreeData;
-
+    /**
+     * Specifies the Primary data
+     */
+    primaryParent?: ITreeData;
 }
 
 export interface AggregateTemplateContext {

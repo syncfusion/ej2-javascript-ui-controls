@@ -49,7 +49,7 @@ export class ContextMenu {
      * @private
      */
     public createContextMenu(): void {
-        this.contextMenuElement = createElement('ul', { id: this.pdfViewer.element.id + '_context_menu' });
+        this.contextMenuElement = createElement('ul', { id: this.pdfViewer.element.id + '_context_menu', className: 'e-pv-context-menu' });
         this.pdfViewer.element.appendChild(this.contextMenuElement);
         this.contextMenuObj = new Context({
             target: '#' + this.pdfViewerBase.viewerContainer.id, items: this.copyContextMenu,

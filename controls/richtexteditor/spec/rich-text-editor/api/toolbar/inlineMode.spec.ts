@@ -35,7 +35,7 @@ describe(' Inline Quick Toolbar - ', () => {
                 dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[3] as HTMLElement).click()
                 let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.style.textAlign === 'justify').toBe(true);
+                expect(tag.parentElement.style.textAlign === 'justify').toBe(true);
                 document.body.click();
                 dispatchEvent(document as any, 'mousedown')
                 done();
@@ -55,7 +55,7 @@ describe(' Inline Quick Toolbar - ', () => {
                 dispatchEvent((popup.querySelectorAll('.e-item')[2] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[2] as HTMLElement).click()
                 let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.style.textAlign === 'right').toBe(true);
+                expect(tag.parentElement.style.textAlign === 'right').toBe(true);
                 document.body.click();
                 dispatchEvent(document as any, 'mousedown')
                 done();
@@ -75,7 +75,7 @@ describe(' Inline Quick Toolbar - ', () => {
                 dispatchEvent((popup.querySelectorAll('.e-item')[1] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[1] as HTMLElement).click()
                 let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.style.textAlign === 'center').toBe(true);
+                expect(tag.parentElement.style.textAlign === 'center').toBe(true);
                 document.body.click();
                 dispatchEvent(document as any, 'mousedown')
                 done();
@@ -95,7 +95,7 @@ describe(' Inline Quick Toolbar - ', () => {
                 dispatchEvent((popup.querySelectorAll('.e-item')[0] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[0] as HTMLElement).click()
                 let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.style.textAlign === 'left').toBe(true);
+                expect(tag.parentElement.style.textAlign === 'left').toBe(true);
                 document.body.click();
                 dispatchEvent(document as any, 'mousedown')
                 done();
@@ -139,7 +139,7 @@ describe(' Inline Quick Toolbar - ', () => {
                 dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[3] as HTMLElement).click()
                 let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.style.textAlign === 'justify').toBe(true);
+                expect(tag.parentElement.style.textAlign === 'justify').toBe(true);
                 document.body.click();
                 dispatchEvent(document as any, 'mousedown')
                 done();

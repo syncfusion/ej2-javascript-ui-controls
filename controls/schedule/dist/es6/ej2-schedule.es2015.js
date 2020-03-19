@@ -4151,12 +4151,10 @@ class EventBase {
             filteredEvents = this.filterEvents(startDate, endDate, eventCollection);
         }
         else if (startDate && !endDate) {
-            let predicate = new Predicate(this.parent.eventFields.startTime, 'greaterthanorequal', startDate);
-            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+            filteredEvents = eventCollection.filter((e) => e[this.parent.eventFields.startTime] >= startDate);
         }
         else if (!startDate && endDate) {
-            let predicate = new Predicate(this.parent.eventFields.endTime, 'lessthanorequal', endDate);
-            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+            filteredEvents = eventCollection.filter((e) => e[this.parent.eventFields.endTime] <= endDate);
         }
         else {
             filteredEvents = eventCollection;
@@ -4642,12 +4640,10 @@ class EventBase {
         }
     }
     getEventByGuid(guid) {
-        return new DataManager({ json: this.parent.eventsProcessed }).executeLocal(new Query().where('Guid', 'equal', guid))[0];
+        return this.parent.eventsProcessed.filter((data) => data.Guid === guid)[0];
     }
     getEventById(id) {
-        let eventFields = this.parent.eventFields;
-        return new DataManager({ json: this.parent.eventsData }).executeLocal(new Query()
-            .where(eventFields.id, 'equal', id))[0];
+        return this.parent.eventsData.filter((data) => data[this.parent.eventFields.id] === id)[0];
     }
     generateGuid() {
         return 'xyxxxxyx-xxxy-yxxx-xyxx-xxyxxxxyyxxx'.replace(/[xy]/g, (c) => {
@@ -4789,8 +4785,7 @@ class EventBase {
         else {
             fieldValue = (parentObj[fields.recurrenceID] || parentObj[fields.followingID]);
         }
-        let filterQuery = new Query().where(isReverse ? fields.followingID : fields.id, 'equal', fieldValue);
-        let parentApp = new DataManager(this.parent.eventsData).executeLocal(filterQuery);
+        let parentApp = this.parent.eventsData.filter((data) => data[isReverse ? fields.followingID : fields.id] === fieldValue);
         return parentApp.shift();
     }
     isFollowingEvent(parentObj, childObj) {
@@ -4802,9 +4797,8 @@ class EventBase {
     getOccurrenceEvent(eventObj, isGuid = false, isFollowing = false) {
         let idField = isGuid ? 'Guid' : (isFollowing) ? this.parent.eventFields.followingID : this.parent.eventFields.recurrenceID;
         let fieldKey = isGuid ? 'Guid' : this.parent.eventFields.id;
-        let filterQuery = new Query().where(idField, 'equal', eventObj[fieldKey]);
         let dataSource = isGuid ? this.parent.eventsProcessed : this.parent.eventsData;
-        return new DataManager(dataSource).executeLocal(filterQuery);
+        return dataSource.filter((data) => data[idField] === eventObj[fieldKey]);
     }
     getOccurrencesByID(id) {
         let fields = this.parent.eventFields;
@@ -7279,7 +7273,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             '<td><div class="' + INPUTWARAPPER + ' ' + WEEKPOSITION + '" >' +
             '<input type="text" tabindex="0" class="' + MONTHPOS + '"title="' + this.localeObj.getConstant('monthPosition') + '" />' +
             '</div></td>' +
-            '<td><div class="' + INPUTWARAPPER + '" >' +
+            '<td><div class="' + INPUTWARAPPER + '" style="min-width: 120px;">' +
             '<input type="text" tabindex="0" class="' + MONTHWEEK + '"title="' + this.localeObj.getConstant('monthWeek') + '" />' +
             '</div></td></tr></table>' +
             '</div></div>' +
@@ -8116,9 +8110,8 @@ class EventWindow {
                 let resObject = this.createInstance(i);
                 let datasource = [];
                 for (let j = 0; j < args.value.length; j++) {
-                    let resourceData = resourceCollection[i + 1].dataSource;
-                    let query = new Query().where(resourceCollection[i + 1].groupIDField, 'equal', args.value[j]);
-                    let filter = new DataManager({ json: resourceData }).executeLocal(query)[0];
+                    let resourceModel = resourceCollection[i + 1];
+                    let filter = resourceModel.dataSource.filter((data) => data[resourceModel.groupIDField] === args.value[j])[0];
                     let groupId = filter[resourceCollection[i + 1].idField];
                     let filterRes = this.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
@@ -8154,8 +8147,7 @@ class EventWindow {
     }
     filterDatasource(index, groupId) {
         let resourceData = this.parent.resourceBase.resourceCollection[index + 1];
-        let query = new Query().where(resourceData.groupIDField, 'equal', groupId);
-        let filter = new DataManager({ json: resourceData.dataSource }).executeLocal(query);
+        let filter = resourceData.dataSource.filter((data) => data[resourceData.groupIDField] === groupId);
         return filter;
     }
     onTimezoneChange(args) {
@@ -8777,8 +8769,7 @@ class EventWindow {
         let eventId = this.getEventIdFromForm();
         if (!isNullOrUndefined(eventId)) {
             let eveId = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
-            let editedData = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
-                where(this.fields.id, 'equal', eveId))[0];
+            let editedData = this.parent.eventsData.filter((data) => data[this.fields.id] === eveId)[0];
             eventObj = extend({}, editedData, eventObj);
             if (eventObj[this.fields.isReadonly]) {
                 return false;
@@ -8957,8 +8948,7 @@ class EventWindow {
             editData = this.eventData;
         }
         let recurColl = this.parent.getOccurrencesByID(eventId);
-        let excludedDatas = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
-            where(this.fields.recurrenceID, 'equal', eventId));
+        let excludedDatas = this.parent.eventsData.filter((data) => data[this.fields.recurrenceID] === eventId);
         excludedDatas.map((data) => recurColl.push(extend({}, data)));
         currentData = extend({}, currentData);
         this.trimAllDay(currentData);
@@ -10222,11 +10212,13 @@ class Crud {
             endDate = new Date(+followEvent);
         }
         else {
-            endDate = followEvent[fields.startTime];
+            endDate = new Date(+followEvent[fields.startTime]);
             let startDate = parentEvent[fields.startTime];
             let ruleException = (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] : null;
             let dateCollection = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             let untilDate = new Date(dateCollection.slice(-1)[0]);
+            untilDate.setHours(endDate.getHours(), endDate.getMinutes(), endDate.getSeconds());
+            endDate.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds());
             followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
         }
         parentEvent[fields.recurrenceRule] =
@@ -11164,7 +11156,7 @@ class ResourceBase {
                 let data;
                 if (prevResourceData && this.parent.activeViewOptions.group.byGroupID) {
                     let id = prevResourceData[prevResource.idField];
-                    data = new DataManager(resource.dataSource).executeLocal(new Query().where(resource.groupIDField, 'equal', id));
+                    data = resource.dataSource.filter((e) => e[resource.groupIDField] === id);
                 }
                 else {
                     data = resource.dataSource;
@@ -11340,7 +11332,7 @@ class ResourceBase {
             return undefined;
         }
         let id = isNullOrUndefined(groupOrder) ? eventObj[resource.field] : groupOrder[colorFieldIndex];
-        let data = this.filterData(resource.dataSource, resource.idField, 'equal', id);
+        let data = this.filterData(resource.dataSource, resource.idField, id);
         if (data.length > 0) {
             return data[0][resource.colorField];
         }
@@ -11351,14 +11343,14 @@ class ResourceBase {
         if (this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        let data = this.filterData(resource.dataSource, resource.idField, 'equal', eventObj[resource.field]);
+        let data = this.filterData(resource.dataSource, resource.idField, eventObj[resource.field]);
         if (data.length > 0) {
             return data[0][resource.cssClassField];
         }
         return undefined;
     }
-    filterData(dataSource, field, operator, value) {
-        return new DataManager(dataSource).executeLocal(new Query().where(field, operator, value));
+    filterData(dataSource, field, value) {
+        return dataSource.filter((data) => data[field] === value);
     }
     dataManagerFailure(e) {
         if (this.parent.isDestroyed) {
@@ -12255,7 +12247,7 @@ let Schedule = class Schedule extends Component {
     }
     /** @hidden */
     getContentTable() {
-        return this.element.querySelector('.' + CONTENT_TABLE_CLASS + ' tbody');
+        return this.activeView.element.querySelector('.' + CONTENT_TABLE_CLASS + ' tbody');
     }
     /** @hidden */
     getTableRows() {
@@ -12289,7 +12281,8 @@ let Schedule = class Schedule extends Component {
             let dateInMS = parseInt(dateString, 10);
             let date = new Date(dateInMS);
             if (this.isServerRenderer()) {
-                return new Date(+date + (date.getTimezoneOffset() * 60000));
+                let localDate = new Date(+date + (date.getTimezoneOffset() * 60000));
+                return new Date(localDate.getTime() + (localDate.getTimezoneOffset() - date.getTimezoneOffset()) * 60000);
             }
             return date;
         }
@@ -13863,8 +13856,11 @@ class ActionBase {
     updateScrollPosition(e) {
         if (this.actionObj.scroll.enable && isNullOrUndefined(this.actionObj.scrollInterval)) {
             this.actionObj.scrollInterval = window.setInterval(() => {
-                if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS) &&
-                    this.actionObj.groupIndex !== 0) {
+                if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
+                    if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0
+                        && this.actionObj.groupIndex === 0) {
+                        return;
+                    }
                     this.autoScroll();
                     if (this.actionObj.action === 'drag') {
                         this.parent.dragAndDropModule.updateDraggingDateTime(e);
@@ -15807,7 +15803,6 @@ class VerticalEvent extends EventBase {
     }
     getOverlapIndex(record, day, isAllDay, resource) {
         let fieldMapping = this.parent.eventFields;
-        let predicate;
         let eventsList = [];
         let appIndex = -1;
         this.overlapEvents = [];
@@ -15824,18 +15819,15 @@ class VerticalEvent extends EventBase {
         else {
             let appointmentList = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
             let appointment = [];
-            predicate = new Predicate(fieldMapping.endTime, 'greaterthan', record[fieldMapping.startTime]).
-                and(new Predicate(fieldMapping.startTime, 'lessthan', record[fieldMapping.endTime])).
-                or(new Predicate(fieldMapping.startTime, 'greaterthanorequal', record[fieldMapping.endTime]).
-                and(new Predicate(fieldMapping.endTime, 'lessthanorequal', record[fieldMapping.startTime])));
-            this.overlapList = new DataManager({ json: appointmentList }).executeLocal(new Query().where(predicate));
+            let recordStart = record[fieldMapping.startTime];
+            let recordEnd = record[fieldMapping.endTime];
+            this.overlapList = appointmentList.filter((data) => (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] < recordEnd) ||
+                (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
             }
             this.overlapList.forEach((obj) => {
-                predicate = new Predicate(fieldMapping.endTime, 'greaterthanorequal', obj[fieldMapping.startTime]).
-                    and(new Predicate(fieldMapping.startTime, 'lessthanorequal', obj[fieldMapping.endTime]));
-                let filterList = new DataManager({ json: appointmentList }).executeLocal(new Query().where(predicate));
+                let filterList = appointmentList.filter((data) => data[fieldMapping.endTime] >= obj[fieldMapping.startTime] && data[fieldMapping.startTime] <= obj[fieldMapping.endTime]);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     filterList = this.filterEventsByResource(this.resources[resource], filterList);
                 }
@@ -16395,9 +16387,8 @@ class DragAndDrop extends ActionBase {
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
-            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint +
-                this.actionObj.cellHeight + window.pageYOffset :
-                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight + window.pageYOffset) +
+            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint + this.actionObj.cellHeight :
+                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight) +
                     (this.actionObj.clone.offsetHeight - this.heightUptoCursorPoint);
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
@@ -18923,8 +18914,7 @@ class AgendaBase {
                 tContentCollection = tContentCollection.concat(tContent[w]);
             }
             level = (parentCollection.length > 0) ? 'parentColumnLevel_' + parentCollection.length : 'resourceColumn';
-            let rowSpanCollection = new DataManager({ json: tContentCollection }).executeLocal(new Query()
-                .where('type', 'equal', level));
+            let rowSpanCollection = tContentCollection.filter((data) => data.type === level);
             for (let x = 0; x < rowSpanCollection.length; x++) {
                 rowSpan = rowSpan + rowSpanCollection[x].rowSpan;
             }
@@ -20141,7 +20131,7 @@ class YearEvent extends TimelineEvent {
         let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
         this.cellWidth = workCell.offsetWidth;
         this.cellHeight = workCell.offsetHeight;
-        this.cellHeader = workCell.querySelector('.' + DATE_HEADER_CLASS).offsetHeight;
+        this.cellHeader = getOuterHeight(workCell.querySelector('.' + DATE_HEADER_CLASS));
         let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
         this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
         let wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
@@ -20930,8 +20920,7 @@ class ICalendarExport {
         }
     }
     filterEvents(data, field, value) {
-        let queryManager = new Query().where(field, 'equal', value);
-        return new DataManager({ json: data }).executeLocal(queryManager);
+        return data.filter((e) => e[field] === value);
     }
     /**
      * Get module name.
@@ -21059,7 +21048,7 @@ class ICalendarImport {
                 parentObj = eventObj;
                 id = eventObj[fields.id];
             }
-            let data = (new DataManager({ json: app }).executeLocal(new Query().where('UID', 'equal', eventObj[uId])));
+            let data = app.filter((data) => data.UID === eventObj[uId]);
             if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
                 for (let i = 0; i < data.length; i++) {
                     if (data[i].hasOwnProperty(fields.recurrenceID)) {

@@ -48,8 +48,8 @@ export class HistogramSeries extends ColumnSeries {
         let binWidth: number;
         let keys: string[] = Object.keys(data);
         for (let i: number = 0; i < keys.length; i++) {
-            let key: string = keys[i];
-            yValues.push(data[key][series.yName]);
+        let key: string = keys[i];
+        yValues.push(data[key][series.yName]);
         }
         series.histogramValues = {
             yValues: yValues

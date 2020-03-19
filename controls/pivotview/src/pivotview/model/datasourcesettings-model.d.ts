@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';import { IStyle, ICustomGroups } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Interface for a class FieldOptions
@@ -68,6 +68,42 @@ export interface FieldOptionsModel {
      * @default false
      */
     isCalculatedField?: boolean;
+
+    /**
+     * It allows to set the visibility of filter icon in grouping bar and field list button.
+     * @default true     
+     */
+    showFilterIcon?: boolean;
+
+    /**
+     * It allows to set the visibility of sort icon in grouping bar and field list button.
+     * @default true     
+     */
+    showSortIcon?: boolean;
+
+    /**
+     * It allows to set the visibility of remove icon in grouping bar button.
+     * @default true     
+     */
+    showRemoveIcon?: boolean;
+
+    /**
+     * It allows to set the visibility of summay type drop down icon in grouping bar and field list button.
+     * @default true     
+     */
+    showValueTypeIcon?: boolean;
+
+    /**
+     * It allows to set the visibility of calculated field edit icon in grouping bar and field list button.
+     * @default true     
+     */
+    showEditIcon?: boolean;
+
+    /**
+     * It allows to enable/disable the drag and drop option to grouping bar and field list button.
+     * @default true     
+     */
+    allowDragAndDrop?: boolean;
 
 }
 
@@ -242,6 +278,7 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify maximum fraction digits in formatted value.
+     * @blazorDefaultValue 10
      */
     maximumFractionDigits?: number;
 
@@ -434,6 +471,23 @@ export interface ValueSortSettingsModel {
      * It allows to set the measure name to achieve value sorting based on this.
      */
     measure?: string;
+
+}
+
+/**
+ * Interface for a class Authentication
+ */
+export interface AuthenticationModel {
+
+    /**
+     * It allows to set the user name for the authentication.
+     */
+    userName?: string;
+
+    /**
+     * It allows to set the password for the authentication.
+     */
+    password?: string;
 
 }
 
@@ -646,5 +700,10 @@ export interface DataSourceSettingsModel {
      * @default []
      */
     groupSettings?: GroupSettingsModel[];
+
+    /**
+     * It allows to set the authentication information for OLAP.
+     */
+    authentication?: AuthenticationModel;
 
 }

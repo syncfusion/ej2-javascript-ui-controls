@@ -1,7 +1,7 @@
 import { TreeMap } from '../../../src/treemap/treemap';
 import { TreeMapHighlight, TreeMapSelection } from '../../../src/treemap/user-interaction/highlight-selection';
 import { MouseEvents } from '../base/events.spec';
-import { ILoadedEventArgs, ITreeMapTooltipRenderEventArgs, IClickEventArgs, IDrillEndEventArgs, IItemHighlightEventArgs, IItemMoveEventArgs, IItemRenderingEventArgs } from '../../../src/treemap/model/interface';
+import { ILoadedEventArgs, ITreeMapTooltipRenderEventArgs, IItemClickEventArgs, IClickEventArgs, IDrillEndEventArgs, IItemHighlightEventArgs, IItemMoveEventArgs, IItemRenderingEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Airport_Count, importData, DrillDown, CarSales } from '../base/data.spec';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
@@ -332,6 +332,22 @@ describe('TreeMap component Spec', () => {
                 done();
             };
             treemap.refresh();
-        });        
+        });
+        it('Customize the header labels using item rendering event', (done: Function): void => {
+            debugger
+            treemap.itemRendering = (args: IItemRenderingEventArgs): void => {
+                if (args['currentItem']['groupIndex'] === 0) {
+                    args.text = '${Continent}' + ' - ' + args['currentItem']['weight'];
+                }
+            };
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Level_Index_0_Item_Index_0_Text');
+                let text : string = svg.innerHTML;      
+                expect(text === 'China - 4621170').toBe(true);
+                done();
+            };
+            treemap.leafItemSettings.showLabels = true;
+            treemap.refresh();
+        });               
     });
 });

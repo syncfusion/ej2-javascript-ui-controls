@@ -1,4 +1,4 @@
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
@@ -7,6 +7,7 @@ import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 
 /**
  * Content module is used to render grid content
@@ -18,6 +19,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     public parent: IGrid;
     public cOffsets: { [x: number]: number } = {};
     public cache: { [x: number]: Row<Column>[] } = {};
+    public rowCache: { [x: number]: Row<Column> } = {};
     public data: { [x: number]: Object[] } = {};
     public groups: { [x: number]: Object } = {};
 
@@ -33,7 +35,6 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
         let result: Row<Column>[] = []; let center: number = ~~(this.model.pageSize / 2);
         let indexes: number[] = this.getBlockIndexes(page); let loadedBlocks: number[] = [];
-
         this.checkAndResetCache(notifyArgs.requestType);
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
             return result = this.parent.vcRows;
@@ -45,50 +46,87 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 }
             }
         }
-
-        let values: number[] = info.blockIndexes;
-        for (let i: number = 0; i < values.length; i++) {
-            if (!this.isBlockAvailable(values[i])) {
-                let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
-                    virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
-                });
-                if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
-                    this.parent.vRows = rows;
-                    this.parent.vcRows = rows;
+        if (isBlazor() && this.parent.isServerRendered) {
+            let virtualStartIdx: string = 'virtualStartIndex'; let startIndex: string = 'startIndex'; let endIndex: string = 'endIndex';
+            if (!notifyArgs[virtualStartIdx] && Object.keys(this.rowCache).length === 0) {
+                for (let i: number = 0 ; i < data.length; i++) {
+                    let args: Object[] = [];
+                    args.push(data[i]);
+                    this.rowCache[i] = this.rowModelGenerator.generateRows(args, {startIndex: i})[0];
                 }
-                let median: number;
-                if (isGroupAdaptive(this.parent)) {
-                    median = this.model.pageSize / 2;
-                    if (!this.isBlockAvailable(indexes[0])) {
-                        this.cache[indexes[0]] = rows.slice(0, median);
+                let j: number = 0;
+                for (let i: number = 0; i < this.parent.pageSettings.pageSize ; i++) {
+                    result[j] = this.rowCache[i];
+                    j++;
+                }
+            } else if (notifyArgs[virtualStartIdx]) {
+                let virtualStartIndex: number = notifyArgs[startIndex]; let cacheindex: number[] = [];
+                for (let i: number = 0; i < Object.keys(this.rowCache).length ; i++) {
+                     cacheindex.push(Number(Object.keys(this.rowCache)[i]));
+                }
+                for (let i: number = 0 ; i < data.length; i++) {
+                    let args: Object[] = []; let check: number = cacheindex.indexOf(virtualStartIndex);
+                    args.push(data[i]);
+                    if (check === -1) {
+                        this.rowCache[virtualStartIndex] = this.rowModelGenerator.generateRows(args, {startIndex: virtualStartIndex})[0];
                     }
-                    if (!this.isBlockAvailable(indexes[1])) {
-                        this.cache[indexes[1]] = rows.slice(median, this.model.pageSize);
-                    }
-                } else {
-                    median = ~~Math.max(rows.length, this.model.pageSize) / 2;
-                    if (!this.isBlockAvailable(indexes[0])) {
-                        this.cache[indexes[0]] = rows.slice(0, median);
-                    }
-                    if (!this.isBlockAvailable(indexes[1])) {
-                        this.cache[indexes[1]] = rows.slice(median);
-                    }
+                    virtualStartIndex++;
                 }
             }
-            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
-                this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
+            if (!isNullOrUndefined(notifyArgs[virtualStartIdx])) {
+                let j: number = 0;
+                for (let i: number = notifyArgs[startIndex]; i < notifyArgs[endIndex]; i++) {
+                    result[j] = this.rowCache[i];
+                    j++;
+                }
             }
-            result.push(...this.cache[values[i]]);
-            if (this.isBlockAvailable(values[i])) {
-                loadedBlocks.push(values[i]);
-            }
-        }
-        info.blockIndexes = loadedBlocks;
-        let grouping: string = 'records';
-        if (this.parent.allowGrouping) {
-            this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
         } else {
-            this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
+            let values: number[] = info.blockIndexes;
+            for (let i: number = 0; i < values.length; i++) {
+                if (!this.isBlockAvailable(values[i])) {
+                    let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
+                        virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
+                    });
+                    if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
+                        this.parent.vRows = rows;
+                        this.parent.vcRows = rows;
+                    }
+                    let median: number;
+                    if (isGroupAdaptive(this.parent)) {
+                        median = this.model.pageSize / 2;
+                        if (!this.isBlockAvailable(indexes[0])) {
+                            this.cache[indexes[0]] = rows.slice(0, median);
+                        }
+                        if (!this.isBlockAvailable(indexes[1])) {
+                            this.cache[indexes[1]] = rows.slice(median, this.model.pageSize);
+                        }
+                    } else {
+                        median = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                        if (!this.isBlockAvailable(indexes[0])) {
+                            this.cache[indexes[0]] = rows.slice(0, median);
+                        }
+                        if (!this.isBlockAvailable(indexes[1])) {
+                            this.cache[indexes[1]] = rows.slice(median);
+                        }
+                    }
+                }
+                if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
+                    this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
+                }
+                result.push(...this.cache[values[i]]);
+                if (this.isBlockAvailable(values[i])) {
+                    loadedBlocks.push(values[i]);
+                }
+            }
+            info.blockIndexes = loadedBlocks;
+        }
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            let grouping: string = 'records';
+            if (this.parent.allowGrouping) {
+                this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
+            } else {
+                this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
+            }
         }
         return result;
     }
@@ -137,6 +175,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             }
             return left + calWidth < offsetVal;
         });
+        if (isBlazor() && this.parent.isServerRendered) {
+            (<VirtualContentRenderer>this.parent.contentModule).startColIndex = indexes[0];
+            (<VirtualContentRenderer>this.parent.contentModule).endColIndex = indexes[indexes.length - 1];
+        }
         return indexes;
     }
 
@@ -203,9 +245,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public getRows(): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        let keys: string[] = Object.keys(this.cache);
-        for ( let i: number = 0; i < keys.length; i++) {
-            rows = [...rows, ...this.cache[keys[i]]];
+        let isBlazorServerRendered: boolean = isBlazor() && this.parent.isServerRendered ? true : false;
+        let keys: string[] = isBlazorServerRendered ? Object.keys(this.rowCache) : Object.keys(this.cache);
+        for (let i: number = 0; i < keys.length; i++) {
+            rows = isBlazorServerRendered ? [...rows, ...this.rowCache[keys[i]]] : [...rows, ...this.cache[keys[i]]];
         }
         return rows;
     }

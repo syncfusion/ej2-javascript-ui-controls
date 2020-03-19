@@ -4,7 +4,7 @@
 import { isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, sheetCreated } from '../common/index';
-import { WorkbookModel, SheetModel, getMaxSheetId, Workbook } from '../base/index';
+import { WorkbookModel, Workbook, initSheet } from '../base/index';
 import { beginAction } from '../../spreadsheet/common/event';
 
 export class WorkbookOpen {
@@ -99,16 +99,14 @@ export class WorkbookOpen {
         workbookModel.activeSheetTab = workbookModel.activeSheetTab || 1;
         this.parent.setProperties(
             {
-            'sheets': workbookModel.sheets,
-            'activeSheetTab': workbookModel.activeSheetTab,
-            'definedNames': workbookModel.definedNames || []
+                'sheets': workbookModel.sheets,
+                'activeSheetTab': workbookModel.activeSheetTab,
+                'definedNames': workbookModel.definedNames || []
             },
             true
-            );
+        );
+        initSheet(this.parent);
         this.parent.notify(sheetCreated, null);
-        this.parent.sheets.forEach((key: SheetModel) => {
-            key.id = getMaxSheetId(this.parent.sheets);
-        });
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
     }

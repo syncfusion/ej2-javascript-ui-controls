@@ -347,7 +347,7 @@ describe('Bullet Chart Scale', () => {
             bullet.refresh();
             svg = document.getElementById('container_svg_ComparativeMeasure_0');
             expect(svg.getAttribute('stroke') == 'violet').toBe(true);
-            expect(svg.getAttribute('r') == '12').toBe(true);
+            expect(svg.getAttribute('r') == '11').toBe(true);
             done();
         });
         it('Customization of comaparative bar type as Cross', (done: Function) => {

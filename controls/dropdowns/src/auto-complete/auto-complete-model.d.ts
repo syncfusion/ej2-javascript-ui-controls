@@ -16,6 +16,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * {% codeBlock src='autocomplete/fields/index.md' %}{% endcodeBlock %}
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
      * @default { value: null, iconCss: null, groupBy: null}
+     * @deprecated
      */
     fields?: FieldSettingsModel;
 
@@ -24,6 +25,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * on performing the search to find suggestions.
      * By default consider the casing.
      * @default true
+     * @deprecated
      */
     ignoreCase?: boolean;
 
@@ -54,6 +56,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * 
      * {% codeBlock src='autocomplete/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
+     * @deprecated
      */
     htmlAttributes?: { [key: string]: string; };
 
@@ -63,6 +66,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * 
      * {% codeBlock src='autocomplete/query/index.md' %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     query?: Query;
 
@@ -109,6 +113,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * 
      * The default value set to `Contains`, all the suggestion items which contain typed characters to listed in the suggestion popup.
      * @default 'Contains'
+     * @blazorOverrideType override
      */
     filterType?: FilterType;
 
@@ -126,6 +131,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * @blazorType int
      * @isBlazorNullableType true
      * @blazorDefaultValue 
+     * @deprecated
      */
     index?: number;
 
@@ -143,7 +149,8 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
+     * @deprecated
      */
     floatLabelType?: FloatLabelType;
 
@@ -151,6 +158,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component.
      * @default null
      * @private
+     * @deprecated
      */
     valueTemplate?: string;
 
@@ -158,6 +166,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component.
      * @default null
      * @private
+     * @deprecated
      */
     filterBarPlaceholder?: string;
 
@@ -165,6 +174,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component. 
      * @default false
      * @private
+     * @deprecated
      */
     allowFiltering?: boolean;
 
@@ -172,6 +182,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component. 
      * @default null
      * @private
+     * @deprecated
      */
     text?: string;
 

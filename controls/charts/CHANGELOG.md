@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 18.1.36-beta (2020-03-19)
+
+### Chart
+
+#### New Features
+
+- Provided support to highlight the data points in chart.
+- Provided support for patterns to the selected and highlighted data.
+
+### Bullet Chart
+
+#### New Features
+
+- Provided support to legend for targets, actual value and ranges in bullet chart.
+
 ## 17.4.51 (2020-02-25)
 
 ### Chart

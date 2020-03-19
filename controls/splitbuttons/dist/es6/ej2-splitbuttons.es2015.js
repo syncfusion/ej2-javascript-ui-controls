@@ -864,33 +864,38 @@ let SplitButton = class SplitButton extends DropDownButton {
         this.secondaryBtnObj.toggle();
     }
     destroy() {
-        let classList$$1 = [RTL];
-        let element = document.getElementById(this.element.id);
-        if (this.cssClass) {
-            classList$$1 = classList$$1.concat(this.cssClass.split(' '));
-        }
-        if (element && element.parentElement === this.wrapper) {
-            if (this.wrapper.tagName === TAGNAME) {
-                this.wrapper.innerHTML = '';
-                removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
-                removeClass([this.wrapper], this.cssClass.split(' '));
+        if (!(isBlazor() && this.isServerRendered)) {
+            let classList$$1 = [RTL];
+            let element = document.getElementById(this.element.id);
+            if (this.cssClass) {
+                classList$$1 = classList$$1.concat(this.cssClass.split(' '));
             }
-            else {
-                removeClass([this.element], classList$$1);
-                ['aria-label', 'aria-haspopup', 'aria-expanded',
-                    'aria-owns', 'type'].forEach((key) => {
-                    this.element.removeAttribute(key);
-                });
-                this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
-                remove(this.wrapper);
+            if (element && element.parentElement === this.wrapper) {
+                if (this.wrapper.tagName === TAGNAME) {
+                    this.wrapper.innerHTML = '';
+                    removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
+                    removeClass([this.wrapper], this.cssClass.split(' '));
+                }
+                else {
+                    removeClass([this.element], classList$$1);
+                    ['aria-label', 'aria-haspopup', 'aria-expanded',
+                        'aria-owns', 'type'].forEach((key) => {
+                        this.element.removeAttribute(key);
+                    });
+                    this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
+                    remove(this.wrapper);
+                }
+                this.unWireEvents();
             }
-            this.unWireEvents();
+            this.primaryBtnObj.destroy();
+            this.secondaryBtnObj.destroy();
+            super.destroy();
+            if (!this.element.getAttribute('class')) {
+                this.element.removeAttribute('class');
+            }
         }
-        this.primaryBtnObj.destroy();
-        this.secondaryBtnObj.destroy();
-        super.destroy();
-        if (!this.element.getAttribute('class')) {
-            this.element.removeAttribute('class');
+        else {
+            EventHandler.remove(this.element, 'click', this.primaryBtnClickHandler);
         }
     }
     wireEvents() {

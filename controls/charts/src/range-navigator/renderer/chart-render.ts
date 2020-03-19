@@ -57,13 +57,6 @@ export class RangeSeries extends NiceInterval {
         }
     }
 
-    private findGMT(control: RangeNavigator, data: Object[], xName: string): void  {
-        if (!control.isGMT && data) {
-            control.isGMT = !((data[0][xName]).toString().indexOf('GMT+') > -1  ||
-                              (data[0][xName]).toString().indexOf('GMT-') > -1);
-        }
-    }
-
     private processDataSource(dataSource: Object, query: Query, control: RangeNavigator, series?: RangeNavigatorSeries): void {
         if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource) && isNullOrUndefined(query)) {
             this.dataManagerSuccess({ result: dataSource, count: (dataSource as Object[]).length }, control, series);
@@ -80,9 +73,6 @@ export class RangeSeries extends NiceInterval {
     private dataManagerSuccess(e: { result: Object, count: number }, control: RangeNavigator, series?: RangeNavigatorSeries): void {
         let viewData: Object = e.count ? e.result : [];
         control.allowServerDataBinding = false;
-        if (e.count) {
-            this.findGMT(control, <object[]>viewData, (series ? series.xName : null) || control.xName);
-        }
         this.processJsonData(viewData as Object[], control, Object.keys(viewData).length, series);
         this.seriesLength += series ? 1 : this.seriesLength;
         if (!series || this.seriesLength === control.series.length) {

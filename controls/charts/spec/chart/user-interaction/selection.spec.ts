@@ -229,6 +229,23 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionModule.selectedDataIndexes = [];
         chartObj.refresh();
     });
+    it('UnSelectionStyle selection', (done: Function) => {
+        loaded = () => {
+            element = document.getElementById(id + '_Series_0_Point_3');
+            trigger.clickEvent(element);
+            selected = document.getElementsByClassName(selection + '0');
+            expect(element).toBe(<HTMLElement>selected[0]);
+            element = document.getElementById(id + '_Series_0_Point_2');
+            expect(element.classList[0] === 'custom')
+            done();
+        };
+        chartObj.selectionMode = 'Point';
+        chartObj.isMultiSelect = false;
+        chartObj.series[0].unSelectedStyle = 'custom';
+        chartObj.loaded = loaded;
+        chartObj.selectionModule.selectedDataIndexes = [];
+        chartObj.refresh();
+    });
     it('Multiple point selection and UnSelection', (done: Function) => {
         loaded = () => {
             for (j = 0; j < seriesCollection.length; j++) {
@@ -250,6 +267,7 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionMode = 'Point';
         chartObj.isMultiSelect = true;
         chartObj.loaded = loaded;
+        chartObj.series[0].unSelectedStyle = null;
         chartObj.selectionModule.selectedDataIndexes = [];
         chartObj.refresh();
     });
@@ -866,6 +884,207 @@ describe('Chart Control Selection ', () => {
         chartObj.loaded = loaded;
         chartObj.selectionModule.selectedDataIndexes = [];
         chartObj.series[0].dataSource[2].y = 0;
+        chartObj.refresh();
+    });
+    it('Patterns with Dots', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Dots_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Dots';
+        chartObj.refresh();
+    });
+
+    it('Patterns with DiagonalForward', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'DiagonalForward_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'DiagonalForward';
+        chartObj.refresh();
+    });
+    it('Patterns with Crosshatch', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Crosshatch_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Crosshatch';
+        chartObj.refresh();
+    });
+    it('Patterns with Pacman', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Pacman_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Pacman';
+        chartObj.refresh();
+    });
+    it('Patterns with DiagonalBackward', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'DiagonalBackward_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'DiagonalBackward';
+        chartObj.refresh();
+    });
+    it('Patterns with Grid', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Grid_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Grid';
+        chartObj.refresh();
+    });
+    it('Patterns with Turquoise', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[1].id === 'Turquoise_Selection_1').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Turquoise';
+        chartObj.selectionMode = 'Series';
+        chartObj.refresh();
+    });
+    it('Patterns with Star', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Star_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Star';
+        chartObj.selectionMode = 'Cluster';
+        chartObj.refresh();
+    });
+    it('Patterns with Triangle', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'Triangle_Selection_2').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Triangle';
+        chartObj.selectionMode = 'DragX';
+        chartObj.refresh();
+    });
+    it('Patterns with Chessboard', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'Chessboard_Selection_2').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Chessboard';
+        chartObj.selectionMode = 'DragX';
+        chartObj.refresh();
+    });
+    it('Patterns with Circle', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Circle_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Circle';
+        chartObj.selectionMode = 'DragXY';
+        chartObj.refresh();
+    });
+    it('Patterns with Tile', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Tile_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Tile';
+        chartObj.selectionMode = 'DragY';
+        chartObj.refresh();
+    });
+    it('Patterns with HorizontalDash', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'HorizontalDash_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'HorizontalDash';
+        chartObj.selectionMode = 'Lasso';
+        chartObj.refresh();
+    });
+    it('Patterns with VerticalDash', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'VerticalDash_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'VerticalDash';
+        chartObj.selectionMode = 'Point';
+        chartObj.isMultiSelect = true;
+        chartObj.refresh();
+    });
+    it('Patterns with Rectangle', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Rectangle_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Rectangle';
+        chartObj.isMultiSelect = false;
+        chartObj.refresh();
+    });
+    it('Patterns with Box', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Box_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Box';
+        chartObj.refresh();
+    });
+    it('Patterns with VerticalStripe', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'VerticalStripe_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'VerticalStripe';
+        chartObj.refresh();
+    });
+    it('Patterns with Bubble', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Bubble_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'Bubble';
+        chartObj.refresh();
+    });
+    it('Patterns with HorizontalStripe', (done: Function) => {
+        loaded = () => {
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'HorizontalStripe_Selection_0').toBe(true);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.selectionPattern = 'HorizontalStripe';
         chartObj.refresh();
     });
     it('memory leak', () => {

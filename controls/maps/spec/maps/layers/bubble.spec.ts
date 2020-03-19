@@ -6,7 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usState, bubbleData } from '../data/data.spec';
 import { cont_countriesdata, mapSalesData2, randomcountriesData } from '../data/us-data.spec';
 import { MouseEvents } from '../base/events.spec';
-import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { IBubbleClickEventArgs, Bubble, IBubbleRenderingEventArgs } from '../../../src/maps/index';
 
 export function getElementByID(id: string): Element {
@@ -17,7 +17,7 @@ describe('Map layer testing', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
+            // console.log('Unsupported environment, window.performance.memory is unavailable');
             this.skip(); //Skips test (in Chai)
             return;
         }
@@ -105,27 +105,6 @@ describe('Map layer testing', () => {
         afterAll(() => {
             remove(ele);
             bubble.destroy();
-        });
-        it('Bubble range color checking testing spec', (done: Function) => {
-            // spec = getElementByID(specId + '0');
-            // expect(spec).not.toBe(null);
-            // expect(spec.getAttribute('fill')).toBe('yellow');
-            // expect(parseInt(spec.getAttribute('cx'), 10)).toBe(0);
-            // expect(parseInt(spec.getAttribute('cy'), 10)).toBe(0);
-            // expect(parseInt(spec.getAttribute('r'), 10)).toBe(21);
-            // spec = getElementByID(specId + '2');
-            // expect(spec).not.toBe(null);
-            // expect(spec.getAttribute('fill')).toBe('blueviolet');
-            // expect(parseInt(spec.getAttribute('cx'), 10)).toBe(0);
-            // expect(parseInt(spec.getAttribute('cy'), 10)).toBe(0);
-            // expect(parseInt(spec.getAttribute('r'), 10)).toBe(23);
-            // spec = getElementByID(specId + '4');
-            // expect(spec).not.toBe(null);
-            // expect(spec.getAttribute('fill')).toBe('orange');
-            // expect(parseInt(spec.getAttribute('cx'), 10)).toBe(0);
-            // expect(parseInt(spec.getAttribute('cy'), 10)).toBe(0);
-            // expect(parseInt(spec.getAttribute('r'), 10)).toBe(20);
-            done();
         });
         it('Bubble equal color testing spec', (done: Function) => {
             bubble.loaded = (args: ILoadedEventArgs) => {

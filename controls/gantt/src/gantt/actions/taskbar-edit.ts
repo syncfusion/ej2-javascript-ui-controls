@@ -81,7 +81,8 @@ export class TaskbarEdit {
         this.roundOffDuration = true;
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
-        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth'];
+        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth',
+        'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth', ];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     }
@@ -149,9 +150,9 @@ export class TaskbarEdit {
         if (predecessors) {
             for (let i: number = 0; i < predecessors.length; i++) {
                 let predecessor: IPredecessor = predecessors[i];
-                if (ganttProp.taskId.toString() === predecessor.from) {
+                if (ganttProp.rowUniqueID.toString() === predecessor.from) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
-                } else if (ganttProp.taskId.toString() === predecessor.to) {
+                } else if (ganttProp.rowUniqueID.toString() === predecessor.to) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
             }
@@ -170,7 +171,7 @@ export class TaskbarEdit {
         }
     }
     private applyActiveColor(from: string, to: string, enable?: boolean): void {
-        let taskId: string = this.taskBarEditRecord.ganttProperties.taskId.toString();
+        let taskId: string = this.taskBarEditRecord.ganttProperties.rowUniqueID.toString();
         let ganttRecord: IGanttData = (taskId === from) ? this.parent.getRecordByID(to) :
             this.parent.getRecordByID(from);
         let $tr: Element = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(ganttRecord)];
@@ -200,15 +201,15 @@ export class TaskbarEdit {
         } else if (childRecord.predecessor) {
             for (let i: number = 0; i < childRecord.predecessor.length; i++) {
                 let predecessor: IPredecessor = childRecord.predecessor[i];
-                if (predecessor.from === parentRecord.taskId.toString() &&
-                    predecessor.to === childRecord.taskId.toString()) {
+                if (predecessor.from === parentRecord.rowUniqueID.toString() &&
+                    predecessor.to === childRecord.rowUniqueID.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.connectorSecondRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
-                } else if (predecessor.from === childRecord.taskId.toString() &&
-                    predecessor.to === parentRecord.taskId.toString()) {
+                } else if (predecessor.from === childRecord.rowUniqueID.toString() &&
+                    predecessor.to === parentRecord.rowUniqueID.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.taskBarEditRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
@@ -231,7 +232,16 @@ export class TaskbarEdit {
      */
     public updateTaskBarEditElement(e: PointerEvent): void {
         let target: Element = this.getElementByPosition(e);
-        let element: Element = parentsUntil(target, cls.taskBarMainContainer);
+        let element: Element;
+        if (target.classList.contains(cls.manualParentRightResizer) || target.classList.contains(cls.manualParentMainContainer)
+            || target.classList.contains(cls.manualParentTaskBar)) {
+            element = parentsUntil(target, cls.manualParentMainContainer);
+        } else if (target.classList.contains(cls.manualParentMilestoneTop) || target.classList.contains(cls.manualParentMilestoneBottom)
+            || target.classList.contains(cls.manualParentMilestone)) {
+            element = parentsUntil(target, cls.manualParentMilestone);
+        } else {
+            element = parentsUntil(target, cls.taskBarMainContainer);
+        }
         if (this.parent.editSettings.allowTaskbarEditing && element) {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             this.editElement = element;
@@ -333,8 +343,19 @@ export class TaskbarEdit {
             action = 'ConnectorPointLeftDrag';
         } else if (mouseDownElement.classList.contains(cls.connectorPointRight)) {
             action = 'ConnectorPointRightDrag';
+        } else if (mouseDownElement.classList.contains(cls.manualParentRightResizer)) {
+            action = 'ParentResizing';
+        } else if (mouseDownElement.classList.contains(cls.manualParentTaskBar) ||
+            mouseDownElement.classList.contains(cls.manualParentMainContainer) ||
+            mouseDownElement.classList.contains(cls.manualParentMilestone) ||
+            mouseDownElement.classList.contains(cls.manualParentMilestoneTop) ||
+            mouseDownElement.classList.contains(cls.manualParentMilestoneBottom) ||
+            mouseDownElement.classList.contains(cls.manualParentMilestone)
+        ) {
+            action = 'ManualParentDrag';
         } else if (data) {
-            action = data.hasChildRecords ? 'ParentDrag' : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
+            action = data.hasChildRecords ? this.parent.taskMode === 'Auto' ? 'ParentDrag' : ''
+             : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
         }
         return action;
     }
@@ -422,6 +443,9 @@ export class TaskbarEdit {
         if (this.taskBarEditRecord !== null) {
             args.editingFields = this.taskBarEditRecord.ganttProperties;
             args.data = this.taskBarEditRecord;
+            if (this.parent.viewType === 'ResourceView' && args.data.level === 0) {
+                return;
+            }
             args.recordIndex = recordIndex;
             args.taskBarEditAction = this.taskBarEditAction;
             args.roundOffDuration = this.roundOffDuration;
@@ -433,10 +457,10 @@ export class TaskbarEdit {
                 this.performProgressResize(e);
             } else if (this.taskBarEditAction === 'LeftResizing') {
                 this.enableLeftResizing(e);
-            } else if (this.taskBarEditAction === 'RightResizing') {
+            } else if (this.taskBarEditAction === 'RightResizing' || this.taskBarEditAction === 'ParentResizing') {
                 this.enableRightResizing(e);
             } else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
-                this.taskBarEditAction === 'MilestoneDrag') {
+                this.taskBarEditAction === 'MilestoneDrag' || this.taskBarEditAction === 'ManualParentDrag') {
                 this.enableDragging(e);
             } else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskBarEditAction === 'ConnectorPointRightDrag') {
@@ -742,8 +766,10 @@ export class TaskbarEdit {
                     this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
                 }
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'RightResizing':
+            case 'ParentResizing':
                 left = this.getRoundOffEndLeft(item, this.roundOffDuration);
                 let tempEndDate: Date = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.startDate)) {
@@ -755,10 +781,12 @@ export class TaskbarEdit {
                  this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'ParentDrag':
             case 'ChildDrag':
             case 'MilestoneDrag':
+            case 'ManualParentDrag':
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
                 projectStartDate = this.getDateByLeft(left);
                 if (!isNullOrUndefined(item.endDate) && isNullOrUndefined(item.startDate)) {
@@ -852,9 +880,9 @@ export class TaskbarEdit {
         if (!isRoundOff) {
             if ((tierMode !== 'Hour' && tierMode !== 'Minutes')) {
                 if (remainDaysInDecimal <= 0.5) {
-                    left = ganttRecord.left - remainDays;
+                    left = left - remainDays;
                 } else if (remainDaysInDecimal > 0.5) {
-                    left = (ganttRecord.left - remainDays) + this.parent.perDayWidth / 2;
+                    left = (left - remainDays) + this.parent.perDayWidth / 2;
                 }
             }
         } else if (isRoundOff) {
@@ -862,14 +890,14 @@ export class TaskbarEdit {
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Hour') / (1000 * 60 * 60)));
                 remainDays = (this.parent.perDayWidth / 24) - ((this.parent.perDayWidth / 24) / remainingContribution);
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             } else if (tierMode === 'Minutes') {
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Minutes') / (1000 * 60)));
                 remainDays = (this.parent.perDayWidth / (24 * 60)) - ((this.parent.perDayWidth / (24 * 60)) / remainingContribution);
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             } else {
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             }
         }
         return left;
@@ -946,12 +974,20 @@ export class TaskbarEdit {
             this.taskBarEditElement.querySelector('.' + cls.traceParentProgressBar) as HTMLElement;
         let traceConnectorPointRight: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.rightConnectorPointOuterDiv) as HTMLElement;
+        let manualParentTaskbar: HTMLElement = this.taskBarEditElement as HTMLElement;
+        let manualTaskbar: HTMLElement = this.taskBarEditElement.querySelector('.' + cls.manualParentTaskBar)  as HTMLElement;
+        let manualParentRight: HTMLElement =
+            this.taskBarEditElement.querySelector('.' + cls.manualParentRightResizer) as HTMLElement;
+        let manualParentLeft: HTMLElement =
+            this.taskBarEditElement.querySelector('.' + cls.manualParentLeftResizer) as HTMLElement;
         if (this.taskBarEditAction !== 'ConnectorPointRightDrag' &&
             this.taskBarEditAction !== 'ConnectorPointLeftDrag') {
-            taskBarMainContainer.style.width = (width) + 'px';
-            taskBarMainContainer.style.left = (item.left) + 'px';
-            leftLabelContainer.style.width = (item.left) + 'px';
-            rightLabelContainer.style.left = (item.left + width) + 'px';
+            if (this.taskBarEditAction !== 'ParentResizing' && this.taskBarEditAction !== 'ManualParentDrag') {
+                taskBarMainContainer.style.width = (width) + 'px';
+                taskBarMainContainer.style.left = (item.left) + 'px';
+                leftLabelContainer.style.width = (item.left) + 'px';
+                rightLabelContainer.style.left = (item.left + width) + 'px';
+            }
             if (traceConnectorPointRight) {
                 traceConnectorPointRight.style.left = (this.parent.isAdaptive ? (width + 10) : (width + 2)) + 'px';
             }
@@ -973,6 +1009,11 @@ export class TaskbarEdit {
             } else if (this.taskBarEditAction === 'ParentDrag') {
                 traceParentTaskBar.style.width = (width) + 'px';
                 traceParentProgressBar.style.width = (item.progressWidth) + 'px';
+            } else if (this.taskBarEditAction === 'ParentResizing') {
+                manualParentTaskbar.style.width = manualTaskbar.style.width = (item.width) + 'px';
+                manualParentRight.style.left = (item.width - manualParentLeft.offsetLeft) + 'px';
+            } else if (this.taskBarEditAction === 'ManualParentDrag') {
+                manualParentTaskbar.style.left = (item.left - item.autoLeft) + 'px';
             } else {
                 traceChildTaskBar.style.width = (width) + 'px';
                 if (!isNullOrUndefined(traceChildProgressBar)) {
@@ -1081,7 +1122,11 @@ export class TaskbarEdit {
             this.parent.dataOperation.updateWidthLeft(args.data);
         }
         this.parent.dataOperation.updateTaskData(ganttRecord);
-        this.parent.editModule.initiateUpdateAction(args);
+        if (this.parent.viewType === 'ResourceView') {
+            this.parent.editModule.updateRsourceRecords(args);
+        } else {
+            this.parent.editModule.initiateUpdateAction(args);
+        }
     }
 
     /**
@@ -1192,9 +1237,9 @@ export class TaskbarEdit {
         let element: HTMLElement = target as HTMLElement;
 
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
-            predecessor = fromItem.taskId + 'S';
+            predecessor = fromItem.rowUniqueID + 'S';
         } else if (this.taskBarEditAction === 'ConnectorPointRightDrag') {
-            predecessor = fromItem.taskId + 'F';
+            predecessor = fromItem.rowUniqueID + 'F';
         }
 
         if (this.connectorSecondAction) {

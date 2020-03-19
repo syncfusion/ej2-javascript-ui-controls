@@ -336,7 +336,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    if (!isBlazor()) {
+                    if (!isBlazor() || (isBlazor() && !this.isServerRendered && this.getModuleName() !== 'progress-btn')) {
                         if (this.enableHtmlSanitizer) {
                             newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
                         }

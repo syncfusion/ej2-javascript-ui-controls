@@ -141,12 +141,12 @@ export class VirtualScroll {
                 if (this.parent.dataType === 'pivot') {
                     if (isBlazor()) {
                         let pivot: PivotView = this.parent;
-                        let ejsInterop: string = 'ejsInterop';
+                        let sfBlazor: string = 'sfBlazor';
                         /* tslint:disable-next-line */
-                        let dataSourceSettings: any = (window as any)[ejsInterop].
+                        let dataSourceSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
                         /* tslint:disable-next-line */
-                        let pageSettings: any = (window as any)[ejsInterop].
+                        let pageSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
                         /* tslint:disable-next-line */
                         (pivot as any).interopAdaptor.invokeMethodAsync(
@@ -198,13 +198,13 @@ export class VirtualScroll {
                 let colStartPos: number = 0;
                 if (pivot.dataType === 'pivot') {
                     if (isBlazor()) {
-                        let ejsInterop: string = 'ejsInterop';
+                        let sfBlazor: string = 'sfBlazor';
                         let pivot: PivotView = this.parent;
                         /* tslint:disable-next-line */
-                        let pageSettings: any = (window as any)[ejsInterop].
+                        let pageSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
                         /* tslint:disable-next-line */
-                        let dataSourceSettings: any = (window as any)[ejsInterop].
+                        let dataSourceSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
                         /* tslint:disable-next-line */
                         (pivot as any).interopAdaptor.invokeMethodAsync(
@@ -330,18 +330,17 @@ export class VirtualScroll {
     }
 
     private onVerticalScroll(fCont: HTMLElement, mCont: HTMLElement): Function {
-        /* tslint:disable-next-line */
         let timeOutObj: any;
         return (e: Event) => {
             let top: number = mCont.scrollTop * this.parent.verticalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
-                /* tslint:disable */
                 timeOutObj = setTimeout(() => {
                     this.update(null, mCont, mCont.scrollTop * this.parent.verticalScrollScale,
                         mCont.scrollLeft * this.parent.horizontalScrollScale, e);
                 }, 300);
             }
+            /* tslint:enable */
             if (this.previousValues.top === top) {
                 return;
             }

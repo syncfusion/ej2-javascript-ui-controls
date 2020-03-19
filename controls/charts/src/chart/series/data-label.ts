@@ -191,8 +191,7 @@ export class DataLabel {
                                     }
                                 }
                             }
-                            if ((!isCollide(rect, chart.dataLabelCollections, clip) || dataLabel.labelIntersectAction === 'None')
-                                && isRender) {
+                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
                                 chart.dataLabelCollections.push(new Rect(
                                     rect.x + clip.x, rect.y + clip.y, rect.width, rect.height
                                 ));
@@ -231,7 +230,7 @@ export class DataLabel {
                                         'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                     ),
                                     argsData.font, argsData.font.color ||
-                                ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
+                                    ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
                                     series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect
                                 );
                             }
@@ -242,7 +241,8 @@ export class DataLabel {
         });
         if (element.childElementCount) {
             appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
-                               false, 'x', 'y', null, '', false, false, null, chart.duration);
+            // tslint:disable-next-line:align
+            false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     }
 
@@ -347,11 +347,11 @@ export class DataLabel {
         if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
-            rect.y = (rect.y < 0) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
+            rect.y = rect.y < 0 ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
-            - (clipRect.x + clipRect.width) + padding : 0;
+                - (clipRect.x + clipRect.width) + padding : 0;
             rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)
-            - (clipRect.y + clipRect.height) + padding : 0;
+                - (clipRect.y + clipRect.height) + padding : 0;
             this.fontBackground = this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground;
         }
 
@@ -388,7 +388,7 @@ export class DataLabel {
             columnRadius = columnRadius / 2 + padding;
             if (series.drawType === 'StackingColumn') {
                 columnRadius = point.regionData.innerRadius + ((point.regionData.radius - point.regionData.innerRadius) / 2)
-                + padding - (size.height / 2);
+                    + padding - (size.height / 2);
             }
         } else if (position === 'Top') {
             columnRadius = labelIndex === 0 ? columnRadius - 2 * padding - this.markerHeight :

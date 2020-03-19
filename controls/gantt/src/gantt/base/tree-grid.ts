@@ -1,9 +1,9 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject } from '@syncfusion/ej2-base';
-import { FilterEventArgs, SortEventArgs, FailureEventArgs } from '@syncfusion/ej2-grids';
+import { FilterEventArgs, SortEventArgs, FailureEventArgs, Column } from '@syncfusion/ej2-grids';
 import { setValue, isBlazor, getElement } from '@syncfusion/ej2-base';
-import { Deferred } from '@syncfusion/ej2-data';
+import { Deferred, Query } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
 import { ITaskData, IGanttData } from './interface';
@@ -169,7 +169,7 @@ export class GanttTreeGrid {
                 });
                 return callBackPromise;
             } else {
-            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+                this.parent.ganttChartModule.expandGanttRow(expandingArgs);
             }
             setValue('cancel', getValue('cancel', expandingArgs), args);
         }
@@ -192,7 +192,7 @@ export class GanttTreeGrid {
         if (getValue('data', args) && isBlazor()) {
             let record: IGanttData = this.parent.getTaskByUniqueID(getValue('data', args).uniqueID);
             record.expanded = getValue('data', args).expanded;
-         }
+        }
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
         this.parent.notify('actionBegin', args);
@@ -333,7 +333,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         let tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i] === 'string') {
@@ -344,10 +344,17 @@ export class GanttTreeGrid {
             let columnName: string[] = [];
             if (tasksMapping.length > 0) {
                 columnName = tasksMapping.filter((name: string) => {
-                    return column.field === tasks[name];
+                    if (column.field === 'taskType' && !isNullOrUndefined(tasks.work)) {
+                        return column.field;
+                    } else {
+                        return column.field === tasks[name];
+                    }
                 });
             }
             if (columnName.length === 0) {
+                if (column.field === this.parent.resourceFields.group) {
+                    continue;
+                }
                 this.parent.customColumns.push(column.field);
                 column.headerText = column.headerText ? column.headerText : column.field;
                 column.width = column.width ? column.width : 150;
@@ -356,10 +363,15 @@ export class GanttTreeGrid {
                 this.bindTreeGridColumnProperties(column, true);
                 continue;
             } else {
-                let index: number = tasksMapping.indexOf(columnName[0]);
-                tasksMapping.splice(index, 1);
-                this.createTreeGridColumn(column, true);
-                this.parent.columnMapping[columnName[0]] = column.field;
+                if (column.field === 'taskType') {
+                    this.createTreeGridColumn(column, true);
+                    this.parent.columnMapping[column.field] = column.field;
+                } else {
+                    let index: number = tasksMapping.indexOf(columnName[0]);
+                    tasksMapping.splice(index, 1);
+                    this.createTreeGridColumn(column, true);
+                    this.parent.columnMapping[columnName[0]] = column.field;
+                }
             }
         }
 
@@ -370,7 +382,18 @@ export class GanttTreeGrid {
                 column.field = tasks[tasksMapping[j]];
                 this.createTreeGridColumn(column, length === 0);
                 this.parent.columnMapping[tasksMapping[j]] = column.field;
+                if (column.field === tasks.work) {
+                    let column: GanttColumnModel = {};
+                    column.field = 'taskType';
+                    this.createTreeGridColumn(column, length === 0);
+                    this.parent.columnMapping[column.field] = column.field;
+                }
             }
+        }
+        if (this.parent.viewType !== 'ProjectView') {
+            let column: GanttColumnModel = {};
+            this.composeUniqueIDColumn(column);
+            this.createTreeGridColumn(column, true);
         }
     }
 
@@ -379,6 +402,7 @@ export class GanttTreeGrid {
      * @param column 
      * @param isDefined 
      */
+    /* tslint:disable-next-line:max-func-body-length */
     private createTreeGridColumn(column: GanttColumnModel, isDefined?: boolean): void {
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
         column.disableHtmlEncode = column.disableHtmlEncode ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
@@ -430,7 +454,7 @@ export class GanttTreeGrid {
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
             if (isBlazor() && !column.template) {
-                this.parent.setProperties({'showInlineNotes': true}, true);
+                this.parent.setProperties({ 'showInlineNotes': true }, true);
             }
             if (!this.parent.showInlineNotes) {
                 if (!column.template) {
@@ -452,6 +476,34 @@ export class GanttTreeGrid {
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+        } else if (taskSettings.work === column.field) {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('work');
+            column.width = column.width ? column.width : 150;
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.workValueAccessor.bind(this);
+            column.editType = column.editType ? column.editType : 'numericedit';
+
+        } else if (column.field === 'taskType') {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskType');
+            column.width = column.width ? column.width : 150;
+            //column.type = 'string';
+            column.editType = 'dropdownedit';
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.taskTypeValueAccessor.bind(this);
+        } else if (taskSettings.manual === column.field && this.parent.taskMode  === 'Custom') {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskMode');
+            column.width = column.width ? column.width : 120;
+            column.editType = column.editType ? column.editType : 'dropdownedit';
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.modeValueAccessor.bind(this);
+            column.edit = {
+                params:
+                {
+                    query: new Query(),
+                    dataSource: [
+                        { id: 1, text: this.parent.localeObj.getConstant('manual'), value: true },
+                        { id: 2, text: this.parent.localeObj.getConstant('auto'), value: false }
+                    ],
+                    fields: { text: 'text', value: 'value'}
+                },
+            };
         }
         this.bindTreeGridColumnProperties(column, isDefined);
     }
@@ -471,7 +523,16 @@ export class GanttTreeGrid {
      * @private
      */
     public getResourceIds(data: IGanttData): object {
-        return getValue(this.parent.taskFields.resourceInfo, data.taskData);
+        let value: Object[] = getValue(this.parent.taskFields.resourceInfo, data.taskData);
+        let id: number[] = [];
+        if (!isNullOrUndefined(value)) {
+            for (let i: number = 0; i < value.length; i++) {
+                id.push(typeof value[i] === 'object' ? value[i][this.parent.resourceFields.id] : value[i]);
+            }
+            return id;
+        } else {
+            return value;
+        }
     }
     /**
      * Create Id column
@@ -483,6 +544,17 @@ export class GanttTreeGrid {
         column.width = column.width ? column.width : 100;
         column.allowEditing = column.allowEditing ? column.allowEditing : false;
         column.editType = column.editType ? column.editType : 'numericedit';
+        if (this.parent.viewType !== 'ProjectView') {
+            column.valueAccessor = this.idValueAccessor.bind(this);
+            column.isPrimaryKey = false;
+        }
+    }
+    private composeUniqueIDColumn(column: GanttColumnModel): void {
+        column.field = 'rowUniqueID';
+        column.isPrimaryKey = true;
+        column.headerText = 'UniqueID';
+        column.allowEditing = false;
+        column.visible = false;
     }
 
     /**
@@ -523,6 +595,32 @@ export class GanttTreeGrid {
             return ganttProp.resourceNames;
         }
         return '';
+    }
+
+    private workValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        let ganttProp: ITaskData = data.ganttProperties;
+        if (!isNullOrUndefined(ganttProp)) {
+            return this.parent.dataOperation.getWorkString(ganttProp.work, ganttProp.workUnit);
+        }
+        return '';
+    }
+    private taskTypeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        let ganttProp: ITaskData = data.ganttProperties;
+        if (!isNullOrUndefined(ganttProp)) {
+            return ganttProp.taskType;
+        }
+        return '';
+    }
+    private modeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        if (data[field]) {
+            return 'Manual';
+        } else {
+            return 'Auto';
+        }
+    }
+
+    private idValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        return data.level === 0 ? 'R-' + data.ganttProperties.taskId : 'T-' + data.ganttProperties.taskId;
     }
 
     private updateScrollTop(args: object): void {

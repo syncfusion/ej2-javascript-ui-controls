@@ -20,7 +20,8 @@ let cssClass = {
     disabled: 'e-disabled',
     image: 'e-list-img',
     iconWrapper: 'e-icon-wrapper',
-    anchorWrap: 'e-anchor-wrap'
+    anchorWrap: 'e-anchor-wrap',
+    navigable: 'e-navigable'
 };
 /**
  * Base List Generator
@@ -165,6 +166,7 @@ var ListBase;
         }
         let child = [];
         let li;
+        let anchorElement;
         if (dataSource && dataSource.length && !isNullOrUndefined(typeofData(dataSource).item) &&
             !typeofData(dataSource).item.hasOwnProperty(fields.id)) {
             id = generateId(); // generate id for drop-down-list option.
@@ -206,6 +208,7 @@ var ListBase;
                 }
                 li = generateSingleLevelLI(createElement, curItem, fieldData, fields, curOpt.itemClass, innerEle, (curItem.hasOwnProperty('isHeader') &&
                     curItem.isHeader) ? true : false, id, i, options);
+                anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 if (curOpt.itemNavigable && checkboxElement.length) {
                     prepend(checkboxElement, li.firstElementChild);
                 }
@@ -214,6 +217,7 @@ var ListBase;
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
+                anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 if (fieldData.hasOwnProperty(fields.tooltip)) {
                     li.setAttribute('title', fieldData[fields.tooltip]);
                 }
@@ -230,11 +234,24 @@ var ListBase;
                     && !curOpt.template) {
                     let attr = { src: fieldData[fields.imageUrl] };
                     merge(attr, fieldData[fields.imageAttributes]);
-                    prepend([createElement('img', { className: cssClass.image, attrs: attr })], li.firstElementChild);
+                    let imageElemnt = createElement('img', { className: cssClass.image, attrs: attr });
+                    if (anchorElement) {
+                        anchorElement.insertAdjacentElement('afterbegin', imageElemnt);
+                    }
+                    else {
+                        prepend([imageElemnt], li.firstElementChild);
+                    }
                 }
                 if (curOpt.showIcon && fieldData.hasOwnProperty(fields.iconCss) &&
                     !isNullOrUndefined(fieldData[fields.iconCss]) && !curOpt.template) {
-                    prepend([createElement('div', { className: cssClass.icon + ' ' + fieldData[fields.iconCss] })], li.firstElementChild);
+                    let iconElement;
+                    iconElement = createElement('div', { className: cssClass.icon + ' ' + fieldData[fields.iconCss] });
+                    if (anchorElement) {
+                        anchorElement.insertAdjacentElement('afterbegin', iconElement);
+                    }
+                    else {
+                        prepend([iconElement], li.firstElementChild);
+                    }
                 }
                 if (innerEle.length) {
                     prepend(innerEle, li.firstElementChild);
@@ -243,6 +260,9 @@ var ListBase;
                     prepend(checkboxElement, li.firstElementChild);
                 }
                 processSubChild(createElement, fieldData, fields, dataSource, curOpt, li, ariaAttributes.level);
+            }
+            if (anchorElement) {
+                addClass([li], [cssClass.navigable]);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 let curData = {
@@ -499,7 +519,7 @@ var ListBase;
             else {
                 const currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
-                li.setAttribute('data-value', value);
+                li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
@@ -598,9 +618,7 @@ var ListBase;
             li.innerText = text;
         }
         else {
-            if (!isNullOrUndefined(value)) {
-                li.setAttribute('data-value', value);
-            }
+            li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
             li.setAttribute('role', 'option');
             if (dataSource && fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {
                 setAttribute(li, fieldData[fields.htmlAttributes]);
@@ -641,7 +659,8 @@ var ListBase;
             disabled: 'e-disabled',
             image: `e-${moduleName}-img`,
             iconWrapper: 'e-icon-wrapper',
-            anchorWrap: 'e-anchor-wrap'
+            anchorWrap: 'e-anchor-wrap',
+            navigable: 'e-navigable',
         };
     }
     function anchorTag(createElement, dataSource, fields, text, innerElements, isFullNavigation) {
@@ -901,6 +920,7 @@ let ListView = class ListView extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        this.itemReRender = false;
     }
     /**
      * @private
@@ -930,6 +950,9 @@ let ListView = class ListView extends Component {
                         this.virtualizationModule.reRenderUiVirtualization();
                     }
                     else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
                         this.reRender();
                     }
                     break;
@@ -949,11 +972,13 @@ let ListView = class ListView extends Component {
                     break;
                 case 'showCheckBox':
                 case 'checkBoxPosition':
-                    if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
-                    }
-                    else {
-                        this.setCheckbox();
+                    if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                        if (this.enableVirtualization) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
+                        else {
+                            this.setCheckbox();
+                        }
                     }
                     break;
                 case 'dataSource':
@@ -961,18 +986,28 @@ let ListView = class ListView extends Component {
                         this.virtualizationModule.reRenderUiVirtualization();
                     }
                     else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
                         this.reRender();
                     }
                     break;
                 case 'sortOrder':
                 case 'showIcon':
-                    if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('ItemSorting');
+                        //tslint:enable
                     }
                     else {
-                        this.listBaseOption.showIcon = this.showIcon;
-                        this.curViewDS = this.getSubDS();
-                        this.resetCurrentList();
+                        if (this.enableVirtualization) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
+                        else {
+                            this.listBaseOption.showIcon = this.showIcon;
+                            this.curViewDS = this.getSubDS();
+                            this.resetCurrentList();
+                        }
                     }
                     break;
                 default:
@@ -1020,59 +1055,67 @@ let ListView = class ListView extends Component {
     }
     // Support Component Functions
     header(text, showBack) {
-        if (this.headerEle === undefined && this.showHeader) {
-            if (this.enableHtmlSanitizer) {
-                this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
-            }
-            this.headerEle = this.createElement('div', { className: classNames.header });
-            let innerHeaderEle = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
-            let textEle = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
-            let hedBackButton = this.createElement('div', {
-                className: classNames.icon + ' ' + classNames.backIcon + ' e-but-back',
-                attrs: { style: 'display:none;' }
-            });
-            this.headerEle.appendChild(hedBackButton);
-            this.headerEle.appendChild(textEle);
-            if (this.headerTemplate) {
-                let compiledString = compile(this.headerTemplate);
-                let headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
-                append([headerTemplateEle], this.headerEle);
-                this.updateBlazorTemplates(false, true, true);
-            }
-            if (this.headerTemplate && this.headerTitle) {
-                textEle.classList.add('header');
-            }
-            this.element.classList.add('e-has-header');
-            prepend([this.headerEle], this.element);
+        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+            let args = { HeaderText: text, BackButton: showBack };
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('HeaderTitle', args);
+            // tslint:disable
         }
-        else if (this.headerEle) {
-            if (this.showHeader) {
-                this.headerEle.style.display = '';
-                let textEle = this.headerEle.querySelector('.' + classNames.headerText);
-                let hedBackButton = this.headerEle.querySelector('.' + classNames.backIcon);
+        else {
+            if (this.headerEle === undefined && this.showHeader) {
                 if (this.enableHtmlSanitizer) {
-                    text = SanitizeHtmlHelper.sanitize(text);
+                    this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
                 }
-                textEle.innerHTML = text;
-                if (this.headerTemplate && showBack) {
-                    textEle.parentElement.classList.remove('header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('nested-header');
+                this.headerEle = this.createElement('div', { className: classNames.header });
+                let innerHeaderEle = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
+                let textEle = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
+                let hedBackButton = this.createElement('div', {
+                    className: classNames.icon + ' ' + classNames.backIcon + ' e-but-back',
+                    attrs: { style: 'display:none;' }
+                });
+                this.headerEle.appendChild(hedBackButton);
+                this.headerEle.appendChild(textEle);
+                if (this.headerTemplate) {
+                    let compiledString = compile(this.headerTemplate);
+                    let headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
+                    append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    append([headerTemplateEle], this.headerEle);
+                    this.updateBlazorTemplates(false, true, true);
                 }
-                if (this.headerTemplate && !showBack) {
-                    textEle.parentElement.classList.add('header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.remove('nested-header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('header');
+                if (this.headerTemplate && this.headerTitle) {
+                    textEle.classList.add('header');
                 }
-                if (showBack === true) {
-                    hedBackButton.style.display = '';
+                this.element.classList.add('e-has-header');
+                prepend([this.headerEle], this.element);
+            }
+            else if (this.headerEle) {
+                if (this.showHeader) {
+                    this.headerEle.style.display = '';
+                    let textEle = this.headerEle.querySelector('.' + classNames.headerText);
+                    let hedBackButton = this.headerEle.querySelector('.' + classNames.backIcon);
+                    if (this.enableHtmlSanitizer) {
+                        text = SanitizeHtmlHelper.sanitize(text);
+                    }
+                    textEle.innerHTML = text;
+                    if (this.headerTemplate && showBack) {
+                        textEle.parentElement.classList.remove('header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('nested-header');
+                    }
+                    if (this.headerTemplate && !showBack) {
+                        textEle.parentElement.classList.add('header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.remove('nested-header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('header');
+                    }
+                    if (showBack === true) {
+                        hedBackButton.style.display = '';
+                    }
+                    else {
+                        hedBackButton.style.display = 'none';
+                    }
                 }
                 else {
-                    hedBackButton.style.display = 'none';
+                    this.headerEle.style.display = 'none';
                 }
-            }
-            else {
-                this.headerEle.style.display = 'none';
             }
         }
     }
@@ -1354,6 +1397,11 @@ let ListView = class ListView extends Component {
             }
             else {
                 this.setSelectLI(li, e);
+            }
+            if (e.target.closest('li')) {
+                if (e.target.closest('li').classList.contains('e-has-child') && !e.target.parentElement.classList.contains('e-listview-checkbox')) {
+                    e.target.closest('li').classList.add(classNames.disable);
+                }
             }
         }
     }
@@ -1822,13 +1870,16 @@ let ListView = class ListView extends Component {
     }
     setLocalData() {
         this.trigger('actionBegin');
+        let _this = this;
         if (this.dataSource instanceof DataManager) {
             this.dataSource.executeQuery(this.getQuery()).then((e) => {
                 if (this.isDestroyed) {
                     return;
                 }
                 this.localData = e.result;
-                this.removeElement(this.contentContainer);
+                if (_this.enableVirtualization || !this.isServerRendered || (!isBlazor())) {
+                    _this.removeElement(_this.contentContainer);
+                }
                 this.renderList();
                 this.trigger('actionComplete', e);
             }).catch((e) => {
@@ -1855,16 +1906,18 @@ let ListView = class ListView extends Component {
         }
     }
     reRender() {
-        this.resetBlazorTemplates();
-        this.removeElement(this.headerEle);
-        this.removeElement(this.ulElement);
-        this.removeElement(this.contentContainer);
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
-            this.element.innerHTML = '';
+        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+            this.resetBlazorTemplates();
+            this.removeElement(this.headerEle);
+            this.removeElement(this.ulElement);
+            this.removeElement(this.contentContainer);
+            if (Object.keys(window).indexOf('ejsInterop') === -1) {
+                this.element.innerHTML = '';
+            }
+            this.headerEle = this.ulElement = this.liCollection = undefined;
+            this.header();
         }
-        this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
-        this.header();
     }
     resetCurrentList() {
         this.resetBlazorTemplates();
@@ -1917,7 +1970,27 @@ let ListView = class ListView extends Component {
             updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this, resetExistingElements);
         }
     }
+    exceptionEvent(e) {
+        this.trigger('actionFailure', e);
+    }
+    UpdateCurrentUL() {
+        this.ulElement = this.curUL = this.element.querySelector('.' + classNames.parentItem);
+        if (this.curUL) {
+            // tslint:disable
+            this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+            // tslint:enable
+        }
+    }
+    renderingNestedList() {
+        let ul = closest(this.liElement.parentNode, '.' + classNames.parentItem);
+        let ctrlId = this.element.id;
+        let ulElement = document.getElementById(ctrlId);
+        let currentListItem = ulElement.getElementsByTagName('UL')[ulElement.getElementsByTagName('UL').length - 1];
+        this.switchView(ul, currentListItem);
+        this.liElement = null;
+    }
     renderSubList(li) {
+        this.liElement = li;
         let uID = li.getAttribute('data-uid');
         if (li.classList.contains(classNames.hasChild) && uID) {
             let ul = closest(li.parentNode, '.' + classNames.parentItem);
@@ -1926,15 +1999,24 @@ let ListView = class ListView extends Component {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data = this.curViewDS;
-                ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
-                let lists = ele.querySelectorAll('.' + classNames.listItem);
-                this.setAttributes(lists);
-                ele.setAttribute('pID', uID);
-                ele.style.display = 'none';
-                this.renderIntoDom(ele);
-                this.updateBlazorTemplates(true);
+                if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
+                    // tslint:enable
+                }
+                else {
+                    ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                    let lists = ele.querySelectorAll('.' + classNames.listItem);
+                    this.setAttributes(lists);
+                    ele.setAttribute('pID', uID);
+                    ele.style.display = 'none';
+                    this.renderIntoDom(ele);
+                    this.updateBlazorTemplates(true);
+                }
             }
-            this.switchView(ul, ele);
+            if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                this.switchView(ul, ele);
+            }
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {
                 let fieldData = getFieldValues(this.selectedItems.data, this.listBaseOption.fields);
@@ -1948,21 +2030,31 @@ let ListView = class ListView extends Component {
     }
     renderList(data) {
         this.setViewDataSource(data);
-        if (this.enableVirtualization) {
-            if (Object.keys(this.dataSource).length) {
-                if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                    this.listBaseOption.template = null;
-                    this.listBaseOption.groupTemplate = null;
-                    this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
-                }
-                this.virtualizationModule.uiVirtualization();
-            }
+        if (isBlazor() && this.isServerRendered && !this.enableVirtualization && this.itemReRender) {
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('ListDynamicDataSource', this.localData);
+            this.itemReRender = false;
+            // tslint:enable
         }
         else {
-            this.createList();
-            this.contentContainer = this.createElement('div', { className: classNames.content });
-            this.element.appendChild(this.contentContainer);
-            this.renderIntoDom(this.ulElement);
+            if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                if (this.enableVirtualization) {
+                    if (Object.keys(this.dataSource).length) {
+                        if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                            this.listBaseOption.template = null;
+                            this.listBaseOption.groupTemplate = null;
+                            this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                        }
+                        this.virtualizationModule.uiVirtualization();
+                    }
+                }
+                else {
+                    this.createList();
+                    this.contentContainer = this.createElement('div', { className: classNames.content });
+                    this.element.appendChild(this.contentContainer);
+                    this.renderIntoDom(this.ulElement);
+                }
+            }
         }
     }
     getElementUID(obj) {
@@ -1979,20 +2071,36 @@ let ListView = class ListView extends Component {
      * It is used to Initialize the control rendering.
      */
     render() {
-        this.element.classList.add(classNames.root);
-        attributes(this.element, { role: 'listbox', tabindex: '0' });
-        this.setCSSClass();
-        this.setEnableRTL();
-        this.setEnable();
-        this.setSize();
-        this.wireEvents();
-        this.header();
-        this.setLocalData();
-        this.setHTMLAttribute();
+        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+            this.element.classList.add(classNames.root);
+            attributes(this.element, { role: 'list', tabindex: '0' });
+            this.setCSSClass();
+            this.setEnableRTL();
+            this.setEnable();
+            this.setSize();
+            this.wireEvents();
+            this.header();
+            this.setLocalData();
+            this.setHTMLAttribute();
+        }
+        else {
+            this.initBlazor(true);
+        }
         this.rippleFn = rippleEffect(this.element, {
             selector: '.' + classNames.listItem
         });
         this.renderComplete();
+    }
+    initBlazor(firstRender) {
+        if (firstRender === null) {
+            firstRender = false;
+        }
+        this.setLocalData();
+        this.setViewDataSource(this.localData);
+        this.contentContainer = this.element.querySelector('.' + classNames.content);
+        if (firstRender) {
+            this.wireEvents();
+        }
     }
     /**
      * It is used to destroy the ListView component.
@@ -2034,6 +2142,7 @@ let ListView = class ListView extends Component {
         this.switchView(fromUL, toUL, true);
         this.removeFocus();
         let li = this.element.querySelector('[data-uid=\'' + pID + '\']');
+        li.classList.remove(classNames.disable);
         li.classList.add(classNames.focused);
         if (this.showCheckBox && li.querySelector('.' + classNames.checkboxIcon).classList.contains(classNames.checked)) {
             li.setAttribute('aria-selected', 'true');
@@ -2354,7 +2463,7 @@ let ListView = class ListView extends Component {
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
-     * @blazorArgsType data|List<TValue>,fields|TValue
+     * @blazorArgsType data|object,fields|object
      */
     addItem(data, fields = undefined) {
         const dataSource = this.dataSource instanceof DataManager
@@ -3746,19 +3855,26 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             let dropInst = this.getSortableInstance(this.curTarget);
             let prevIdx;
             let curIdx;
+            let handled;
             prevIdx = this.getIndex(this.target);
             if (this.isPlaceHolderPresent(dropInst)) {
                 let curIdx = this.getIndex(dropInst.placeHolderElement, dropInst);
                 let args = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target, droppedElement: this.target,
-                    helper: e.helper, cancel: false };
+                    helper: e.helper, cancel: false, handled: false };
                 this.trigger('beforeDrop', args, (observedArgs) => {
                     if (!observedArgs.cancel) {
+                        handled = observedArgs.handled;
                         this.updateItemClass(dropInst);
+                        if (observedArgs.handled) {
+                            let ele = this.target.cloneNode(true);
+                            this.target.classList.remove('e-grabbed');
+                            this.target = ele;
+                        }
                         dropInst.element.insertBefore(this.target, dropInst.placeHolderElement);
                         let curIdx = this.getIndex(this.target, dropInst);
                         prevIdx = this === dropInst && (prevIdx - curIdx) > 1 ? prevIdx - 1 : prevIdx;
                         this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
-                            target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
+                            target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope, handled: handled });
                     }
                     remove(dropInst.placeHolderElement);
                 });

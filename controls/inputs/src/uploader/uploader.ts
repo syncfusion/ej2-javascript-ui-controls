@@ -357,6 +357,7 @@ export interface ProgressEventArgs {
 export interface UploadChangeEventArgs {
     /**
      * Returns the list of files that will be cleared from the FileList.
+     * @blazorType List<Syncfusion.Blazor.Inputs.Internal.UploadFiles>
      */
     files?: FileInfo[];
 }
@@ -554,6 +555,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private browserName: string;
     private uploaderOptions: UploaderModel;
     private uploaderName: string = 'UploadFiles';
+    private isServerBlazor: boolean;
+    private isBlazorSaveUrl: boolean;
+    private isBlazorTemplate: boolean;
+    private fileStreams: FileInfo[] = [];
+    private newFileRef: number = 0;
     /**
      * Get the file item(li) which are shown in file list.
      * @private
@@ -1065,9 +1071,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 case 'directoryUpload':
                     this.updateDirectoryAttributes();
                     break;
+                case 'template':
+                    if (!this.isServerBlazor) {
+                        this.clearAll();
+                    }
+                    break;
                 case 'minFileSize':
                 case 'maxFileSize':
-                case 'template':
                 case 'autoUpload':
                     this.clearAll();
                     break;
@@ -1092,7 +1102,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
                 this.localizedTexts('Browse') : this.buttons.browse;
                 this.browseButton.setAttribute('title', this.browseButton.innerText);
-                this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
+                if (this.uploadWrapper) {
+                    this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
+                }
             }
             this.updateFileList();
         }
@@ -1167,19 +1179,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
            };
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
+        this.isServerBlazor =  (isBlazor() && this.isServerRendered) ? true : false;
+        this.isBlazorTemplate = this.isServerBlazor && this.template !== '' && !isNullOrUndefined(this.template) ? true : false ;
+        this.isBlazorSaveUrl = (this.isServerRendered &&
+            (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl))) ? true : false;
+        if (this.isBlazorSaveUrl && this.sequentialUpload) { this.sequentialUpload = false; }
+        this.formRendered();
+        if (!this.isServerBlazor) {
         this.updateHTMLAttrToElement();
         this.checkHTMLAttributes(false);
-        let parentEle: HTMLElement = closest(this.element, 'form') as HTMLElement;
-        if (!isNullOrUndefined(parentEle)) {
-            for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
-                if (parentEle.tagName === 'FORM') {
-                    this.isForm = true;
-                    this.formElement = parentEle;
-                    parentEle.setAttribute('enctype', 'multipart/form-data');
-                    parentEle.setAttribute('encoding', 'multipart/form-data');
-                }
-            }
-        }
         // tslint:disable-next-line
         let ejInstance: any = getValue('ej2_instances', this.element);
         /* istanbul ignore next */
@@ -1214,6 +1222,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.element.setAttribute('type', 'file');
         }
         this.updateDirectoryAttributes();
+    }
         this.keyConfigs = {
             enter: 'enter'
         };
@@ -1222,6 +1231,20 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         this.browserName = Browser.info.name;
         this.uploaderName = this.element.getAttribute('name');
+    }
+
+    private formRendered(): void {
+        let parentEle: HTMLElement = closest(this.element, 'form') as HTMLElement;
+        if (!isNullOrUndefined(parentEle)) {
+            for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
+                if (parentEle.tagName === 'FORM') {
+                    this.isForm = true;
+                    this.formElement = parentEle;
+                    parentEle.setAttribute('enctype', 'multipart/form-data');
+                    parentEle.setAttribute('encoding', 'multipart/form-data');
+                }
+            }
+        }
     }
 
     protected getPersistData(): string {
@@ -1250,16 +1273,25 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @private
      */
     public render(): void {
-        this.renderBrowseButton();
-        this.initializeUpload();
-        this.updateHTMLAttrToWrapper();
-        this.wireEvents();
-        this.setMultipleSelection();
-        this.setExtensions(this.allowedExtensions);
-        this.setRTL();
-        this.renderPreLoadFiles();
-        this.setControlStatus();
-        this.setCSSClass();
+        if (!this.isServerBlazor) {
+            this.renderBrowseButton();
+            this.initializeUpload();
+            this.updateHTMLAttrToWrapper();
+            this.wireEvents();
+            this.setMultipleSelection();
+            this.setExtensions(this.allowedExtensions);
+            this.setRTL();
+            this.renderPreLoadFiles();
+            this.setControlStatus();
+            this.setCSSClass();
+        } else {
+            this.dropAreaWrapper = closest(this.element, '.' + DROP_WRAPPER) as HTMLElement;
+            this.uploadWrapper = closest(this.element, '.e-upload.e-control-wrapper') as HTMLElement;
+            this.browseButton = this.dropAreaWrapper.querySelector('button.e-upload-browse-btn');
+            this.setDropArea();
+            this.renderPreLoadFiles();
+            this.wireEvents();
+        }
         this.renderComplete();
     }
 
@@ -1278,18 +1310,48 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private renderActionButtons(): void {
         this.element.setAttribute('tabindex', '-1');
-        this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
-        this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS ,
-                                                attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
-        this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
-                                               attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
-        this.actionButtons.appendChild(this.clearButton);
-        this.actionButtons.appendChild(this.uploadButton);
-        this.renderButtonTemplates();
-        this.uploadWrapper.appendChild(this.actionButtons);
-        this.browseButton.blur();
-        this.uploadButton.focus();
-        this.wireActionButtonEvents();
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
+            this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS ,
+                                                    attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
+            this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
+                                                    attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
+            this.actionButtons.appendChild(this.clearButton);
+            this.actionButtons.appendChild(this.uploadButton);
+            this.renderButtonTemplates();
+            this.uploadWrapper.appendChild(this.actionButtons);
+            this.browseButton.blur();
+            this.uploadButton.focus();
+            this.wireActionButtonEvents();
+        }
+    }
+
+    /* istanbul ignore next */
+    private serverActionButtonsEventBind(element: HTMLElement): void {
+        if (element && !this.isForm) {
+            this.browseButton.blur();
+            this.actionButtons = element;
+            this.uploadButton = this.actionButtons.querySelector('.e-file-upload-btn');
+            this.clearButton = this.actionButtons.querySelector('.e-file-clear-btn');
+            this.uploadButton.focus();
+            this.unwireActionButtonEvents();
+            this.wireActionButtonEvents();
+            this.checkActionButtonStatus();
+        }
+    }
+
+    /* istanbul ignore next */
+    private serverUlElement(element: HTMLElement): void {
+        if (element) {
+            if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+                this.listParent = element;
+                this.fileList = [].slice.call(this.listParent.querySelectorAll('li'));
+                this.serverRemoveIconBindEvent();
+                if (!this.isForm) {
+                    this.checkAutoUpload(this.filesData);
+                }
+            }
+        }
     }
 
     private wireActionButtonEvents(): void {
@@ -1305,7 +1367,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private removeActionButtons(): void {
         if (this.actionButtons) {
             this.unwireActionButtonEvents();
-            detach(this.actionButtons);
+            if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                detach(this.actionButtons);
+            }
             this.actionButtons = null;
         }
     }
@@ -1687,6 +1751,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private removeFiles(args: MouseEvent | TouchEvent | KeyboardEventArgs): void {
         if (!this.enabled) { return; }
         let selectedElement: HTMLElement = (<HTMLInputElement>args.target).parentElement;
+        if (this.isBlazorSaveUrl) {
+            this.fileList = [].slice.call(this.uploadWrapper.querySelectorAll('li'));
+        }
         let index: number = this.fileList.indexOf(selectedElement);
         let liElement: HTMLElement = this.fileList[index];
         let formUpload: boolean = this.isFormUpload();
@@ -1724,10 +1791,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         let selectedElement: HTMLElement = this.getLiElement(file);
         if (isNullOrUndefined(selectedElement)) { return; }
-        detach(selectedElement);
+        if (!this.isBlazorSaveUrl) {
+            detach(selectedElement);
+        }
         index = this.fileList.indexOf(selectedElement);
         this.fileList.splice(index, 1);
         this.filesData.splice(index, 1);
+        if (!this.isBlazorSaveUrl) {
         if (this.fileList.length === 0 && !isNullOrUndefined(this.listParent)) {
             detach(this.listParent);
             this.listParent = null;
@@ -1738,6 +1808,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (index <= this.count) {
                 --this.count;
             }
+        }
+    } else {
+        // tslint:disable-next-line
+        (this as any).interopAdaptor.invokeMethodAsync('removeFileData', index);
         }
     }
 
@@ -1750,7 +1824,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let formData: FormData = new FormData();
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
             eventArgs.currentRequest = ajax.httpRequest;
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -1770,6 +1844,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.removingEventCallback(eventArgs, formData, selectedFiles, file);
             }
         };
+        if (this.isServerBlazor) {
+            let name: string = this.element.getAttribute('name');
+            if (!isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+            } else {
+                formData.append(name, selectedFiles.name);
+            }
+        }
         ajax.onLoad = (e: Event): object => { this.removeCompleted(e, selectedFiles, custom); return {}; };
         /* istanbul ignore next */
         ajax.onError = (e: Event): object => { this.removeFailed(e, selectedFiles, custom); return {}; };
@@ -1788,12 +1870,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 createSpinner({ target: spinnerTarget , width: '20px' });
                 showSpinner(spinnerTarget);
             }
-            if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
-                formData.append(name, selectedFiles.rawFile, selectedFiles.name);
-            } else {
-                formData.append(name, selectedFiles.name);
+            if (!this.isServerBlazor) {
+                if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                    formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+                } else {
+                    formData.append(name, selectedFiles.name);
+                }
+                this.updateFormData(formData, eventArgs.customFormData);
             }
-            this.updateFormData(formData, eventArgs.customFormData);
     }
 
     /* istanbul ignore next */
@@ -2032,39 +2116,54 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private _internalRenderSelect(eventArgs: SelectedEventArgs, fileData: FileInfo[]): void {
         if (!eventArgs.cancel) {
             /* istanbul ignore next */
-           if (isBlazor()) {
-               this.currentRequestHeader = eventArgs.currentRequest;
-               this.customFormDatas = eventArgs.customFormData;
-           }
-           this.selectedFiles = fileData;
-           this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
-           if (this.showFileList) {
-               if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                   let dataFiles: FileInfo[] = this.allTypes ? eventArgs.modifiedFilesData :
-                       this.checkExtension(eventArgs.modifiedFilesData);
-                   this.updateSortedFileList(dataFiles);
-                   this.filesData = dataFiles;
-                   if (!this.isForm || this.allowUpload()) {
-                       this.checkAutoUpload(dataFiles);
-                   }
-               } else {
-                   this.createFileList(fileData);
-                   this.filesData = this.filesData.concat(fileData);
-                   if (!this.isForm || this.allowUpload()) {
-                       this.checkAutoUpload(fileData);
-                   }
-               }
-               if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                   this.progressInterval = eventArgs.progressInterval;
-               }
-           } else {
-               this.filesData = this.filesData.concat(fileData);
-               if (this.autoUpload) {
-                   this.upload(this.filesData, true);
-               }
-           }
-           this.raiseActionComplete();
-       }
+            if (this.isServerBlazor) {
+                this.currentRequestHeader = eventArgs.currentRequest;
+                this.customFormDatas = eventArgs.customFormData;
+            }
+            this.selectedFiles = fileData;
+            this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
+            if (this.showFileList) {
+                if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                    for (let j: number = 0; j < eventArgs.modifiedFilesData.length; j++) {
+                        for (let k: number = 0; k < fileData.length; k++) {
+                            if (eventArgs.modifiedFilesData[j].name === fileData[k].name) {
+                                eventArgs.modifiedFilesData[j].rawFile = fileData[k].rawFile;
+                            }
+                        }
+                    }
+                    let dataFiles: FileInfo[] = this.allTypes ? eventArgs.modifiedFilesData :
+                        this.checkExtension(eventArgs.modifiedFilesData);
+                    this.updateSortedFileList(dataFiles);
+                    this.filesData = dataFiles;
+                    if (!this.isForm || this.allowUpload()) {
+                        this.checkAutoUpload(dataFiles);
+                    }
+                } else {
+                    this.createFileList(fileData, true);
+                    if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                        this.filesData = this.filesData.concat(fileData);
+                    }
+                    if (!this.isForm || this.allowUpload()) {
+                        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                            this.checkAutoUpload(fileData);
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                    this.progressInterval = eventArgs.progressInterval;
+                }
+            } else {
+                this.filesData = this.filesData.concat(fileData);
+                if (this.isBlazorSaveUrl) {
+                    // tslint:disable-next-line
+                    (this as any).interopAdaptor.invokeMethodAsync('updateServerFileData', this.filesData, this.isForm);
+                }
+                if (this.autoUpload) {
+                    this.upload(this.filesData, true);
+                }
+            }
+            this.raiseActionComplete();
+        }
     }
 
     private allowUpload(): boolean {
@@ -2085,14 +2184,19 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private clearData(singleUpload?: boolean) : void {
-        if (!isNullOrUndefined(this.listParent)) {
+        if (!isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             detach(this.listParent);
             this.listParent = null;
         }
         if (this.browserName !== 'msie' && !singleUpload) {  this.element.value = '';  }
         this.fileList = [];
         this.filesData = [];
-        this.removeActionButtons();
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            // tslint:disable-next-line
+            (this as any).interopAdaptor.invokeMethodAsync('clearAll');
+        } else {
+            this.removeActionButtons();
+        }
     }
 
     private updateSortedFileList(filesData: FileInfo[]): void {
@@ -2414,81 +2518,90 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { FileInfo[] } fileData - specifies the files data for file list creation.
      * @returns void
      */
-    public createFileList(fileData: FileInfo[]) : void {
-        this.createParentUL();
-        if (this.template !== '' && !isNullOrUndefined(this.template)) {
-            if (this.isFormUpload()) {
-                this.uploadWrapper.classList.add(FORM_UPLOAD);
-                this.formCustomFileList(fileData, this.element.files);
-            } else {
-                this.createCustomfileList(fileData);
-            }
-        } else if (this.isFormUpload()) {
-            this.uploadWrapper.classList.add(FORM_UPLOAD);
-            this.formFileList(fileData, this.element.files);
+    public createFileList(fileData: FileInfo[], isSelectedFile?: boolean): void {
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            let fileListData: FileInfo[] = (isSelectedFile) ? this.filesData = this.filesData.concat(fileData) : fileData;
+            // tslint:disable-next-line
+            (this as any).interopAdaptor.invokeMethodAsync('createFileList', fileListData, this.isForm);
         } else {
-            for (let listItem of fileData) {
-                let liElement: HTMLElement = this.createElement('li', { className: FILE,
-                                             attrs: {'data-file-name': listItem.name, 'data-files-count': '1'}});
-                let textContainer: Element = this.createElement('span', { className: TEXT_CONTAINER });
-                let textElement: HTMLElement = this.createElement('span', { className: FILE_NAME, attrs: {'title': listItem.name} });
-                textElement.innerHTML = this.getFileNameOnly(listItem.name);
-                let fileExtension: Element = this.createElement('span', { className: FILE_TYPE });
-                fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
-                if (!this.enableRtl) {
-                    textContainer.appendChild(textElement);
-                    textContainer.appendChild(fileExtension);
+            this.createParentUL();
+            if (this.template !== '' && !isNullOrUndefined(this.template)) {
+                if (this.isFormUpload()) {
+                    this.uploadWrapper.classList.add(FORM_UPLOAD);
+                    this.formCustomFileList(fileData, this.element.files);
                 } else {
-                    let rtlContainer: Element = this.createElement('span', { className: RTL_CONTAINER });
-                    rtlContainer.appendChild(fileExtension);
-                    rtlContainer.appendChild(textElement);
-                    textContainer.appendChild(rtlContainer);
+                    this.createCustomfileList(fileData);
                 }
-                let fileSize: Element = this.createElement('span', { className: FILE_SIZE });
-                fileSize.innerHTML = this.bytesToSize(listItem.size);
-                textContainer.appendChild(fileSize);
-                let statusElement: HTMLElement = this.createElement('span', {className: STATUS});
-                textContainer.appendChild(statusElement);
-                statusElement.innerHTML = listItem.status;
-                liElement.appendChild(textContainer);
-                let iconElement: HTMLElement = this.createElement('span', {className: ' e-icons', attrs: { 'tabindex': this.btnTabIndex}});
-                /* istanbul ignore next */
-                if (this.browserName === 'msie') { iconElement.classList.add('e-msie'); }
-                iconElement.setAttribute('title', this.localizedTexts('remove'));
-                liElement.appendChild(iconElement);
-                EventHandler.add(iconElement, 'click', this.removeFiles, this);
-                if (listItem.statusCode === '2') {
-                    statusElement.classList.add(UPLOAD_SUCCESS);
-                    iconElement.classList.add(DELETE_ICON);
-                    iconElement.setAttribute('title', this.localizedTexts('delete'));
-                } else if (listItem.statusCode !== '1') {
-                    statusElement.classList.remove(UPLOAD_SUCCESS);
-                    statusElement.classList.add(VALIDATION_FAILS);
+            } else if (this.isFormUpload()) {
+                this.uploadWrapper.classList.add(FORM_UPLOAD);
+                this.formFileList(fileData, this.element.files);
+            } else {
+                for (let listItem of fileData) {
+                    let liElement: HTMLElement = this.createElement('li', {
+                        className: FILE,
+                        attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' }
+                    });
+                    let textContainer: Element = this.createElement('span', { className: TEXT_CONTAINER });
+                    let textElement: HTMLElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
+                    textElement.innerHTML = this.getFileNameOnly(listItem.name);
+                    let fileExtension: Element = this.createElement('span', { className: FILE_TYPE });
+                    fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
+                    if (!this.enableRtl) {
+                        textContainer.appendChild(textElement);
+                        textContainer.appendChild(fileExtension);
+                    } else {
+                        let rtlContainer: Element = this.createElement('span', { className: RTL_CONTAINER });
+                        rtlContainer.appendChild(fileExtension);
+                        rtlContainer.appendChild(textElement);
+                        textContainer.appendChild(rtlContainer);
+                    }
+                    let fileSize: Element = this.createElement('span', { className: FILE_SIZE });
+                    fileSize.innerHTML = this.bytesToSize(listItem.size);
+                    textContainer.appendChild(fileSize);
+                    let statusElement: HTMLElement = this.createElement('span', { className: STATUS });
+                    textContainer.appendChild(statusElement);
+                    statusElement.innerHTML = listItem.status;
+                    liElement.appendChild(textContainer);
+                    let iconElement: HTMLElement = this.createElement('span', { className: ' e-icons',
+                                                                        attrs: { 'tabindex': this.btnTabIndex } });
+                    /* istanbul ignore next */
+                    if (this.browserName === 'msie') { iconElement.classList.add('e-msie'); }
+                    iconElement.setAttribute('title', this.localizedTexts('remove'));
+                    liElement.appendChild(iconElement);
+                    EventHandler.add(iconElement, 'click', this.removeFiles, this);
+                    if (listItem.statusCode === '2') {
+                        statusElement.classList.add(UPLOAD_SUCCESS);
+                        iconElement.classList.add(DELETE_ICON);
+                        iconElement.setAttribute('title', this.localizedTexts('delete'));
+                    } else if (listItem.statusCode !== '1') {
+                        statusElement.classList.remove(UPLOAD_SUCCESS);
+                        statusElement.classList.add(VALIDATION_FAILS);
+                    }
+                    if (this.autoUpload && listItem.statusCode === '1' && this.asyncSettings.saveUrl !== '') {
+                        statusElement.innerHTML = '';
+                    }
+                    if (!iconElement.classList.contains(DELETE_ICON)) {
+                        iconElement.classList.add(REMOVE_ICON);
+                    }
+                    let index: number = fileData.indexOf(listItem);
+                    let eventArgs: RenderingEventArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    let eventsArgs: FileListRenderingEventArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    this.trigger('rendering', eventArgs);
+                    this.trigger('fileListRendering', eventsArgs);
+                    this.listParent.appendChild(liElement);
+                    this.fileList.push(liElement);
+                    this.truncateName(textElement);
                 }
-                if (this.autoUpload && listItem.statusCode === '1' && this.asyncSettings.saveUrl !== '') {
-                    statusElement.innerHTML = '';
-                }
-                if (!iconElement.classList.contains(DELETE_ICON)) {
-                    iconElement.classList.add(REMOVE_ICON);
-                }
-                let index: number = fileData.indexOf(listItem);
-                let eventArgs: RenderingEventArgs = {
-                    element: liElement,
-                    fileInfo: listItem,
-                    index: index,
-                    isPreload: this.isPreLoadFile(listItem)
-                };
-                let eventsArgs: FileListRenderingEventArgs = {
-                    element: liElement,
-                    fileInfo: listItem,
-                    index: index,
-                    isPreload: this.isPreLoadFile(listItem)
-                };
-                this.trigger('rendering', eventArgs);
-                this.trigger('fileListRendering', eventsArgs);
-                this.listParent.appendChild(liElement);
-                this.fileList.push(liElement);
-                this.truncateName(textElement);
             }
         }
     }
@@ -2553,8 +2666,17 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private updateStatus(files : FileInfo, status ? : string, statusCode? : string, updateLiStatus : boolean = true ) : FileInfo {
         if (!(status === '' || isNullOrUndefined(status)) && !(statusCode === '' || isNullOrUndefined(statusCode))) {
-            files.status = status;
-            files.statusCode = statusCode;
+            if (this.isBlazorSaveUrl) {
+                for (let i: number = 0; i < this.filesData.length; i++) {
+                    if (this.filesData[i].name === files.name) {
+                        this.filesData[i].status = status;
+                        this.filesData[i].statusCode = statusCode;
+                    }
+                }
+            } else {
+                files.status = status;
+                files.statusCode = statusCode;
+            }
         }
         if (updateLiStatus) {
             let li : HTMLElement = this.getLiElement(files);
@@ -2758,12 +2880,27 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         return response;
     }
 
+    /* istanbul ignore next */
+    private serverRemoveIconBindEvent(): void {
+        if (this.uploadWrapper && this.isBlazorSaveUrl) {
+            let iconElement: HTMLElement[] = [].slice.call(this.uploadWrapper.querySelectorAll('ul li'));
+            for (let i: number = 0; i < iconElement.length; i++ ) {
+                let removeIconEle: HTMLElement = (iconElement[i]) ? iconElement[i].querySelector('.e-icons') : null;
+                if (removeIconEle) {
+                    EventHandler.remove(removeIconEle, 'click', this.removeFiles);
+                    EventHandler.add(removeIconEle, 'click', this.removeFiles, this);
+                }
+            }
+        }
+    }
+
     private raiseSuccessEvent(e: Event, file: FileInfo): void {
         let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
         let statusMessage: string = this.localizedTexts('uploadSuccessMessage');
         let args: Object = {
             e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
+        if (!this.isBlazorSaveUrl) {
         let liElement: HTMLElement = this.getLiElement(file);
         if (!isNullOrUndefined(liElement)) {
             let spinnerEle: HTMLElement = liElement.querySelector('.' + SPINNER_PANE) as HTMLElement;
@@ -2772,11 +2909,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 detach(spinnerEle);
             }
         }
+    }
         this.trigger('success', args, (args: Object) => {
             // tslint:disable-next-line
             this.updateStatus(file, (args as any).statusText, '2');
             this.uploadedFilesData.push(file);
-            this.trigger('change', { file: this.uploadedFilesData });
+            if (!this.isBlazorSaveUrl) {
+                this.trigger('change', { file: this.uploadedFilesData });
+            }
             this.checkActionButtonStatus();
             if (this.fileList.length > 0) {
                 if ((!(this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
@@ -3015,7 +3155,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -3481,7 +3621,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     public destroy(): void {
         this.element.value = null;
-        this.clearAll();
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.clearAll();
+        }
         this.unWireEvents();
         this.unBindDropEvents();
         if (this.multiple) {
@@ -3496,12 +3638,16 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for (let key of attributes) {
             this.element.removeAttribute(key);
         }
-        if (!isNullOrUndefined(this.uploadWrapper)) {
-            this.uploadWrapper.parentElement.appendChild(this.element);
-            detach(this.uploadWrapper);
+        if (!this.isServerBlazor) {
+            if (!isNullOrUndefined(this.uploadWrapper)) {
+                this.uploadWrapper.parentElement.appendChild(this.element);
+                detach(this.uploadWrapper);
+            }
+            this.uploadWrapper = null;
+            super.destroy();
+        } else {
+            this.uploadWrapper = null;
         }
-        this.uploadWrapper = null;
-        super.destroy();
     }
 
     /**
@@ -3519,7 +3665,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             currentRequest: null
         };
         this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
                 this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
                     eventArgs.customFormData : this.customFormDatas;
@@ -3536,9 +3682,74 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         return uploadFiles;
     }
+
+    /* istanbul ignore next */
+    private serverReadFileBase64(fileIndex: number, position: number, totalCount: number) : Promise<string> {
+        return new Promise((resolve: Function, reject: Function) => {
+        let file: Blob = this.fileStreams[fileIndex].rawFile as Blob;
+        try {
+                let reader: FileReader  = new FileReader();
+                // tslint:disable-next-line
+                reader.onload = ((args: any) => {
+                    return () => {
+                        try {
+                            let contents: string = args.result as string;
+                            let data: string = contents ? contents.split(';base64,')[1] : null;
+                            resolve(data);
+                        } catch (e) {
+                            reject(e);
+                        }
+                    };
+                })(reader);
+                reader.readAsDataURL(file.slice(position, position + totalCount));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    /* istanbul ignore next */
+    private uploadFileCount(ele: Element): number {
+        let files: FileInfo[] = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        let result: number = files.length;
+        return result;
+    }
+
+    /* istanbul ignore next */
+    private getFileRead(index: number, ele: Element): number {
+        let files: FileInfo[] = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        let file: FileInfo = files[index];
+        let fileCount: number = this.newFileRef++;
+        this.fileStreams[fileCount] = file;
+        return fileCount;
+    }
+
+    /* istanbul ignore next */
+    private getFileInfo(index: number, ele: Element): FileInfo {
+        let files: FileInfo[] = this.filesData;
+        if (!files || files.length === 0) {
+            return null;
+        }
+        let file: FileInfo = files[index];
+        if (!file) {
+            return null;
+        }
+        return this.filesData[index];
+    }
+
     private uploadFiles(files: FileInfo[], custom?: boolean): void {
         let selectedFiles: FileInfo[] = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
+            if (this.isServerBlazor) {
+                // tslint:disable-next-line
+                (this as any).interopAdaptor.invokeMethodAsync('GetFileDetails', files);
+            }
             return;
         }
         if (!custom || isNullOrUndefined(custom)) {
@@ -3553,13 +3764,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             selectedFiles = files;
         }
         for (let i: number = 0; i < selectedFiles.length; i++) {
-            if (isBlazor() && !this.checkChunkUpload()) {
+            if (this.isServerBlazor && !this.checkChunkUpload()) {
 				/* istanbul ignore next */
                 /* tslint:disable */
-                this.getBase64(selectedFiles[i].rawFile as File).then((data: any) => {
-                    this.base64String.push(data);
-                    this.uploadFilesRequest(selectedFiles, i, custom);
-                });
+                if (selectedFiles[i] && selectedFiles[i].rawFile instanceof File) {
+                    this.getBase64(selectedFiles[i].rawFile as File).then((data: any) => {
+                        this.base64String.push(data);
+                        this.uploadFilesRequest(selectedFiles, i, custom);
+                    });
+                }
                 /* tslint:disable */
             } else {
                 this.uploadFilesRequest(selectedFiles, i, custom);
@@ -3574,12 +3787,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         ajax.emitError = false;
         let getFileData: FileInfo[];
         /* istanbul ignore next */
-        if (isBlazor()) {
+        if (this.isServerBlazor) {
             getFileData = selectedFiles.slice(0);
             cloneFiles.push(getFileData[i].rawFile as Blob);
         }
         let eventArgs: UploadingEventArgs = {
-            fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
+            fileData: (this.isServerBlazor) ? getFileData[i] : selectedFiles[i],
             customFormData: [],
             cancel: false
         };
@@ -3587,7 +3800,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
             eventArgs.currentRequest = ajax.httpRequest;
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 eventArgs.fileData.rawFile = !chunkEnabled ? this.base64String[i] : eventArgs.fileData.rawFile;
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
@@ -3598,7 +3811,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
             this.trigger('uploading', eventArgs, (eventArgs: UploadingEventArgs) => {
                 /* istanbul ignore next */
-                if (isBlazor() && !chunkEnabled) { selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i]; }
+                if (this.isServerBlazor && !chunkEnabled) { selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i]; }
                 if (eventArgs.cancel) {
                     this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
                 }
@@ -3612,7 +3825,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.chunkUpload(selectedFiles[i], custom, i);
             } else {
                 ajax.onLoad = (e: Event): object => {
-                    if (eventArgs.cancel && isBlazor()) {
+                    if (eventArgs.cancel && this.isServerBlazor) {
                         return {};
                     } else {
                         this.uploadComplete(e, selectedFiles[i], custom);
@@ -3620,7 +3833,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     }
                 };
                 ajax.onUploadProgress = (e: Event): object => {
-                    if (eventArgs.cancel && isBlazor()) {
+                    if (eventArgs.cancel && this.isServerBlazor) {
                         return {};
                     } else {
                         this.uploadInProgress(e, selectedFiles[i], custom, ajax);
@@ -3679,12 +3892,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         };
         this.trigger('beforeRemove', beforeEventArgs, (beforeEventArgs: BeforeRemoveEventArgs) => {
             if (!beforeEventArgs.cancel) {
-                if (isBlazor()) {
+                if (this.isServerBlazor) {
                     this.currentRequestHeader = beforeEventArgs.currentRequest;
                     this.customFormDatas = beforeEventArgs.customFormData;
                 }
                 let index: number;
-                if (this.isFormUpload()) {
+                if (this.isFormUpload() && !this.isBlazorSaveUrl) {
                     eventArgs.filesData = fileData as FileInfo[];
                     this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
                         if (!eventArgs.cancel) {
@@ -3709,7 +3922,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                             }
                         }
                     });
-                } else if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
+                } else if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')
+                        && !this.isBlazorSaveUrl) {
                     eventArgs.filesData = this.getFilesData();
                     this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
                         if (!eventArgs.cancel) {
@@ -3761,7 +3975,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @returns void
      */
     public clearAll(): void {
-        if (isNullOrUndefined(this.listParent)) {
+        if (isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             if (this.browserName !== 'msie') { this.element.value = ''; }
             this.filesData = [];
             return;
@@ -3785,7 +3999,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @returns FileInfo[]
      */
     public getFilesData(index?: number): FileInfo[] {
-        if (!isBlazor()) {
+        if (!this.isServerBlazor) {
             if (isNullOrUndefined(index)) {
                 return this.filesData;
             } else {

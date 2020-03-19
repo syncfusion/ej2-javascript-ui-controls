@@ -1855,7 +1855,7 @@ class LayoutPanel {
             template = isLeafItem ? leaf.labelTemplate : levels[index].headerTemplate;
             item['options'] = { border: border, opacity: opacity, fill: fill };
             eventArgs = {
-                cancel: false, name: itemRendering, treemap: this.treemap,
+                cancel: false, name: itemRendering, treemap: this.treemap, text: renderText,
                 currentItem: item, RenderItems: this.renderItems, options: item['options']
             };
             if (this.treemap.isBlazor) {
@@ -1870,7 +1870,10 @@ class LayoutPanel {
                     let path = this.renderer.drawPath(pathOptions);
                     itemGroup.appendChild(path);
                     if (txtVisible) {
-                        this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
+                        if (eventArgs.text !== renderText) {
+                            eventArgs.text = textFormatter(eventArgs.text, item['data'], this.treemap) || levelName;
+                        }
+                        this.renderItemText(eventArgs.text.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
                     }
                     if (template) {
                         templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
@@ -2741,6 +2744,10 @@ let TreeMap = class TreeMap extends Component {
             currentSize: new Size(0, 0),
             treemap: this.isBlazor ? null : this
         };
+        if (this.isBlazor) {
+            const { treemap } = args, blazorEventArgs = __rest(args, ["treemap"]);
+            args = blazorEventArgs;
+        }
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -2751,7 +2758,7 @@ let TreeMap = class TreeMap extends Component {
                 this.refreshing = true;
                 this.wireEVents();
                 args.currentSize = this.availableSize;
-                this.trigger(resize, args, () => {
+                this.trigger(resize, args, (observedArgs) => {
                     this.render();
                 });
             }, 500);
@@ -2762,6 +2769,7 @@ let TreeMap = class TreeMap extends Component {
         let targetId = targetEle.id;
         let eventArgs;
         let itemIndex;
+        let labelText = targetEle.innerHTML;
         let clickArgs = { cancel: false, name: click, treemap: this, mouseEvent: e };
         let clickBlazorArgs = { cancel: false, name: click, mouseEvent: e };
         this.trigger(click, this.isBlazor ? clickBlazorArgs : clickArgs);
@@ -2770,7 +2778,8 @@ let TreeMap = class TreeMap extends Component {
             itemIndex = parseFloat(targetId.split('_')[6]);
             eventArgs = {
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
-                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
+                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name'],
+                text: labelText
             };
             if (this.isBlazor) {
                 let data = {
@@ -2789,6 +2798,10 @@ let TreeMap = class TreeMap extends Component {
                 eventArgs = blazorEventArgs;
             }
             this.trigger(itemClick, eventArgs);
+            if (eventArgs.text !== labelText) {
+                eventArgs.text = textFormatter(eventArgs.text, eventArgs.item['data'], eventArgs.treemap);
+                targetEle.innerHTML = eventArgs.text;
+            }
         }
         let end = new Date().getMilliseconds();
         let doubleTapTimer1;
@@ -2989,12 +3002,13 @@ let TreeMap = class TreeMap extends Component {
                     newDrillItem[item['groupName']] = [item];
                 }
                 startEvent = {
-                    cancel: false, name: drillStart, treemap: this, item: newDrillItem, element: targetEle,
-                    groupIndex: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
+                    cancel: false, name: drillStart, treemap: this.isBlazor ? null : this,
+                    element: targetEle, groupIndex: this.enableBreadcrumb &&
+                        this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
                         this.drilledItems[this.drilledItems.length - 1]['data']['groupIndex'] : item['groupIndex'],
                     groupName: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
                         this.drilledItems[this.drilledItems.length - 1]['data']['name'] : item['name'],
-                    rightClick: e.which === 3 ? true : false, childItems: null
+                    rightClick: e.which === 3 ? true : false, childItems: null, item: this.isBlazor ? null : newDrillItem,
                 };
                 if (this.isBlazor) {
                     const { treemap } = startEvent, blazorEventArgs = __rest(startEvent, ["treemap"]);
@@ -3042,7 +3056,7 @@ let TreeMap = class TreeMap extends Component {
                     }
                 });
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
-                endBlazorEvent = { cancel: false, name: drillEnd, renderItems: this.layout.renderItems };
+                endBlazorEvent = { cancel: false, name: drillEnd, renderItems: this.isBlazor ? null : this.layout.renderItems };
                 this.trigger(drillEnd, this.isBlazor ? endBlazorEvent : endEvent);
                 if (process) {
                     if (!directLevel && isNullOrUndefined(drillLevel)) {
@@ -3934,7 +3948,7 @@ class TreeMapLegend {
                     textLocation = legendRtlLocation['textLocation'];
                 }
                 eventArgs = {
-                    cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
+                    cancel: false, name: legendItemRendering, treemap: this.treemap.isBlazor ? null : treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
                 if (this.treemap.isBlazor) {
@@ -4366,7 +4380,7 @@ class TreeMapHighlight {
                             this.highLightId = targetId;
                         }
                         eventArgs = { cancel: false, name: itemHighlight, treemap: treemap, items: items, elements: highLightElements };
-                        eventBlazorArgs = { cancel: false, name: itemHighlight, items: items, elements: highLightElements };
+                        eventBlazorArgs = { cancel: false, name: itemHighlight, items: null, elements: highLightElements };
                         treemap.trigger(itemHighlight, treemap.isBlazor ? eventBlazorArgs : eventArgs);
                     }
                     else {
@@ -4741,7 +4755,7 @@ class TreeMapTooltip {
                         location: tootipArgs.options['location'],
                         text: tootipArgs.options['text'],
                         textStyle: tootipArgs.options['textStyle'],
-                        data: tootipArgs.options['data'],
+                        data: this.treemap.isBlazor ? null : tootipArgs.options['data'],
                         template: tootipArgs.options['template'],
                         name: tooltipRendering
                     };

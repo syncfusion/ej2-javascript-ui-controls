@@ -1,14 +1,15 @@
-import { Maps, doubleClick, Orientation, ITouches, ZoomSettings } from '../../index';
+import { Maps, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
-import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker,
-    markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose, markerShapeChoose } from '../utils/helper';
+import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker } from '../utils/helper';
+import { markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose } from '../utils/helper';
+import { markerShapeChoose   } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering, } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
-import { zoomIn, zoomOut, pan } from '../model/constants';
+import { pan } from '../model/constants';
+import { getValueFromObject } from '../utils/helper';
 import { PanDirection } from '../utils/enum';
-import { DataLabel } from '../layers/data-label';
 import { FontModel, DataLabelSettingsModel, BorderModel } from '../model/base-model';
 import { MapsTooltip } from './tooltip';
 
@@ -90,12 +91,15 @@ export class Zoom {
     public performZooming(position: Point, newZoomFactor: number, type: string): void {
         let map: Maps = this.maps;
         map.previousProjection = map.projectionType;
+        map.defaultState = false;
+        map.initialCheck = false;
+        map.markerZoomedState = false;
+        map.zoomPersistence = map.enablePersistence;
         let prevLevel: number = map.tileZoomLevel;
         let scale: number = map.previousScale = map.scale;
         let maxZoom: number = map.zoomSettings.maxZoom;
         let minZoom: number = map.zoomSettings.minZoom;
         newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
-        let translatePoint: Point = map.previousPoint = map.translatePoint;
         let prevTilePoint: Point = map.tileTranslatePoint;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
             let availSize: Rect = map.mapAreaRect;
@@ -111,31 +115,61 @@ export class Zoom {
             translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = newZoomFactor;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
+            this.applyTransform();
         } else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
-            this.getTileTranslatePosition(prevLevel, newZoomFactor, position);
+            this.getTileTranslatePosition(prevLevel, newZoomFactor, position, type);
             map.tileZoomLevel = newZoomFactor;
             map.scale = Math.pow(2, newZoomFactor - 1);
+            if (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && newZoomFactor <= map.initialZoomLevel) {
+                map.initialCheck = true;
+                map.zoomPersistence = false;
+                map.tileTranslatePoint.x = map.initialTileTranslate.x;
+                map.tileTranslatePoint.y = map.initialTileTranslate.y;
+                newZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
+                map.scale = Math.pow(2, newZoomFactor - 1);
+            }
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
             map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
-            map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
+            if (document.querySelector('.GroupElement')) {
+                (document.querySelector('.GroupElement') as HTMLElement).style.display = 'none';
+            }
+            if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
+            }
+            map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint, type + 'wheel', null, position);
+            let element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
+            setTimeout(() => {
+                // if (type === 'ZoomOut') {
+                //     element1.removeChild(element1.children[element1.childElementCount - 1]);
+                //     if (element1.childElementCount) {
+                //         element1.removeChild(element1.children[element1.childElementCount - 1]);
+                //     } else {
+                //         element1 = element1;
+                //     }
+                // }
+                this.applyTransform();
+                if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                    document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
+                }
+            // tslint:disable-next-line:align
+            }, 250);
         }
-        this.applyTransform();
         this.maps.zoomNotApplied = false;
     }
 
-     private triggerZoomEvent(prevTilePoint: Point, prevLevel: number): void {
+    private triggerZoomEvent(prevTilePoint: Point, prevLevel: number, type: string): void {
         let map: Maps = this.maps; let zoomArgs: IMapZoomEventArgs;
         if (!map.isTileMap) {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.scale > map.previousScale ? zoomIn : zoomOut, maps: !map.isBlazor ? map : null,
+                cancel: false, name: 'zoom', type: type, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: {}, scale: { previous: map.previousScale, current: map.scale }
             };
         } else {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: !map.isBlazor ? map : null,
+                cancel: false, name: 'zoom', type: type, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
             };
@@ -143,17 +177,18 @@ export class Zoom {
         map.trigger('zoom', zoomArgs);
     }
 
-    private getTileTranslatePosition(prevLevel: number, currentLevel: number, position: Point): void {
+    private getTileTranslatePosition(prevLevel: number, currentLevel: number, position: Point, type?: string): void {
         let map: Maps = this.maps;
         let tileDefaultSize: number = 256;
-        let bounds: ClientRect = getElementByID(this.maps.element.id).getBoundingClientRect();
+        let padding: number = type === 'ZoomOut' ? 10 : (type === 'Reset' && currentLevel > 1) ? 0 : 10;
+        let bounds: Size = map.availableSize;
         let prevSize: number = Math.pow(2, prevLevel) * 256;
         let totalSize: number = Math.pow(2, currentLevel) * 256;
         let x: number = ((position.x - map.tileTranslatePoint.x) / prevSize) * 100;
         let y: number = ((position.y - map.tileTranslatePoint.y) / prevSize) * 100;
         map.tileTranslatePoint.x = (currentLevel === 1) ? (bounds.width / 2) - ((tileDefaultSize * 2) / 2) :
             position.x - ((x * totalSize) / 100);
-        map.tileTranslatePoint.y = (currentLevel === 1) ? (bounds.height / 2) - ((tileDefaultSize * 2) / 2) :
+        map.tileTranslatePoint.y = (currentLevel === 1) ? ((bounds.height / 2) - ((tileDefaultSize * 2) / 2) + (padding * 2)) :
             position.y - ((y * totalSize) / 100);
     }
 
@@ -179,7 +214,7 @@ export class Zoom {
                 let translatePointY: number = translatePoint.y - (((size.height / scale) - (size.height / zoomCalculationFactor)) / (size.height / y));
                 map.translatePoint = new Point(translatePointX, translatePointY);
                 map.scale = zoomCalculationFactor;
-                this.triggerZoomEvent(prevTilePoint, prevLevel);
+                this.triggerZoomEvent(prevTilePoint, prevLevel, '');
             } else {
                 zoomCalculationFactor = prevLevel + (Math.round(prevLevel + (((size.width / zoomRect.width) + (size.height / zoomRect.height)) / 2)));
                 zoomCalculationFactor = (zoomCalculationFactor >= minZoom && zoomCalculationFactor <= maxZoom) ? zoomCalculationFactor : maxZoom;
@@ -190,7 +225,7 @@ export class Zoom {
                 map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, zoomCalculationFactor))) /
                     (Math.pow(2, zoomCalculationFactor));
                 map.scale = (Math.pow(2, zoomCalculationFactor));
-                this.triggerZoomEvent(prevTilePoint, prevLevel);
+                this.triggerZoomEvent(prevTilePoint, prevLevel, '');
                 map.mapLayerPanel.generateTiles(zoomCalculationFactor, map.tileTranslatePoint);
             }
             map.mapScaleValue = zoomCalculationFactor;
@@ -241,7 +276,7 @@ export class Zoom {
             translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = zoomCalculationFactor;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, '');
         } else {
             let newTileFactor: number = zoomCalculationFactor;
             this.getTileTranslatePosition(prevLevel, newTileFactor, { x: touchCenter.x, y: touchCenter.y });
@@ -251,7 +286,7 @@ export class Zoom {
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, newTileFactor))) /
                 (Math.pow(2, newTileFactor));
             map.scale = (Math.pow(2, newTileFactor));
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            this.triggerZoomEvent(prevTilePoint, prevLevel, '');
             map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
         }
         this.applyTransform();
@@ -436,6 +471,8 @@ export class Zoom {
                         }
                     }
                 }
+                this.maps.arrangeTemplate();
+                let blazor: void = this.maps.isBlazor ? this.maps.blazorTemplates() : null;
             }
             if (!isNullOrUndefined(this.currentLayer)) {
                 if (!animate || this.currentLayer.animationDuration === 0) {
@@ -456,11 +493,9 @@ export class Zoom {
             let layerIndex: number = parseInt((element ? element : layerElement).id.split('_LayerIndex_')[1].split('_')[0], 10);   
             markerSVGObject = this.maps.renderer.createGroup({
                 id: this.maps.element.id + '_Markers_Group',
+                class: 'GroupElement',
                 style: 'pointer-events: auto;'
             });
-            if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
-                document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
-            }
             if (document.getElementById(markerSVGObject.id)) {
                 removeElement(markerSVGObject.id);
             }
@@ -502,8 +537,10 @@ export class Zoom {
                         if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
                             eventArgs = markerColorChoose(eventArgs, data);
                         }
-                        let lati: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
-                        let long: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
+                        let lati: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
+                            Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
+                        let long: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
+                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
                         let offset: Point = markerSettings.offset;
                         if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                             let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -523,7 +560,7 @@ export class Zoom {
                                     markerID, offset, scale, this.maps, markerSVGObject);
                             }
                         }
-                        nullCount += (!isNullOrUndefined(lati) && !isNullOrUndefined(long)) ? 0 : 1;
+                        nullCount += (!isNaN(lati) && !isNaN(long)) ? 0 : 1;
                         markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;
                         markerCounts += (eventArgs.cancel) ? 1 : 0;
                         this.maps.markerNullCount = (!isNullOrUndefined(lati) || !isNullOrUndefined(long))
@@ -599,8 +636,8 @@ export class Zoom {
                     let templateOffset: ClientRect = element.getBoundingClientRect();
                     let layerOffset: ClientRect = layerEle.getBoundingClientRect();
                     let elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
-                    let x: number = ((labelX) + (layerOffset.left - elementOffset.left));
-                    let y: number = ((labelY) + (layerOffset.top - elementOffset.top));
+                    let x: number = ((labelX) + (layerOffset.left - elementOffset.left) - (templateOffset.width / 2));
+                    let y: number = ((labelY) + (layerOffset.top - elementOffset.top) - (templateOffset.height / 2));
                     (<HTMLElement>element).style.left = x + 'px';
                     (<HTMLElement>element).style.top = y + 'px';
                 } else {
@@ -704,8 +741,12 @@ export class Zoom {
         let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         let marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
-            let lng: number = parseFloat(marker.dataSource[dataIndex]['longitude']);
-            let lat: number = parseFloat(marker.dataSource[dataIndex]['latitude']);
+          let lng: number = (!isNullOrUndefined(marker.longitudeValuePath)) ?
+          Number(getValueFromObject(marker.dataSource[dataIndex], marker.longitudeValuePath)) :
+          parseFloat(marker.dataSource[dataIndex]['longitude']);
+         let lat: number = (!isNullOrUndefined(marker.latitudeValuePath)) ?
+          Number(getValueFromObject(marker.dataSource[dataIndex], marker.latitudeValuePath)) :
+          parseFloat(marker.dataSource[dataIndex]['latitude']);
             let duration: number = this.currentLayer.animationDuration;
             let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
@@ -761,6 +802,10 @@ export class Zoom {
         let down: Point = this.mouseDownPoints;
         let move: Point = this.mouseMovePoints;
         let scale: number = map.scale;
+        map.markerZoomedState = false;
+        map.zoomPersistence = map.enablePersistence;
+        map.defaultState = false;
+        map.initialCheck = false;
         let translatePoint: Point = map.translatePoint;
         let prevTilePoint: Point = map.tileTranslatePoint;
         let x: number; let y: number;
@@ -799,6 +844,10 @@ export class Zoom {
             this.distanceY = y - map.tileTranslatePoint.y;
             map.tileTranslatePoint.x = x;
             map.tileTranslatePoint.y = y;
+            if ((map.tileTranslatePoint.y > -10 && yDifference < 0) || ((map.tileTranslatePoint.y < -((Math.pow(2, this.maps.tileZoomLevel)-2) * 256) && yDifference >0))) {
+                map.tileTranslatePoint.x = x + xDifference;
+                map.tileTranslatePoint.y = y + yDifference;
+            }
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
             panArgs = {
@@ -808,8 +857,10 @@ export class Zoom {
                 tileZoomLevel: map.tileZoomLevel
             };
             map.trigger(pan, panArgs);
-            map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint);
-            this.applyTransform();
+            map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
+            if (map.mapLayerPanel.horizontalPan) {
+                this.applyTransform();
+            }
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
@@ -827,8 +878,13 @@ export class Zoom {
 
     public toolBarZooming(zoomFactor: number, type: string): void {
         let map: Maps = this.maps;
+        map.initialCheck = false;
+        map.defaultState = ((type === 'Reset' && zoomFactor === 1 && !(map.zoomSettings.resetToInitial && map.applyZoomReset))
+            || (type === 'ZoomOut' && zoomFactor === 1));
         let prevLevel: number = map.tileZoomLevel;
         let scale: number = map.previousScale = map.scale;
+        map.markerZoomedState = false;
+        map.zoomPersistence = map.enablePersistence;
         map.mapScaleValue = zoomFactor;
         let maxZoom: number = map.zoomSettings.maxZoom;
         let minZoom: number = map.zoomSettings.minZoom;
@@ -837,9 +893,10 @@ export class Zoom {
         let prevTilePoint: Point = map.tileTranslatePoint;
         map.previousProjection = map.projectionType;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
+        zoomFactor = (type === 'Reset') ? 1 : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
         let zoomArgs: IMapZoomEventArgs;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom  || minZoom >= 1 && zoomFactor >= 1)) {
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
             let min: Object = map.baseMapRectBounds['min'] as Object;
             let max: Object = map.baseMapRectBounds['max'] as Object;
             let mapWidth: number = Math.abs(max['x'] - min['x']);
@@ -854,19 +911,43 @@ export class Zoom {
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.zoomTranslatePoint = map.translatePoint;
             map.scale = zoomFactor;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
-        } else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom  || minZoom >= 1 && zoomFactor >= 1)) {
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
+            this.applyTransform(true);
+        } else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
             let tileZoomFactor: number = zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
             let position: Point = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
-            this.getTileTranslatePosition(prevLevel, tileZoomFactor, position);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            this.getTileTranslatePosition(prevLevel, tileZoomFactor, position, type);
+            if (map.zoomSettings.resetToInitial && map.applyZoomReset && type === 'Reset' || (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && tileZoomFactor <= map.initialZoomLevel)) {
+                map.initialCheck = true;
+                map.zoomPersistence = false;
+                map.tileTranslatePoint.x = map.initialTileTranslate.x;
+                map.tileTranslatePoint.y = map.initialTileTranslate.y;
+                tileZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
+            }
+            this.triggerZoomEvent(prevTilePoint, prevLevel, type);
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
-            this.triggerZoomEvent(prevTilePoint, prevLevel);
-            map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint);
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
+            }
+            if (document.querySelector('.GroupElement')) {
+                (document.querySelector('.GroupElement') as HTMLElement).style.display = 'none';
+            }
+            map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint, type);
+            let element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
+            setTimeout(() => {
+                if (type === 'ZoomOut' || type === "Reset") {
+                    // element1.removeChild(element1.children[element1.childElementCount - 1]);
+                    // element1.childElementCount ? element1.removeChild(element1.children[element1.childElementCount - 1]) : element1;
+                }
+                this.applyTransform(true);
+                if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                    document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
+                }
+            }, 250);
         }
-        this.applyTransform(true);
         this.maps.zoomNotApplied = false;
     }
 
@@ -1059,7 +1140,7 @@ export class Zoom {
                 map.staticMapZoom = map.zoomSettings.enable ? map.zoomSettings.zoomFactor : 0;
                 map.markerCenterLatitude = null;
                 map.markerCenterLongitude = null;
-                this.toolBarZooming(1, 'ZoomOut');
+                this.toolBarZooming(1, 'Reset');
                 if (!this.maps.zoomSettings.enablePanning) {
                     this.applySelection(this.zoomElements, this.selectionColor);
                     this.applySelection(this.panElements, '#737373');
@@ -1170,6 +1251,8 @@ export class Zoom {
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.mouseWheelZoom) {
             let map: Maps = this.maps;
             let size: Size = map.availableSize;
+            map.markerZoomedState = false;
+            map.zoomPersistence = map.enablePersistence;
             let position: Point = this.getMousePosition(e.pageX, e.pageY);
             let prevLevel: number = map.tileZoomLevel;
             let prevScale: number = map.scale;
@@ -1316,7 +1399,7 @@ export class Zoom {
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
         let targetId: string = e.target['id'];
         let targetEle: Element = <Element>e.target;
-        if (zoom.enable && this.isPanning) {
+        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length > 1) || !Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };

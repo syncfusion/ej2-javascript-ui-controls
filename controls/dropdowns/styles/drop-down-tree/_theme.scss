@@ -1,0 +1,49 @@
+@include export-module('dropdowntree-theme') {
+
+  #{&}.e-ddt {
+
+    .e-chips {
+      background-color: $ddt-chip-bg-color;
+      border-radius: $ddt-chip-radius;
+
+      .e-chips-close::before {
+        color: $ddt-chip-close;
+      }
+
+      >.e-chipcontent {
+        color: $ddt-chip-font-color;
+      }
+
+      &:hover {
+        background-color: $ddt-chip-hover-bg-color;
+
+        >.e-chipcontent {
+          color: $ddt-chip-hover-font-color;
+        }
+      }
+    }
+
+    &.e-input-group.e-control-wrapper .e-input[readonly] {
+      @if $ddt-skin-name == 'bootstrap4' {
+        background: $ddt-readonly-input-bg-color;
+      }
+    }
+
+    &.e-popup {
+      background: $ddt-popup-background-color;
+      border-color: $ddt-popup-border-color;
+
+      .e-popup-content.e-no-data {
+        color: $ddt-nodata-font-color;
+      }
+
+      .e-selectall-parent {
+        border-bottom: 1px solid $ddt-popup-reorder-border;
+
+        .e-all-text {
+          color: $ddt-select-all-font-color;
+        }
+      }
+    }
+  }
+}

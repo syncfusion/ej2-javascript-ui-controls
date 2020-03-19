@@ -630,6 +630,12 @@ export interface AxisModel {
     startAngle?: number;
 
     /**
+     * It specifies whether the axis to be start from zero.
+     * @default true
+     */
+    startFromZero?: boolean;
+
+    /**
      * Description for axis and its element.
      * @default null
      */

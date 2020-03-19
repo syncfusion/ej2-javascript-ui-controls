@@ -1,12 +1,12 @@
 import { TreeGrid } from '../base/treegrid';
 import { ColumnModel } from '../models/column';
-import { isNullOrUndefined, removeClass, isBlazor, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, isBlazor } from '@syncfusion/ej2-base';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { QueryCellInfoEventArgs, parentsUntil, getObject } from '@syncfusion/ej2-grids';
 import { CellSaveEventArgs } from '../base/interface';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
-import { getParentData } from '../utils';
+import { getParentData, isRemoteData, isCheckboxcolumn } from '../utils';
 
 /**
  * TreeGrid Selection module
@@ -69,7 +69,7 @@ export class Selection {
     if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
       checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
       let rowIndex: number[]; rowIndex = [];
-      rowIndex.push(+target.closest('tr').getAttribute('aria-rowindex'));
+      rowIndex.push((target.closest('tr') as HTMLTableRowElement).rowIndex);
       this.selectCheckboxes(rowIndex);
       this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
     } else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
@@ -79,29 +79,6 @@ export class Selection {
       checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
       this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
 
-    }
-    let summaryLength: number = Object.keys(this.parent.aggregates).length;
-    let childSummary: boolean;
-    for (let i: number = 0; i < summaryLength; i++) {
-        if (this.parent.aggregates[i].showChildSummary) {
-            childSummary = true;
-            break;
-        }
-    }
-    if (childSummary) {
-      let checkedLen: number = this.parent.getSelectedRowIndexes().length;
-      let totalRecords: Object[] = []; let isSummaryRow: string = 'isSummaryRow';
-      for (let i: number = 0; i < this.parent.getCurrentViewRecords().length; i++) {
-          if (!this.parent.getCurrentViewRecords()[i][isSummaryRow]) {
-              totalRecords.push(this.parent.getCurrentViewRecords()[i]);
-          }
-      }
-      if (checkedLen === totalRecords.length) {
-          let getCheckAllBox: string = 'getCheckAllBox';
-          let spanEle: HTMLElement = this.parent.grid.selectionModule[getCheckAllBox]().nextElementSibling as HTMLElement;
-          removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
-          addClass([spanEle], ['e-check']);
-      }
     }
   }
 
@@ -147,6 +124,12 @@ export class Selection {
         }
         if (this.parent.autoCheckHierarchy) {
           this.headerSelection();
+        }
+      } else if (this.columnIndex > -1 && this.parent.getHeaderContent().querySelectorAll('.e-treeselectall').length > 0) {
+        let checkWrap: Element = this.parent.getHeaderContent().querySelectorAll('.e-checkbox-wrapper')[0];
+        let checkBoxvalue: boolean = checkWrap.querySelector('.e-frame').classList.contains('e-check');
+        if (this.parent.autoCheckHierarchy && checkBoxvalue) {
+          this.headerSelection(checkBoxvalue);
         }
       }
     }
@@ -286,7 +269,7 @@ export class Selection {
       let data: ITreeData[] = (!isNullOrUndefined(this.parent.filterModule) &&
           this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
         this.parent.flatData;
-      data = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+      data = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') || isRemoteData(this.parent) ?
           this.parent.getCurrentViewRecords() : data;
       if (!isNullOrUndefined(checkAll)) {
         for (let i: number = 0; i < data.length; i++) {
@@ -308,10 +291,18 @@ export class Selection {
           }
         }
       }
+      if (checkAll === false && this.parent.enableVirtualization) {
+        this.selectedItems = [];
+        this.selectedIndexes = [];
+        data.filter((rec: ITreeData) => {
+          rec.checkboxState = 'uncheck';
+          this.updateSelectedItems(rec, rec.checkboxState);
+        });
+      }
       length = this.selectedItems.length;
       let checkbox: HTMLElement = <HTMLElement>this.parent.getHeaderContent().querySelectorAll('.e-frame')[0];
       if (length > 0 && data.length > 0) {
-        if (length !== data.length) {
+        if (length !== data.length && !checkAll) {
           removeClass([checkbox], ['e-check']);
           checkbox.classList.add('e-stop');
         } else {
@@ -385,46 +376,49 @@ export class Selection {
 
     private updateGridActions(args: CellSaveEventArgs): void {
       let requestType: string = args.requestType; let childData: ITreeData[]; let childLength: number;
-      if (this.parent.autoCheckHierarchy) {
-        if ((requestType === 'sorting' || requestType === 'paging')) {
-          childData = this.parent.getCurrentViewRecords();
-          childLength = childData.length;
-          this.selectedIndexes = [];
-          for (let i: number = 0; i < childLength; i++) {
-            this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
-          }
-        } else if (requestType === 'delete' || args.action === 'add') {
-          let updatedData: ITreeData[] = [];
-          if (requestType === 'delete') {
-            updatedData = <ITreeData[]>args.data;
-          } else {
-            updatedData.push(args.data);
-          }
-          for (let i: number = 0; i < updatedData.length; i++) {
+      if (isCheckboxcolumn(this.parent)) {
+        if (this.parent.autoCheckHierarchy) {
+          if ((requestType === 'sorting' || requestType === 'paging')) {
+            childData = this.parent.getCurrentViewRecords();
+            childLength = childData.length;
+            this.selectedIndexes = [];
+            for (let i: number = 0; i < childLength; i++) {
+              this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+            }
+          } else if (requestType === 'delete' || args.action === 'add') {
+            let updatedData: ITreeData[] = [];
             if (requestType === 'delete') {
-              let index: number = this.parent.flatData.indexOf(updatedData[i]);
-              let checkedIndex: number = this.selectedIndexes.indexOf(index);
-              this.selectedIndexes.splice(checkedIndex, 1);
-              this.updateSelectedItems(updatedData[i], 'uncheck');
+              updatedData = <ITreeData[]>args.data;
+            } else {
+              updatedData.push(args.data);
             }
-            if (!isNullOrUndefined(updatedData[i].parentItem)) {
-              this.updateParentSelection(updatedData[i].parentItem);
+            for (let i: number = 0; i < updatedData.length; i++) {
+              if (requestType === 'delete') {
+                let index: number = this.parent.flatData.indexOf(updatedData[i]);
+                let checkedIndex: number = this.selectedIndexes.indexOf(index);
+                this.selectedIndexes.splice(checkedIndex, 1);
+                this.updateSelectedItems(updatedData[i], 'uncheck');
+              }
+              if (!isNullOrUndefined(updatedData[i].parentItem)) {
+                this.updateParentSelection(updatedData[i].parentItem);
+              }
             }
+          } else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
+            (<ITreeData>args.data).checkboxState = 'uncheck';
+          } else if (requestType === 'filtering' || requestType === 'searching' || requestType === 'refresh'
+                     && !isRemoteData(this.parent)) {
+            this.selectedItems = []; this.selectedIndexes = [];
+            childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
+              this.parent.getCurrentViewRecords() : this.parent.flatData;
+            childData.forEach((record: ITreeData) => {
+              if (record.hasChildRecords) {
+                this.updateParentSelection(record);
+              } else {
+                this.updateSelectedItems(record, record.checkboxState);
+              }
+            });
+            this.headerSelection();
           }
-        } else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
-          (<ITreeData>args.data).checkboxState = 'uncheck';
-        } else if (requestType === 'filtering' || requestType === 'searching' || requestType === 'refresh') {
-          this.selectedItems = []; this.selectedIndexes = [];
-          childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
-            this.parent.getCurrentViewRecords() : this.parent.flatData;
-          for (let i: number = 0; i < childData.length; i ++) {
-            if (childData[i].hasChildRecords) {
-              this.updateParentSelection(childData[i]);
-          } else {
-              this.updateSelectedItems(childData[i], childData[i].checkboxState);
-            }
-          }
-          this.headerSelection();
         }
       }
     }

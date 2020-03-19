@@ -1,6 +1,5 @@
 import { ChildProperty, Property } from '@syncfusion/ej2-base';
-import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration } from './enum';
-
+import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, ValidationType, ValidationOperator } from './enum';
 
 /**
  * Represents the cell style.
@@ -76,6 +75,44 @@ export class CellStyle extends ChildProperty<CellStyle> {
      */
     @Property('none')
     public textDecoration: TextDecoration;
+
+    /**
+     * Specifies border of the cell.
+     * @default ''
+     */
+    @Property('')
+    public border: string;
+
+    /**
+     * Specifies top border of the cell.
+     * @default ''
+     */
+    @Property('')
+    public borderTop: string;
+
+    /**
+     * Specifies bottom border of the cell.
+     * @default ''
+     */
+    @Property('')
+    public borderBottom: string;
+
+    /**
+     * Specifies left border of the cell.
+     * @default ''
+     */
+    @Property('')
+    public borderLeft: string;
+
+    /**
+     * Specifies right border of the cell.
+     * @default ''
+     */
+    @Property('')
+    public borderRight: string;
+
+    /** @hidden */
+    public bottomPriority: boolean;
 }
 
 /**    
@@ -111,6 +148,47 @@ export class DefineName extends ChildProperty<DefineName> {
     public refersTo: string;
 }
 
+/**
+ * Configures the Protect behavior for the spreadsheet.
+ */
+export class ProtectSettings extends ChildProperty<ProtectSettings> {
+    /**
+     * specifies to allow selection in spreadsheet.
+     * @default false
+     */
+    @Property(false)
+    public selectCells: boolean;
+
+    /**
+     * specifies to allow formating in cells.
+     * @default false
+     */
+    @Property(false)
+    public formatCells: boolean;
+
+    /**
+     * specifies to allow format rows in spreadsheet.
+     * @default false
+     */
+    @Property(false)
+    public formatRows: boolean;
+
+    /**
+     * Specifies to allow format columns in spreadsheet.
+     * @default false
+     */
+    @Property(false)
+    public formatColumns: boolean;
+
+    /**
+     * Specifies to allow insert Hyperlink in Spreadsheet.
+     * @default false
+     */
+    @Property(false)
+    public insertLink: boolean;
+}
+
+
 /**    
  * Represents the Hyperlink.
  */
@@ -123,3 +201,52 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
     public address: string;
 
 }
+
+/**    
+ * Represents the DataValidation.
+ */
+export class Validation extends ChildProperty<Validation> {
+    /**
+     * Specifies Validation Type.
+     * @default 'WholeNumber'
+     */
+    @Property('WholeNumber')
+    public type: ValidationType;
+
+    /**
+     * Specifies Validation Operator.
+     * @default 'Between'
+     */
+    @Property('Between')
+    public operator: ValidationOperator;
+
+    /**
+     * Specifies Validation Minimum Value.
+     * @default ''
+     */
+    @Property('0')
+    public value1: string;
+
+    /**
+     * Specifies Validation Maximum Value.
+     * @default ''
+     */
+    @Property('0')
+    public value2: string;
+
+    /**
+     * Specifies IgnoreBlank option in Data Validation.
+     * @default true
+     */
+    @Property(true)
+    public ignoreBlank: boolean;
+
+    /**
+     * Specifies InCellDropDown option in Data Validation.
+     * @default true
+     */
+    @Property(true)
+    public inCellDropDown: boolean;
+
+}
+

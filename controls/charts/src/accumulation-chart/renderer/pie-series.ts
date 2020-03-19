@@ -82,6 +82,10 @@ export class PieSeries extends PieBase {
                         accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
                     createBorderEle.removeAttribute('transform');
+                    if (this.accumulation.selectionMode !== 'None' && (<Element>event.target).hasAttribute('class')) {
+                        this.accumulation.accumulationSelectionModule.addSvgClass(
+                            createBorderEle, (<Element>event.target).getAttribute('class'));
+                    }
                     seriousGroup.appendChild(createBorderEle);
                     if (point.isExplode && createBorderEle) {
                         let borderExplode: string = srcElem.getAttribute('transform');

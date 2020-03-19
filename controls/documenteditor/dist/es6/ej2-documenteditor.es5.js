@@ -31261,7 +31261,11 @@ var TextPosition = /** @__PURE__ @class */ (function () {
      * @private
      */
     TextPosition.prototype.moveToParagraphStartInternal = function (selection, moveToPreviousParagraph) {
-        var startOffset = selection.getStartOffset(this.paragraph);
+        var splittedParagraph = this.currentWidget.paragraph;
+        while (splittedParagraph.previousSplitWidget) {
+            splittedParagraph = splittedParagraph.previousSplitWidget;
+        }
+        var startOffset = selection.getStartOffset(splittedParagraph);
         if (this.offset === startOffset && moveToPreviousParagraph) {
             var paragraphstart = this.moveToNextParagraphInTableCheck();
             if (paragraphstart) {
@@ -31273,7 +31277,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            this.currentWidget = this.paragraph.firstChild;
+            this.currentWidget = splittedParagraph.firstChild;
             this.offset = selection.getStartLineOffset(this.currentWidget);
         }
         var selectionStartIndex = this.owner.selection.start.getHierarchicalIndexInternal();
@@ -44248,9 +44252,18 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.applyStyle = function (style, clearDirectFormatting) {
         clearDirectFormatting = isNullOrUndefined(clearDirectFormatting) ? false : clearDirectFormatting;
+        var startPosition = undefined;
+        var endPosition = undefined;
         if (clearDirectFormatting) {
             this.initComplexHistory('ApplyStyle');
+            this.setOffsetValue(this.selection);
+            startPosition = this.startOffset;
+            endPosition = this.endOffset;
+            var isSelectionEmpty = this.selection.isEmpty;
             this.clearFormatting();
+            if (isSelectionEmpty && !this.selection.isEmpty) {
+                this.selection.end.setPositionInternal(this.selection.start);
+            }
         }
         var styleObj = this.documentHelper.styles.findByName(style);
         if (styleObj !== undefined) {
@@ -44262,6 +44275,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.applyStyle(style);
         }
         if (this.editorHistory && this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action === 'ApplyStyle') {
+            this.startOffset = startPosition;
+            this.endOffset = endPosition;
             this.editorHistory.updateComplexHistory();
         }
     };
@@ -48493,8 +48508,10 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.reLayout = function (selection, isSelectionChanged) {
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
-                this.startParagraph = undefined;
-                this.endParagraph = undefined;
+                if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
+                    this.startParagraph = undefined;
+                    this.endParagraph = undefined;
+                }
             }
             this.isHandledComplex = false;
             return;
@@ -59132,12 +59149,17 @@ var EditorHistory = /** @__PURE__ @class */ (function () {
         selection.owner.isShiftingEnabled = false;
         selection.owner.isLayoutEnabled = true;
         // // selection.addMultipleSelectionRanges();
-        selection.start.updatePhysicalPosition(true);
-        if (selection.isEmpty) {
-            selection.end.setPositionInternal(selection.start);
+        if (this.currentHistoryInfo.action === 'ApplyStyle') {
+            this.owner.editor.getOffsetValue(selection);
         }
         else {
-            selection.end.updatePhysicalPosition(true);
+            selection.start.updatePhysicalPosition(true);
+            if (selection.isEmpty) {
+                selection.end.setPositionInternal(selection.start);
+            }
+            else {
+                selection.end.updatePhysicalPosition(true);
+            }
         }
         selection.upDownSelectionLength = selection.end.location.x;
         this.documentHelper.isScrollHandler = true;
@@ -77109,6 +77131,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                         this.viewer = new WebLayoutViewer(this);
                     }
                     this.editor.layoutWholeDocument();
+                    this.fireViewChange();
                     break;
                 case 'locale':
                     this.localizeDialogs();
@@ -78292,13 +78315,14 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number} itemIndex - Index of the toolbar items that need to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the toolbar item should be enabled or disabled.
      * By default, `isEnable` is set to true.
+     * @blazorArgsType itemIndex|int,isEnable|Boolean
      * @returns void.
      */
-    Toolbar$$1.prototype.enableItems = function (items, isEnable) {
-        this.toolbar.enableItems(items, isEnable);
+    Toolbar$$1.prototype.enableItems = function (itemIndex, isEnable) {
+        this.toolbar.enableItems(itemIndex, isEnable);
     };
     /**
      * @private
@@ -80212,7 +80236,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
     };
     Paragraph.prototype.applyStyleValue = function (args) {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.applyStyle(args.itemData.StyleName);
+            this.documentEditor.editor.applyStyle(args.itemData.StyleName, true);
         }
     };
     Paragraph.prototype.onSelectionChange = function () {

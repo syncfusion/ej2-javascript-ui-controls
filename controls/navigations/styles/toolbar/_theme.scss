@@ -165,6 +165,10 @@
               color: inherit;
             }
           }
+
+          .e-tbar-btn {
+            background: $tbar-popup-btn-bg-color;
+          }
         }
 
         .e-tbar-btn-text {
@@ -303,8 +307,10 @@
           }
         }
 
-        .e-tbar-btn-text {
-          color: $tbar-default-font;
+        @if $tbar-skin != 'highcontrast' and $tbar-skin != 'bootstrap4' {
+          .e-tbar-btn-text {
+            color: $tbar-default-font;
+          }
         }
 
         @if $tbar-skin == 'bootstrap4' {

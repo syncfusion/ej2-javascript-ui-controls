@@ -590,11 +590,11 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
         Property(1000)
     ], TooltipSettings.prototype, "fadeOutDuration", void 0);
     __decorate$1([
+        Property(false)
+    ], TooltipSettings.prototype, "enableTextWrap", void 0);
+    __decorate$1([
         Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
-    __decorate$1([
-        Property('None')
-    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(ChildProperty));
 /**
@@ -709,6 +709,7 @@ var Double = /** @__PURE__ @class */ (function () {
      * @private
      */
     function Double(chart) {
+        this.isColumn = 0;
         this.chart = chart;
     }
     /**
@@ -738,9 +739,21 @@ var Double = /** @__PURE__ @class */ (function () {
      */
     Double.prototype.getActualRange = function (axis, size) {
         this.initializeDoubleRange(axis);
-        axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
-        axis.actualRange.min = axis.doubleRange.start;
-        axis.actualRange.max = axis.doubleRange.end;
+        if ((!axis.startFromZero) && (this.isColumn > 0)) {
+            axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
+            axis.actualRange.max = axis.doubleRange.end + axis.actualRange.interval;
+            if ((axis.doubleRange.start - axis.actualRange.interval < 0 && axis.doubleRange.start > 0)) {
+                axis.actualRange.min = 0;
+            }
+            else {
+                axis.actualRange.min = axis.doubleRange.start - axis.actualRange.interval;
+            }
+        }
+        else {
+            axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
+            axis.actualRange.min = axis.doubleRange.start;
+            axis.actualRange.max = axis.doubleRange.end;
+        }
     };
     /**
      * Range for the axis.
@@ -812,6 +825,7 @@ var Double = /** @__PURE__ @class */ (function () {
                 }
                 // For yRange
                 if (axis.orientation === 'Vertical') {
+                    this.isColumn += (series_1.type === 'Column' || series_1.type === 'Bar' || series_1.drawType === 'Column') ? 1 : 0;
                     if (this.chart.requireInvertedAxis) {
                         this.findMinMax(series_1.xMin - this.paddingInterval, series_1.xMax + this.paddingInterval);
                     }
@@ -1051,8 +1065,6 @@ var chartMouseUp = 'chartMouseUp';
 /** @private */
 var zoomComplete = 'zoomComplete';
 /** @private */
-var onZooming = 'onZooming';
-/** @private */
 var dragComplete = 'dragComplete';
 /** @private */
 var selectionComplete = 'selectionComplete';
@@ -1087,7 +1099,7 @@ var beforeExport = 'beforeExport';
 /** @private */
 var afterExport = 'afterExport';
 /** @private */
-var barRender = 'barRender';
+var bulletChartMouseClick = 'chartMouseClick';
 
 var __extends$4 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2089,6 +2101,9 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
         Property(0)
     ], Axis.prototype, "startAngle", void 0);
     __decorate$2([
+        Property(true)
+    ], Axis.prototype, "startFromZero", void 0);
+    __decorate$2([
         Property(null)
     ], Axis.prototype, "description", void 0);
     __decorate$2([
@@ -2886,19 +2901,22 @@ function templateAnimate(element, delay, duration, name, isRemove) {
     });
 }
 /** @private */
-function drawSymbol(location, shape, size, url, options, label, renderer, clipRect) {
+function drawSymbol(location, shape, size, url, options, label, renderer, clipRect, isChartControl, control) {
     var chartRenderer = renderer ? renderer : new SvgRenderer('');
-    var shapeOption = calculateShapes(location, size, shape, options, url);
+    var shapeOption = calculateShapes(location, size, shape, options, url, isChartControl, control);
     var drawElement = chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null);
     //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
 /** @private */
-function calculateShapes(location, size, shape, options, url) {
+// tslint:disable-next-line:max-func-body-length
+function calculateShapes(location, size, shape, options, url, isChart, control) {
     var dir;
     var functionName = 'Path';
-    var width = size.width;
-    var height = size.height;
+    var isBulletChart = isChart;
+    var width = (isBulletChart && shape === 'Circle') ? (size.width - 2) : size.width;
+    var height = (isBulletChart && shape === 'Circle') ? (size.height - 2) : size.height;
+    var sizeBullet = (isBulletChart) ? control.targetWidth : 0;
     var lx = location.x;
     var ly = location.y;
     var y = location.y + (-height / 2);
@@ -2915,6 +2933,12 @@ function calculateShapes(location, size, shape, options, url) {
                 (ly + (-height / 2));
             merge(options, { 'd': dir, stroke: options.fill });
             break;
+        case 'Multiply':
+            dir = 'M ' + (lx - sizeBullet) + ' ' + (ly - sizeBullet) + ' L ' +
+                (lx + sizeBullet) + ' ' + (ly + sizeBullet) + ' M ' +
+                (lx - sizeBullet) + ' ' + (ly + sizeBullet) + ' L ' + (lx + sizeBullet) + ' ' + (ly - sizeBullet);
+            merge(options, { 'd': dir, stroke: options.fill });
+            break;
         case 'HorizontalLine':
             dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
             merge(options, { 'd': dir });
@@ -2929,6 +2953,22 @@ function calculateShapes(location, size, shape, options, url) {
                 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + x + ' ' + ly + ' z';
+            merge(options, { 'd': dir });
+            break;
+        case 'ActualRect':
+            dir = 'M' + ' ' + x + ' ' + (ly + (-height / 8)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (-height / 8)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (height / 8)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (height / 8)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (-height / 8)) + ' z';
+            merge(options, { 'd': dir });
+            break;
+        case 'TargetRect':
+            dir = 'M' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' z';
             merge(options, { 'd': dir });
             break;
         case 'Rectangle':
@@ -6483,6 +6523,12 @@ var Series = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], Series.prototype, "selectionStyle", void 0);
     __decorate$4([
+        Property(null)
+    ], Series.prototype, "unSelectedStyle", void 0);
+    __decorate$4([
+        Property(null)
+    ], Series.prototype, "nonHighlightStyle", void 0);
+    __decorate$4([
         Property(1)
     ], Series.prototype, "minRadius", void 0);
     __decorate$4([
@@ -6739,6 +6785,13 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         var seriesMarker = series.marker;
         var shape = marker.shape || seriesMarker.shape;
         var element = series.symbolElement || series.seriesElement;
+        var className;
+        if (this.chart.highlightModule && this.chart.highlightMode !== 'None') {
+            className = this.chart.highlightModule.generateStyle(series);
+        }
+        if (this.chart.selectionModule && this.chart.selectionMode !== 'None') {
+            className = this.chart.selectionModule.generateStyle(series);
+        }
         var symbolId = this.elementId + '_Series_' + series.index + '_Point_' + point.index + '_Trackball' +
             (index ? index : '');
         var size = new Size((marker.width || seriesMarker.width) + 5, (marker.height || seriesMarker.height) + 5);
@@ -6756,6 +6809,13 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
             // incident: 252450 point click selection not working while maker explode
             //symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
+            var selectionId = element.id.indexOf('Symbol') !== -1 ? '_Symbol' : '';
+            var seletionElem = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
+                point.index + selectionId);
+            if (className !== '' && !isNullOrUndefined(className) && !isNullOrUndefined(seletionElem) &&
+                seletionElem.hasAttribute('class') && (className === seletionElem.getAttribute('class'))) {
+                symbol.classList.add(className);
+            }
             element.appendChild(symbol);
         }
     };
@@ -7109,38 +7169,42 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         this.legend = chart.legendSettings;
         this.legendID = chart.element.id + '_chart_legend';
         this.isChartControl = (chart.getModuleName() === 'chart');
+        this.isBulletChartControl = (chart.getModuleName() === 'bulletChart');
+        this.bulletChart = this.chart;
     }
     /**
      * Calculate the bounds for the legends.
      * @return {void}
      * @private
      */
-    BaseLegend.prototype.calculateLegendBounds = function (rect, availableSize) {
+    BaseLegend.prototype.calculateLegendBounds = function (rect, availableSize, maxLabelSize) {
         var legend = this.legend;
         this.getPosition(legend.position, availableSize);
         this.legendBounds = new Rect(rect.x, rect.y, 0, 0);
+        var defaultValue = (this.isBulletChartControl) ? '40%' : '20%';
         this.isVertical = (this.position === 'Left' || this.position === 'Right');
         if (this.isVertical) {
             this.legendBounds.height = stringToNumber(legend.height, availableSize.height - (rect.y - this.chart.margin.top)) || rect.height;
-            this.legendBounds.width = stringToNumber(legend.width || '20%', availableSize.width);
+            this.legendBounds.width = stringToNumber(legend.width || defaultValue, availableSize.width);
         }
         else {
             this.legendBounds.width = stringToNumber(legend.width, availableSize.width) || rect.width;
-            this.legendBounds.height = stringToNumber(legend.height || '20%', availableSize.height);
+            this.legendBounds.height = stringToNumber(legend.height || defaultValue, availableSize.height);
         }
         this.library.getLegendBounds(availableSize, this.legendBounds, legend);
-        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize);
+        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize, maxLabelSize);
     };
     /**
      * To find legend position based on available size for chart and accumulation chart
      */
     BaseLegend.prototype.getPosition = function (position, availableSize) {
-        if (this.isChartControl) {
+        var chart = this.chart;
+        var accumulation = this.chart;
+        if (this.isChartControl || this.isBulletChartControl) {
             this.position = (position !== 'Auto') ? position : 'Bottom';
         }
         else {
-            if (position === 'Auto' && this.chart.visibleSeries &&
-                (this.chart.visibleSeries[0].type === 'Funnel' || this.chart.visibleSeries[0].type === 'Pyramid')) {
+            if (position === 'Auto' && ((chart || accumulation).visibleSeries && (chart || accumulation).visibleSeries[0].type === 'Funnel' || (chart || accumulation).visibleSeries[0].type === 'Pyramid')) {
                 position = 'Top';
             }
             this.position = (position !== 'Auto') ? position :
@@ -7160,29 +7224,53 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
     /**
      * To find legend location based on position, alignment for chart and accumulation chart
      */
-    BaseLegend.prototype.getLocation = function (position, alignment, legendBounds, rect, availableSize) {
+    BaseLegend.prototype.getLocation = function (position, alignment, legendBounds, rect, availableSize, maxLabelSize) {
         var padding = this.legend.border.width;
+        var isBulletChart = this.isBulletChartControl;
+        var bulletChart = this.bulletChart;
+        var labelIns = bulletChart.labelPosition === 'Inside';
+        var ticklIns = bulletChart.tickPosition === 'Inside';
+        var isVertical = bulletChart.orientation === 'Vertical';
+        // tslint:disable-next-line:max-line-length
+        var categoryFieldValue = (isBulletChart && bulletChart.categoryField !== '') ? maxLabelSize.width + this.chart.border.width + padding * 3 : 0;
         var legendHeight = legendBounds.height + padding + this.legend.margin.top + this.legend.margin.bottom;
         var legendWidth = legendBounds.width + padding + this.legend.margin.left + this.legend.margin.right;
         var marginBottom = this.chart.margin.bottom;
         if (position === 'Bottom') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
+            // tslint:disable-next-line:max-line-length
             legendBounds.y = rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
+            legendBounds.y += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns
+                // tslint:disable-next-line:max-line-length
+                //tslint:disable-next-line:max-line-length
+                && !isVertical) ? bulletChart.majorTickLines.height + marginBottom + this.legend.border.width + padding * 2 :
+                (isVertical && bulletChart.categoryField !== '') ? maxLabelSize.height + padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
         }
         else if (position === 'Top') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
             legendBounds.y = rect.y + padding + this.legend.margin.top;
+            legendBounds.y -= (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
+                // // tslint:disable-next-line:max-line-length
+                !isVertical) ? bulletChart.majorTickLines.height + this.chart.margin.top : 0;
+            legendHeight -= (isBulletChart) ? -padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
         }
         else if (position === 'Right') {
             legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
+            legendWidth += (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
+                isVertical) ? (this.chart.margin.left + this.chart.margin.right + bulletChart.majorTickLines.height) : 0;
             subtractThickness(rect, new Thickness(0, legendWidth, 0, 0));
         }
         else if (position === 'Left') {
             legendBounds.x = legendBounds.x + this.legend.margin.left;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
+            legendWidth += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns &&
+                // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line:max-line-length
+                isVertical) ? (legendBounds.x - this.chart.margin.left + padding + bulletChart.majorTickLines.height) :
+                (bulletChart.orientation !== 'Vertical' && bulletChart.categoryField !== '') ? categoryFieldValue : 0;
             subtractThickness(rect, new Thickness(legendWidth, 0, 0, 0));
         }
         else {
@@ -7223,7 +7311,7 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
             start = new ChartLocation(legendBounds.x + padding + (legend.shapeWidth / 2), legendBounds.y + padding + this.maxItemHeight / 2);
             var textOptions = new TextOption('', start.x, start.y, 'start');
             //  initialization for totalPages legend click totalpage again calculate
-            this.totalPages = this.isChartControl ? this.totalPages : 0;
+            this.totalPages = this.totalPages = (this.isChartControl || this.isBulletChartControl) ? this.totalPages : 0;
             var textPadding = legend.shapePadding + padding + legend.shapeWidth;
             var count = 0;
             this.pageXCollections = [];
@@ -7232,8 +7320,11 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
             for (var _i = 0, _a = this.legendCollections; _i < _a.length; _i++) {
                 var legendOption = _a[_i];
                 if (this.chart.getModuleName() === 'accumulationchart') {
-                    legendOption.fill = this.chart.visibleSeries[0].points[legendOption.pointIndex].color;
+                    // tslint:disable-next-line:max-line-length
+                    legendOption.fill = (this.chart || this.chart).visibleSeries[0].points[legendOption.pointIndex].color;
                 }
+                this.accessbilityText = (this.isBulletChartControl) ? 'Legend of bullet chart' + '' + legendOption.text
+                    : 'Click to show or hide the ' + legendOption.text + ' series';
                 if (legendOption.render && legendOption.text !== '') {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', count)
@@ -7241,13 +7332,15 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
                     if (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute('tabindex', legend.tabIndex.toString());
                         legendSeriesGroup.setAttribute('aria-label', legend.description ||
-                            'Click to show or hide the ' + legendOption.text + ' series');
+                            this.accessbilityText);
                     }
                     this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, legendBounds, count, firstLegend);
                     this.renderSymbol(legendOption, legendSeriesGroup, count);
                     this.renderText(chart, legendOption, legendSeriesGroup, textOptions, count);
                     if (legendSeriesGroup) {
-                        legendSeriesGroup.setAttribute('style', 'cursor: ' + ((!legend.toggleVisibility && chart.selectionMode === 'None') ? 'auto' : 'pointer'));
+                        legendSeriesGroup.setAttribute('style', 'cursor: ' + ((!legend.toggleVisibility && (chart.selectionMode === 'None' ||
+                            chart.highlightMode === 'None' ||
+                            chart.selectionMode === 'None') || this.isBulletChartControl) ? 'auto' : 'pointer'));
                     }
                     if (legendTranslateGroup) {
                         legendTranslateGroup.appendChild(legendSeriesGroup);
@@ -7298,7 +7391,7 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         var clippath = chart.renderer.createClipPath({ id: id + '_clipPath' });
         options.y += padding;
         options.id += '_clipPath_rect';
-        options.width = (!this.isChartControl && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
+        options.width = ((!this.isChartControl && chart.getModuleName() !== 'bulletChart') && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
         if (!isCanvas) {
             this.clipRect = chart.renderer.drawRectangle(options);
             clippath.appendChild(this.clipRect);
@@ -7317,12 +7410,14 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
      */
     BaseLegend.prototype.renderSymbol = function (legendOption, group, i) {
         var borderColor;
+        var control = this.isBulletChartControl ? this.chart : null;
         var symbolColor = legendOption.visible ? legendOption.fill : '#D3D3D3';
         var shape = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
         var isStrokeWidth = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
             (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
-        var strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width : 1;
+        var strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width :
+            (this.isBulletChartControl && legendOption.shape === 'Multiply') ? 4 : 1;
         var isCustomBorder = this.chart.getModuleName() === 'chart' &&
             (legendOption.type === 'Scatter' || legendOption.type === 'Bubble');
         if (isCustomBorder && i < this.chart.visibleSeries.length) {
@@ -7334,12 +7429,21 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         var regionPadding;
         var isCanvas = this.chart.enableCanvas;
         if (!isCanvas) {
-            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer));
+            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', 
+            // tslint:disable-next-line:max-line-length
+            // tslint:disable-next-line:align
+            symbolOption, this.accessbilityText, this.chart.renderer, null, this.isBulletChartControl, control));
         }
         else {
             regionPadding = -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber);
-            drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer, this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null);
-            this.legendRegions.push({ rect: new Rect(legendOption.location.x, legendOption.location.y, this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: i });
+            drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', 
+            // tslint:disable-next-line:align
+            symbolOption, this.accessbilityText, this.chart.renderer, this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null, this.isBulletChartControl, control);
+            this.legendRegions.push({
+                rect: new Rect(legendOption.location.x, legendOption.location.y, 
+                // tslint:disable-next-line:align
+                this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: i
+            });
         }
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||
             legendOption.type === 'Doughnut') {
@@ -7347,11 +7451,16 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
             shape = legendOption.type === 'Doughnut' ? 'Circle' : legendOption.markerShape;
             symbolOption.fill = legendOption.type === 'Doughnut' ? '#FFFFFF' : symbolOption.fill;
             if (!isCanvas) {
-                group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
+                // tslint:disable-next-line:max-line-length
+                group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), 
+                // tslint:disable-next-line:align
+                '', symbolOption, this.accessbilityText, null, null, this.isBulletChartControl, control));
             }
             else {
-                drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer, this.currentPageNumber ?
-                    new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+                drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), 
+                // tslint:disable-next-line:align
+                '', symbolOption, this.accessbilityText, this.chart.renderer, this.currentPageNumber ?
+                    new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null, this.isBulletChartControl, control);
             }
         }
     };
@@ -7370,7 +7479,7 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         var element = textElement$1(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false, null, this.currentPageNumber && isCanvas ?
             new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
         if (element) {
-            element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
+            element.setAttribute('aria-label', legend.description || this.accessbilityText);
         }
         if (isCanvas) {
             var textSize = measureText(textOptions.text, legend.textStyle);
@@ -7393,7 +7502,7 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         var grayColor = '#545454';
         var legend = chart.legendSettings; // to solve parameter lint error, legend declaration is here
         var padding = 8; // const padding for paging elements
-        if (this.isChartControl || !this.isVertical) {
+        if (this.isChartControl || this.isBulletChartControl || !this.isVertical) {
             this.totalPages = Math.ceil(this.totalPages / Math.max(1, this.rowCount - 1));
         }
         else {
@@ -7466,7 +7575,7 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
     BaseLegend.prototype.translatePage = function (pagingText, page, pageNumber) {
         var size = (this.clipPathHeight) * page;
         var translate = 'translate(0,-' + size + ')';
-        if (!this.isChartControl && this.isVertical) {
+        if (!this.isChartControl && !this.bulletChart && this.isVertical) {
             var pageLength = page * this.maxColumns;
             size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
             size = size < 0 ? 0 : size; // to avoid small pixel variation
@@ -8066,6 +8175,8 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.isScrolling = false;
         /** @private */
+        _this.visible = 0;
+        /** @private */
         _this.chartAreaType = 'Cartesian';
         _this.chartid = 57723;
         setValue('mergePersistData', _this.mergePersistChartData, _this);
@@ -8104,6 +8215,19 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.initPrivateVariable();
         this.setCulture();
         this.wireEvents();
+        if (this.stockChart) {
+            if (this.stockChart.tooltip.header === null) {
+                this.tooltip.header = '<b>${point.x}</b>';
+            }
+            if (this.stockChart.tooltip.format === null) {
+                this.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
+                    ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
+                if (this.stockChart.series[0].volume !== '') {
+                    this.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
+                }
+            }
+            this.animateSeries = false;
+        }
     };
     Chart.prototype.initPrivateVariable = function () {
         this.animateSeries = true;
@@ -8128,8 +8252,23 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * To Initialize the control rendering.
      */
     Chart.prototype.render = function () {
+        var _this = this;
         this.svgRenderer = new SvgRenderer(this.element.id);
-        this.trigger(load, { chart: this });
+        var loadEventData = { chart: this.isBlazor ? {} : this, theme: this.theme, name: load, cancel: false };
+        if (!this.stockChart) {
+            /**
+             * Load event for the chart will be triggered only chart componet, if this is stock chart, load event did not triggered.
+             */
+            this.trigger(load, loadEventData, function () {
+                _this.cartesianChartRendering(loadEventData);
+            });
+        }
+        else {
+            this.cartesianChartRendering(loadEventData);
+        }
+    };
+    Chart.prototype.cartesianChartRendering = function (beforeRenderData) {
+        this.theme = this.isBlazor ? beforeRenderData.theme : this.theme;
         this.createChartSvg();
         this.setTheme();
         this.markerRender = new Marker(this);
@@ -8377,6 +8516,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 visibility = item.visible;
             }
             if (visibility) {
+                this.visible++;
                 findClipRect(item);
                 if (this.enableCanvas) {
                     // To render scatter and bubble series in canvas
@@ -8390,6 +8530,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        this.visible = 0;
         var options = {
             'id': this.element.id + '_ChartAreaClipRect_',
             'x': this.chartAxisLayoutPanel.seriesClipRect.x,
@@ -8495,6 +8636,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             selectedDataIndexes = extend([], this.selectionModule.selectedDataIndexes, null, true);
             this.selectionModule.invokeSelection(this);
         }
+        if (this.highlightModule) {
+            this.highlightModule.invokeHighlight(this);
+        }
         if (selectedDataIndexes.length > 0) {
             this.selectionModule.selectedDataIndexes = selectedDataIndexes;
             this.selectionModule.redrawSelection(this, this.selectionMode);
@@ -8546,21 +8690,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
-            if (regSub.test(this.title)) {
-                this.title = getUnicodeText(this.title, regSub);
-            }
-            if (regSup.test(this.title)) {
-                this.title = getUnicodeText(this.title, regSup);
-            }
             this.titleCollection = getTitle(this.title, this.titleStyle, width);
             titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
-                if (regSub.test(this.subTitle)) {
-                    this.subTitle = getUnicodeText(this.subTitle, regSub);
-                }
-                if (regSup.test(this.subTitle)) {
-                    this.subTitle = getUnicodeText(this.subTitle, regSup);
-                }
                 var maxWidth = 0;
                 for (var _i = 0, _a = this.titleCollection; _i < _a.length; _i++) {
                     var titleText = _a[_i];
@@ -8576,7 +8708,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         var height = this.availableSize.height - top - this.border.width - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
         if (this.legendModule) {
-            this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize);
+            this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
         }
         this.chartAxisLayoutPanel.measureAxis(this.initialClipRect);
     };
@@ -9002,7 +9134,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     Chart.prototype.setStyle = function (element) {
         var zooming = this.zoomSettings;
         var disableScroll = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
-            this.selectionMode !== 'None' || this.crosshair.enable;
+            this.selectionMode !== 'None' || this.crosshair.enable || this.highlightMode !== 'None';
         element.style.touchAction = disableScroll ? 'none' : 'element';
         element.style.msTouchAction = disableScroll ? 'none' : 'element';
         element.style.msContentZooming = 'none';
@@ -9473,6 +9605,12 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 args: [this]
             });
         }
+        if (this.highlightMode !== 'None') {
+            modules.push({
+                member: 'Highlight',
+                args: [this]
+            });
+        }
         if (dataLabelEnable) {
             modules.push({
                 member: 'DataLabel',
@@ -9755,14 +9893,11 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Clear visible Axis labels
+     * To remove style element
      */
-    Chart.prototype.clearVisibleAxisLabels = function () {
-        var axes = [this.primaryXAxis, this.primaryYAxis];
-        axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
-        for (var i = 0, len = axes.length; i < len; i++) {
-            axes[i].labels = [];
-        }
+    Chart.prototype.removeStyles = function () {
+        removeElement$1(this.element.id + '_ej2_chart_selection');
+        removeElement$1(this.element.id + '_ej2_chart_highlight');
     };
     /**
      * Called internally if any of the property value changed.
@@ -9900,13 +10035,23 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                     case 'selectedDataIndexes':
                     case 'selectionMode':
                         if (this.selectionModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
+                            this.selectionModule.currentMode = this.selectionMode;
+                            this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                             this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                         }
                         break;
                     case 'isMultiSelect':
                         if (this.selectionModule && !newProp.isMultiSelect && this.selectionModule.selectedDataIndexes.length > 1) {
+                            this.selectionModule.currentMode = this.selectionMode;
+                            this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                             this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                         }
+                        break;
+                    case 'highlightMode':
+                    case 'selectionPattern':
+                    case 'highlightPattern':
+                        this.removeStyles();
+                        renderer = true;
                         break;
                     case 'theme':
                         this.animateSeries = true;
@@ -10011,6 +10156,15 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         Property('None')
     ], Chart.prototype, "selectionMode", void 0);
     __decorate([
+        Property('None')
+    ], Chart.prototype, "highlightMode", void 0);
+    __decorate([
+        Property('None')
+    ], Chart.prototype, "selectionPattern", void 0);
+    __decorate([
+        Property('None')
+    ], Chart.prototype, "highlightPattern", void 0);
+    __decorate([
         Property(false)
     ], Chart.prototype, "isMultiSelect", void 0);
     __decorate([
@@ -10060,13 +10214,13 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     ], Chart.prototype, "beforePrint", void 0);
     __decorate([
         Event()
+    ], Chart.prototype, "loaded", void 0);
+    __decorate([
+        Event()
     ], Chart.prototype, "beforeExport", void 0);
     __decorate([
         Event()
     ], Chart.prototype, "afterExport", void 0);
-    __decorate([
-        Event()
-    ], Chart.prototype, "loaded", void 0);
     __decorate([
         Event()
     ], Chart.prototype, "load", void 0);
@@ -10133,9 +10287,6 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Chart.prototype, "zoomComplete", void 0);
-    __decorate([
-        Event()
-    ], Chart.prototype, "onZooming", void 0);
     __decorate([
         Event()
     ], Chart.prototype, "scrollStart", void 0);
@@ -11092,7 +11243,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param startValue
      * @param segmentAxis
      */
-    StripLine.prototype.measureStripLine = function (axis, stripline, seriesClipRect, startValue, segmentAxis, chart) {
+    StripLine.prototype.measureStripLine = function (axis, stripline, seriesClipRect, startValue, segmentAxis) {
         var actualStart;
         var actualEnd;
         var orientation = axis.orientation;
@@ -11104,16 +11255,13 @@ var StripLine = /** @__PURE__ @class */ (function () {
             if (axis.valueType === 'DateTimeCategory') {
                 var start = stripline.start;
                 var end = stripline.end;
-                actualStart = (start != null && typeof start !== 'number') ?
-                    axis.labels.indexOf(this.dateToMilliSeconds(start, chart).toString()) : start;
-                actualEnd = (end != null && typeof end !== 'number') ?
-                    axis.labels.indexOf(this.dateToMilliSeconds(end, chart).toString()) : end;
+                actualStart = (start != null && typeof start !== 'number') ? axis.labels.indexOf((start).getTime().toString()) :
+                    start;
+                actualEnd = (end != null && typeof end !== 'number') ? axis.labels.indexOf((end).getTime().toString()) : end;
             }
             else {
-                actualStart = stripline.start === null ? null : this.isCoreDate(stripline.start) ?
-                    this.dateToMilliSeconds(stripline.start, chart) : +stripline.start;
-                actualEnd = stripline.end === null ? null : this.isCoreDate(stripline.start) ?
-                    this.dateToMilliSeconds(stripline.end, chart) : +stripline.end;
+                actualStart = stripline.start === null ? null : +stripline.start;
+                actualEnd = stripline.end === null ? null : +stripline.end;
             }
         }
         var rect = this.getFromTovalue(actualStart, actualEnd, stripline.size, stripline.startFromAxis, axis, stripline);
@@ -11123,8 +11271,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
         var y = (orientation === 'Horizontal') ? seriesClipRect.y : (axis.rect.y + axis.rect.height -
             ((stripline.sizeType === 'Pixel' ? rect.from : rect.to) * axis.rect.height));
         if (stripline.isSegmented && stripline.segmentStart != null && stripline.segmentEnd != null && stripline.sizeType !== 'Pixel') {
-            var segRect = this.getFromTovalue(this.isCoreDate(stripline.segmentStart) ? this.dateToMilliSeconds(stripline.segmentStart, chart) :
-                +stripline.segmentStart, this.isCoreDate(stripline.segmentEnd) ? this.dateToMilliSeconds(stripline.segmentEnd, chart) : +stripline.segmentEnd, null, null, segmentAxis, stripline);
+            var segRect = this.getFromTovalue(+stripline.segmentStart, +stripline.segmentEnd, null, null, segmentAxis, stripline);
             if (segmentAxis.orientation === 'Vertical') {
                 y = (segmentAxis.rect.y + segmentAxis.rect.height -
                     (segRect.to * segmentAxis.rect.height));
@@ -11209,11 +11356,6 @@ var StripLine = /** @__PURE__ @class */ (function () {
         }
         return value;
     };
-    StripLine.prototype.dateParse = function (value, chart) {
-        var dateParser = chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-        var dateFormatter = chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
-        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
-    };
     /**
      * To render strip lines based start and end.
      * @private
@@ -11251,9 +11393,8 @@ var StripLine = /** @__PURE__ @class */ (function () {
                     }
                     if (stripline.isRepeat && stripline.repeatEvery != null && stripline.size !== null && stripline.sizeType !== 'Pixel') {
                         limit = (stripline.repeatUntil != null) ? ((axis.valueType === 'DateTime') ?
-                            this.dateToMilliSeconds(stripline.repeatUntil, chart) : +stripline.repeatUntil) : axis.actualRange.max;
-                        startValue = this.isCoreDate(stripline.start) ? this.dateToMilliSeconds(stripline.start, chart) :
-                            stripline.start;
+                            stripline.repeatUntil.getTime() : +stripline.repeatUntil) : axis.actualRange.max;
+                        startValue = stripline.start;
                         if ((stripline.startFromAxis && axis.valueType === 'DateTime' && stripline.sizeType === 'Auto') ||
                             (stripline.start < axis.visibleRange.min)) {
                             startValue = axis.visibleLabels[0].value === axis.visibleRange.min ? axis.visibleRange.min :
@@ -11268,7 +11409,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
                                 this.renderStripLineElement(axis, stripline, seriesClipRect, id, striplineGroup, chart, startValue, segmentAxis, count);
                             }
                             count++;
-                            startValue = this.getStartValue(axis, stripline, startValue, chart);
+                            startValue = this.getStartValue(axis, stripline, startValue);
                         }
                     }
                     else {
@@ -11279,22 +11420,6 @@ var StripLine = /** @__PURE__ @class */ (function () {
             }
         }
         appendChildElement(chart.enableCanvas, chart.svgObject, striplineGroup, chart.redraw);
-    };
-    /**
-     * To convert the C# date to js date
-     * @param value
-     * @param axis
-     */
-    StripLine.prototype.isCoreDate = function (value) {
-        return typeof value === 'string' ? true : false;
-    };
-    /**
-     * To get the total milli seconds
-     * @param value
-     * @param chart
-     */
-    StripLine.prototype.dateToMilliSeconds = function (value, chart) {
-        return this.dateParse(value, chart).getTime();
     };
     /**
      * To draw the single line strip line
@@ -11373,11 +11498,9 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param stripline
      * @param startValue
      */
-    StripLine.prototype.getStartValue = function (axis, stripline, startValue, chart) {
+    StripLine.prototype.getStartValue = function (axis, stripline, startValue) {
         if (axis.valueType === 'DateTime') {
-            return (this.getToValue(null, startValue, 
-            // tslint:disable-next-line:max-line-length
-            this.isCoreDate(stripline.repeatEvery) ? this.dateToMilliSeconds(stripline.repeatEvery, chart) : +stripline.repeatEvery, axis, null, stripline));
+            return this.getToValue(null, startValue, +stripline.repeatEvery, axis, null, stripline);
         }
         else {
             return startValue + (+stripline.repeatEvery);
@@ -11416,7 +11539,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param count
      */
     StripLine.prototype.renderStripLineElement = function (axis, stripline, seriesClipRect, id, striplineGroup, chart, startValue, segmentAxis, count) {
-        var rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart);
+        var rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis);
         if (stripline.sizeType === 'Pixel') {
             this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
         }
@@ -11841,6 +11964,7 @@ var ColumnBase = /** @__PURE__ @class */ (function () {
         var vSeries = { rectCount: 0, position: null };
         for (var i = 0; i < seriesCollection.length; i++) {
             var value = seriesCollection[i];
+            // tslint:disable-next-line:align
             if (value.type.indexOf('Stacking') !== -1) {
                 if (value.stackingGroup) {
                     if (stackingGroup[value.stackingGroup] === undefined) {
@@ -11865,6 +11989,7 @@ var ColumnBase = /** @__PURE__ @class */ (function () {
                 value.position = vSeries.rectCount++;
             }
         }
+        // tslint:disable-next-line:align
         for (var i = 0; i < seriesCollection.length; i++) {
             var value = seriesCollection[i];
             value.rectCount = vSeries.rectCount;
@@ -12443,6 +12568,13 @@ var AreaSeries = /** @__PURE__ @class */ (function (_super) {
             }
         });
         if (isPolar && direction !== '') {
+            var endPoint = '';
+            var chart = this.chart;
+            endPoint += this.getAreaPathDirection(0, origin, series, isInverted, getCoordinate, null, 'L');
+            if (xAxis.isInversed || yAxis.isInversed) {
+                direction += (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, endPoint) :
+                    chart.radarSeriesModule.getRadarIsInversedPath(xAxis, endPoint));
+            }
             direction = direction.concat(direction + ' ' + 'Z');
         }
         this.appendLinePath(new PathOption(series.chart.element.id + '_Series_' + series.index, series.interior, borderWidth, borderColor, series.opacity, series.dashArray, ((series.points.length > 1 && direction !== '') ? (direction + this.getAreaPathDirection(series.points[series.points.length - 1].xValue, series.chart.chartAreaType === 'PolarRadar' ?
@@ -13446,6 +13578,21 @@ var PolarSeries = /** @__PURE__ @class */ (function (_super) {
             }
         });
     };
+    // path calculation for isInversed polar area series
+    PolarSeries.prototype.getPolarIsInversedPath = function (xAxis, endPoint) {
+        var vector;
+        var x1;
+        var y1;
+        var chart = this.chart;
+        var radius = chart.radius;
+        var direction = endPoint;
+        var circleRotate = xAxis.isInversed ? '1 1 ' : '1 0 ';
+        vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
+        x1 = this.centerX + radius * vector.x;
+        y1 = this.centerY + radius * vector.y;
+        return direction += 'L ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate +
+            x1 + ' ' + (this.centerY + radius) + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate + x1 + ' ' + y1 + ' ';
+    };
     /**
      * Get module name.
      */
@@ -13509,6 +13656,27 @@ var RadarSeries = /** @__PURE__ @class */ (function (_super) {
         else {
             this.columnDrawTypeRender(series, xAxis, yAxis);
         }
+    };
+    // path calculation for isInversed polar area series
+    RadarSeries.prototype.getRadarIsInversedPath = function (xAxis, endPoint) {
+        var chart = this.chart;
+        var x1;
+        var y1;
+        var vector;
+        var radius = chart.radius;
+        var length = xAxis.visibleLabels.length;
+        var direction = endPoint;
+        vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
+        y1 = this.centerY + radius * vector.y;
+        x1 = this.centerX + radius * vector.x;
+        direction += ' L ' + x1 + ' ' + y1 + ' ';
+        for (var i = length - 1; i >= 0; i--) {
+            vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[i].value, xAxis), this.startAngle);
+            y1 = this.centerY + radius * vector.y;
+            x1 = this.centerX + radius * vector.x;
+            direction += 'L ' + x1 + ' ' + y1 + ' ';
+        }
+        return direction;
     };
     /**
      * Get module name.
@@ -14151,9 +14319,15 @@ var StackingAreaSeries = /** @__PURE__ @class */ (function (_super) {
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
             var connectPoints = this.getFirstLastVisiblePoint(series.points);
+            var chart = this.chart;
             point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             lineDirection += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+            if (this.chart.visible === 1 && (xAxis.isInversed || yAxis.isInversed)) {
+                this.chart.enableAnimation = false;
+                lineDirection = (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, lineDirection) :
+                    chart.radarSeriesModule.getRadarIsInversedPath(xAxis, lineDirection));
+            }
         }
         if (!isPolar || (isPolar && series.index !== this.getFirstSeriesIndex(series.chart.visibleSeries))) {
             for (var j = pointsLength - 1; j >= startPoint; j--) {
@@ -18292,61 +18466,25 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate, tooltipPosition) {
+    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate) {
         if (extraPoints === void 0) { extraPoints = null; }
         if (templatePoint === void 0) { templatePoint = null; }
-        if (tooltipPosition === void 0) { tooltipPosition = 'None'; }
         var series = this.currentPoints[0].series;
         var module = chart.tooltipModule || chart.accumulationTooltipModule;
-        var isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
-        var inverted = this.chart.requireInvertedAxis && series.isRectSeries;
-        var position = null;
-        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
-            var contentSize = measureText(this.text[0], chart.tooltip.textStyle);
-            var headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
-                new Size(0, 0);
-            // marker size + arrowpadding + 2 * padding + markerpadding
-            var markerSize = 10 + 12 + (2 * 10) + 5;
-            contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);
-            var heightPadding = 12 + (2 * 10) + (headerSize.height > 0 ? (2 * 10) : 0);
-            contentSize.height = contentSize.height + headerSize.height + heightPadding;
-            position = this.getCurrentPosition(isNegative, inverted);
-            position = this.getPositionBySize(contentSize, new Rect(0, 0, bounds.width, bounds.height), location, position);
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
-        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
-            position = tooltipPosition;
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: this.headerText,
-                content: this.text,
-                fill: chart.tooltip.fill,
-                border: chart.tooltip.border,
-                enableAnimation: chart.tooltip.enableAnimation,
-                location: location,
-                shared: chart.tooltip.shared,
-                shapes: shapes,
-                clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
-                areaBounds: bounds,
-                palette: this.findPalette(),
-                template: customTemplate || chart.tooltip.template,
-                data: templatePoint,
-                theme: chart.theme,
-                offset: offset,
-                textStyle: chart.tooltip.textStyle,
-                isNegative: isNegative,
-                inverted: inverted,
+                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
+                enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
+                shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
+                areaBounds: bounds, palette: this.findPalette(), template: customTemplate || chart.tooltip.template, data: templatePoint,
+                theme: chart.theme, offset: offset, textStyle: chart.tooltip.textStyle,
+                isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
+                inverted: this.chart.requireInvertedAxis && series.isRectSeries,
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
-                availableSize: chart.availableSize,
-                duration: this.chart.tooltip.duration,
-                isCanvas: this.chart.enableCanvas,
+                availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
+                isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
-                tooltipPlacement: position,
                 tooltipRender: function () {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -18370,84 +18508,12 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
                 this.svgTooltip.data = templatePoint;
                 this.svgTooltip.template = chart.tooltip.template;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
-                this.svgTooltip.isNegative = isNegative;
-                this.svgTooltip.inverted = inverted;
+                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
                 this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
-                this.svgTooltip.tooltipPlacement = position;
                 this.svgTooltip.dataBind();
             }
         }
-    };
-    BaseTooltip.prototype.getPositionBySize = function (textSize, bounds, arrowLocation, position) {
-        var isTop = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        var isBottom = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        var isRight = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        var isLeft = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        var tooltipPos;
-        if (isTop || isBottom || isRight || isLeft) {
-            if (position === 'Top') {
-                tooltipPos = isTop ? 'Top' : (isBottom ? 'Bottom' : (isRight ? 'Right' : 'Left'));
-            }
-            else if (position === 'Bottom') {
-                tooltipPos = isBottom ? 'Bottom' : (isTop ? 'Top' : (isRight ? 'Right' : 'Left'));
-            }
-            else if (position === 'Right') {
-                tooltipPos = isRight ? 'Right' : (isLeft ? 'Left' : (isTop ? 'Top' : 'Bottom'));
-            }
-            else {
-                tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
-            }
-        }
-        else {
-            var size = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x), (arrowLocation.y - bounds.y),
-                ((bounds.y + bounds.height) - arrowLocation.y)];
-            var index = size.indexOf(Math.max.apply(this, size));
-            position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
-            return position;
-        }
-        return tooltipPos;
-    };
-    BaseTooltip.prototype.isTooltipFitPosition = function (position, bounds, location, size) {
-        var start = new ChartLocation(0, 0);
-        var end = new ChartLocation(0, 0);
-        switch (position) {
-            case 'Top':
-                start.x = location.x - (size.width / 2);
-                start.y = location.y - size.height;
-                end.x = location.x + (size.width / 2);
-                end.y = location.y;
-                break;
-            case 'Bottom':
-                start.x = location.x - (size.width / 2);
-                start.y = location.y;
-                end.x = location.x + (size.width / 2);
-                end.y = location.y + size.height;
-                break;
-            case 'Right':
-                start.x = location.x;
-                start.y = location.y - (size.height / 2);
-                end.x = location.x + size.width;
-                end.y = location.y + (size.height / 2);
-                break;
-            case 'Left':
-                start.x = location.x - size.width;
-                start.y = location.y - (size.height / 2);
-                end.x = location.x;
-                end.y = location.y + (size.height / 2);
-                break;
-        }
-        return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
-    };
-    BaseTooltip.prototype.getCurrentPosition = function (isNegative, inverted) {
-        var position;
-        if (inverted) {
-            position = isNegative ? 'Left' : 'Right';
-        }
-        else {
-            position = isNegative ? 'Bottom' : 'Top';
-        }
-        return position;
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];
@@ -18669,12 +18735,6 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
             return '';
         }
         this.header = this.parseTemplate(data.point, data.series, this.header, data.series.xAxis, data.series.yAxis);
-        if (regSub.test(this.header)) {
-            this.header = getUnicodeText(this.header, regSub);
-        }
-        if (regSup.test(this.header)) {
-            this.header = getUnicodeText(this.header, regSup);
-        }
         if (this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
             return this.header;
         }
@@ -18742,7 +18802,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 _this.headerText = argsData.headerText;
                 _this.formattedText = _this.formattedText.concat(argsData.text);
                 _this.text = _this.formattedText;
-                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '', _this.chart.tooltip.position);
+                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '');
             }
             else {
                 _this.removeHighlight(_this.control);
@@ -19269,7 +19329,6 @@ var Toolkit = /** @__PURE__ @class */ (function () {
     // Toolkit events function calculation here.
     /** @private */
     Toolkit.prototype.reset = function () {
-        var _this = this;
         var chart = this.chart;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
@@ -19277,10 +19336,8 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         var argsData;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
-        var zoomingEventArgs;
-        var zoomedAxisCollection = [];
-        for (var _i = 0, _a = chart.axisCollections; _i < _a.length; _i++) {
-            var axis = _a[_i];
+        for (var i = 0; i < chart.axisCollections.length; i++) {
+            var axis = chart.axisCollections[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -19295,23 +19352,7 @@ var Toolkit = /** @__PURE__ @class */ (function () {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-            zoomedAxisCollection.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, zoomingEventArgs, function () {
-                _this.setDefferedZoom(chart);
-            });
-            return false;
-        }
-        else {
-            return (this.setDefferedZoom(chart));
-        }
-    };
-    Toolkit.prototype.setDefferedZoom = function (chart) {
         chart.disableTrackTooltip = false;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
@@ -19371,8 +19412,8 @@ var Toolkit = /** @__PURE__ @class */ (function () {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             var argsData = void 0;
-            for (var _i = 0, _a = axes; _i < _a.length; _i++) {
-                var axis = _a[_i];
+            for (var i = 0; i < axes.length; i++) {
+                var axis = axes[i];
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19476,21 +19517,20 @@ var Zoom = /** @__PURE__ @class */ (function () {
     };
     // Panning performed here
     Zoom.prototype.doPan = function (chart, axes) {
-        var _this = this;
         if (chart.startMove && chart.crosshair.enable) {
             return null;
         }
         var currentScale;
         var offset;
         this.isZoomed = true;
+        var translateX;
+        var translateY;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
         var argsData;
-        var zoomingEventArgs;
-        var zoomedAxisCollection = [];
-        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
-            var axis = _a[_i];
+        for (var i = 0; i < axes.length; i++) {
+            var axis = axes[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19509,24 +19549,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-            zoomedAxisCollection.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, zoomingEventArgs, function () {
-                _this.performDefferedZoom(chart);
-            });
-        }
-        else {
-            this.performDefferedZoom(chart);
-        }
-    };
-    Zoom.prototype.performDefferedZoom = function (chart) {
-        var translateX;
-        var translateY;
         if (this.zooming.enableDeferredZooming) {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
@@ -19588,15 +19611,12 @@ var Zoom = /** @__PURE__ @class */ (function () {
     };
     // Rectangular zoom calculated here performed here
     Zoom.prototype.doZoom = function (chart, axes, bounds) {
-        var _this = this;
         var zoomRect = this.zoomingRect;
         var mode = this.zooming.mode;
         var argsData;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
-        var onZoomingEventArg;
-        var zoomedAxisCollections = [];
-        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
-            var axis = _a[_i];
+        for (var j = 0; j < axes.length; j++) {
+            var axis = axes[j];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19620,22 +19640,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-            zoomedAxisCollections.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        onZoomingEventArg = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
-        if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArg, function () {
-                _this.zoomingRect = new Rect(0, 0, 0, 0);
-                _this.performZoomRedraw(chart);
-            });
-        }
-        else {
-            this.zoomingRect = new Rect(0, 0, 0, 0);
-            this.performZoomRedraw(chart);
-        }
+        this.zoomingRect = new Rect(0, 0, 0, 0);
+        this.performZoomRedraw(chart);
     };
     /**
      * Function that handles the Mouse wheel zooming.
@@ -19643,7 +19650,6 @@ var Zoom = /** @__PURE__ @class */ (function () {
      * @private
      */
     Zoom.prototype.performMouseWheelZooming = function (e, mouseX, mouseY, chart, axes) {
-        var _this = this;
         var direction = (this.browserName === 'mozilla' && !this.isPointer) ?
             -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta / 120) > 0 ? 1 : -1;
         var mode = this.zooming.mode;
@@ -19657,10 +19663,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         var argsData;
-        var onZoomingEventArgs;
-        var zoomedAxisCollection = [];
-        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
-            var axis = _a[_i];
+        for (var index = 0; index < axes.length; index++) {
+            var axis = axes[index];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19685,18 +19689,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
-            zoomedAxisCollection.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArgs, function () { _this.performZoomRedraw(chart); });
-        }
-        else {
-            this.performZoomRedraw(chart);
-        }
+        this.performZoomRedraw(chart);
     };
     /**
      * Function that handles the Pinch zooming.
@@ -19767,8 +19761,6 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var argsData;
         var currentZF;
         var currentZP;
-        var onZoomingEventArgs;
-        var zoomedAxisCollection = [];
         for (var index = 0; index < chart.axisCollections.length; index++) {
             var axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -19804,15 +19796,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
-                zoomedAxisCollection.push({
-                    zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                    axisRange: axis.visibleRange
-                });
             }
-        }
-        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArgs);
         }
     };
     // Series transformation style applied here.
@@ -19828,8 +19812,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var yAxisLoc;
         var element;
         if (transX !== null && transY !== null) {
-            for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
-                var value = _a[_i];
+            for (var i = 0; i < chart.visibleSeries.length; i++) {
+                var value = chart.visibleSeries[i];
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -19999,8 +19983,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
      */
     Zoom.prototype.isAxisZoomed = function (axes) {
         var showToolkit = false;
-        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
-            var axis = _a[_i];
+        for (var k = 0; k < axes.length; k++) {
+            var axis = axes[k];
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
         }
         return showToolkit;
@@ -20204,16 +20188,335 @@ var BaseSelection = /** @__PURE__ @class */ (function () {
     BaseSelection.prototype.seriesStyles = function () {
         var seriesclass;
         var style = document.getElementById(this.styleId);
-        if (isNullOrUndefined(style)) {
+        var pattern = '{}';
+        var fill;
+        var opacity;
+        var selectionPattern = this.control.selectionPattern;
+        var highlightPattern = this.control.highlightPattern;
+        if (isNullOrUndefined(style) || selectionPattern !== 'None' || highlightPattern !== 'None') {
             style = document.createElement('style');
             style.setAttribute('id', this.styleId);
             for (var _i = 0, _a = this.control.visibleSeries; _i < _a.length; _i++) {
                 var series = _a[_i];
-                seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index;
-                style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + ' { } ';
+                var visibleSeries = this.control.visibleSeries[series.index] ||
+                    this.control.visibleSeries[series.index];
+                if ((!isNullOrUndefined(selectionPattern) || !isNullOrUndefined(highlightPattern)) &&
+                    (selectionPattern !== 'None' || highlightPattern !== 'None')) {
+                    var patternName = this.styleId.indexOf('highlight') > 0 ? highlightPattern : selectionPattern;
+                    if (visibleSeries.type === 'Pie' || visibleSeries.type === 'Funnel' ||
+                        visibleSeries.type === 'Pyramid') {
+                        for (var i = 0; i < visibleSeries.points.length; i++) {
+                            opacity = visibleSeries.opacity;
+                            fill = this.pattern(this.control, (visibleSeries.points[i]).color, series.index, patternName, opacity);
+                            pattern = '{ fill:' + fill + '}';
+                        }
+                    }
+                    else if (visibleSeries.type) {
+                        opacity = visibleSeries.opacity;
+                        fill = this.pattern(this.control, visibleSeries.interior, series.index, patternName, opacity);
+                        pattern = '{ fill:' + fill + '}';
+                    }
+                }
+                seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
+                    this.styleId + '_series_' + series.index + '> *';
+                pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
+                style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
             }
             style.innerHTML += '.' + this.unselected + ' { opacity:' + (0.3) + ';} ';
             document.body.appendChild(style);
+        }
+    };
+    /**
+     * To create the pattern for series/points
+     */
+    // tslint:disable-next-line:max-func-body-length
+    BaseSelection.prototype.pattern = function (chart, color, index, patternName, opacity) {
+        var backgroundColor = '#ffffff';
+        var svg;
+        svg = chart.svgObject;
+        var pattern;
+        var pathOptions = [];
+        var patternGroup = { 'id': patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };
+        var heightStr = 'height';
+        var widthStr = 'width';
+        var width = 10;
+        var height = 12;
+        var patternNum = 6;
+        switch (patternName) {
+            case 'Dots':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': 7, 'height': 7, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'cx': 3,
+                    'cy': 3,
+                    'r': 2,
+                    'stroke-width': 1,
+                    'fill': color,
+                    'name': 'circle'
+                };
+                break;
+            case 'Pacman':
+                patternGroup[heightStr] = '18.384';
+                patternGroup[widthStr] = '17.917';
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': 17.917, 'height': 18.384,
+                    'transform': 'translate(0,0)', 'fill': backgroundColor, 'opacity': opacity
+                };
+                // tslint:disable-next-line:max-line-length
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M9.081,9.194l5.806-3.08c-0.812-1.496-2.403-3.052-4.291-3.052H8.835C6.138,3.063,3,6.151,3,8.723v1.679   c0,2.572,3.138,5.661,5.835,5.661h1.761c2.085,0,3.835-1.76,4.535-3.514L9.081,9.194z', 'stroke-width': 1, 'stroke': color, 'fill': color
+                };
+                break;
+            case 'Chessboard':
+                patternGroup[heightStr] = patternGroup[widthStr] = width;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': width, 'height': width, 'fill': backgroundColor, 'opacity': opacity,
+                    'name': 'rect'
+                };
+                pathOptions[1] = { 'x': 0, 'y': 0, 'width': 5, 'height': 5, 'fill': color, 'opacity': opacity, 'name': 'rect' };
+                pathOptions[2] = { 'x': 5, 'y': 5, 'width': 5, 'height': 5, 'fill': color, 'opacity': opacity, 'name': 'rect' };
+                break;
+            case 'Crosshatch':
+                patternGroup[heightStr] = patternGroup[widthStr] = '8';
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': 8, 'height': 8, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'd': 'M0 0L8 8ZM8 0L0 8Z',
+                    'stroke-width': 1,
+                    'stroke': color,
+                    'name': 'path'
+                };
+                break;
+            case 'DiagonalForward':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'd': 'M 3 -3 L 9 3 M 6 6 L 0 0 M 3 9 L -3 3',
+                    'stroke-width': 2,
+                    'stroke': color,
+                    'name': 'path'
+                };
+                break;
+            case 'DiagonalBackward':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'd': 'M 3 -3 L -3 3 M 0 6 L 6 0 M 9 3 L 3 9',
+                    'stroke-width': 2,
+                    'stroke': color,
+                    'name': 'path'
+                };
+                break;
+            case 'Grid':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path',
+                    'd': 'M1 3.5L11 3.5 M0 3.5L11 3.5 M0 7.5L11 7.5 M0 11.5L11 11.5 M5.5 0L5.5 12 M11.5 0L11.5 12Z',
+                    'stroke-width': 1,
+                    'stroke': color
+                };
+                break;
+            case 'Turquoise':
+                var turquoiseNum = 17;
+                var turstrokewidth = 1;
+                patternGroup[heightStr] = patternGroup[widthStr] = turquoiseNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': turquoiseNum, 'height': turquoiseNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0.5739999999999998,2.643a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[2] = {
+                    'name': 'path', 'd': 'M11.805,2.643a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[3] = {
+                    'name': 'path', 'd': 'M6.19,2.643a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[4] = {
+                    'name': 'path', 'd': 'M11.805,8.217a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[5] = {
+                    'name': 'path', 'd': 'M6.19,8.217a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[6] = {
+                    'name': 'path', 'd': 'M11.805,13.899a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[7] = {
+                    'name': 'path', 'd': 'M6.19,13.899a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                break;
+            case 'Star':
+                var starNum = 21;
+                patternGroup[heightStr] = patternGroup[widthStr] = starNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': starNum, 'height': starNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path',
+                    // tslint:disable-next-line:max-line-length
+                    'd': 'M15.913,18.59L10.762 12.842 5.613 18.75 8.291 11.422 0.325 9.91 8.154 8.33 5.337 0.91 10.488 6.658 15.637 0.75 12.959 8.078 20.925 9.59 13.096 11.17 z',
+                    'stroke-width': 1,
+                    'stroke': color,
+                    'fill': color
+                };
+                break;
+            case 'Triangle':
+                patternGroup[heightStr] = patternGroup[widthStr] = width;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': width, 'height': width, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path',
+                    'd': 'M4.987,0L7.48 4.847 9.974 9.694 4.987 9.694 0 9.694 2.493 4.847 z',
+                    'stroke-width': 1,
+                    'stroke': color,
+                    'fill': color
+                };
+                break;
+            case 'Circle':
+                var circleNum = 9;
+                patternGroup[heightStr] = patternGroup[widthStr] = circleNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': circleNum, 'height': circleNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'circle',
+                    'cx': 5.125,
+                    'cy': 3.875,
+                    'r': 3.625,
+                    'stroke-width': 1,
+                    'fill': color
+                };
+                break;
+            case 'Tile':
+                var tileNum = 18;
+                var strokeWidth = 1;
+                patternGroup[heightStr] = patternGroup[widthStr] = tileNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': tileNum, 'height': tileNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = { 'name': 'path', 'd': 'M0,9L0 0 9 0 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                pathOptions[2] = { 'name': 'path', 'd': 'M9,9L9 0 18 0 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                pathOptions[3] = { 'name': 'path', 'd': 'M0,18L0 9 9 9 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                pathOptions[4] = { 'name': 'path', 'd': 'M9,18L9 9 18 9 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                break;
+            case 'HorizontalDash':
+                patternGroup[heightStr] = patternGroup[widthStr] = height;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': height, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0,1.5 L10 1.5 M0,5.5 L10 5.5 M0,9.5 L10 9.5 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'VerticalDash':
+                patternGroup[heightStr] = patternGroup[widthStr] = height;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': height, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M1.5,0 L1.5 10 M5.5,0 L5.5 10 M9.5,0 L9.5 10 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'Rectangle':
+                patternGroup[heightStr] = patternGroup[widthStr] = height;
+                pathOptions[0] = { 'name': 'rect', 'width': height, 'height': height, 'fill': backgroundColor, 'opacity': opacity };
+                pathOptions[1] = { 'name': 'rect', 'x': 1, 'y': 2, 'width': 4, 'height': 9, 'fill': color, 'opacity': opacity };
+                pathOptions[2] = { 'name': 'rect', 'x': 7, 'y': 2, 'width': 4, 'height': 9, 'fill': color, 'opacity': opacity };
+                break;
+            case 'Box':
+                patternGroup[heightStr] = patternGroup[widthStr] = width;
+                pathOptions[0] = { 'name': 'rect', 'width': 13, 'height': 13, 'fill': backgroundColor, 'opacity': opacity };
+                pathOptions[1] = {
+                    'name': 'rect', 'x': 1.5, 'y': 1.5, 'width': width, 'height': 9, 'fill': color,
+                    'opacity': opacity
+                };
+                break;
+            case 'HorizontalStripe':
+                patternGroup[heightStr] = height;
+                patternGroup[widthStr] = width;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': width, 'height': height,
+                    'transform': 'translate(0,0)', 'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0,0.5 L10 0.5 M0,4.5 L10 4.5 M0,8.5 L10 8.5 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'VerticalStripe':
+                patternGroup[heightStr] = width;
+                patternGroup[widthStr] = height;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': width, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0.5,0 L0.5 10 M4.5,0 L4.5 10 M8.5,0 L8.5 10 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'Bubble':
+                var bubNum = 20;
+                patternGroup[heightStr] = patternGroup[widthStr] = bubNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': bubNum, 'height': bubNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = { 'name': 'circle', 'cx': 5.217, 'cy': 11.325, 'r': 3.429, 'stroke-width': 1, 'fill': '#D0A6D1' };
+                pathOptions[2] = { 'name': 'circle', 'cx': 13.328, 'cy': 6.24, 'r': 4.884, 'stroke-width': 1, 'fill': color };
+                pathOptions[3] = {
+                    'name': 'circle', 'cx': 13.277, 'cy': 14.66, 'r': 3.018, 'stroke-width': 1,
+                    'fill': '#D0A6D1'
+                };
+                break;
+        }
+        var svgRenderer = (chart.svgRenderer || chart.renderer);
+        pattern = svgRenderer.createPattern(patternGroup, 'pattern');
+        this.loadPattern(chart, pathOptions, pattern, svgRenderer);
+        svg.appendChild(pattern);
+        return 'url(#' + patternName + '_' + 'Selection' + '_' + index + ')';
+    };
+    /**
+     * To load the pattern into svg
+     */
+    BaseSelection.prototype.loadPattern = function (chart, options, pattern, svgRenderer) {
+        var i;
+        for (i = 0; i < options.length; i++) {
+            var path = svgRenderer.createPattern(options[i], options[i].name);
+            pattern.appendChild(path);
         }
     };
     /**
@@ -20385,22 +20688,37 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         this.initPrivateVariables(chart);
         this.series = extend({}, chart.visibleSeries, null, true);
         this.seriesStyles();
+        this.currentMode = chart.selectionMode;
         if (!(chart.selectionMode.indexOf('Drag') > -1)) {
             this.selectDataIndex(chart, this.concatIndexes(chart.selectedDataIndexes, this.selectedDataIndexes));
         }
     };
     Selection.prototype.generateStyle = function (series) {
         if (series) {
+            if (this.styleId.indexOf('selection') > 1 && this.chart.selectionMode !== 'None') {
+                this.unselected = series.unSelectedStyle || this.unselected;
+            }
+            if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightMode !== 'None') {
+                this.unselected = series.nonHighlightStyle || this.unselected;
+            }
             return (series.selectionStyle || this.styleId + '_series_' + series.index);
         }
         return 'undefined';
     };
+    /**
+     *  Method to get the selected data index
+     * @private.
+     */
     Selection.prototype.selectDataIndex = function (chart, indexes) {
         for (var _i = 0, indexes_1 = indexes; _i < indexes_1.length; _i++) {
             var index = indexes_1[_i];
             this.performSelection(index, chart, this.getElementByIndex(chart, index)[0]);
         }
     };
+    /**
+     *  Method to get the selected index element
+     * @private.
+     */
     Selection.prototype.getElementByIndex = function (chart, index, suffix) {
         if (suffix === void 0) { suffix = ''; }
         var elementId = chart.element.id + '_Series_' + index.series + '_Point' + '_' + index.point;
@@ -20409,21 +20727,60 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             series.marker.visible) ? (elementId + '_Symbol' + suffix) : elementId;
         return [getElement$1(elementId), (series.type === 'RangeArea' && series.marker.visible) ? getElement$1(elementId + '1') : null];
     };
+    /**
+     *  Method to get the selected cluster element
+     * @private.
+     */
     Selection.prototype.getClusterElements = function (chart, index) {
         var clusters = [];
+        var seriesStyle;
+        var selectedElements;
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             index = new Index(series.index, index.point);
             clusters.push(this.getElementByIndex(chart, index)[0]);
+            seriesStyle = this.generateStyle(chart.visibleSeries[index.series]);
+            selectedElements = document.querySelectorAll('.' + seriesStyle);
+            this.findTrackballElements(selectedElements, seriesStyle);
+            if (!chart.isMultiSelect && selectedElements.length > 0 && selectedElements[0].id !== clusters[index.series].id) {
+                this.removeSelection(chart, index.series, selectedElements, seriesStyle, true);
+            }
         }
         return clusters;
     };
+    /**
+     *  Method to get trackball elements
+     * @private.
+     */
+    Selection.prototype.findTrackballElements = function (selectedElements, className) {
+        var trackballElements;
+        var elements;
+        for (var i = 0; i < selectedElements.length; i++) {
+            if (!isNullOrUndefined(selectedElements[i])) {
+                trackballElements = !isNullOrUndefined(selectedElements[i].parentNode) ?
+                    [].slice.call(selectedElements[0].parentNode.querySelectorAll('.' + className)) : [];
+                if (trackballElements.length > 0) {
+                    elements = [];
+                    for (var i_1 = 0; i_1 < trackballElements.length; i_1++) {
+                        if (trackballElements[i_1].id.indexOf('Trackball') > -1) {
+                            elements.push(trackballElements[i_1]);
+                        }
+                    }
+                    this.removeStyles(elements);
+                }
+            }
+        }
+    };
+    /**
+     *  Method to get the selected element
+     * @private.
+     */
     Selection.prototype.findElements = function (chart, series, index, suffix) {
         if (suffix === void 0) { suffix = ''; }
         if (this.isSeriesMode) {
             return this.getSeriesElements(series);
         }
-        else if (chart.selectionMode === 'Cluster') {
+        else if (this.currentMode === 'Cluster') {
             return this.getClusterElements(chart, index);
         }
         else {
@@ -20435,15 +20792,74 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @private
      */
+    Selection.prototype.isAlreadySelected = function (event) {
+        var targetElem = event.target;
+        if (event.type === 'click') {
+            this.currentMode = this.chart.selectionMode;
+            this.styleId = this.chart.element.id + '_ej2_chart_selection';
+        }
+        else if (event.type === 'mousemove') {
+            this.currentMode = this.chart.highlightMode;
+            this.highlightDataIndexes = [];
+            this.styleId = this.chart.element.id + '_ej2_chart_highlight';
+        }
+        if (this.chart.highlightMode !== 'None' && this.chart.selectionMode === 'None') {
+            if (event.type === 'click') {
+                return false;
+            }
+        }
+        if ((this.chart.highlightMode !== 'None' && this.previousSelectedEle && this.previousSelectedEle[0])) {
+            var parentNodeId = targetElem.parentNode.id;
+            var isElement = void 0;
+            if (targetElem.parentNode) {
+                isElement = (parentNodeId.indexOf('SeriesGroup') > 0 || parentNodeId.indexOf('SymbolGroup') > 0) ? true : false;
+            }
+            for (var i = 0; i < this.previousSelectedEle.length; i++) {
+                if (this.previousSelectedEle[i].hasAttribute('class')) {
+                    if (this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1 &&
+                        (isElement || event.type === 'click')) {
+                        this.previousSelectedEle[i].removeAttribute('class');
+                        this.addOrRemoveIndex(this.highlightDataIndexes, this.indexFinder(this.previousSelectedEle[i].id));
+                    }
+                    else if (!isElement && this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1) {
+                        this.performSelection(this.indexFinder(this.previousSelectedEle[i].id), this.chart, this.previousSelectedEle[i]);
+                    }
+                }
+            }
+        }
+        return true;
+    };
+    /**
+     * To find the selected element.
+     * @return {void}
+     * @private
+     */
     Selection.prototype.calculateSelectedElements = function (event) {
-        var targetElement = event.target;
-        if (this.chart.selectionMode === 'None' || targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
+        if (isNullOrUndefined(event.target)) {
             return;
         }
+        var targetElement = event.target;
+        if ((this.chart.selectionMode === 'None' && this.chart.highlightMode === 'None') ||
+            targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
+            return;
+        }
+        if (event.type === 'mousemove') {
+            if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
+                targetElement.getAttribute('class').indexOf('selection') > -1)) {
+                return;
+            }
+            if (!isNullOrUndefined(targetElement.parentNode) && targetElement.parentNode.hasAttribute('class') &&
+                (targetElement.parentNode.getAttribute('class').indexOf('highlight') > 0 ||
+                    targetElement.parentNode.getAttribute('class').indexOf('selection') > 0)) {
+                return;
+            }
+        }
+        this.isAlreadySelected(event);
         if (targetElement.id.indexOf('_Series_') > -1) {
             var element = void 0;
             if (targetElement.id.indexOf('_Trackball_1') > -1) {
                 element = getElement$1(targetElement.id.split('_Trackball_')[0] + '_Symbol');
+                element = isNullOrUndefined(element) ? getElement$1(targetElement.id.split('_Trackball_')[0]) : element;
             }
             else if (targetElement.id.indexOf('_Trackball_0') > -1) {
                 return null;
@@ -20451,39 +20867,56 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             this.performSelection(this.indexFinder(targetElement.id), this.chart, element || targetElement);
         }
     };
+    /**
+     *  Method to perform the selection
+     * @private.
+     */
     Selection.prototype.performSelection = function (index, chart, element) {
-        this.isSeriesMode = chart.selectionMode === 'Series';
+        this.isSeriesMode = this.currentMode === 'Series';
         if (chart.series[index.series].type === 'BoxAndWhisker' &&
             element.id === chart.element.id + '_Series_' + index.series + '_Point_' + index.point + '_BoxPath') {
-            element = element.parentElement;
+            element = element.parentNode;
         }
-        switch (chart.selectionMode) {
+        if (chart.series[index.series].type === 'Area' && (this.currentMode === 'Point' || this.currentMode === 'Cluster') &&
+            (element.id === this.chart.element.id + '_Series_' + index.series)) {
+            var className = this.generateStyle(chart.series[index.series]);
+            var selectionEle = document.querySelectorAll('.' + className);
+            this.findTrackballElements(selectionEle, className);
+            this.blurEffect(chart.element.id, chart.visibleSeries);
+        }
+        switch (this.currentMode) {
             case 'Series':
                 this.selection(chart, index, this.getSeriesElements(chart.series[index.series]));
-                this.selectionComplete(chart, index, chart.selectionMode);
+                this.selectionComplete(chart, index, this.currentMode);
                 this.blurEffect(chart.element.id, chart.visibleSeries);
                 break;
             case 'Point':
                 if (!isNaN(index.point)) {
                     this.selection(chart, index, [element]);
-                    this.selectionComplete(chart, index, chart.selectionMode);
+                    this.selectionComplete(chart, index, this.currentMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
             case 'Cluster':
                 if (!isNaN(index.point)) {
-                    this.clusterSelection(chart, chart.series, index);
-                    this.selectionComplete(chart, index, chart.selectionMode);
+                    this.clusterSelection(chart, index);
+                    this.selectionComplete(chart, index, this.currentMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
         }
     };
+    /**
+     *  Method to get the selected data index
+     * @private.
+     */
     Selection.prototype.selectionComplete = function (chart, index, selectionMode) {
         var points;
         var pointIndex;
         var seriesIndex;
         var selectedPointValues = [];
+        var yValue;
+        var selectedPointX;
         if (selectionMode === 'Cluster') {
             for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
                 var series = _a[_i];
@@ -20492,26 +20925,28 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                         pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i].point : index.point;
                         seriesIndex = series.index;
                         points = series.points;
-                        var yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
-                            points[pointIndex].regions[0].y;
-                        var selectedPointX = points[pointIndex].xValue;
-                        if (chart.primaryXAxis.valueType === 'Category') {
-                            selectedPointX = points[pointIndex].x.toLocaleString();
-                        }
-                        else if (chart.primaryXAxis.valueType === 'DateTime') {
-                            selectedPointX = new Date(points[pointIndex].xValue);
-                        }
-                        if (series.category !== 'Indicator') {
-                            selectedPointValues.push({
-                                x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
-                                pointIndex: pointIndex
-                            });
-                        }
-                        if (series.type === 'RangeArea') {
-                            selectedPointValues.push({
-                                x: selectedPointX, y: points[pointIndex].regions[0].y,
-                                seriesIndex: seriesIndex, pointIndex: pointIndex
-                            });
+                        if (!isNaN(pointIndex)) {
+                            yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                                points[pointIndex].regions[0].y;
+                            selectedPointX = points[pointIndex].xValue;
+                            if (chart.primaryXAxis.valueType === 'Category') {
+                                selectedPointX = points[pointIndex].x.toLocaleString();
+                            }
+                            else if (chart.primaryXAxis.valueType === 'DateTime') {
+                                selectedPointX = new Date(points[pointIndex].xValue);
+                            }
+                            if (series.category !== 'Indicator') {
+                                selectedPointValues.push({
+                                    x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                                    pointIndex: pointIndex
+                                });
+                            }
+                            if (series.type === 'RangeArea') {
+                                selectedPointValues.push({
+                                    x: selectedPointX, y: points[pointIndex].regions[0].y,
+                                    seriesIndex: seriesIndex, pointIndex: pointIndex
+                                });
+                            }
                         }
                     }
                 }
@@ -20539,19 +20974,21 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                 seriesIndex = this.selectedDataIndexes[i].series;
                 var series = chart.series[seriesIndex];
                 points = series.points;
-                var selectedPointX = points[pointIndex].xValue;
-                var yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
-                    points[pointIndex].regions[0].y;
-                if (chart.primaryXAxis.valueType === 'Category') {
-                    selectedPointX = points[pointIndex].x.toLocaleString();
+                if (!isNaN(pointIndex)) {
+                    selectedPointX = points[pointIndex].xValue;
+                    yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                        points[pointIndex].regions[0].y;
+                    if (chart.primaryXAxis.valueType === 'Category') {
+                        selectedPointX = points[pointIndex].x.toLocaleString();
+                    }
+                    else if (chart.primaryXAxis.valueType === 'DateTime') {
+                        selectedPointX = new Date(points[pointIndex].xValue);
+                    }
+                    selectedPointValues.push({
+                        x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                        pointIndex: pointIndex
+                    });
                 }
-                else if (chart.primaryXAxis.valueType === 'DateTime') {
-                    selectedPointX = new Date(points[pointIndex].xValue);
-                }
-                selectedPointValues.push({
-                    x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
-                    pointIndex: pointIndex
-                });
             }
         }
         var args = {
@@ -20561,31 +20998,62 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         };
         chart.trigger(selectionComplete, args);
     };
-    Selection.prototype.selection = function (chart, index, selectedElements) {
-        if (!(chart.selectionMode === 'Lasso')) {
-            if (!chart.isMultiSelect && (chart.selectionMode.indexOf('Drag') === -1)) {
-                this.removeMultiSelectEelments(chart, this.selectedDataIndexes, index, chart.series);
+    /**
+     *  Method to perform selection
+     * @private.
+     */
+    Selection.prototype.selection = function (chart, index, selectedElements, legendClick$$1) {
+        if (legendClick$$1 === void 0) { legendClick$$1 = false; }
+        if (!(this.currentMode === 'Lasso')) {
+            if (!chart.isMultiSelect && (this.currentMode.indexOf('Drag') === -1 && this.styleId.indexOf('highlight') === -1 &&
+                chart.selectionMode !== 'None')) {
+                this.removeMultiSelectElements(chart, this.selectedDataIndexes, index, chart.series);
             }
         }
-        var className = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
-        if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
-            this.removeStyles(selectedElements);
-            this.addOrRemoveIndex(this.selectedDataIndexes, index);
-        }
-        else {
-            this.applyStyles(selectedElements);
-            this.addOrRemoveIndex(this.selectedDataIndexes, index, true);
+        if (!isNullOrUndefined(selectedElements[0])) {
+            var isAdd = void 0;
+            var className = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
+            var pClassName = selectedElements[0].parentNode &&
+                (selectedElements[0].parentNode.getAttribute('class') || '');
+            if (className !== '' && this.currentMode !== 'Cluster') {
+                this.findTrackballElements(selectedElements, className);
+            }
+            if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
+                this.removeStyles(selectedElements);
+            }
+            else if (selectedElements[0].parentNode && pClassName.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
+                this.removeStyles([selectedElements[0].parentNode]);
+            }
+            else {
+                this.previousSelectedEle = chart.highlightMode !== 'None' ? selectedElements : [];
+                this.applyStyles(selectedElements);
+                isAdd = true;
+            }
+            if (this.styleId.indexOf('highlight') > 0 && chart.highlightMode !== 'None') {
+                this.addOrRemoveIndex(this.highlightDataIndexes, index, isAdd);
+            }
+            else {
+                this.addOrRemoveIndex(this.selectedDataIndexes, index, isAdd);
+            }
         }
     };
-    Selection.prototype.clusterSelection = function (chart, series, index) {
+    /**
+     *  Method to get the cluster selection element
+     * @private.
+     */
+    Selection.prototype.clusterSelection = function (chart, index) {
         this.selection(chart, index, this.getClusterElements(chart, new Index(index.series, index.point)));
     };
-    Selection.prototype.removeMultiSelectEelments = function (chart, index, currentIndex, seriesCollection) {
+    /**
+     * Method to remove the multi selected elements
+     * @private.
+     */
+    Selection.prototype.removeMultiSelectElements = function (chart, index, currentIndex, seriesCollection) {
         var series;
         for (var i = 0; i < index.length; i++) {
             series = seriesCollection[index[i].series];
             if ((this.isSeriesMode && !this.toEquals(index[i], currentIndex, this.isSeriesMode)) ||
-                (this.control.selectionMode === 'Cluster' && !this.toEquals(index[i], currentIndex, false)) ||
+                (this.currentMode === 'Cluster' && !this.toEquals(index[i], currentIndex, false)) ||
                 (!this.isSeriesMode && this.toEquals(index[i], currentIndex, true) && !this.toEquals(index[i], currentIndex, false))) {
                 this.removeStyles(this.findElements(chart, series, index[i]));
                 index.splice(i, 1);
@@ -20593,20 +21061,33 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    Selection.prototype.blurEffect = function (chartId, visibleSeries) {
-        var visibility = this.checkVisibility(this.selectedDataIndexes); // legend click scenario
+    /**
+     * Method to remove the selection
+     * @private.
+     */
+    Selection.prototype.blurEffect = function (chartId, visibleSeries, legendClick$$1) {
+        if (legendClick$$1 === void 0) { legendClick$$1 = false; }
+        var visibility = this.styleId.indexOf('highlight') > 0 ? this.checkVisibility(this.highlightDataIndexes) :
+            this.checkVisibility(this.selectedDataIndexes); // legend click scenario
         for (var _i = 0, visibleSeries_1 = visibleSeries; _i < visibleSeries_1.length; _i++) {
             var series = visibleSeries_1[_i];
             if (series.visible) {
-                this.checkSelectionElements(getElement$1(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility);
+                this.checkSelectionElements(getElement$1(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility, legendClick$$1, series.index);
                 if (!isNullOrUndefined(getElement$1(chartId + 'SymbolGroup' + series.index))) {
-                    this.checkSelectionElements(getElement$1(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility);
+                    this.checkSelectionElements(getElement$1(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility, legendClick$$1, series.index);
                 }
             }
         }
     };
-    Selection.prototype.checkSelectionElements = function (element, className, visibility) {
+    /**
+     * Method to add the add/remove class to element
+     * @private.
+     */
+    Selection.prototype.checkSelectionElements = function (element, className, visibility, legendClick$$1, series) {
         var children = (this.isSeriesMode ? [element] : element.childNodes);
+        if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
+            children = (element.children);
+        }
         var elementClassName;
         var parentClassName;
         var legendShape;
@@ -20614,6 +21095,12 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < children.length; i++) {
             elementClassName = children[i].getAttribute('class') || '';
             parentClassName = children[i].parentNode.getAttribute('class') || '';
+            if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
+                className = elementClassName.indexOf('selection') > 0 ||
+                    elementClassName.indexOf('highlight') > 0 ? elementClassName : className;
+                className = (parentClassName.indexOf('selection') > 0 ||
+                    parentClassName.indexOf('highlight') > 0) ? parentClassName : className;
+            }
             if (elementClassName.indexOf(className) === -1 &&
                 parentClassName.indexOf(className) === -1 && visibility) {
                 this.addSvgClass(children[i], this.unselected);
@@ -20621,22 +21108,51 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             else {
                 selectElement = children[i];
                 this.removeSvgClass(children[i], this.unselected);
+                this.removeSvgClass(children[i].parentNode, this.unselected);
+            }
+            if (children[i].id.indexOf('Trackball') > 0 && selectElement.classList[0] === className) {
+                this.removeSvgClass(children[i], this.unselected);
+                this.removeSvgClass(children[i].parentNode, this.unselected);
+                this.addSvgClass(children[i], className);
+            }
+        }
+        if (element.id.indexOf('Symbol') > -1) {
+            if ((element.querySelectorAll('.' + className)[0]) && element.querySelectorAll('.' + className)[0].getAttribute('class')
+                === className) {
+                var symbolEle = getElement$1(this.control.element.id + '_Series_' + element.id[element.id.length - 1]);
+                var seriesClassName = symbolEle && symbolEle.hasAttribute('class') ? symbolEle.getAttribute('class') : '';
+                if (seriesClassName.indexOf(this.unselected) > -1) {
+                    this.removeSvgClass(symbolEle, this.unselected);
+                }
             }
         }
         if (this.control.legendModule && this.control.legendSettings.visible) {
-            legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + className.split('_series_')[1]);
+            legendShape = getElement$1(this.control.element.id + '_chart_legend_shape_' + series);
             if (legendShape) {
+                if (legendShape.hasAttribute('class')) {
+                    this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
+                }
                 elementClassName = selectElement.getAttribute('class') || '';
                 parentClassName = selectElement.parentNode.getAttribute('class') || '';
                 if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
                     this.addSvgClass(legendShape, this.unselected);
+                    this.removeSvgClass(legendShape, className);
                 }
                 else {
                     this.removeSvgClass(legendShape, this.unselected);
+                    ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') ?
+                        this.removeSvgClass(legendShape, className) : this.addSvgClass(legendShape, className);
+                }
+                if (legendClick$$1 && parentClassName.indexOf(className) > -1) {
+                    this.addSvgClass(legendShape, className);
                 }
             }
         }
     };
+    /**
+     *  Method to apply the styles
+     * @private.
+     */
     Selection.prototype.applyStyles = function (elements) {
         for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
             var element = elements_1[_i];
@@ -20647,9 +21163,17 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     *  Method to get the selection class
+     * @private.
+     */
     Selection.prototype.getSelectionClass = function (id) {
         return this.generateStyle(this.control.series[this.indexFinder(id).series]);
     };
+    /**
+     *  Method to remove styles
+     * @private.
+     */
     Selection.prototype.removeStyles = function (elements) {
         for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
             var element = elements_2[_i];
@@ -20658,19 +21182,27 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    Selection.prototype.addOrRemoveIndex = function (indexes, index, add) {
+    /**
+     *  Method to remove the selected data index
+     * @private.
+     */
+    Selection.prototype.addOrRemoveIndex = function (indexes, index, isAdd) {
         for (var i = 0; i < indexes.length; i++) {
             if (this.toEquals(indexes[i], index, this.isSeriesMode)) {
                 indexes.splice(i, 1);
                 i--;
             }
         }
-        if (add) {
+        if (isAdd) {
             indexes.push(index);
         }
     };
+    /**
+     *  Method to get the equal index
+     * @private.
+     */
     Selection.prototype.toEquals = function (first, second, checkSeriesOnly) {
-        return ((first.series === second.series || (this.control.selectionMode === 'Cluster' && !checkSeriesOnly))
+        return ((first.series === second.series || (this.currentMode === 'Cluster' && !checkSeriesOnly))
             && (checkSeriesOnly || (first.point === second.point)));
     };
     /**
@@ -20681,16 +21213,61 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
     Selection.prototype.redrawSelection = function (chart, oldMode) {
         this.isSeriesMode = oldMode === 'Series';
         var selectedDataIndexes = extend([], this.selectedDataIndexes, null, true);
-        this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+        var highlightDataIndexes = extend([], this.highlightDataIndexes, null, true);
+        if (this.styleId.indexOf('highlight') > 0 && highlightDataIndexes.length > 0) {
+            this.removeSelectedElements(chart, this.highlightDataIndexes, chart.series);
+            selectedDataIndexes = highlightDataIndexes;
+        }
+        else {
+            this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+        }
         this.blurEffect(chart.element.id, chart.visibleSeries);
         this.selectDataIndex(chart, selectedDataIndexes);
     };
     /** @private */
-    Selection.prototype.legendSelection = function (chart, series) {
-        var seriesStyle = this.generateStyle(chart.visibleSeries[series]);
-        var selectedElements = document.getElementsByClassName(seriesStyle);
-        this.isSeriesMode = chart.selectionMode === 'Series';
-        var isBlurEffectNeeded = true;
+    Selection.prototype.legendSelection = function (chart, series, event) {
+        var targetElement = event.target;
+        if (event.type === 'mousemove') {
+            if (event.target.id.indexOf('text') > 1) {
+                targetElement = getElement$1(event.target.id.replace('text', 'shape'));
+            }
+            if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
+                targetElement.getAttribute('class').indexOf('selection') > -1)) {
+                return;
+            }
+            this.currentMode = this.chart.highlightMode;
+        }
+        var isPreSelected = this.isAlreadySelected(event);
+        if (isPreSelected) {
+            var seriesStyle = this.generateStyle(chart.visibleSeries[series]);
+            var selectedElements = (document.querySelectorAll('.' + seriesStyle));
+            this.isSeriesMode = this.currentMode === 'Series';
+            var isBlurEffectNeeded = true;
+            if (selectedElements.length > 0) {
+                this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
+            }
+            else {
+                for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
+                    var element = _a[_i];
+                    if (element.index !== series && !chart.isMultiSelect) {
+                        seriesStyle = this.generateStyle(chart.visibleSeries[element.index]);
+                        selectedElements = document.querySelectorAll('.' + seriesStyle);
+                        this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
+                    }
+                }
+                var seriesElements = this.getSeriesElements(chart.visibleSeries[series]);
+                for (var _b = 0, seriesElements_1 = seriesElements; _b < seriesElements_1.length; _b++) {
+                    var seriesElement = seriesElements_1[_b];
+                    this.checkSelectionElements(seriesElement, seriesStyle, false, true, series);
+                }
+                this.isSeriesMode = true;
+                this.selection(chart, new Index(series, NaN), seriesElements, true);
+                this.isSeriesMode = chart.selectionMode === 'Series';
+                this.blurEffect(chart.element.id, chart.visibleSeries, true);
+            }
+        }
+    };
+    Selection.prototype.removeSelection = function (chart, series, selectedElements, seriesStyle, isBlurEffectNeeded) {
         if (selectedElements.length > 0) {
             var elements = [];
             for (var i = 0; i < selectedElements.length; i++) {
@@ -20700,12 +21277,12 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             this.isSeriesMode = true;
             this.addOrRemoveIndex(this.selectedDataIndexes, new Index(series, NaN));
             for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
-                var series_1 = _a[_i];
-                seriesStyle = this.generateStyle(series_1);
-                if (document.getElementsByClassName(seriesStyle).length > 0) {
+                var value = _a[_i];
+                seriesStyle = this.generateStyle(value);
+                if (document.querySelectorAll('.' + seriesStyle).length > 0) {
                     for (var _b = 0, elements_3 = elements; _b < elements_3.length; _b++) {
                         var element = elements_3[_b];
-                        this.checkSelectionElements(element, seriesStyle, true);
+                        this.checkSelectionElements(element, seriesStyle, true, true, series);
                     }
                     isBlurEffectNeeded = false;
                     break;
@@ -20716,18 +21293,8 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                 this.blurEffect(chart.element.id, chart.visibleSeries);
             }
         }
-        else {
-            var seriesElements = this.getSeriesElements(chart.visibleSeries[series]);
-            for (var _c = 0, seriesElements_1 = seriesElements; _c < seriesElements_1.length; _c++) {
-                var seriesElement = seriesElements_1[_c];
-                this.checkSelectionElements(seriesElement, seriesStyle, false);
-            }
-            this.isSeriesMode = true;
-            this.selection(chart, new Index(series, NaN), seriesElements);
-            this.isSeriesMode = chart.selectionMode === 'Series';
-            this.blurEffect(chart.element.id, chart.visibleSeries);
-        }
     };
+    /** @private */
     Selection.prototype.getSeriesElements = function (series) {
         var seriesElements = [series.seriesElement];
         if (series.marker.visible && series.type !== 'Scatter' && series.type !== 'Bubble' && !series.isRectSeries) {
@@ -20735,6 +21302,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         }
         return seriesElements;
     };
+    /** @private */
     Selection.prototype.indexFinder = function (id) {
         var ids = ['NaN', 'NaN'];
         if (id.indexOf('SeriesGroup') > -1) {
@@ -20750,6 +21318,10 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         }
         else if (id.indexOf('_Series_') > -1) {
             ids[0] = id.split('_Series_')[1];
+        }
+        else if (id.indexOf('_chart_legend_shape_') > -1) {
+            ids = id.split('_chart_legend_shape_');
+            ids[0] = ids[1];
         }
         return new Index(parseInt(ids[0], 10), parseInt(ids[1], 10));
     };
@@ -20995,7 +21567,8 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         var direction = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
             ' L ' + (x + 4) + ' ' + (y - 4);
         closeIcon.appendChild(this.chart.svgRenderer.drawPath({
-            id: this.closeIconId + '_cross' + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), d: direction,
+            id: this.closeIconId + '_cross' +
+                (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), d: direction,
             stroke: circleStroke, 'stroke-width': 2, fill: circleStroke
         }, null));
         this.closeIcon = closeIcon;
@@ -21025,7 +21598,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                     this.filterArray = [];
                     this.totalSelectedPoints = [];
                 }
-                if (this.chart.selectionMode === 'Lasso') {
+                if (this.currentMode === 'Lasso') {
                     if (this.multiDataIndexes[index] != null) {
                         for (var i = 0; i < this.multiDataIndexes[index].length; i++) {
                             this.multiDataIndexes[index][i].isSelect = false;
@@ -21148,7 +21721,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
-        if (this.chart.selectionMode !== 'Lasso') {
+        if (this.currentMode !== 'Lasso') {
             this.changeCursorStyle(resize, getElement$1((this.chart.allowMultiSelection) ? this.draggedRect +
                 this.targetIndex : this.draggedRect), cursorStyle);
         }
@@ -21215,6 +21788,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         if (chart.selectionMode === 'None') {
             return;
         }
+        this.currentMode = chart.selectionMode;
         if ((this.dragging || this.resizing) && this.dragRect.width > 5 && this.dragRect.height > 5) {
             this.calculateDragSelectedElements(chart, this.dragRect);
         }
@@ -21251,6 +21825,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     Selection.prototype.dragStart = function (chart, seriesClipRect, mouseDownX, mouseDownY, event) {
         var mode = chart.selectionMode;
+        this.currentMode = chart.selectionMode;
         this.dragging = (mode.indexOf('Drag') > -1 || mode === 'Lasso') && (chart.isDoubleTap || !chart.isTouch) &&
             chart.chartAreaType !== 'PolarRadar';
         var target = event.target;
@@ -21299,6 +21874,19 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
     Selection.prototype.mouseMove = function (event) {
         var chart = this.chart;
         var target = event.target;
+        if (chart.highlightMode !== 'None') {
+            if (!isNullOrUndefined(target)) {
+                if (event.target.id.indexOf('text') > 1) {
+                    target = getElement$1(event.target.id.replace('text', 'shape'));
+                }
+                if ((target).hasAttribute('class') && ((target).getAttribute('class').indexOf('highlight') > -1 ||
+                    target.getAttribute('class').indexOf('selection') > -1)) {
+                    return;
+                }
+                this.calculateSelectedElements(event);
+                return;
+            }
+        }
         if (chart.selectionMode === 'None') {
             return;
         }
@@ -21355,7 +21943,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                 element = document.elementFromPoint(point.symbolLocations[0].x + offsetX, point.symbolLocations[0].y + offsetY);
                 if (element === path) {
                     point.isSelect = true;
-                    if ((_this.chart.allowMultiSelection) && _this.chart.selectionMode === 'Lasso') {
+                    if ((_this.chart.allowMultiSelection) && _this.currentMode === 'Lasso') {
                         _this.multiDataIndexes[_this.count][_this.seriesIndex] = point;
                         _this.seriesIndex++;
                     }
@@ -21553,6 +22141,97 @@ var DataEditing = /** @__PURE__ @class */ (function () {
     return DataEditing;
 }());
 
+var __extends$53 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * Highlight src file
+ */
+// tslint:disable:no-string-literal
+/**
+ * `Highlight` module handles the selection for chart.
+ * @private
+ */
+var Highlight = /** @__PURE__ @class */ (function (_super) {
+    __extends$53(Highlight, _super);
+    /**
+     * Constructor for selection module.
+     * @private.
+     */
+    function Highlight(chart) {
+        var _this = _super.call(this, chart) || this;
+        _this.chart = chart;
+        _this.renderer = chart.renderer;
+        _this.wireEvents();
+        return _this;
+    }
+    /**
+     * Binding events for selection module.
+     */
+    Highlight.prototype.wireEvents = function () {
+        if (this.chart.isDestroyed || (this.chart.stockChart && this.chart.stockChart.onPanning)) {
+            return;
+        }
+        this.chart.on(Browser.touchMoveEvent, this.mouseMove, this);
+    };
+    /**
+     * UnBinding events for selection module.
+     */
+    Highlight.prototype.unWireEvents = function () {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.off(Browser.touchMoveEvent, this.mouseMove);
+    };
+    /**
+     * To find private variable values
+     */
+    Highlight.prototype.declarePrivateVariables = function (chart) {
+        this.styleId = chart.element.id + '_ej2_chart_highlight';
+        this.unselected = chart.element.id + '_ej2_deselected';
+        this.selectedDataIndexes = [];
+        this.highlightDataIndexes = [];
+        this.isSeriesMode = chart.highlightMode === 'Series';
+    };
+    /**
+     * Method to select the point and series.
+     * @return {void}
+     */
+    Highlight.prototype.invokeHighlight = function (chart) {
+        this.declarePrivateVariables(chart);
+        this.series = extend({}, chart.visibleSeries, null, true);
+        this.seriesStyles();
+        this.currentMode = chart.highlightMode;
+    };
+    /**
+     * Get module name.
+     * @private
+     */
+    Highlight.prototype.getModuleName = function () {
+        return 'Highlight';
+    };
+    /**
+     * To destroy the highlight.
+     * @return {void}
+     * @private
+     */
+    Highlight.prototype.destroy = function (chart) {
+        this.unWireEvents();
+        // Destroy method performed here
+    };
+    return Highlight;
+}(Selection));
+
 /**
  * `DataLabel` module is used to render data label for the data point.
  */
@@ -21715,8 +22394,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                                     }
                                 }
                             }
-                            if ((!isCollide(rect, chart.dataLabelCollections, clip) || dataLabel.labelIntersectAction === 'None')
-                                && isRender) {
+                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
                                 chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
                                 if (_this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(_this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -21749,7 +22427,9 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
+            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, 
+            // tslint:disable-next-line:align
+            false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     };
     /**
@@ -21827,7 +22507,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
-            rect.y = (rect.y < 0) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
+            rect.y = rect.y < 0 ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
                 - (clipRect.x + clipRect.width) + padding : 0;
             rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)
@@ -22563,7 +23243,7 @@ var ErrorBar = /** @__PURE__ @class */ (function () {
     return ErrorBar;
 }());
 
-var __extends$53 = (undefined && undefined.__extends) || (function () {
+var __extends$54 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22583,7 +23263,7 @@ var __extends$53 = (undefined && undefined.__extends) || (function () {
  * `Legend` module is used to render legend for the chart.
  */
 var Legend = /** @__PURE__ @class */ (function (_super) {
-    __extends$53(Legend, _super);
+    __extends$54(Legend, _super);
     function Legend(chart) {
         var _this = _super.call(this, chart) || this;
         _this.library = _this;
@@ -22618,6 +23298,9 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
     Legend.prototype.mouseMove = function (e) {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
             this.move(e);
+            if (this.chart.highlightModule && this.chart.highlightMode !== 'None') {
+                this.click(e);
+            }
         }
     };
     /**
@@ -22737,7 +23420,7 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
         legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
     };
     /** @private */
-    Legend.prototype.LegendClick = function (seriesIndex) {
+    Legend.prototype.LegendClick = function (seriesIndex, event) {
         var chart = this.chart;
         var series = chart.visibleSeries[seriesIndex];
         var legend = this.legendCollections[seriesIndex];
@@ -22782,10 +23465,7 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
             chart.refreshAxis();
-            // No need to refresh the trendline series in legend click.
-            if (!(series.category === 'TrendLine')) {
-                series.refreshAxisLabel();
-            }
+            series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
@@ -22793,10 +23473,16 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
                 chart.selectionModule.selectedDataIndexes = selectedDataIndexes;
                 chart.selectionModule.redrawSelection(chart, chart.selectionMode);
             }
+            if (chart.highlightModule && chart.highlightMode !== 'None') {
+                chart.highlightModule.redrawSelection(chart, chart.highlightMode);
+            }
             chart.redraw = false;
         }
         else if (chart.selectionModule) {
-            chart.selectionModule.legendSelection(chart, seriesIndex);
+            chart.selectionModule.legendSelection(chart, seriesIndex, event);
+        }
+        else if (chart.highlightModule) {
+            chart.highlightModule.legendSelection(chart, seriesIndex, event);
         }
         series.chart[changeDetection] = false;
     };
@@ -22845,7 +23531,7 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
             var id = legendItemsId_1[_i];
             if (targetId.indexOf(id) > -1) {
                 seriesIndex = parseInt(targetId.split(id)[1], 10);
-                this.LegendClick(seriesIndex);
+                this.LegendClick(seriesIndex, event);
                 break;
             }
         }
@@ -22862,7 +23548,7 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
             return (withInBounds(pageX, (pageY + (_this.isPaging ? (_this.currentPageNumber - 1) * _this.translatePage(null, 1, 2) : 0)), region.rect));
         });
         if (legendRegion.length && this.chart.enableCanvas) {
-            this.LegendClick(legendRegion[0].index);
+            this.LegendClick(legendRegion[0].index, event);
         }
     };
     /**
@@ -23137,7 +23823,7 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
     return AnnotationBase;
 }());
 
-var __extends$54 = (undefined && undefined.__extends) || (function () {
+var __extends$55 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23154,7 +23840,7 @@ var __extends$54 = (undefined && undefined.__extends) || (function () {
  * `ChartAnnotation` module handles the annotation for chart.
  */
 var ChartAnnotation = /** @__PURE__ @class */ (function (_super) {
-    __extends$54(ChartAnnotation, _super);
+    __extends$55(ChartAnnotation, _super);
     /**
      * Constructor for chart annotation.
      * @private.
@@ -23200,7 +23886,7 @@ var ChartAnnotation = /** @__PURE__ @class */ (function (_super) {
     return ChartAnnotation;
 }(AnnotationBase));
 
-var __extends$55 = (undefined && undefined.__extends) || (function () {
+var __extends$56 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23217,7 +23903,7 @@ var __extends$55 = (undefined && undefined.__extends) || (function () {
  * `BoxAndWhiskerSeries` module is used to render the box and whisker series.
  */
 var BoxAndWhiskerSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$55(BoxAndWhiskerSeries, _super);
+    __extends$56(BoxAndWhiskerSeries, _super);
     function BoxAndWhiskerSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -23528,7 +24214,7 @@ var BoxAndWhiskerSeries = /** @__PURE__ @class */ (function (_super) {
     return BoxAndWhiskerSeries;
 }(ColumnBase));
 
-var __extends$56 = (undefined && undefined.__extends) || (function () {
+var __extends$57 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23545,7 +24231,7 @@ var __extends$56 = (undefined && undefined.__extends) || (function () {
  * `MultiColoredAreaSeries` module used to render the area series with multi color.
  */
 var MultiColoredAreaSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$56(MultiColoredAreaSeries, _super);
+    __extends$57(MultiColoredAreaSeries, _super);
     function MultiColoredAreaSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -23638,7 +24324,7 @@ var MultiColoredAreaSeries = /** @__PURE__ @class */ (function (_super) {
     return MultiColoredAreaSeries;
 }(MultiColoredSeries));
 
-var __extends$57 = (undefined && undefined.__extends) || (function () {
+var __extends$58 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23655,7 +24341,7 @@ var __extends$57 = (undefined && undefined.__extends) || (function () {
  * `MultiColoredLineSeries` used to render the line series with multi color.
  */
 var MultiColoredLineSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$57(MultiColoredLineSeries, _super);
+    __extends$58(MultiColoredLineSeries, _super);
     function MultiColoredLineSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -25085,7 +25771,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
     return ScrollBar;
 }());
 
-var __extends$58 = (undefined && undefined.__extends) || (function () {
+var __extends$59 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25102,7 +25788,7 @@ var __extends$58 = (undefined && undefined.__extends) || (function () {
  * `Pareto series` module used to render the Pareto series.
  */
 var ParetoSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$58(ParetoSeries, _super);
+    __extends$59(ParetoSeries, _super);
     function ParetoSeries() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.paretoAxes = [];
@@ -25260,7 +25946,7 @@ var Export = /** @__PURE__ @class */ (function () {
  * Chart component exported items
  */
 
-var __extends$60 = (undefined && undefined.__extends) || (function () {
+var __extends$61 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25286,7 +25972,7 @@ var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, 
  * Annotation for accumulation series
  */
 var AccumulationAnnotationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$60(AccumulationAnnotationSettings, _super);
+    __extends$61(AccumulationAnnotationSettings, _super);
     function AccumulationAnnotationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -25320,7 +26006,7 @@ var AccumulationAnnotationSettings = /** @__PURE__ @class */ (function (_super) 
  * Configures the dataLabel in accumulation chart.
  */
 var AccumulationDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$60(AccumulationDataLabelSettings, _super);
+    __extends$61(AccumulationDataLabelSettings, _super);
     function AccumulationDataLabelSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -25366,7 +26052,7 @@ var AccumulationDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
  * Center value of the Pie series.
  */
 var PieCenter = /** @__PURE__ @class */ (function (_super) {
-    __extends$60(PieCenter, _super);
+    __extends$61(PieCenter, _super);
     function PieCenter() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -25408,7 +26094,7 @@ var AccPoints = /** @__PURE__ @class */ (function () {
  *  Configures the series in accumulation chart.
  */
 var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$60(AccumulationSeries, _super);
+    __extends$61(AccumulationSeries, _super);
     function AccumulationSeries() {
         /**
          * Specifies the dataSource for the series. It can be an array of JSON objects or an instance of DataManager.
@@ -26149,7 +26835,7 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
     return AccumulationBase;
 }());
 
-var __extends$62 = (undefined && undefined.__extends) || (function () {
+var __extends$63 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26169,7 +26855,7 @@ var __extends$62 = (undefined && undefined.__extends) || (function () {
  * PieBase class used to do pie base calculations.
  */
 var PieBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$62(PieBase, _super);
+    __extends$63(PieBase, _super);
     function PieBase() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -26365,7 +27051,7 @@ var PieBase = /** @__PURE__ @class */ (function (_super) {
     return PieBase;
 }(AccumulationBase));
 
-var __extends$61 = (undefined && undefined.__extends) || (function () {
+var __extends$62 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26382,7 +27068,7 @@ var __extends$61 = (undefined && undefined.__extends) || (function () {
  * PieSeries module used to render `Pie` Series.
  */
 var PieSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$61(PieSeries, _super);
+    __extends$62(PieSeries, _super);
     function PieSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -26445,6 +27131,9 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
                     var path = new PathOption(accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
                     createBorderEle.removeAttribute('transform');
+                    if (this.accumulation.selectionMode !== 'None' && event.target.hasAttribute('class')) {
+                        this.accumulation.accumulationSelectionModule.addSvgClass(createBorderEle, event.target.getAttribute('class'));
+                    }
                     seriousGroup.appendChild(createBorderEle);
                     if (point.isExplode && createBorderEle) {
                         var borderExplode = srcElem.getAttribute('transform');
@@ -26542,7 +27231,7 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
     return PieSeries;
 }(PieBase));
 
-var __extends$59 = (undefined && undefined.__extends) || (function () {
+var __extends$60 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26576,7 +27265,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
  * @public
  */
 var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
-    __extends$59(AccumulationChart, _super);
+    __extends$60(AccumulationChart, _super);
     /**
      * Constructor for creating the AccumulationChart widget
      * @private
@@ -26693,14 +27382,22 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
      * To render the accumulation chart elements
      */
     AccumulationChart.prototype.render = function () {
-        this.trigger(load, { accumulation: this, chart: this });
-        this.setTheme();
-        this.accBaseModule = new AccumulationBase(this);
-        this.pieSeriesModule = new PieSeries(this);
-        this.calculateVisibleSeries();
-        this.processData();
-        this.renderComplete();
-        this.allowServerDataBinding = true;
+        var _this = this;
+        var loadEventData = {
+            chart: this.isBlazor ? {} : this,
+            accumulation: this.isBlazor ? {} : this,
+            theme: this.theme, name: load, cancel: false
+        };
+        this.trigger(load, loadEventData, function () {
+            _this.theme = _this.isBlazor ? loadEventData.theme : _this.theme;
+            _this.setTheme();
+            _this.accBaseModule = new AccumulationBase(_this);
+            _this.pieSeriesModule = new PieSeries(_this);
+            _this.calculateVisibleSeries();
+            _this.processData();
+            _this.renderComplete();
+            _this.allowServerDataBinding = true;
+        });
     };
     /**
      * Method to unbind events for accumulation chart
@@ -27113,7 +27810,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
             return null;
         }
         this.accumulationLegendModule.getLegendOptions(this, this.visibleSeries);
-        this.accumulationLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize);
+        this.accumulationLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
     };
     /**
      * To render elements for accumulation chart
@@ -27191,7 +27888,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     AccumulationChart.prototype.renderBorder = function () {
         var padding = this.border.width;
         appendChildElement(false, this.svgObject, this.renderer.drawRectangle(new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1, new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))), this.redraw);
-        // to draw back ground image for accumulation chart
+        // to draw back ground image for accumulation chart        
         var backGroundImage = this.backgroundImage;
         if (backGroundImage) {
             var image = new ImageOption(this.availableSize.height - padding, this.availableSize.width - padding, backGroundImage, 0, 0, this.element.id + '_background', 'visible', 'none');
@@ -27313,6 +28010,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
             this.unWireEvents();
             _super.prototype.destroy.call(this);
             this.element.classList.remove('e-accumulationchart');
+            this.element.innerHTML = '';
         }
     };
     /**
@@ -27547,6 +28245,15 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         Property('None')
     ], AccumulationChart.prototype, "selectionMode", void 0);
     __decorate$7([
+        Property('None')
+    ], AccumulationChart.prototype, "highLightMode", void 0);
+    __decorate$7([
+        Property('None')
+    ], AccumulationChart.prototype, "selectionPattern", void 0);
+    __decorate$7([
+        Property('None')
+    ], AccumulationChart.prototype, "highlightPattern", void 0);
+    __decorate$7([
         Property(true)
     ], AccumulationChart.prototype, "enableBorderOnMouseMove", void 0);
     __decorate$7([
@@ -27651,7 +28358,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the common behavior of funnel and pyramid series
  */
-var __extends$64 = (undefined && undefined.__extends) || (function () {
+var __extends$65 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27668,7 +28375,7 @@ var __extends$64 = (undefined && undefined.__extends) || (function () {
  * TriangularBase is used to calculate base functions for funnel/pyramid series.
  */
 var TriangularBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$64(TriangularBase, _super);
+    __extends$65(TriangularBase, _super);
     function TriangularBase() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -27765,7 +28472,7 @@ var TriangularBase = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the behavior of a funnel series
  */
-var __extends$63 = (undefined && undefined.__extends) || (function () {
+var __extends$64 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27782,7 +28489,7 @@ var __extends$63 = (undefined && undefined.__extends) || (function () {
  * FunnelSeries module used to render `Funnel` Series.
  */
 var FunnelSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$63(FunnelSeries, _super);
+    __extends$64(FunnelSeries, _super);
     function FunnelSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -27887,7 +28594,7 @@ var FunnelSeries = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the behavior of a pyramid series
  */
-var __extends$65 = (undefined && undefined.__extends) || (function () {
+var __extends$66 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27904,7 +28611,7 @@ var __extends$65 = (undefined && undefined.__extends) || (function () {
  * PyramidSeries module used to render `Pyramid` Series.
  */
 var PyramidSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$65(PyramidSeries, _super);
+    __extends$66(PyramidSeries, _super);
     function PyramidSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -28042,7 +28749,7 @@ var PyramidSeries = /** @__PURE__ @class */ (function (_super) {
     return PyramidSeries;
 }(TriangularBase));
 
-var __extends$66 = (undefined && undefined.__extends) || (function () {
+var __extends$67 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -28062,7 +28769,7 @@ var __extends$66 = (undefined && undefined.__extends) || (function () {
  * AccumulationLegend module used to render `Legend` for Accumulation chart.
  */
 var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
-    __extends$66(AccumulationLegend, _super);
+    __extends$67(AccumulationLegend, _super);
     /**
      * Constructor for Accumulation Legend.
      * @param chart
@@ -28399,7 +29106,7 @@ var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
     return AccumulationLegend;
 }(BaseLegend));
 
-var __extends$67 = (undefined && undefined.__extends) || (function () {
+var __extends$68 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -28419,7 +29126,7 @@ var __extends$67 = (undefined && undefined.__extends) || (function () {
  * AccumulationDataLabel module used to render `dataLabel`.
  */
 var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
-    __extends$67(AccumulationDataLabel, _super);
+    __extends$68(AccumulationDataLabel, _super);
     function AccumulationDataLabel(accumulation) {
         var _this = _super.call(this, accumulation) || this;
         _this.id = accumulation.element.id + '_datalabel_Series_';
@@ -29107,7 +29814,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
     return AccumulationDataLabel;
 }(AccumulationBase));
 
-var __extends$68 = (undefined && undefined.__extends) || (function () {
+var __extends$69 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29127,7 +29834,7 @@ var __extends$68 = (undefined && undefined.__extends) || (function () {
  * `AccumulationTooltip` module is used to render tooltip for accumulation chart.
  */
 var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
-    __extends$68(AccumulationTooltip, _super);
+    __extends$69(AccumulationTooltip, _super);
     function AccumulationTooltip(accumulation) {
         var _this = _super.call(this, accumulation) || this;
         _this.accumulation = accumulation;
@@ -29291,7 +29998,7 @@ var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
     return AccumulationTooltip;
 }(BaseTooltip));
 
-var __extends$69 = (undefined && undefined.__extends) || (function () {
+var __extends$70 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29311,7 +30018,7 @@ var __extends$69 = (undefined && undefined.__extends) || (function () {
  * `AccumulationSelection` module handles the selection for accumulation chart.
  */
 var AccumulationSelection = /** @__PURE__ @class */ (function (_super) {
-    __extends$69(AccumulationSelection, _super);
+    __extends$70(AccumulationSelection, _super);
     function AccumulationSelection(accumulation) {
         var _this = _super.call(this, accumulation) || this;
         _this.renderer = accumulation.renderer;
@@ -29395,9 +30102,21 @@ var AccumulationSelection = /** @__PURE__ @class */ (function (_super) {
         if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
             this.removeStyles(selectedElements, index);
             this.addOrRemoveIndex(this.selectedDataIndexes, index);
+            if (accumulation.enableBorderOnMouseMove) {
+                var borderElement = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                if (!isNullOrUndefined(borderElement)) {
+                    this.removeSvgClass(borderElement, borderElement.getAttribute('class'));
+                }
+            }
         }
         else {
             this.applyStyles(selectedElements, index);
+            if (accumulation.enableBorderOnMouseMove) {
+                var borderElement = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                if (!isNullOrUndefined(borderElement)) {
+                    this.addSvgClass(borderElement, selectedElements[0].getAttribute('class'));
+                }
+            }
             this.addOrRemoveIndex(this.selectedDataIndexes, index, true);
         }
     };
@@ -29596,7 +30315,7 @@ var AccumulationSelection = /** @__PURE__ @class */ (function (_super) {
 /**
  * AccumulationChart annotation properties
  */
-var __extends$70 = (undefined && undefined.__extends) || (function () {
+var __extends$71 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29613,7 +30332,7 @@ var __extends$70 = (undefined && undefined.__extends) || (function () {
  * `AccumulationAnnotation` module handles the annotation for accumulation chart.
  */
 var AccumulationAnnotation = /** @__PURE__ @class */ (function (_super) {
-    __extends$70(AccumulationAnnotation, _super);
+    __extends$71(AccumulationAnnotation, _super);
     /**
      * Constructor for accumulation chart annotation.
      * @private.
@@ -29714,7 +30433,7 @@ var DataPoint = /** @__PURE__ @class */ (function () {
     return DataPoint;
 }());
 
-var __extends$73 = (undefined && undefined.__extends) || (function () {
+var __extends$74 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29731,7 +30450,7 @@ var __extends$73 = (undefined && undefined.__extends) || (function () {
  * To render Chart series
  */
 var RangeSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$73(RangeSeries, _super);
+    __extends$74(RangeSeries, _super);
     function RangeSeries(range) {
         var _this = _super.call(this) || this;
         _this.dataSource = range.dataSource;
@@ -29766,12 +30485,6 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
             this.processDataSource(control.dataSource, control.query, control);
         }
     };
-    RangeSeries.prototype.findGMT = function (control, data, xName) {
-        if (!control.isGMT && data) {
-            control.isGMT = !((data[0][xName]).toString().indexOf('GMT+') > -1 ||
-                (data[0][xName]).toString().indexOf('GMT-') > -1);
-        }
-    };
     RangeSeries.prototype.processDataSource = function (dataSource, query, control, series) {
         var _this = this;
         if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource) && isNullOrUndefined(query)) {
@@ -29789,9 +30502,6 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
     RangeSeries.prototype.dataManagerSuccess = function (e, control, series) {
         var viewData = e.count ? e.result : [];
         control.allowServerDataBinding = false;
-        if (e.count) {
-            this.findGMT(control, viewData, (series ? series.xName : null) || control.xName);
-        }
         this.processJsonData(viewData, control, Object.keys(viewData).length, series);
         this.seriesLength += series ? 1 : this.seriesLength;
         if (!series || this.seriesLength === control.series.length) {
@@ -29969,7 +30679,7 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
     return RangeSeries;
 }(NiceInterval));
 
-var __extends$74 = (undefined && undefined.__extends) || (function () {
+var __extends$75 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -29986,7 +30696,7 @@ var __extends$74 = (undefined && undefined.__extends) || (function () {
  * class for axis
  */
 var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
-    __extends$74(RangeNavigatorAxis, _super);
+    __extends$75(RangeNavigatorAxis, _super);
     function RangeNavigatorAxis(range) {
         var _this = _super.call(this) || this;
         _this.firstLevelLabels = [];
@@ -30089,14 +30799,13 @@ var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
      */
     RangeNavigatorAxis.prototype.findAxisLabels = function (axis) {
         axis.visibleLabels = [];
-        var offset = this.rangeNavigator.isGMT ? (new Date().getTimezoneOffset() * 60 * 1000) : 0;
-        var start = new Date(axis.visibleRange.min + offset);
+        var start = new Date(axis.visibleRange.min);
         var nextInterval;
         var text;
         var interval = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
         switch (axis.actualIntervalType) {
             case 'Years':
-                start = new Date(start.getFullYear().toString());
+                start = new Date(start.getFullYear(), 0, 1);
                 break;
             case 'Quarter':
                 if (start.getMonth() <= 2) {
@@ -30131,11 +30840,11 @@ var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
                 start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours(), start.getMinutes(), start.getSeconds());
                 break;
         }
-        nextInterval = start.getTime() + offset;
+        nextInterval = start.getTime();
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
             format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
         });
-        while (nextInterval < axis.visibleRange.max) {
+        while (nextInterval <= axis.visibleRange.max) {
             text = this.dateFormats(this.rangeNavigator.format(new Date(nextInterval)), axis, axis.visibleLabels.length);
             axis.visibleLabels.push(new VisibleLabels(text, nextInterval, this.rangeNavigator.labelStyle, text));
             nextInterval = this.increaseDateTimeInterval(axis, nextInterval, interval).getTime();
@@ -30514,7 +31223,7 @@ function getRangeThemeColor(theme, range) {
     return style;
 }
 
-var __extends$75 = (undefined && undefined.__extends) || (function () {
+var __extends$76 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -30537,7 +31246,7 @@ var __decorate$11 = (undefined && undefined.__decorate) || function (decorators,
  * Series class for the range navigator
  */
 var RangeNavigatorSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$75(RangeNavigatorSeries, _super);
+    __extends$76(RangeNavigatorSeries, _super);
     function RangeNavigatorSeries() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -30583,7 +31292,7 @@ var RangeNavigatorSeries = /** @__PURE__ @class */ (function (_super) {
  * Thumb settings
  */
 var ThumbSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$75(ThumbSettings, _super);
+    __extends$76(ThumbSettings, _super);
     function ThumbSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -30608,7 +31317,7 @@ var ThumbSettings = /** @__PURE__ @class */ (function (_super) {
  * Style settings
  */
 var StyleSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$75(StyleSettings, _super);
+    __extends$76(StyleSettings, _super);
     function StyleSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -30627,7 +31336,7 @@ var StyleSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the ToolTips in the chart.
  */
 var RangeTooltipSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$75(RangeTooltipSettings, _super);
+    __extends$76(RangeTooltipSettings, _super);
     function RangeTooltipSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -30826,7 +31535,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
     };
     /**
      * Trigger changed event
-     * @private
+     * @param private
      */
     RangeSlider.prototype.triggerEvent = function (range) {
         var argsData;
@@ -31000,7 +31709,10 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         }
         else if (this.currentSlider === 'firstLevelLabels' || this.currentSlider === 'secondLevelLabels') {
             var secondLabel = control.rangeAxis[this.currentSlider][this.labelIndex + 1];
-            this.performAnimation(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? secondLabel.value : range.max), control);
+            /**
+             * One millisecond is subtracted from the label to indicate the previous label value
+             */
+            this.performAnimation(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), control);
             trigger = false;
         }
         if (this.isDrag && control.allowSnapping) {
@@ -31091,7 +31803,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
     return RangeSlider;
 }());
 
-var __extends$72 = (undefined && undefined.__extends) || (function () {
+var __extends$73 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -31114,7 +31826,7 @@ var __decorate$10 = (undefined && undefined.__decorate) || function (decorators,
  * Range Navigator
  */
 var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
-    __extends$72(RangeNavigator, _super);
+    __extends$73(RangeNavigator, _super);
     /**
      * Constructor for creating the widget
      * @hidden
@@ -31124,14 +31836,14 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.animateSeries = true;
         _this.chartid = 57725;
-        /** @private */
-        _this.isGMT = false;
         return _this;
     }
     /**
      * Starting point of the control initialization
      */
     RangeNavigator.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.setCulture();
         this.allowServerDataBinding = false;
@@ -31173,15 +31885,22 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
      * To render the range navigator
      */
     RangeNavigator.prototype.render = function () {
-        this.trigger('load', { rangeNavigator: this });
-        this.setTheme();
-        this.initPrivateVariables();
-        this.createRangeSvg();
-        this.calculateBounds();
-        this.chartSeries.renderChart(this);
-        removeElement$1('chartmeasuretext');
-        this.renderComplete();
-        this.allowServerDataBinding = true;
+        var _this = this;
+        var loadEventData = {
+            name: 'load', rangeNavigator: this.isBlazor ? {} : this,
+            theme: this.theme
+        };
+        this.trigger('load', loadEventData, function () {
+            _this.theme = _this.isBlazor ? loadEventData.theme : _this.theme;
+            _this.setTheme();
+            _this.initPrivateVariables();
+            _this.createRangeSvg();
+            _this.calculateBounds();
+            _this.chartSeries.renderChart(_this);
+            removeElement$1('chartmeasuretext');
+            _this.renderComplete();
+            _this.allowServerDataBinding = true;
+        });
     };
     /**
      * Theming for rangeNavigator
@@ -31248,8 +31967,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
-        var blazor = 'Blazor';
-        this.trigger('loaded', { rangeNavigator: window[blazor] ? {} : this });
+        this.trigger('loaded', { rangeNavigator: this.isBlazor ? {} : this });
         this.rangeSlider.setSlider(this.startValue, this.endValue, false, this.tooltip.enable && this.tooltip.displayMode === 'Always');
     };
     /**
@@ -31631,6 +32349,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         this.unWireEvents();
         this.rangeSlider.destroy();
         _super.prototype.destroy.call(this);
+        this.element.innerHTML = '';
         this.element.classList.remove('e-rangenavigator');
     };
     __decorate$10([
@@ -31696,6 +32415,9 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
     __decorate$10([
         Property(false)
     ], RangeNavigator.prototype, "allowSnapping", void 0);
+    __decorate$10([
+        Property(false)
+    ], RangeNavigator.prototype, "allowIntervalData", void 0);
     __decorate$10([
         Property(false)
     ], RangeNavigator.prototype, "useGroupingSeparator", void 0);
@@ -32262,7 +32984,7 @@ var RangeTooltip = /** @__PURE__ @class */ (function () {
                 format: format || 'MM/dd/yyyy',
                 type: firstToLowerCase(control.skeletonType),
                 skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null)
-            }))(new Date(value + (control.isGMT ? new Date().getTimezoneOffset() * 60 * 1000 : 0)));
+            }))(new Date(value));
         }
         else {
             xAxis.format = control.intl.getNumberFormat({
@@ -32340,19 +33062,6 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
         }
         this.cartesianChartSize = this.calculateChartSize();
         stockChart.chart = new Chart({
-            load: function (args) {
-                if (stockChart.tooltip.header === null) {
-                    args.chart.tooltip.header = '<b>${point.x}</b>';
-                }
-                if (stockChart.tooltip.format === null) {
-                    args.chart.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
-                        ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
-                    if (stockChart.series[0].volume !== '') {
-                        args.chart.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
-                    }
-                }
-                args.chart.animateSeries = false;
-            },
             chartArea: stockChart.chartArea,
             margin: this.findMargin(stockChart),
             primaryXAxis: this.copyObject(stockChart.primaryXAxis),
@@ -32384,7 +33093,6 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
             pointMove: function (args) {
                 _this.stockChart.trigger('pointMove', args);
             },
-            onZooming: function (args) { _this.stockChart.trigger('onZooming', args); },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),
@@ -33047,7 +33755,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
     return ToolBarSelector;
 }());
 
-var __extends$76 = (undefined && undefined.__extends) || (function () {
+var __extends$77 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -33067,7 +33775,7 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var StockChartFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartFont, _super);
+    __extends$77(StockChartFont, _super);
     function StockChartFont() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33101,7 +33809,7 @@ var StockChartFont = /** @__PURE__ @class */ (function (_super) {
  * Border
  */
 var StockChartBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartBorder, _super);
+    __extends$77(StockChartBorder, _super);
     function StockChartBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33117,7 +33825,7 @@ var StockChartBorder = /** @__PURE__ @class */ (function (_super) {
  * Configures the chart area.
  */
 var StockChartArea = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartArea, _super);
+    __extends$77(StockChartArea, _super);
     function StockChartArea() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33136,7 +33844,7 @@ var StockChartArea = /** @__PURE__ @class */ (function (_super) {
  * Configures the chart margins.
  */
 var StockMargin = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockMargin, _super);
+    __extends$77(StockMargin, _super);
     function StockMargin() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33158,7 +33866,7 @@ var StockMargin = /** @__PURE__ @class */ (function (_super) {
  * StockChart strip line settings
  */
 var StockChartStripLineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartStripLineSettings, _super);
+    __extends$77(StockChartStripLineSettings, _super);
     function StockChartStripLineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33234,7 +33942,7 @@ var StockChartStripLineSettings = /** @__PURE__ @class */ (function (_super) {
     return StockChartStripLineSettings;
 }(ChildProperty));
 var Animation$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(Animation$$1, _super);
+    __extends$77(Animation$$1, _super);
     function Animation$$1() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33250,7 +33958,7 @@ var Animation$2 = /** @__PURE__ @class */ (function (_super) {
     return Animation$$1;
 }(ChildProperty));
 var StockEmptyPointSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockEmptyPointSettings, _super);
+    __extends$77(StockEmptyPointSettings, _super);
     function StockEmptyPointSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33266,7 +33974,7 @@ var StockEmptyPointSettings = /** @__PURE__ @class */ (function (_super) {
     return StockEmptyPointSettings;
 }(ChildProperty));
 var StockChartConnector = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartConnector, _super);
+    __extends$77(StockChartConnector, _super);
     function StockChartConnector() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33291,7 +33999,7 @@ var StockChartConnector = /** @__PURE__ @class */ (function (_super) {
  * Configures the Annotation for chart.
  */
 var StockSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockSeries, _super);
+    __extends$77(StockSeries, _super);
     function StockSeries() {
         /**
          * The DataSource field that contains the x value.
@@ -33408,7 +34116,7 @@ var StockSeries = /** @__PURE__ @class */ (function (_super) {
     return StockSeries;
 }(ChildProperty));
 var StockChartIndicator = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartIndicator, _super);
+    __extends$77(StockChartIndicator, _super);
     function StockChartIndicator() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33520,7 +34228,7 @@ var StockChartIndicator = /** @__PURE__ @class */ (function (_super) {
     return StockChartIndicator;
 }(ChildProperty));
 var StockChartAxis = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartAxis, _super);
+    __extends$77(StockChartAxis, _super);
     function StockChartAxis() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33674,7 +34382,7 @@ var StockChartAxis = /** @__PURE__ @class */ (function (_super) {
  * StockChart row
  */
 var StockChartRow = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartRow, _super);
+    __extends$77(StockChartRow, _super);
     function StockChartRow() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33687,7 +34395,7 @@ var StockChartRow = /** @__PURE__ @class */ (function (_super) {
     return StockChartRow;
 }(ChildProperty));
 var StockChartTrendline = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartTrendline, _super);
+    __extends$77(StockChartTrendline, _super);
     function StockChartTrendline() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33733,7 +34441,7 @@ var StockChartTrendline = /** @__PURE__ @class */ (function (_super) {
     return StockChartTrendline;
 }(ChildProperty));
 var StockChartAnnotationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartAnnotationSettings, _super);
+    __extends$77(StockChartAnnotationSettings, _super);
     function StockChartAnnotationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33770,7 +34478,7 @@ var StockChartAnnotationSettings = /** @__PURE__ @class */ (function (_super) {
     return StockChartAnnotationSettings;
 }(ChildProperty));
 var StockChartIndexes = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockChartIndexes, _super);
+    __extends$77(StockChartIndexes, _super);
     function StockChartIndexes() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33786,7 +34494,7 @@ var StockChartIndexes = /** @__PURE__ @class */ (function (_super) {
  * Configures the Stock events for stock chart.
  */
 var StockEventsSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$76(StockEventsSettings, _super);
+    __extends$77(StockEventsSettings, _super);
     function StockEventsSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -33820,7 +34528,7 @@ var StockEventsSettings = /** @__PURE__ @class */ (function (_super) {
     return StockEventsSettings;
 }(ChildProperty));
 
-var __extends$77 = (undefined && undefined.__extends) || (function () {
+var __extends$78 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -33837,7 +34545,7 @@ var __extends$77 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 var StockEvents = /** @__PURE__ @class */ (function (_super) {
-    __extends$77(StockEvents, _super);
+    __extends$78(StockEvents, _super);
     function StockEvents(stockChart) {
         var _this = _super.call(this, stockChart.chart) || this;
         /** @private */
@@ -34079,7 +34787,7 @@ function initialArray(numrows, numcols, initial) {
     return arr;
 }
 
-var __extends$71 = (undefined && undefined.__extends) || (function () {
+var __extends$72 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -34102,7 +34810,7 @@ var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, 
  * Stock Chart
  */
 var StockChart = /** @__PURE__ @class */ (function (_super) {
-    __extends$71(StockChart, _super);
+    __extends$72(StockChart, _super);
     /**
      * Constructor for creating the widget
      * @hidden
@@ -34169,12 +34877,13 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      * Pre render for financial Chart
      */
     StockChart.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.isProtectedOnChange = true;
         this.setCulture();
-        this.stockChartTheme = getThemeColor(this.theme);
         this.wireEvents();
     };
     /**
@@ -34241,19 +34950,24 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      * To Initialize the control rendering.
      */
     StockChart.prototype.render = function () {
-        this.trigger('load', { stockChart: this });
-        this.storeDataSource();
-        this.drawSVG();
-        this.renderTitle();
-        this.chartModuleInjection();
-        this.chartRender();
-        if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
-            this.stockChartDataManagerSuccess();
-            this.initialRender = false;
-        }
-        this.renderComplete();
-        this.allowServerDataBinding = true;
-        this.isProtectedOnChange = false;
+        var _this = this;
+        var loadEventData = { name: 'load', stockChart: this.isBlazor ? {} : this, theme: this.theme };
+        this.trigger('load', loadEventData, function () {
+            _this.theme = _this.isBlazor ? loadEventData.theme : _this.theme;
+            _this.stockChartTheme = getThemeColor(_this.theme);
+            _this.storeDataSource();
+            _this.drawSVG();
+            _this.renderTitle();
+            _this.chartModuleInjection();
+            _this.chartRender();
+            if (!(_this.dataSource instanceof DataManager) || !(_this.series[0].dataSource instanceof DataManager)) {
+                _this.stockChartDataManagerSuccess();
+                _this.initialRender = false;
+            }
+            _this.renderComplete();
+            _this.allowServerDataBinding = true;
+            _this.isProtectedOnChange = false;
+        });
     };
     /**
      * DataManager Success
@@ -34737,7 +35451,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         }
     };
     StockChart.prototype.findTitleColor = function () {
-        if (this.theme.indexOf('Highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
+        if (this.theme.toLocaleLowerCase().indexOf('highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
             return '#ffffff';
         }
         return '#424242';
@@ -34856,9 +35570,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     __decorate$9([
         Event()
     ], StockChart.prototype, "pointMove", void 0);
-    __decorate$9([
-        Event()
-    ], StockChart.prototype, "onZooming", void 0);
     __decorate$9([
         Property('None')
     ], StockChart.prototype, "selectionMode", void 0);
@@ -35306,6 +36017,14 @@ var BulletChartTheme;
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    BulletChartTheme.legendLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
     BulletChartTheme.dataLabelFont = {
         size: '13px',
         fontWeight: 'Normal',
@@ -35341,6 +36060,7 @@ function getBulletThemeColor(theme, bullet) {
         categoryFontColor: '#666666',
         labelFontFamily: 'SegoeUI',
         tooltipFill: 'rgba(0, 8, 22, 0.75)',
+        legendLabel: '#353535',
         tooltipBoldLabel: '#ffffff',
         featuredMeasureColor: '#181818',
         comparativeMeasureColor: '#181818',
@@ -35364,6 +36084,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#666666',
                 labelFontFamily: 'SegoeUI',
                 tooltipFill: 'rgba(0, 8, 22, 0.75)',
+                legendLabel: '#353535',
                 tooltipBoldLabel: '#ffffff',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -35387,6 +36108,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: 'rgba(0,0,0,0.54)',
                 labelFontFamily: 'Helvetica',
                 tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                legendLabel: '#212529',
                 tooltipBoldLabel: 'rgba(255,255,255)',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -35410,6 +36132,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#FFFFFF',
                 labelFontFamily: 'SegoeUI',
                 tooltipFill: '#ffffff',
+                legendLabel: '#ffffff',
                 tooltipBoldLabel: '#000000',
                 featuredMeasureColor: '#000000',
                 comparativeMeasureColor: '#000000',
@@ -35435,6 +36158,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#FFFFFF',
                 labelFontFamily: 'Helvetica',
                 tooltipFill: '#F4F4F4',
+                legendLabel: '#DADADA',
                 tooltipBoldLabel: '#282727',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -35458,6 +36182,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#202528',
                 labelFontFamily: 'HelveticaNeue',
                 tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                legendLabel: '#212529',
                 tooltipBoldLabel: 'rgba(255,255,255)',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -35580,22 +36305,16 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
         var bounds;
         for (var i = 0; i < dataCount; i++) {
             data = bulletChart.dataSource[i];
-            var argsData = void 0;
-            argsData = {
-                name: barRender, bulletChart: bulletChart, value: data[bulletChart.valueField], target: data[bulletChart.targetField],
-                category: data[bulletChart.categoryField]
-            };
-            bulletChart.trigger(barRender, argsData);
-            categoryValue = argsData.category;
+            categoryValue = data[bulletChart.categoryField];
             if (isHorizontal) {
                 lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
             }
             else {
                 lPoint = initialBoundsStart + (featureBarSize * i) + (featureBarSize / 2) - bulletChart.valueHeight / 2;
             }
-            bounds = this.calculateFeatureMeasureBounds(+argsData.value, categoryValue, isHorizontal);
+            bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
             if (data && bulletChart.type === 'Dot') {
-                var value = +argsData.value;
+                var value = data[bulletChart.valueField];
                 if (isHorizontal) {
                     bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
                         ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
@@ -35678,6 +36397,7 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
     };
     ScaleGroup.prototype.renderCommonComparativeSymbol = function (dataCount, isHorizontal) {
         var bulletChart = this.bulletChart;
+        var value;
         var rect = bulletChart.initialClipRect;
         var scaleLength = isHorizontal ? rect.width : rect.height;
         var y1;
@@ -35698,14 +36418,8 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
         var featureBarSize = (isHorizontal ? rect.height : rect.width) / dataCount;
         var svgElement;
         for (var k = 0; k < dataCount; k++) {
-            var argsData = void 0;
-            argsData = {
-                // tslint:disable-next-line:max-line-length
-                name: barRender, bulletChart: bulletChart, value: bulletChart.dataSource[k][bulletChart.valueField], target: bulletChart.dataSource[k][bulletChart.targetField],
-                category: bulletChart.dataSource[k][bulletChart.categoryField]
-            };
-            bulletChart.trigger(barRender, argsData);
-            values = values.concat(argsData.target);
+            value = bulletChart.dataSource[k][bulletChart.targetField];
+            values = values.concat(value);
             for (var i = 0; i < values.length; i++) {
                 targetType = targetTypes[i % targetTypeLength];
                 if (values[i] >= minimum && values[i] <= maximum) {
@@ -35742,7 +36456,8 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
         var shapeObject;
         var shapeElement;
         var bulletChart = this.bulletChart;
-        var size = bulletChart.targetWidth;
+        var strokeWidth = (targetType === 'Cross') ? bulletChart.targetWidth - 1 : 1;
+        var size = (targetType === 'Circle') ? bulletChart.targetWidth - 1 : bulletChart.targetWidth;
         var lx = isHorizontal ? x1 + (size / 2) : y1 + ((y2 - y1) / 2);
         var ly = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
         var id = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
@@ -35752,13 +36467,13 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
             shapeElement = bulletChart.renderer.drawLine(shapeObject);
         }
         else if (targetType === 'Circle') {
-            shapeObject = new CircleOption(id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor }, 1, lx, ly, size);
+            shapeObject = new CircleOption(id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor || 'black' }, 1, lx, ly, size);
             shapeElement = bulletChart.renderer.drawCircle(shapeObject);
         }
         else {
             var crossDirection = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
                 (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
-            shapeObject = new PathOption(id, 'transparent', 1, bulletChart.targetColor, 1, '', crossDirection);
+            shapeObject = new PathOption(id, 'transparent', strokeWidth, bulletChart.targetColor, 1, '', crossDirection);
             shapeElement = bulletChart.renderer.drawPath(shapeObject);
         }
         shapeElement.setAttribute('class', className);
@@ -35776,7 +36491,7 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
                 (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
             'y2': y2,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor
+            'stroke': bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     };
@@ -35790,7 +36505,7 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
             'x2': x2,
             'y2': y1,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor
+            'stroke': bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     };
@@ -35873,9 +36588,6 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
             centerY = isValuePlot ? valueY : valueY + elementBarHeight;
             centerX = valueX;
         }
-        else {
-            return null;
-        }
         valueBarElement.style.visibility = 'hidden';
         new Animation({}).animate(valueBarElement, {
             duration: animateDuration,
@@ -35917,9 +36629,6 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
             centerY = y;
             centerX = x;
         }
-        else {
-            return null;
-        }
         targetBarelement.style.visibility = 'hidden';
         this.animateRect(targetBarelement, centerX, centerY, index + 1);
     };
@@ -35952,7 +36661,7 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
     return ScaleGroup;
 }());
 
-var __extends$79 = (undefined && undefined.__extends) || (function () {
+var __extends$80 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -35975,7 +36684,7 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
  * Configuration of the bullet chart ranges
  */
 var Range = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(Range, _super);
+    __extends$80(Range, _super);
     function Range() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -35988,13 +36697,22 @@ var Range = /** @__PURE__ @class */ (function (_super) {
     __decorate$14([
         Property(null)
     ], Range.prototype, "color", void 0);
+    __decorate$14([
+        Property(null)
+    ], Range.prototype, "index", void 0);
+    __decorate$14([
+        Property(null)
+    ], Range.prototype, "name", void 0);
+    __decorate$14([
+        Property('Rectangle')
+    ], Range.prototype, "shape", void 0);
     return Range;
 }(ChildProperty));
 /**
  * Configures the major tick lines.
  */
 var MajorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(MajorTickLinesSettings, _super);
+    __extends$80(MajorTickLinesSettings, _super);
     function MajorTickLinesSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -36016,7 +36734,7 @@ var MajorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the minor tick lines.
  */
 var MinorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(MinorTickLinesSettings, _super);
+    __extends$80(MinorTickLinesSettings, _super);
     function MinorTickLinesSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -36038,7 +36756,7 @@ var MinorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the fonts in bullet chart.
  */
 var BulletLabelStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(BulletLabelStyle, _super);
+    __extends$80(BulletLabelStyle, _super);
     function BulletLabelStyle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -36081,7 +36799,7 @@ var BulletLabelStyle = /** @__PURE__ @class */ (function (_super) {
  * Configures the ToolTips in the bullet chart.
  */
 var BulletTooltipSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(BulletTooltipSettings, _super);
+    __extends$80(BulletTooltipSettings, _super);
     function BulletTooltipSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -36106,7 +36824,7 @@ var BulletTooltipSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the DataLabel in the bullet chart.
  */
 var BulletDataLabel = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(BulletDataLabel, _super);
+    __extends$80(BulletDataLabel, _super);
     function BulletDataLabel() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -36118,8 +36836,60 @@ var BulletDataLabel = /** @__PURE__ @class */ (function (_super) {
     ], BulletDataLabel.prototype, "labelStyle", void 0);
     return BulletDataLabel;
 }(ChildProperty));
+/**
+ * Configures the legends in charts.
+ */
+var BulletChartLegendSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$80(BulletChartLegendSettings, _super);
+    function BulletChartLegendSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$14([
+        Property(false)
+    ], BulletChartLegendSettings.prototype, "visible", void 0);
+    __decorate$14([
+        Complex({ x: 0, y: 0 }, Location)
+    ], BulletChartLegendSettings.prototype, "location", void 0);
+    __decorate$14([
+        Property(8)
+    ], BulletChartLegendSettings.prototype, "padding", void 0);
+    __decorate$14([
+        Property('Center')
+    ], BulletChartLegendSettings.prototype, "alignment", void 0);
+    __decorate$14([
+        Property(10)
+    ], BulletChartLegendSettings.prototype, "shapeHeight", void 0);
+    __decorate$14([
+        Property(10)
+    ], BulletChartLegendSettings.prototype, "shapeWidth", void 0);
+    __decorate$14([
+        Complex(BulletChartTheme.legendLabelFont, BulletLabelStyle)
+    ], BulletChartLegendSettings.prototype, "textStyle", void 0);
+    __decorate$14([
+        Property('Auto')
+    ], BulletChartLegendSettings.prototype, "position", void 0);
+    __decorate$14([
+        Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+    ], BulletChartLegendSettings.prototype, "margin", void 0);
+    __decorate$14([
+        Complex({}, Border)
+    ], BulletChartLegendSettings.prototype, "border", void 0);
+    __decorate$14([
+        Property(5)
+    ], BulletChartLegendSettings.prototype, "shapePadding", void 0);
+    __decorate$14([
+        Property('transparent')
+    ], BulletChartLegendSettings.prototype, "background", void 0);
+    __decorate$14([
+        Property(1)
+    ], BulletChartLegendSettings.prototype, "opacity", void 0);
+    __decorate$14([
+        Property(3)
+    ], BulletChartLegendSettings.prototype, "tabIndex", void 0);
+    return BulletChartLegendSettings;
+}(ChildProperty));
 
-var __extends$78 = (undefined && undefined.__extends) || (function () {
+var __extends$79 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -36142,7 +36912,7 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  * bullet chart
  */
 var BulletChart = /** @__PURE__ @class */ (function (_super) {
-    __extends$78(BulletChart, _super);
+    __extends$79(BulletChart, _super);
     /**
      * Constructor for creating the bullet chart
      * @hidden
@@ -36173,6 +36943,8 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
      * Initialize the event handler.
      */
     BulletChart.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.allowServerDataBinding = false;
         this.unWireEvents();
         this.initPrivateValues();
@@ -36201,16 +36973,27 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
      * To Initialize the bullet chart rendering.
      */
     BulletChart.prototype.render = function () {
-        this.trigger('load', { bulletChart: this });
-        this.setTheme();
-        this.createSvg(this);
-        this.findRange();
-        this.calculatePosition();
-        this.renderBulletElements();
-        var blazor = 'Blazor';
-        this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
-        this.allowServerDataBinding = true;
-        this.renderComplete();
+        var _this = this;
+        var loadEventData = {
+            bulletChart: this.isBlazor ? {} : this,
+            theme: this.theme, name: 'load'
+        };
+        this.trigger('load', loadEventData, function () {
+            _this.theme = _this.isBlazor ? loadEventData.theme : _this.theme;
+            _this.setTheme();
+            _this.createSvg(_this);
+            _this.findRange();
+            if (_this.bulletChartLegendModule && _this.legendSettings.visible) {
+                _this.calculateVisibleElements();
+                _this.bulletChartLegendModule.getLegendOptions(_this.visibleRanges, _this);
+            }
+            _this.calculatePosition();
+            _this.renderBulletElements();
+            var blazor = 'Blazor';
+            _this.trigger('loaded', { bulletChart: window[blazor] ? {} : _this });
+            _this.allowServerDataBinding = true;
+            _this.renderComplete();
+        });
     };
     /**
      * Theming for bullet chart
@@ -36338,9 +37121,20 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         //this.bulletAxis.renderYAxisLabels(intervalValue, scaleGroup, this.bulletChartRect);
         this.bindData();
         this.renderDataLabel();
+        this.renderBulletLegend();
         //this.changeOrientation(scaleGroup);
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
+    };
+    /**
+     * To render the legend
+     */
+    BulletChart.prototype.renderBulletLegend = function () {
+        if (this.bulletChartLegendModule && this.bulletChartLegendModule.legendCollections.length) {
+            this.bulletChartLegendModule.calTotalPage = true;
+            var bounds = this.bulletChartLegendModule.legendBounds;
+            this.bulletChartLegendModule.renderLegend(this, this.legendSettings, bounds);
+        }
     };
     /**
      * Handles the bullet chart resize.
@@ -36430,6 +37224,9 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         this.maxLabelSize = this.getMaxLabelWidth(this);
         this.initialClipRect = this.getBulletBounds((this.orientation === 'Vertical' ? maxVerticalTitlteHeight : maxTitlteWidth), titleHeight, subTitleHeight, margin);
         this.bulletChartRect = new Rect(this.initialClipRect.x, this.initialClipRect.y, this.initialClipRect.width, this.initialClipRect.height);
+        if (this.bulletChartLegendModule) {
+            this.bulletChartLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, this.maxLabelSize);
+        }
     };
     /**
      * Calculate the rect values based on title position.
@@ -36533,6 +37330,19 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         }
         return this.maxLabelSize;
     };
+    BulletChart.prototype.calculateVisibleElements = function () {
+        var range;
+        var rangeCollection;
+        this.visibleRanges = [];
+        rangeCollection = this.ranges;
+        for (var i = 0, len = rangeCollection.length; i < len; i++) {
+            range = rangeCollection[i];
+            range.index = i;
+            range.color = range.color;
+            this.visibleRanges.push(range);
+            rangeCollection[i] = range;
+        }
+    };
     /**
      * To render the title of the bullet chart
      */
@@ -36581,14 +37391,14 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
                         y = this.margin.top + elementSize.height / 2 + padding;
                         break;
                     case 'Bottom':
-                        x = (this.availableSize.width) / 2 + padding * 2;
+                        x = (this.availableSize.width) / 2;
                         // tslint:disable-next-line:max-line-length
                         y = this.availableSize.height - this.margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding : 0);
                         break;
                     case 'Left':
                         y = this.findVerticalAlignment(margin);
                         anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
-                        x = margin.left + elementSize.height / 3;
+                        x = margin.left;
                         // tslint:disable-next-line:max-line-length
                         break;
                     case 'Right':
@@ -36769,6 +37579,7 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, startEvent, this.bulletMouseDown);
         EventHandler.remove(this.element, moveEvent, this.bulletMouseMove);
         EventHandler.remove(this.element, cancelEvent, this.bulletMouseLeave);
+        EventHandler.remove(this.element, 'click', this.bulletChartOnMouseClick);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
     };
     /**
@@ -36780,6 +37591,7 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.element, Browser.touchMoveEvent, this.bulletMouseMove, this);
         EventHandler.add(this.element, cancelEvent, this.bulletMouseLeave, this);
         EventHandler.add(this.element, Browser.touchStartEvent, this.bulletMouseDown, this);
+        EventHandler.add(this.element, 'click', this.bulletChartOnMouseClick, this);
         this.resizeBound = this.bulletResize.bind(this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
         /*! Apply the style for chart */
@@ -36814,12 +37626,9 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        if (!this.isTouch(e)) {
+        if (!this.isTouchEvent(e)) {
             var id = 'tooltipDiv' + this.element.id;
             var tooltipDiv = document.getElementById(id);
-            if (isBlazor()) {
-                resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
-            }
             if (tooltipDiv) {
                 remove(tooltipDiv);
             }
@@ -36844,7 +37653,7 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     BulletChart.prototype.bulletMouseLeave = function (e) {
-        if (!this.isTouch(e)) {
+        if (!this.isTouchEvent(e)) {
             var tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
                 remove(tooltipDiv);
@@ -36856,7 +37665,7 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
      * @return {boolean}
      * @private
      */
-    BulletChart.prototype.isTouch = function (event) {
+    BulletChart.prototype.isTouchEvent = function (event) {
         if ((event.pointerType === 'touch') || (event.type.indexOf('touch') > -1)) {
             return true;
         }
@@ -36868,7 +37677,7 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     BulletChart.prototype.bulletMouseDown = function (e) {
-        if (this.isTouch(e)) {
+        if (this.isTouchEvent(e)) {
             remove(document.getElementById(('tooltipDiv' + this.element.id)));
             var targetId = e.target.id;
             /* tslint:disable:no-string-literal */
@@ -36878,6 +37687,17 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
                 this.bulletTooltipModule._displayTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
             }
         }
+    };
+    /**
+     * Handles the mouse click on bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    BulletChart.prototype.bulletChartOnMouseClick = function (e) {
+        var element = e.target;
+        this.trigger(bulletChartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
+        this.notify('click', e);
+        return false;
     };
     /**
      * Handles the print method for bullet chart control.
@@ -36994,9 +37814,22 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
      */
     BulletChart.prototype.requiredModules = function () {
         var modules = [];
+        var rangeName;
+        for (var i = 0; i < this.ranges.length; i++) {
+            if (this.ranges[i].name !== null) {
+                rangeName = true;
+            }
+        }
+        this.isLegend = (this.legendSettings.visible && ((rangeName) || !!this.isLegend || this.targetField !== '' || this.valueField !== ''));
         if (this.tooltip.enable) {
             modules.push({
                 member: 'BulletTooltip',
+                args: [this]
+            });
+        }
+        if (this.isLegend) {
+            modules.push({
+                member: 'BulletChartLegend',
                 args: [this]
             });
         }
@@ -37017,6 +37850,7 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         this.removeSvg();
         this.svgObject = null;
         this.element.classList.remove('e-BulletChart');
+        this.element.innerHTML = '';
     };
     __decorate$13([
         Property(null)
@@ -37100,6 +37934,9 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         Complex({}, BulletDataLabel)
     ], BulletChart.prototype, "dataLabel", void 0);
     __decorate$13([
+        Complex({}, BulletChartLegendSettings)
+    ], BulletChart.prototype, "legendSettings", void 0);
+    __decorate$13([
         Property(false)
     ], BulletChart.prototype, "enableGroupSeparator", void 0);
     __decorate$13([
@@ -37149,13 +37986,16 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
     ], BulletChart.prototype, "tooltipRender", void 0);
     __decorate$13([
         Event()
-    ], BulletChart.prototype, "barRender", void 0);
-    __decorate$13([
-        Event()
     ], BulletChart.prototype, "load", void 0);
     __decorate$13([
         Event()
     ], BulletChart.prototype, "loaded", void 0);
+    __decorate$13([
+        Event()
+    ], BulletChart.prototype, "bulletChartMouseClick", void 0);
+    __decorate$13([
+        Event()
+    ], BulletChart.prototype, "legendRender", void 0);
     __decorate$13([
         Event()
     ], BulletChart.prototype, "beforePrint", void 0);
@@ -37176,6 +38016,7 @@ var BulletTooltip = /** @__PURE__ @class */ (function () {
     function BulletTooltip(bullet) {
         this.control = bullet;
         this.elementId = bullet.element.id;
+        this.bulletAxis = new BulletChartAxis(this.control);
     }
     /**
      * To create tooltip div element
@@ -37218,8 +38059,8 @@ var BulletTooltip = /** @__PURE__ @class */ (function () {
     BulletTooltip.prototype._displayTooltip = function (e, targetClass, targetId, mouseX, mouseY) {
         if (targetClass !== 'undefined' && this.control.tooltip.enable && (targetClass === this.control.svgObject.id + '_FeatureMeasure' ||
             targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
-            var locale_1 = this.control.locale;
-            var localizedText = locale_1 && this.control.enableGroupSeparator;
+            var locale = this.control.locale;
+            var localizedText = locale && this.control.enableGroupSeparator;
             var data = void 0;
             var blazorTooltipData = void 0;
             var measureId = void 0;
@@ -37227,20 +38068,27 @@ var BulletTooltip = /** @__PURE__ @class */ (function () {
             var targetVal = [];
             var categoryVal = void 0;
             var tooltipdiv = void 0;
+            var format = this.bulletAxis.getFormat(this.control);
+            var isCustomFormat = format.match('{value}') !== null;
             measureId = targetId.substring(targetId.lastIndexOf('_') + 1);
+            var targetValues = [];
+            this.bulletAxis.format = this.bulletAxis.bulletChart.intl.getNumberFormat({
+                format: isCustomFormat ? '' : format, useGrouping: this.bulletAxis.bulletChart.enableGroupSeparator
+            });
             currentVal = this.control.dataSource[measureId][this.control.valueField];
             targetVal = targetVal.concat(this.control.dataSource[measureId][this.control.targetField]);
             categoryVal = this.control.dataSource[measureId][this.control.categoryField];
-            if (localizedText) {
-                data = {
-                    value: currentVal.toLocaleString(locale_1), target: targetVal.map(function (x) { return x.toLocaleString(locale_1); }),
-                    category: (!isNullOrUndefined(categoryVal) ? categoryVal.toLocaleString(locale_1) : categoryVal)
-                };
+            var labelCurrentText = currentVal ? (currentVal).toString() : '';
+            var labelTargetText = targetVal ? (targetVal).toString() : '';
+            var labelCategoryText = categoryVal ? (categoryVal).toString() : '';
+            labelCurrentText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +currentVal);
+            for (var i = 0; i < targetVal.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +targetVal[i]));
             }
-            else {
-                data = { value: currentVal, target: targetVal, category: categoryVal };
-                blazorTooltipData = { value: currentVal, target: targetVal.toString(), category: categoryVal };
-            }
+            labelCategoryText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +categoryVal);
+            data = { value: labelCurrentText, target: targetValues, category: labelCategoryText };
+            blazorTooltipData = { value: labelCurrentText, target: labelTargetText, category: labelCategoryText };
             var style = 'position: absolute; z-index: 13000; display: block;';
             if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
                 tooltipdiv = this.control.createElement('div');
@@ -37350,11 +38198,241 @@ var BulletTooltip = /** @__PURE__ @class */ (function () {
     return BulletTooltip;
 }());
 
+var __extends$81 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * Chart legend
+ */
+/**
+ * `Legend` module is used to render legend for the chart.
+ */
+var BulletChartLegend = /** @__PURE__ @class */ (function (_super) {
+    __extends$81(BulletChartLegend, _super);
+    function BulletChartLegend(chart) {
+        var _this = _super.call(this, chart) || this;
+        _this.library = _this;
+        _this.addEventListener();
+        return _this;
+    }
+    /**
+     * Binding events for legend module.
+     */
+    BulletChartLegend.prototype.addEventListener = function () {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.on('click', this.click, this);
+        this.chart.on(Browser.touchEndEvent, this.mouseEnd, this);
+        this.chart.on(Browser.touchMoveEvent, this.bulletMouseMove, this);
+    };
+    /**
+     * UnBinding events for bullet chart legend module.
+     */
+    BulletChartLegend.prototype.removeEventListener = function () {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.off('click', this.click);
+        this.chart.off(Browser.touchEndEvent, this.mouseEnd);
+        this.chart.off(Browser.touchMoveEvent, this.bulletMouseMove);
+    };
+    /**
+     * To handle mosue move for legend module
+     */
+    BulletChartLegend.prototype.bulletMouseMove = function (e) {
+        if (this.chart.legendSettings.visible && this.chart.isTouch) {
+            this.move(e);
+        }
+    };
+    /**
+     * To handle mosue end for legend module
+     */
+    BulletChartLegend.prototype.mouseEnd = function (e) {
+        if (this.chart.legendSettings.visible && this.chart.isTouch) {
+            this.move(e);
+        }
+    };
+    /**
+     * Get the legend options.
+     * @return {void}
+     * @private
+     */
+    BulletChartLegend.prototype.getLegendOptions = function (visibleRangeCollection, chart) {
+        this.legendCollections = [];
+        var fill;
+        var count = 0;
+        var key = 'color';
+        var bulletChart = this.chart;
+        for (var _i = 0, visibleRangeCollection_1 = visibleRangeCollection; _i < visibleRangeCollection_1.length; _i++) {
+            var range = visibleRangeCollection_1[_i];
+            if (range.name !== null) {
+                fill = range.color ? range.color : bulletChart.themeStyle.rangeStrokes[range.index][key];
+                this.legendCollections.push(new LegendOptions(range.name, fill, range.shape, this.chart.legendSettings.visible, null, null, false, range.index, null));
+                count++;
+            }
+        }
+        if (bulletChart.dataSource !== null && bulletChart.valueField !== '') {
+            fill = bulletChart.valueFill || 'black';
+            var shape = bulletChart.orientation === 'Vertical' ? 'TargetRect' : 'ActualRect';
+            this.legendCollections.push(new LegendOptions('Actual', fill, shape, this.chart.legendSettings.visible, null, null, false, count++, null));
+        }
+        if (bulletChart.dataSource !== null && bulletChart.targetField !== '') {
+            fill = bulletChart.targetColor || 'black';
+            var shape = bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect';
+            for (var i = 0; i < Object.keys(bulletChart.dataSource).length; i++) {
+                if (isNullOrUndefined(bulletChart.dataSource[i][bulletChart.targetField].length)
+                    || bulletChart.dataSource[i][bulletChart.targetField].length === 1) {
+                    while (i === 0) {
+                        this.legendCollections.push(new LegendOptions('Target', fill, shape, this.chart.legendSettings.visible, null, null, false, count++, null));
+                        break;
+                    }
+                }
+                else {
+                    var targetTypes = bulletChart.targetTypes;
+                    var targetType = [];
+                    var targetTypeLength = targetTypes.length;
+                    while (i === 0) {
+                        for (var i_1 = 0; i_1 < targetTypeLength; i_1++) {
+                            targetType[i_1] = targetTypes[i_1 % targetTypeLength];
+                            targetType[i_1] = (targetType[i_1] === 'Rect') ? bulletChart.orientation === 'Vertical' ?
+                                'ActualRect' : 'TargetRect' : (targetType[i_1]);
+                            targetType[i_1] = (targetType[i_1] === 'Cross') ? 'Multiply' : targetType[i_1];
+                            this.legendCollections.push(new LegendOptions('Target_' + i_1, fill, targetType[i_1], this.chart.legendSettings.visible, null, null, false, count++, null));
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    };
+    /** @private */
+    BulletChartLegend.prototype.getLegendBounds = function (availableSize, bulletLegendBounds, legend) {
+        var extraWidth = 0;
+        var padding = legend.padding;
+        var extraHeight = 0;
+        if (!this.isVertical) {
+            extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
+        }
+        else {
+            extraWidth = !legend.width ? ((availableSize.width / 100) * 5) : 0;
+        }
+        bulletLegendBounds.height += extraHeight;
+        bulletLegendBounds.width += extraWidth;
+        var maximumWidth = 0;
+        var legendRowWidth = 0;
+        var legendRowCount = 0;
+        var legendWidth = 0;
+        var columnHeight = 0;
+        var shapeHeight = legend.shapeHeight;
+        var shapeWidth = legend.shapeWidth;
+        var shapePadding = legend.shapePadding;
+        var legendEventArgs;
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        var render = false;
+        for (var _i = 0, _a = this.legendCollections; _i < _a.length; _i++) {
+            var bulletLegendOption = _a[_i];
+            legendEventArgs = {
+                fill: bulletLegendOption.fill, text: bulletLegendOption.text, shape: bulletLegendOption.shape,
+                name: legendRender, cancel: false
+            };
+            this.chart.trigger(legendRender, legendEventArgs);
+            bulletLegendOption.render = !legendEventArgs.cancel;
+            bulletLegendOption.text = legendEventArgs.text;
+            bulletLegendOption.fill = legendEventArgs.fill;
+            bulletLegendOption.shape = legendEventArgs.shape;
+            bulletLegendOption.textSize = measureText(bulletLegendOption.text, legend.textStyle);
+            if (bulletLegendOption.render && bulletLegendOption.text !== '') {
+                render = true;
+                legendWidth = shapeWidth + shapePadding + bulletLegendOption.textSize.width + padding;
+                legendRowWidth = legendRowWidth + legendWidth;
+                if (bulletLegendBounds.width < (padding + legendRowWidth) || this.isVertical) {
+                    maximumWidth = Math.max(maximumWidth, (legendRowWidth + padding - (this.isVertical ? 0 : legendWidth)));
+                    if (legendRowCount === 0 && (legendWidth !== legendRowWidth)) {
+                        legendRowCount = 1;
+                    }
+                    legendRowWidth = this.isVertical ? 0 : legendWidth;
+                    legendRowCount++;
+                    columnHeight = (legendRowCount * (this.maxItemHeight + padding)) + padding;
+                }
+            }
+        }
+        columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding);
+        this.isPaging = bulletLegendBounds.height < columnHeight;
+        this.totalPages = legendRowCount;
+        if (render) {
+            this.setBounds(Math.max((legendRowWidth + padding), maximumWidth), columnHeight, legend, bulletLegendBounds);
+        }
+        else {
+            this.setBounds(0, 0, legend, bulletLegendBounds);
+        }
+    };
+    /** @private */
+    BulletChartLegend.prototype.getRenderPoint = function (bulletLegendOption, start, textPadding, prevLegend, rect, count, firstLegend) {
+        var previousBound = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
+        var padding = this.legend.padding;
+        if ((previousBound + (bulletLegendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
+            this.isVertical) {
+            bulletLegendOption.location.x = start.x;
+            bulletLegendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
+                prevLegend.location.y + this.maxItemHeight + padding;
+        }
+        else {
+            bulletLegendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
+            bulletLegendOption.location.y = prevLegend.location.y;
+        }
+        var availwidth = (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
+            textPadding - this.legend.shapeWidth / 2);
+        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle);
+    };
+    /**
+     * To show the tooltip for the trimmed text in legend.
+     * @return {void}
+     */
+    BulletChartLegend.prototype.click = function (event) {
+        var symbolTargetId = event.target.id;
+        if (symbolTargetId.indexOf(this.legendID + '_pagedown') > -1) {
+            this.changePage(event, false);
+        }
+        else if (symbolTargetId.indexOf(this.legendID + '_pageup') > -1) {
+            this.changePage(event, true);
+        }
+    };
+    /**
+     * Get module name
+     */
+    BulletChartLegend.prototype.getModuleName = function () {
+        return 'BulletChartLegend';
+    };
+    /**
+     * To destroy the Legend.
+     * @return {void}
+     * @private
+     */
+    BulletChartLegend.prototype.destroy = function (chart) {
+        /**
+         * Destroy method calling here
+         */
+        this.removeEventListener();
+    };
+    return BulletChartLegend;
+}(BaseLegend));
+
 /**
  * Bullet Chart component export methods
  */
 
-var __extends$82 = (undefined && undefined.__extends) || (function () {
+var __extends$84 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -37374,7 +38452,7 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var SmithchartFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(SmithchartFont, _super);
+    __extends$84(SmithchartFont, _super);
     function SmithchartFont() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37399,7 +38477,7 @@ var SmithchartFont = /** @__PURE__ @class */ (function (_super) {
     return SmithchartFont;
 }(ChildProperty));
 var SmithchartMargin = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(SmithchartMargin, _super);
+    __extends$84(SmithchartMargin, _super);
     function SmithchartMargin() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37418,7 +38496,7 @@ var SmithchartMargin = /** @__PURE__ @class */ (function (_super) {
     return SmithchartMargin;
 }(ChildProperty));
 var SmithchartBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(SmithchartBorder, _super);
+    __extends$84(SmithchartBorder, _super);
     function SmithchartBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37461,14 +38539,14 @@ var LabelRegion = /** @__PURE__ @class */ (function () {
     return LabelRegion;
 }());
 var HorizontalLabelCollection = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(HorizontalLabelCollection, _super);
+    __extends$84(HorizontalLabelCollection, _super);
     function HorizontalLabelCollection() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return HorizontalLabelCollection;
 }(LabelCollection));
 var RadialLabelCollections = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(RadialLabelCollections, _super);
+    __extends$84(RadialLabelCollections, _super);
     function RadialLabelCollections() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37543,7 +38621,7 @@ var GridArcPoints = /** @__PURE__ @class */ (function () {
     return GridArcPoints;
 }());
 
-var __extends$81 = (undefined && undefined.__extends) || (function () {
+var __extends$83 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -37687,7 +38765,7 @@ var PathOption$1 = /** @__PURE__ @class */ (function () {
  * @private
  */
 var RectOption$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(RectOption, _super);
+    __extends$83(RectOption, _super);
     function RectOption(id, fill, border, opacity, rect) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.y = rect.y;
@@ -37703,7 +38781,7 @@ var RectOption$1 = /** @__PURE__ @class */ (function (_super) {
  * @private
  */
 var CircleOption$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(CircleOption, _super);
+    __extends$83(CircleOption, _super);
     function CircleOption(id, fill, border, opacity, cx, cy, r, dashArray) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.cy = cy;
@@ -37956,7 +39034,7 @@ function getThemeColor$1(theme) {
     return style;
 }
 
-var __extends$83 = (undefined && undefined.__extends) || (function () {
+var __extends$85 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -37976,7 +39054,7 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var LegendTitle = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(LegendTitle, _super);
+    __extends$85(LegendTitle, _super);
     function LegendTitle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -37998,7 +39076,7 @@ var LegendTitle = /** @__PURE__ @class */ (function (_super) {
     return LegendTitle;
 }(ChildProperty));
 var LegendLocation = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(LegendLocation, _super);
+    __extends$85(LegendLocation, _super);
     function LegendLocation() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38011,7 +39089,7 @@ var LegendLocation = /** @__PURE__ @class */ (function (_super) {
     return LegendLocation;
 }(ChildProperty));
 var LegendItemStyleBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(LegendItemStyleBorder, _super);
+    __extends$85(LegendItemStyleBorder, _super);
     function LegendItemStyleBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38024,7 +39102,7 @@ var LegendItemStyleBorder = /** @__PURE__ @class */ (function (_super) {
     return LegendItemStyleBorder;
 }(ChildProperty));
 var LegendItemStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(LegendItemStyle, _super);
+    __extends$85(LegendItemStyle, _super);
     function LegendItemStyle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38040,7 +39118,7 @@ var LegendItemStyle = /** @__PURE__ @class */ (function (_super) {
     return LegendItemStyle;
 }(ChildProperty));
 var LegendBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(LegendBorder, _super);
+    __extends$85(LegendBorder, _super);
     function LegendBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38053,7 +39131,7 @@ var LegendBorder = /** @__PURE__ @class */ (function (_super) {
     return LegendBorder;
 }(ChildProperty));
 var SmithchartLegendSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(SmithchartLegendSettings, _super);
+    __extends$85(SmithchartLegendSettings, _super);
     function SmithchartLegendSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38111,7 +39189,7 @@ var SmithchartLegendSettings = /** @__PURE__ @class */ (function (_super) {
     return SmithchartLegendSettings;
 }(ChildProperty));
 
-var __extends$84 = (undefined && undefined.__extends) || (function () {
+var __extends$86 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -38134,7 +39212,7 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
  * Configures the major Grid lines in the `axis`.
  */
 var SmithchartMajorGridLines = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartMajorGridLines, _super);
+    __extends$86(SmithchartMajorGridLines, _super);
     function SmithchartMajorGridLines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38159,7 +39237,7 @@ var SmithchartMajorGridLines = /** @__PURE__ @class */ (function (_super) {
  * Configures the major grid lines in the `axis`.
  */
 var SmithchartMinorGridLines = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartMinorGridLines, _super);
+    __extends$86(SmithchartMinorGridLines, _super);
     function SmithchartMinorGridLines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38184,7 +39262,7 @@ var SmithchartMinorGridLines = /** @__PURE__ @class */ (function (_super) {
  * Configures the axis lines in the `axis`.
  */
 var SmithchartAxisLine = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartAxisLine, _super);
+    __extends$86(SmithchartAxisLine, _super);
     function SmithchartAxisLine() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38203,7 +39281,7 @@ var SmithchartAxisLine = /** @__PURE__ @class */ (function (_super) {
     return SmithchartAxisLine;
 }(ChildProperty));
 var SmithchartAxis = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartAxis, _super);
+    __extends$86(SmithchartAxis, _super);
     function SmithchartAxis() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38231,7 +39309,7 @@ var SmithchartAxis = /** @__PURE__ @class */ (function (_super) {
     return SmithchartAxis;
 }(ChildProperty));
 
-var __extends$85 = (undefined && undefined.__extends) || (function () {
+var __extends$87 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -38251,7 +39329,7 @@ var __decorate$19 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var Subtitle = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(Subtitle, _super);
+    __extends$87(Subtitle, _super);
     function Subtitle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38279,7 +39357,7 @@ var Subtitle = /** @__PURE__ @class */ (function (_super) {
     return Subtitle;
 }(ChildProperty));
 var Title = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(Title, _super);
+    __extends$87(Title, _super);
     function Title() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38313,7 +39391,7 @@ var Title = /** @__PURE__ @class */ (function (_super) {
     return Title;
 }(ChildProperty));
 
-var __extends$86 = (undefined && undefined.__extends) || (function () {
+var __extends$88 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -38333,7 +39411,7 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var SeriesTooltipBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SeriesTooltipBorder, _super);
+    __extends$88(SeriesTooltipBorder, _super);
     function SeriesTooltipBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38346,7 +39424,7 @@ var SeriesTooltipBorder = /** @__PURE__ @class */ (function (_super) {
     return SeriesTooltipBorder;
 }(ChildProperty));
 var SeriesTooltip = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SeriesTooltip, _super);
+    __extends$88(SeriesTooltip, _super);
     function SeriesTooltip() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38368,7 +39446,7 @@ var SeriesTooltip = /** @__PURE__ @class */ (function (_super) {
     return SeriesTooltip;
 }(ChildProperty));
 var SeriesMarkerBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SeriesMarkerBorder, _super);
+    __extends$88(SeriesMarkerBorder, _super);
     function SeriesMarkerBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38381,7 +39459,7 @@ var SeriesMarkerBorder = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarkerBorder;
 }(ChildProperty));
 var SeriesMarkerDataLabelBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SeriesMarkerDataLabelBorder, _super);
+    __extends$88(SeriesMarkerDataLabelBorder, _super);
     function SeriesMarkerDataLabelBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38394,7 +39472,7 @@ var SeriesMarkerDataLabelBorder = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarkerDataLabelBorder;
 }(ChildProperty));
 var SeriesMarkerDataLabelConnectorLine = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SeriesMarkerDataLabelConnectorLine, _super);
+    __extends$88(SeriesMarkerDataLabelConnectorLine, _super);
     function SeriesMarkerDataLabelConnectorLine() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38407,7 +39485,7 @@ var SeriesMarkerDataLabelConnectorLine = /** @__PURE__ @class */ (function (_sup
     return SeriesMarkerDataLabelConnectorLine;
 }(ChildProperty));
 var SeriesMarkerDataLabel = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SeriesMarkerDataLabel, _super);
+    __extends$88(SeriesMarkerDataLabel, _super);
     function SeriesMarkerDataLabel() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38435,7 +39513,7 @@ var SeriesMarkerDataLabel = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarkerDataLabel;
 }(ChildProperty));
 var SeriesMarker = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SeriesMarker, _super);
+    __extends$88(SeriesMarker, _super);
     function SeriesMarker() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38469,7 +39547,7 @@ var SeriesMarker = /** @__PURE__ @class */ (function (_super) {
     return SeriesMarker;
 }(ChildProperty));
 var SmithchartSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SmithchartSeries, _super);
+    __extends$88(SmithchartSeries, _super);
     function SmithchartSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -40487,7 +41565,7 @@ var ExportUtils$1 = /** @__PURE__ @class */ (function () {
     return ExportUtils;
 }());
 
-var __extends$80 = (undefined && undefined.__extends) || (function () {
+var __extends$82 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -40518,7 +41596,7 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Smithchart = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(Smithchart, _super);
+    __extends$82(Smithchart, _super);
     /**
      * Constructor for creating the Smithchart widget
      */
@@ -41502,7 +42580,7 @@ var SmithchartLegend = /** @__PURE__ @class */ (function () {
  *
  */
 
-var __extends$88 = (undefined && undefined.__extends) || (function () {
+var __extends$90 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -41528,7 +42606,7 @@ var __decorate$22 = (undefined && undefined.__decorate) || function (decorators,
  * Configures the borders in the Sparkline.
  */
 var SparklineBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SparklineBorder, _super);
+    __extends$90(SparklineBorder, _super);
     function SparklineBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41544,7 +42622,7 @@ var SparklineBorder = /** @__PURE__ @class */ (function (_super) {
  * Configures the fonts in sparklines.
  */
 var SparklineFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SparklineFont, _super);
+    __extends$90(SparklineFont, _super);
     function SparklineFont() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41572,7 +42650,7 @@ var SparklineFont = /** @__PURE__ @class */ (function (_super) {
  * To configure the tracker line settings.
  */
 var TrackLineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(TrackLineSettings, _super);
+    __extends$90(TrackLineSettings, _super);
     function TrackLineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41591,7 +42669,7 @@ var TrackLineSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the tooltip settings for sparkline.
  */
 var SparklineTooltipSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SparklineTooltipSettings, _super);
+    __extends$90(SparklineTooltipSettings, _super);
     function SparklineTooltipSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41622,7 +42700,7 @@ var SparklineTooltipSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline container area customization
  */
 var ContainerArea = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(ContainerArea, _super);
+    __extends$90(ContainerArea, _super);
     function ContainerArea() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41638,7 +42716,7 @@ var ContainerArea = /** @__PURE__ @class */ (function (_super) {
  * To configure axis line settings
  */
 var LineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(LineSettings, _super);
+    __extends$90(LineSettings, _super);
     function LineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41663,7 +42741,7 @@ var LineSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline rangeband
  */
 var RangeBandSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(RangeBandSettings, _super);
+    __extends$90(RangeBandSettings, _super);
     function RangeBandSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41685,7 +42763,7 @@ var RangeBandSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline axis
  */
 var AxisSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(AxisSettings, _super);
+    __extends$90(AxisSettings, _super);
     function AxisSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41713,7 +42791,7 @@ var AxisSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline padding.
  */
 var Padding = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(Padding, _super);
+    __extends$90(Padding, _super);
     function Padding() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41735,7 +42813,7 @@ var Padding = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline marker options.
  */
 var SparklineMarkerSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SparklineMarkerSettings, _super);
+    __extends$90(SparklineMarkerSettings, _super);
     function SparklineMarkerSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41760,7 +42838,7 @@ var SparklineMarkerSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the datalabel offset
  */
 var LabelOffset = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(LabelOffset, _super);
+    __extends$90(LabelOffset, _super);
     function LabelOffset() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41776,7 +42854,7 @@ var LabelOffset = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline dataLabel options.
  */
 var SparklineDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$88(SparklineDataLabelSettings, _super);
+    __extends$90(SparklineDataLabelSettings, _super);
     function SparklineDataLabelSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -41807,7 +42885,7 @@ var SparklineDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
     return SparklineDataLabelSettings;
 }(ChildProperty));
 
-var __extends$89 = (undefined && undefined.__extends) || (function () {
+var __extends$91 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -41953,7 +43031,7 @@ var PathOption$2 = /** @__PURE__ @class */ (function () {
  * @private
  */
 var RectOption$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$89(RectOption, _super);
+    __extends$91(RectOption, _super);
     function RectOption(id, fill, border, opacity, rect, tl, tr, bl, br) {
         if (tl === void 0) { tl = 0; }
         if (tr === void 0) { tr = 0; }
@@ -41974,7 +43052,7 @@ var RectOption$2 = /** @__PURE__ @class */ (function (_super) {
  * @private
  */
 var CircleOption$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$89(CircleOption, _super);
+    __extends$91(CircleOption, _super);
     function CircleOption(id, fill, border, opacity, cx, cy, r, dashArray) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.cy = cy;
@@ -43084,7 +44162,7 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
     return SparklineRenderer;
 }());
 
-var __extends$87 = (undefined && undefined.__extends) || (function () {
+var __extends$89 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -43115,7 +44193,7 @@ var __decorate$21 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Sparkline = /** @__PURE__ @class */ (function (_super) {
-    __extends$87(Sparkline, _super);
+    __extends$89(Sparkline, _super);
     // Sparkline rendering starts from here.
     /**
      * Constructor for creating the Sparkline widget
@@ -43896,5 +44974,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, onZooming, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, barRender, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

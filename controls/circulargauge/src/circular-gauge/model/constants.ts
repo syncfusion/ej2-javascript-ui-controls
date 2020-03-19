@@ -49,3 +49,21 @@ export const resized : string = 'resized';
 
 /** @private */
 export const beforePrint: string = 'beforePrint';
+
+/** @private */
+export const pointerStart : string = 'pointerStart';
+
+/** @private */
+export const pointerMove : string = 'pointerMove';
+
+/** @private */
+export const pointerEnd : string = 'pointerEnd';
+
+/** @private */
+export const rangeStart : string = 'rangeStart';
+
+/** @private */
+export const rangeMove : string = 'rangeMove';
+
+/** @private */
+export const rangeEnd : string = 'rangeEnd';

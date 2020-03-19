@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration } from './enum';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, ValidationType, ValidationOperator } from './enum';
 
 /**
  * Interface for a class CellStyle
@@ -66,6 +66,36 @@ export interface CellStyleModel {
      */
     textDecoration?: TextDecoration;
 
+    /**
+     * Specifies border of the cell.
+     * @default ''
+     */
+    border?: string;
+
+    /**
+     * Specifies top border of the cell.
+     * @default ''
+     */
+    borderTop?: string;
+
+    /**
+     * Specifies bottom border of the cell.
+     * @default ''
+     */
+    borderBottom?: string;
+
+    /**
+     * Specifies left border of the cell.
+     * @default ''
+     */
+    borderLeft?: string;
+
+    /**
+     * Specifies right border of the cell.
+     * @default ''
+     */
+    borderRight?: string;
+
 }
 
 /**
@@ -100,6 +130,43 @@ export interface DefineNameModel {
 }
 
 /**
+ * Interface for a class ProtectSettings
+ */
+export interface ProtectSettingsModel {
+
+    /**
+     * specifies to allow selection in spreadsheet.
+     * @default false
+     */
+    selectCells?: boolean;
+
+    /**
+     * specifies to allow formating in cells.
+     * @default false
+     */
+    formatCells?: boolean;
+
+    /**
+     * specifies to allow format rows in spreadsheet.
+     * @default false
+     */
+    formatRows?: boolean;
+
+    /**
+     * Specifies to allow format columns in spreadsheet.
+     * @default false
+     */
+    formatColumns?: boolean;
+
+    /**
+     * Specifies to allow insert Hyperlink in Spreadsheet.
+     * @default false
+     */
+    insertLink?: boolean;
+
+}
+
+/**
  * Interface for a class Hyperlink
  */
 export interface HyperlinkModel {
@@ -109,5 +176,48 @@ export interface HyperlinkModel {
      * @default ''
      */
     address?: string;
+
+}
+
+/**
+ * Interface for a class Validation
+ */
+export interface ValidationModel {
+
+    /**
+     * Specifies Validation Type.
+     * @default 'WholeNumber'
+     */
+    type?: ValidationType;
+
+    /**
+     * Specifies Validation Operator.
+     * @default 'Between'
+     */
+    operator?: ValidationOperator;
+
+    /**
+     * Specifies Validation Minimum Value.
+     * @default ''
+     */
+    value1?: string;
+
+    /**
+     * Specifies Validation Maximum Value.
+     * @default ''
+     */
+    value2?: string;
+
+    /**
+     * Specifies IgnoreBlank option in Data Validation.
+     * @default true
+     */
+    ignoreBlank?: boolean;
+
+    /**
+     * Specifies InCellDropDown option in Data Validation.
+     * @default true
+     */
+    inCellDropDown?: boolean;
 
 }

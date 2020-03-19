@@ -58,7 +58,8 @@
       margin-right: 10px;
     }
 
-    .e-format-color-picker {
+    .e-format-font-color-picker {
+      margin-left: 0;
       margin-right: 18px;
     }
 
@@ -184,6 +185,11 @@
     }
 
     &.e-rtl {
+      .e-format-font-color-picker {
+        margin-left: 18px;
+        margin-right: 0;
+      }
+
       .e-format-condition-button {
         float: right;
 
@@ -242,7 +248,8 @@
       padding-right: 20px;
     }
 
-    .e-format-color-picker {
+    .e-format-font-color-picker {
+      margin-left: 0;
       margin-right: 20px;
     }
 
@@ -268,16 +275,20 @@
         padding-top: 16px;
       }
     }
+
+    &.e-rtl {
+      .e-format-font-color-picker {
+        margin-left: 20px;
+        margin-right: 0;
+      }
+    }
   }
 
   #{&}.e-pivot-calc-dialog-div {
-    min-width: 290px;
-
     // sass-lint:disable-all
-    &.e-dialog {
-      max-height: 500px !important;
-    }
+    max-height: 550px !important;
     // sass-lint:enable-all
+    min-width: 290px;
 
     .e-dlg-header-content,
     .e-footer-content {
@@ -298,7 +309,7 @@
       font-size: $field-list-header-font-size;
       margin-top: 15px;
       overflow: hidden;
-      padding: $pivot-calculated-header-padding;
+      padding: $pivot-calculated-header-padding 0;
       padding-bottom: 0;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -660,6 +671,9 @@
   .e-bigger#{&} .e-pivot-calc-dialog-div,
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
+    // sass-lint:disable-all
+    max-height: 580px !important;
+    // sass-lint:enable-all
     min-width: 310px;
 
     .e-pivot-all-field-title,
@@ -669,7 +683,7 @@
     .e-olap-format-title,
     .e-olap-member-title {
       font-size: $field-list-bigger-header-font-size;
-      padding: $pivot-calculated-bigger-header-padding;
+      padding: $pivot-calculated-bigger-header-padding 0;
       padding-bottom: 0;
     }
 
@@ -694,6 +708,7 @@
 
     // sass-lint:disable-all
     &.e-olap-calc-dialog-div {
+      max-height: 700px !important;
       min-width: 580px;
 
       .e-pivot-calc-outer-div {
@@ -777,6 +792,7 @@
 
         .e-editor-label-wrapper {
           background-color: $field-list-editor-label-fill;
+          opacity: $field-list-editor-label-excel-opacity;
           padding: $field-list-editor-label-padding-size;
 
           .e-editor-label {
@@ -837,7 +853,60 @@
 
         .e-member-editor-wrapper {
           .e-editor-search-wrapper {
+            display: flex;
             padding: 0 $field-list-editor-search-padding-size 10px;
+
+            .e-filter-sort {
+              box-shadow: none;
+              margin-left: $field-list-sort-wrapper-padding-size;
+
+              // sass-lint:disable-all
+              .e-member-sort {
+                @if ($field-list-skin == 'bootstrap4') {
+                  background-color: $content-bg;
+                  border-color: $gray-400;
+                  color:  $gray-700;
+                }
+
+                &:hover {
+                  @if ($field-list-skin == 'bootstrap4') {
+                    background-color: #6c757d;
+                    border-color: #6c757d;
+                    color: #fff;
+                  }
+                }
+
+                &.e-active {
+                  @if ($field-list-skin == 'bootstrap4') {
+                    background-color: $field-list-sort-select-background-color;
+                    border-color: $field-list-sort-select-border-color;
+                    color: $field-list-sort-select-color;
+                    outline: none;
+                  }
+                }
+
+                .e-sort-ascend-icon,
+                .e-sort-descend-icon {
+                  font-size: 16px;
+                }
+
+                &:focus {
+                  @if ($field-list-skin == 'bootstrap4') {
+                    background-color: #6c757d;
+                    border-color: #6c757d;
+                    color: #fff;
+                  }
+
+                  &.e-active {
+                    background-color: $field-list-sort-select-background-color;
+                    border-color: $field-list-sort-select-border-color;
+                    color: $field-list-sort-select-color;
+                    outline: none;
+                  }
+                }
+              }
+              // sass-lint:enable-all
+            }
           }
 
           .e-member-prompt {
@@ -995,15 +1064,21 @@
       }
 
       &.e-excel-filter {
-        min-width: 280px;
-
         .e-editor-label-wrapper {
+          opacity: $field-list-editor-label-excel-opacity;
           padding: $field-list-editor-label-excel-padding-size;
         }
       }
 
       &.e-rtl {
         .e-member-editor-wrapper {
+          .e-editor-search-wrapper {
+            .e-filter-sort {
+              margin-left: 0;
+              margin-right: $field-list-sort-wrapper-padding-size;
+            }
+          }
+
           ul {
             margin-left: 0;
             margin-right: $field-list-member-filter-list-padding-size;
@@ -1050,6 +1125,13 @@
         // sass-lint:disable-all
         &.e-rtl {
           .e-member-editor-wrapper {
+            .e-editor-search-wrapper {
+              .e-filter-sort {
+                margin-left: 0;
+                margin-right: $field-list-sort-wrapper-padding-size;
+              }
+            }
+
             ul {
               margin-right: 0;
 
@@ -1076,6 +1158,7 @@
     }
 
     .e-member-editor-dialog {
+      min-width: 320px;
       max-width: 400px;
     }
 
@@ -1284,6 +1367,17 @@
 
     // sass-lint:disable-all
     .e-member-editor-dialog {
+      .e-editor-search-wrapper {
+        .e-filter-sort {
+          .e-member-sort {
+            .e-sort-ascend-icon,
+            .e-sort-descend-icon {
+              font-size: 18px;
+            }
+          }
+        }
+      }
+
       .e-member-editor-wrapper ul {
         @if ($field-list-skin == 'bootstrap4') {
           margin-left: -30px;

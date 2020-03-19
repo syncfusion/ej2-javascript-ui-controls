@@ -1465,6 +1465,7 @@ describe("Toolbar - Actions Module", () => {
             document.getElementById('custom_tbar').click();
             setTimeout(() => {
                 expect(clickEventSpy).toHaveBeenCalled();
+                expect(rteObj.element.querySelector('[title="Undo"]').classList.contains('e-overlay')).toBe(true);
                 done();
             }, 500);
         });
@@ -1491,6 +1492,48 @@ describe("Toolbar - Actions Module", () => {
             done();
         });
     });
+
+    describe("Check undo in custom toolbar callback function", () => {
+        let rteObj: any;
+        let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
+        let element1: HTMLElement = createElement('div', { id: getUniqueID('rte-test'),  });
+
+        beforeEach(() => {
+            document.body.appendChild(container);
+            container.appendChild(element1);
+            rteObj = new RichTextEditor({
+                toolbarSettings: { 
+                    enableFloating: true,
+                    items: ['Bold', 'Italic', 'Underline', '|', 'Undo','Redo',
+                        {
+                            tooltipText: 'Insert Symbol',
+                            template: '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div></button>',
+                            click: function() {
+                                let imgElement = document.createElement("img"); 
+                                imgElement.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"; 
+                                rteObj.executeCommand("insertImage", imgElement);
+                            },
+                            undo: true
+                        }, '|', 'FullScreen']
+                }
+            });
+            rteObj.appendTo(element1);
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+            detach(container);
+        });
+
+        it("Testing custom toolbar event", (done) => {
+            document.getElementById('custom_tbar').click();
+            setTimeout(() => {
+                expect(rteObj.element.querySelector('[title="Undo"]').classList.contains('e-overlay')).toBe(false);
+                done();
+            }, 500);
+        });
+    });
+
     describe("Check toolbar click event in readyOnly", () => {
         let rteObj: any;
         let clickEventSpy: jasmine.Spy = jasmine.createSpy('toolbarClick');

@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { Dialog as DialogComponent, DialogModel } from '@syncfusion/ej2-popups';
-import { extend, remove, L10n } from '@syncfusion/ej2-base';
+import { extend, remove, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { locale } from '../common/index';
 
 /**
@@ -21,8 +21,9 @@ export class Dialog {
     /**
      * To show dialog.
      */
-    public show(dialogModel: DialogModel): void {
+    public show(dialogModel: DialogModel, cancelBtn?: boolean): void {
         let btnContent: string;
+        cancelBtn = isNullOrUndefined(cancelBtn) ? true : false;
         let closeHandler: Function = dialogModel.close || null;
         let model: DialogModel = {
             header: 'Spreadsheet',
@@ -39,23 +40,28 @@ export class Dialog {
             }
         };
         extend(model, dialogModel);
-        btnContent = (this.parent.serviceLocator.getService(locale) as L10n).getConstant(model.buttons.length ? 'Cancel' : 'Ok');
-        model.buttons.push({
-            buttonModel: { content: btnContent, isPrimary: model.buttons.length === 0 },
-            click: this.hide.bind(this),
-        });
+        if (cancelBtn) {
+            btnContent = (this.parent.serviceLocator.getService(locale) as L10n).getConstant(model.buttons.length ? 'Cancel' : 'Ok');
+            model.buttons.push({
+                buttonModel: { content: btnContent, isPrimary: model.buttons.length === 0 },
+                click: this.hide.bind(this),
+            });
+        }
         let div: HTMLElement = this.parent.createElement('div');
         document.body.appendChild(div);
         this.dialogInstance = new DialogComponent(model);
         this.dialogInstance.createElement = this.parent.createElement;
         this.dialogInstance.appendTo(div);
+        this.dialogInstance.refreshPosition();
     }
 
     /**
      * To hide dialog.
      */
     public hide(): void {
-        this.dialogInstance.hide();
+        if (this.dialogInstance) {
+            this.dialogInstance.hide();
+        }
     }
 
     /**

@@ -144,6 +144,11 @@ export interface RangeNavigatorModel extends ComponentModel{
     allowSnapping?: boolean;
 
     /**
+     * Allow the data to be selected for that particular interval while clicking the particular label
+     */
+    allowIntervalData?: boolean;
+
+    /**
      * Specifies whether a grouping separator should be used for a number.
      * @default false
      */
@@ -241,7 +246,6 @@ export interface RangeNavigatorModel extends ComponentModel{
     /**
      * Triggers before the range navigator rendering
      * @event
-     * @deprecated
      */
     load?: EmitType<IRangeLoadedEventArgs>;
 

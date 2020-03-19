@@ -817,6 +817,11 @@ export interface ZoomSettingsModel {
      */
     shouldZoomInitially?: boolean;
 
+    /**
+     * Zoom map based on marker positions.
+     */
+    resetToInitial?: boolean;
+
 }
 
 /**
@@ -1290,6 +1295,16 @@ export interface MarkerBaseModel {
      * To configure the highlight settings of the maps.
      */
     highlightSettings?: HighlightSettingsModel;
+
+    /**
+     * Options for customizing the enable Complex property
+     */
+    latitudeValuePath?: string;
+
+    /**
+     * Options for customizing the enable Complex property
+     */
+    longitudeValuePath?: string;
 
 }
 

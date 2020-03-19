@@ -1162,74 +1162,80 @@ var Workbook = /** @__PURE__ @class */ (function () {
     };
     Workbook.prototype.processCellValue = function (value, cell) {
         var cellValue = value;
-        var processedVal = '';
-        var startindex = value.indexOf('<', 0);
-        if (startindex >= 0) {
-            if (startindex !== 0) {
-                processedVal += '<r><t xml:space="preserve">' + value.substring(0, startindex) + '</t></r>';
-            }
+        if (value.indexOf("<font") !== -1 || value.indexOf("<a") !== -1 || value.indexOf("<b>") !== -1 ||
+            value.indexOf("<i>") !== -1 || value.indexOf("<u>") !== -1) {
+            var processedVal = '';
+            var startindex = value.indexOf('<', 0);
             var endIndex = value.indexOf('>', startindex + 1);
-            while (startindex >= 0 && endIndex >= 0) {
-                endIndex = value.indexOf('>', startindex + 1);
-                if (endIndex >= 0) {
-                    var subString = value.substring(startindex + 1, endIndex);
-                    startindex = value.indexOf('<', endIndex + 1);
-                    if (startindex < 0) {
-                        startindex = cellValue.length;
-                    }
-                    var text = cellValue.substring(endIndex + 1, startindex);
-                    if (text.length !== 0) {
-                        var subSplit = subString.split(' ');
-                        if (subSplit.length > 0) {
-                            processedVal += '<r><rPr>';
+            if (startindex >= 0 && endIndex >= 0) {
+                if (startindex !== 0) {
+                    processedVal += '<r><t xml:space="preserve">' + value.substring(0, startindex) + '</t></r>';
+                }
+                while (startindex >= 0 && endIndex >= 0) {
+                    endIndex = value.indexOf('>', startindex + 1);
+                    if (endIndex >= 0) {
+                        var subString = value.substring(startindex + 1, endIndex);
+                        startindex = value.indexOf('<', endIndex + 1);
+                        if (startindex < 0) {
+                            startindex = cellValue.length;
                         }
-                        if (subSplit.length > 1) {
-                            for (var _i = 0, subSplit_1 = subSplit; _i < subSplit_1.length; _i++) {
-                                var element = subSplit_1[_i];
-                                var start = element.trim().substring(0, 5);
-                                switch (start) {
-                                    case 'size=':
-                                        processedVal += '<sz val="' + element.substring(6, element.length - 1) + '"/>';
+                        var text = cellValue.substring(endIndex + 1, startindex);
+                        if (text.length !== 0) {
+                            var subSplit = subString.split(' ');
+                            if (subSplit.length > 0) {
+                                processedVal += '<r><rPr>';
+                            }
+                            if (subSplit.length > 1) {
+                                for (var _i = 0, subSplit_1 = subSplit; _i < subSplit_1.length; _i++) {
+                                    var element = subSplit_1[_i];
+                                    var start = element.trim().substring(0, 5);
+                                    switch (start) {
+                                        case 'size=':
+                                            processedVal += '<sz val="' + element.substring(6, element.length - 1) + '"/>';
+                                            break;
+                                        case 'face=':
+                                            processedVal += '<rFont val="' + element.substring(6, element.length - 1) + '"/>';
+                                            break;
+                                        case 'color':
+                                            processedVal += '<color rgb="' + this.processColor(element.substring(7, element.length - 1)) + '"/>';
+                                            break;
+                                        case 'href=':
+                                            var hyperLink = new HyperLink();
+                                            hyperLink.target = element.substring(6, element.length - 1).trim();
+                                            hyperLink.ref = cell.refName;
+                                            hyperLink.rId = (this.mHyperLinks.length + 1);
+                                            this.mHyperLinks.push(hyperLink);
+                                            processedVal += '<color rgb="FF0000FF"/><u/><b/>';
+                                            break;
+                                    }
+                                }
+                            }
+                            else if (subSplit.length === 1) {
+                                var style = subSplit[0].trim();
+                                switch (style) {
+                                    case 'b':
+                                        processedVal += '<b/>';
                                         break;
-                                    case 'face=':
-                                        processedVal += '<rFont val="' + element.substring(6, element.length - 1) + '"/>';
+                                    case 'i':
+                                        processedVal += '<i/>';
                                         break;
-                                    case 'color':
-                                        processedVal += '<color rgb="' + this.processColor(element.substring(7, element.length - 1)) + '"/>';
-                                        break;
-                                    case 'href=':
-                                        var hyperLink = new HyperLink();
-                                        hyperLink.target = element.substring(6, element.length - 1).trim();
-                                        hyperLink.ref = cell.refName;
-                                        hyperLink.rId = (this.mHyperLinks.length + 1);
-                                        this.mHyperLinks.push(hyperLink);
-                                        processedVal += '<color rgb="FF0000FF"/><u/><b/>';
+                                    case 'u':
+                                        processedVal += '<u/>';
                                         break;
                                 }
                             }
+                            processedVal += '</rPr><t xml:space="preserve">' + text + '</t></r>';
                         }
-                        else if (subSplit.length === 1) {
-                            var style = subSplit[0].trim();
-                            switch (style) {
-                                case 'b':
-                                    processedVal += '<b/>';
-                                    break;
-                                case 'i':
-                                    processedVal += '<i/>';
-                                    break;
-                                case 'u':
-                                    processedVal += '<u/>';
-                                    break;
-                            }
-                        }
-                        processedVal += '</rPr><t xml:space="preserve">' + text + '</t></r>';
                     }
                 }
+                if (processedVal === '') {
+                    return cellValue;
+                }
+                return processedVal;
             }
-            if (processedVal === '') {
+            else {
                 return cellValue;
             }
-            return processedVal;
         }
         else {
             return cellValue;

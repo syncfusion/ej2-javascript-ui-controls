@@ -80,7 +80,7 @@ export function updateBlazorTemplate(
     isEmpty?: boolean, callBack?: Function): void {
     let blazor: string = 'Blazor';
     if (isBlazor()) {
-        let ejsIntrop: string = 'ejsInterop';
+        let ejsIntrop: string = 'sfBlazor';
         window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
         if (isEmpty !== false) {
             blazorTemplates[templateId] = [];

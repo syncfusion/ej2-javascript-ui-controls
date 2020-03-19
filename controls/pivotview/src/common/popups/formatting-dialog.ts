@@ -2,11 +2,12 @@ import { PivotView } from '../../pivotview/base/pivotview';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { createElement, remove, extend } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
-import { IAction } from '../base/interface';
+import { IAction, NumberFormattingEventArgs } from '../base/interface';
 import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { FormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
-import { IFieldListOptions } from '../../base';
+import { IFieldListOptions } from '../../base/engine';
+import { PivotUtil } from '../../base/util';
 
 /**
  * Module to render NumberFormatting Dialog
@@ -311,15 +312,29 @@ export class NumberFormatting implements IAction {
         } else {
             this.insertFormat(this.valuesDropDown.value.toString(), text);
         }
-        try {
-            this.parent.updateDataSource(false);
-            this.dialog.close();
-        } catch (exception) {
-            this.parent.setProperties({ dataSourceSettings: { formatSettings: format } }, true);
-            this.parent.pivotCommon.errorDialog.createErrorDialog(
-                this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormat'), this.dialog.element);
-            this.parent.hideWaitingPopup();
-        }
+        let eventArgs: NumberFormattingEventArgs = {
+            formatSettings: PivotUtil.cloneFormatSettings(this.parent.dataSourceSettings.formatSettings),
+            formatName: this.valuesDropDown.value.toString(),
+            cancel: false
+        };
+        this.parent.trigger(events.numberFormatting, eventArgs, (observedArgs: NumberFormattingEventArgs) => {
+            if (!observedArgs.cancel) {
+                this.parent.setProperties({ dataSourceSettings: { formatSettings: observedArgs.formatSettings } }, true);
+                try {
+                    this.parent.updateDataSource(false);
+                    this.dialog.close();
+                } catch (exception) {
+                    this.parent.setProperties({ dataSourceSettings: { formatSettings: format } }, true);
+                    /* tslint:disable-next-line:max-line-length */
+                    this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormat'), this.dialog.element);
+                    this.parent.hideWaitingPopup();
+                }
+            } else {
+                this.dialog.close();
+                this.parent.setProperties({ dataSourceSettings: { formatSettings: format } }, true);
+            }
+        });
+
     }
 
     private insertFormat(fieldName: string, text: string): void {

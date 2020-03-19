@@ -4,7 +4,7 @@ import { Chart } from '../chart';
 import { Border } from '../../common/model/base';
 import { MarkerSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
-import { Browser, extend, remove } from '@syncfusion/ej2-base';
+import { Browser, extend, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ChartData } from '../../chart/utils/get-data';
 import { withInBounds, PointData, stopTimer } from '../../common/utils/helper';
 import { ColorValue, colorNameToHex, convertHexToColor } from '../../common/utils/helper';
@@ -155,6 +155,14 @@ export class MarkerExplode extends ChartData {
         let seriesMarker: MarkerSettingsModel = series.marker;
         let shape: ChartShape = marker.shape || seriesMarker.shape;
         let element: Element = series.symbolElement || series.seriesElement;
+        let className: string;
+        if (this.chart.highlightModule && this.chart.highlightMode !== 'None') {
+            className = this.chart.highlightModule.generateStyle(series);
+        }
+        if (this.chart.selectionModule && this.chart.selectionMode !== 'None') {
+            className = this.chart.selectionModule.generateStyle(series);
+        }
+
         let symbolId: string = this.elementId + '_Series_' + series.index + '_Point_' + point.index + '_Trackball' +
             (index ? index : '');
         let size: Size = new Size(
@@ -182,6 +190,13 @@ export class MarkerExplode extends ChartData {
             // incident: 252450 point click selection not working while maker explode
             //symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
+            let selectionId: string = element.id.indexOf('Symbol') !== -1 ? '_Symbol' : '';
+            let seletionElem: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
+                point.index + selectionId);
+            if (className !== '' && !isNullOrUndefined(className) && !isNullOrUndefined(seletionElem) &&
+                seletionElem.hasAttribute('class') && (className === seletionElem.getAttribute('class'))) {
+                symbol.classList.add(className);
+            }
             element.appendChild(symbol);
         }
     }

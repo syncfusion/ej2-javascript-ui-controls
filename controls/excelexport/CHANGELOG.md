@@ -2,21 +2,17 @@
 
 ## [Unreleased]
 
-## 17.4.55 (2020-03-10)
-
-### Excel Export
-
-#### Bug Fixes
-
-- Date issue is fixed for CSV export.
-
-## 17.4.39 (2019-12-17)
+## 18.1.36-beta (2020-03-19)
 
 ### Excel Export
 
 #### Bug Fixes
 
 - Internet Explorer version 11 Grid to Excel export issue is fixed.
+
+- Date issue is fixed for CSV export.
+
+- File corruption issue is fixed in Grid to Excel export.
 
 ## 17.2.48-beta (2019-08-28)
 

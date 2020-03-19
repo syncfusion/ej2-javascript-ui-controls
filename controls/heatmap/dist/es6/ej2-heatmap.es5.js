@@ -1,6 +1,7 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, Touch, createElement, extend, isBlazor, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, Touch, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
 import { CanvasRenderer, SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Specifies HeatMaps Themes
@@ -449,6 +450,21 @@ var LegendColorCollection = /** @__PURE__ @class */ (function () {
         this.isHidden = isHidden;
     }
     return LegendColorCollection;
+}());
+/**
+ * class used to maintain xAxis labels details for multipleRow label intersect action.
+ */
+var MultipleRow = /** @__PURE__ @class */ (function () {
+    function MultipleRow(start, end, index, label, row) {
+        this.index = 1;
+        this.row = 1;
+        this.start = start;
+        this.end = end;
+        this.index = index;
+        this.label = label;
+        this.row = row;
+    }
+    return MultipleRow;
 }());
 
 var __extends$2 = (undefined && undefined.__extends) || (function () {
@@ -1730,6 +1746,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
     function Axis() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
+        _this.multipleRow = [];
+        /** @private */
         _this.rect = new Rect(undefined, undefined, 0, 0);
         /** @private */
         _this.nearSizes = [];
@@ -1739,6 +1757,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
         _this.maxLabelSize = new Size(0, 0);
         /** @private */
         _this.titleSize = new Size(0, 0);
+        /** @private */
+        _this.multilevel = [];
         /** @private */
         _this.axisLabels = [];
         /** @private */
@@ -1885,15 +1905,19 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
         var labelSize = new Size(0, 0);
         var labels = this.axisLabels;
         var padding = (axis.border.width > 0 || axis.multiLevelLabels.length > 0) ? 10 : 0;
+        var count = 1;
+        var row = 1;
+        var interval = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+            heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
         axis.angle = axis.labelRotation;
         axis.isIntersect = false;
         if (axis.orientation === 'Horizontal' && (axis.labelIntersectAction === 'Rotate45' ||
-            (axis.labelRotation % 180 === 0 && axis.labelIntersectAction === 'Trim'))) {
-            var interval = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
-                heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
+            (axis.labelRotation % 180 === 0 && axis.labelIntersectAction === 'Trim' || axis.enableTrim)) ||
+            axis.labelIntersectAction === 'MultipleRows') {
             var startX = heatmap.initialClipRect.x + ((!axis.isInversed) ? 0 : heatmap.initialClipRect.width);
             var previousEnd = void 0;
             var previousStart = void 0;
+            this.clearMultipleRow();
             for (var i = 0, len = labels.length; i < len; i++) {
                 var label = labels[i];
                 var elementSize = measureText(label, axis.textStyle);
@@ -1907,8 +1931,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
                     if (isNullOrUndefined(previousEnd)) {
                         previousEnd = endPoint;
                     }
-                    else if ((startPoint < previousEnd)) {
-                        if (axis.labelIntersectAction === 'Rotate45') {
+                    else if ((startPoint < previousEnd) && axis.labelIntersectAction !== 'MultipleRows') {
+                        if (axis.labelIntersectAction === 'Rotate45' && !axis.enableTrim) {
                             axis.angle = 45;
                         }
                         else {
@@ -1922,8 +1946,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
                     if (isNullOrUndefined(previousStart)) {
                         previousStart = startPoint;
                     }
-                    else if ((previousStart < endPoint)) {
-                        if (axis.labelIntersectAction === 'Rotate45') {
+                    else if ((previousStart < endPoint && axis.labelIntersectAction !== 'MultipleRows')) {
+                        if (axis.labelIntersectAction === 'Rotate45' && !axis.enableTrim) {
                             axis.angle = 45;
                         }
                         else {
@@ -1934,13 +1958,63 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
                     previousStart = startPoint;
                 }
                 startX += axis.isInversed ? -axisInterval : axisInterval;
+                if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && axis.labelRotation === 0) {
+                    this.multipleRow.push(new MultipleRow(startPoint, endPoint, count, label, row));
+                }
+            }
+            if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && axis.isInversed) {
+                this.multipleRow = this.multipleRow.reverse();
             }
         }
         for (var i = 0; i < labels.length; i++) {
+            var multipleRow = this.multipleRow;
+            var label = void 0;
+            if (axis.enableTrim) {
+                label = textTrim(axis.maxLabelLength, labels[i], axis.textStyle);
+            }
+            else {
+                label = labels[i];
+            }
             var size = (axis.angle % 180 === 0) ?
-                measureText(labels[i], axis.textStyle) : rotateTextSize(axis.textStyle, labels[i], axis.angle);
+                measureText(label, axis.textStyle) : rotateTextSize(axis.textStyle, labels[i], axis.angle);
             labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
-            labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
+            if (axis.labelIntersectAction === 'MultipleRows' && axis.orientation === 'Horizontal' && i > 0 && axis.labelRotation === 0) {
+                if (multipleRow[i].end >= heatmap.initialClipRect.width && i < labels.length - 1) {
+                    multipleRow[i].row = multipleRow[i].row + 1;
+                }
+                for (var k = 1; k <= axis.multilevel.length; k++) {
+                    if (multipleRow[i].start < multipleRow[i - 1].end) {
+                        if (axis.multilevel[k] < multipleRow[i].start) {
+                            count = k;
+                            break;
+                        }
+                        else if (k === axis.multilevel.length - 1) {
+                            count = axis.multilevel.length;
+                            break;
+                        }
+                    }
+                    else if (size.width < interval) {
+                        for (var j = 1; j <= axis.multilevel.length; j++) {
+                            if (axis.multilevel[j] < multipleRow[i].start) {
+                                count = j;
+                                multipleRow[j].row = count;
+                                break;
+                            }
+                        }
+                    }
+                }
+                labelSize.height = (labelSize.height > ((size.height * count) + (((size.height * 0.5) / 2) * (count - 1)))) ?
+                    labelSize.height : ((size.height * count) + (((size.height * 0.5) / 2) * count));
+                this.multipleRow[i].index = count;
+                axis.multilevel[count] = multipleRow[i].end;
+            }
+            else {
+                if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && i === 0 &&
+                    axis.labelRotation === 0) {
+                    axis.multilevel[1] = multipleRow[i].end;
+                }
+                labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
+            }
         }
         if (axis.opposedPosition) {
             this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
@@ -2215,6 +2289,14 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
         this.dateTimeAxisLabelInterval = [];
         this.labelValue = [];
     };
+    /**
+     * Clear the axis label collection
+     * @private
+     */
+    Axis.prototype.clearMultipleRow = function () {
+        this.multipleRow = [];
+        this.multilevel = [];
+    };
     __decorate$3([
         Complex({ text: '', textStyle: Theme.axisTitleFont }, Title)
     ], Axis.prototype, "title", void 0);
@@ -2260,6 +2342,12 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
     __decorate$3([
         Property('Trim')
     ], Axis.prototype, "labelIntersectAction", void 0);
+    __decorate$3([
+        Property(false)
+    ], Axis.prototype, "enableTrim", void 0);
+    __decorate$3([
+        Property(35)
+    ], Axis.prototype, "maxLabelLength", void 0);
     __decorate$3([
         Complex({ color: '#b5b5b5', width: 0, type: 'Rectangle' }, AxisLabelBorder)
     ], Axis.prototype, "border", void 0);
@@ -2474,6 +2562,7 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
             labels = axis.tooltipLabels;
             axisInterval = temp;
         }
+        var y;
         var padding = 10;
         var lableStrtX = rect.x + (!axis.isInversed ? 0 : rect.width);
         var labelPadding;
@@ -2485,16 +2574,18 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
             labelElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabels' });
             borderElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabelBorder' });
         }
+        if (axis.isInversed && axis.labelIntersectAction === 'MultipleRows') {
+            axis.multipleRow.reverse();
+        }
         for (var i = 0, len = labels.length; i < len; i++) {
             var lableRect = new Rect(lableStrtX, rect.y, interval, rect.height);
             var label = (axis.labelIntersectAction === 'Trim' && axis.isIntersect) ? axis.valueType !== 'DateTime' ||
                 axis.showLabelOn === 'None' ? textTrim(interval * axisInterval, labels[i], axis.textStyle) :
                 textTrim(axis.dateTimeAxisLabelInterval[i] * interval, labels[i], axis.textStyle) : labels[i];
+            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : label;
             var elementSize = measureText(label, axis.textStyle);
             var transform = void 0;
-            labelPadding = (axis.opposedPosition) ?
-                -(padding)
-                : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
+            labelPadding = (axis.opposedPosition) ? -(padding) : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             var x = lableRect.x + ((!axis.isInversed) ?
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
             if (axis.labelIntersectAction === 'Trim') {
@@ -2504,7 +2595,21 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
                 x = x < rect.x ? rect.x : x;
                 x = ((x + elementSize.width) > (rect.x + rect.width)) ? (rect.x + rect.width - elementSize.width) : x;
             }
-            var y = rect.y + labelPadding;
+            if (axis.labelIntersectAction === 'MultipleRows' && axis.labelRotation === 0) {
+                var a = axis.opposedPosition ? -(axis.multipleRow[i].index - 1) : (axis.multipleRow[i].index - 1);
+                if (axis.multipleRow[i].index > 1) {
+                    y = rect.y + labelPadding + (elementSize.height * a) + (axis.opposedPosition ?
+                        -(((elementSize.height * 0.5) / 2) * axis.multipleRow[i].index) :
+                        (((elementSize.height * 0.5) / 2) * axis.multipleRow[i].index));
+                }
+                else {
+                    y = rect.y + labelPadding + (axis.opposedPosition ? -((elementSize.height * 0.5) / 2) :
+                        ((elementSize.height * 0.5) / 2));
+                }
+            }
+            else {
+                y = rect.y + labelPadding;
+            }
             this.drawXAxisBorder(axis, borderElement, axis.rect, x, elementSize.width, i);
             if (angle % 360 !== 0) {
                 angle = (angle > 360) ? angle % 360 : angle;
@@ -2514,8 +2619,7 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
                 x = lableRect.x + (axis.isInversed ? -(lableRect.width / 2) : (lableRect.width / 2));
                 y = y + (axis.opposedPosition ? -(rotateSize.height / 2) :
                     (((angle % 360) === 180 || (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
-                transform = 'rotate(' + angle + ',' + x + ','
-                    + y + ')';
+                transform = 'rotate(' + angle + ',' + x + ',' + y + ')';
             }
             var options = new TextOption(heatMap.element.id + '_XAxis_Label' + i, new TextBasic(x, y, (angle % 360 === 0) ? 'start' : 'middle', label, angle, transform), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (angle !== 0 && this.heatMap.enableCanvasRendering) {
@@ -2552,6 +2656,7 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
         var compactInterval = 0;
         var tempintervel = rect.height / (axis.axisLabelSize / axis.axisLabelInterval);
         var temp = axis.axisLabelInterval;
+        var label;
         if (tempintervel > 0) {
             while (tempintervel < parseInt(axis.textStyle.size, 10)) {
                 temp = temp + 1;
@@ -2580,11 +2685,12 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
             var position = labelRect.height / 2; //titlePositionY(lableRect, 0, 0, axis.textStyle);
             var x = labelRect.x + padding;
             var y = labelRect.y + (axis.isInversed ? position : -position);
-            var options = new TextOption(heatMap.element.id + '_YAxis_Label' + i, new TextBasic(x, y, anchor, labels[i], 0, 'rotate(' + 0 + ',' + (x) + ',' + (y) + ')', 'middle'), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
+            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : labels[i];
+            var options = new TextOption(heatMap.element.id + '_YAxis_Label' + i, new TextBasic(x, y, anchor, label, 0, 'rotate(' + 0 + ',' + (x) + ',' + (y) + ')', 'middle'), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (Browser.isIE && !heatMap.enableCanvasRendering) {
                 options.dy = '1ex';
             }
-            this.drawSvgCanvas.createText(options, labelElement, labels[i]);
+            this.drawSvgCanvas.createText(options, labelElement, label);
             if (compactInterval === 0) {
                 var labelInterval = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
                     axis.dateTimeAxisLabelInterval[i] : axis.axisLabelInterval;
@@ -2595,8 +2701,12 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
                 lableStartY = lableStartY + (axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
                 i = i + (compactInterval - 1);
             }
-            var elementSize = measureText(labels[i], axis.textStyle);
+            var elementSize = measureText(label, axis.textStyle);
             this.drawYAxisBorder(axis, borderElement, axis.rect, y, elementSize.height, i);
+            if (label.indexOf('...') !== -1) {
+                var xValue = axis.opposedPosition ? x : (x - elementSize.width);
+                this.heatMap.tooltipCollection.push(new CanvasTooltip(labels[i], new Rect(xValue, y - elementSize.height, elementSize.width, elementSize.height)));
+            }
         }
         if (!heatMap.enableCanvasRendering) {
             parent.appendChild(labelElement);
@@ -3238,8 +3348,10 @@ var Series = /** @__PURE__ @class */ (function () {
                 else if (!isNullOrUndefined(this.text) && (cellSetting.bubbleType === 'Size' || cellSetting.bubbleType === 'SizeAndColor')
                     && this.text.toString() !== '') { // Bubble by same color and different size Series
                     if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
-                        this.heatMap.minColorValue = this.heatMap.dataSourceMinValue;
-                        this.heatMap.maxColorValue = this.heatMap.dataSourceMaxValue;
+                        this.heatMap.minColorValue = !isFinite(this.heatMap.minColorValue) ?
+                            this.heatMap.dataSourceMinValue : this.heatMap.minColorValue;
+                        this.heatMap.maxColorValue = !isFinite(this.heatMap.maxColorValue) ?
+                            this.heatMap.dataSourceMaxValue : this.heatMap.maxColorValue;
                     }
                     var tempCircleRadius = this.getRadiusBypercentage(parseFloat(this.text.toString()), heatMap.dataSourceMinValue, heatMap.dataSourceMaxValue, circleRadius);
                     this.renderBubbleCell(rectPosition, tempBorder, x, this.color, borderColor, tempCircleRadius);
@@ -4024,10 +4136,8 @@ var TwoDimensional = /** @__PURE__ @class */ (function () {
                 this.heatMap.dataMax[z] = minMaxVal[1];
                 this.heatMap.dataMin[z] = minMaxVal[0];
             }
-            else {
-                minVal = minMaxVal[0];
-                maxVal = minMaxVal[1];
-            }
+            minVal = minMaxVal[0];
+            maxVal = minMaxVal[1];
             if (this.heatMap.xAxis.isInversed) {
                 this.completeDataSource[cloneDataIndex] = this.completeDataSource[cloneDataIndex].reverse();
             }
@@ -4124,7 +4234,7 @@ var TwoDimensional = /** @__PURE__ @class */ (function () {
     TwoDimensional.prototype.getMinMaxValue = function (minVal, maxVal, tempVariable) {
         var minMaxValue = [];
         if (this.heatMap.bubbleSizeWithColor) {
-            if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
+            if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
                 this.tempSizeArray = tempVariable;
             }
             minMaxValue.push(this.getMinValue(minVal, this.tempSizeArray));
@@ -6217,6 +6327,239 @@ var Adaptor = /** @__PURE__ @class */ (function () {
     return Adaptor;
 }());
 
+var ExportUtils = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Heatmap
+     * @param control
+     */
+    function ExportUtils(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    ExportUtils.prototype.export = function (type, fileName, orientation) {
+        var _this = this;
+        var controlValue = this.getControlsValue();
+        var width = controlValue.width;
+        var height = controlValue.height;
+        var element = this.control.svgObject;
+        var isCanvas = this.control.enableCanvasRendering;
+        var image;
+        if (!isCanvas) {
+            element = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': width.toString(),
+                    'height': height.toString()
+                }
+            });
+        }
+        var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+        orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+        var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+            controlValue.svg.outerHTML +
+            '</svg>';
+        var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+            [(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'image/svg+xml' }));
+        if (type === 'SVG') {
+            if (Browser.info.name === 'msie') {
+                var svg = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
+                window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
+            }
+            else {
+                this.triggerDownload(fileName, type, url, isDownload);
+            }
+        }
+        else if (Browser.info.name === 'msie') {
+            var canvas = element;
+            if (!isCanvas) {
+                canvas = this.createCanvas();
+            }
+            image = canvas.toDataURL(type);
+            if (type === 'PDF') {
+                this.exportPdf(canvas, orientation, width, height, isDownload, fileName);
+            }
+            else {
+                this.doExport(type, image, fileName);
+            }
+        }
+        else {
+            var image_1 = new Image();
+            var ctx_1 = element.getContext('2d');
+            image_1.onload = (function () {
+                ctx_1.drawImage(image_1, 0, 0);
+                window.URL.revokeObjectURL(url);
+                if (type === 'PDF') {
+                    _this.exportPdf(element, orientation, width, height, isDownload, fileName);
+                }
+                else {
+                    if (window.navigator.msSaveOrOpenBlob) {
+                        window.navigator.msSaveOrOpenBlob(element.msToBlob(), fileName + '.' + type.toLocaleLowerCase());
+                    }
+                    else {
+                        _this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                    }
+                }
+            });
+            image_1.src = url;
+        }
+        if (!isCanvas) {
+            var id = document.getElementById(this.control.element.id);
+            removeElement(id + '_canvas');
+        }
+    };
+    /**
+     * To trigger the download element
+     * @param fileName
+     * @param type
+     * @param url
+     * @private
+     */
+    ExportUtils.prototype.triggerDownload = function (fileName, type, url, isDownload) {
+        createElement('a', {
+            attrs: {
+                'download': fileName + '.' + type.toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
+    };
+    /**
+     * To get the maximum size value
+     * @param controls
+     * @param name
+     */
+    ExportUtils.prototype.getControlsValue = function () {
+        var width = 0;
+        var height = 0;
+        var isCanvas = this.control.enableCanvasRendering;
+        var svgObject = new SvgRenderer('').createSvg({
+            id: 'Svg_Export_Element',
+            width: 200, height: 200
+        });
+        var svg = this.control.svgObject.cloneNode(true);
+        var groupEle = this.control.renderer.createGroup({
+            style: 'transform: translateY(' + height + 'px)'
+        });
+        if (!isCanvas) {
+            groupEle.appendChild(svg);
+        }
+        width = Math.max(this.control.availableSize.width, width);
+        height = height + this.control.availableSize.height;
+        if (!isCanvas) {
+            svgObject.appendChild(groupEle);
+        }
+        if (!isCanvas) {
+            svgObject.setAttribute('width', width + '');
+            svgObject.setAttribute('height', height + '');
+        }
+        return {
+            'width': width,
+            'height': height,
+            'svg': svgObject
+        };
+    };
+    ExportUtils.prototype.createCanvas = function () {
+        var heatmap = this.control;
+        var renderMode = heatmap.renderingMode;
+        heatmap.renderingMode = 'Canvas';
+        heatmap.refresh();
+        var canvas = heatmap.svgObject;
+        heatmap.renderingMode = renderMode;
+        heatmap.refresh();
+        return canvas;
+    };
+    ExportUtils.prototype.exportPdf = function (element, orientation, width, height, isDownload, fileName) {
+        var document = new PdfDocument();
+        var margin = document.pageSettings.margins;
+        var pdfDefaultWidth = document.pageSettings.width;
+        var pdfDefaultHeight = document.pageSettings.height;
+        var exactWidth;
+        var exactHeight;
+        var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+        document.pageSettings.orientation = orientation;
+        exactWidth = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
+        exactHeight = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
+        document.pageSettings.size = new SizeF(exactWidth, exactHeight);
+        imageString = imageString.slice(imageString.indexOf(',') + 1);
+        document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, width, height);
+        if (isDownload) {
+            document.save(fileName + '.pdf');
+            document.destroy();
+        }
+    };
+    ExportUtils.prototype.doExport = function (type, image, fileName) {
+        var images = [];
+        var fileType = type || 'JPG';
+        images = [image];
+        this.exportImage(images, fileName, fileType, image);
+    };
+    ExportUtils.prototype.exportImage = function (images, fileName, fileType, image) {
+        var buffers = [];
+        var length = (!(images instanceof HTMLElement)) ? images.length : 0;
+        for (var g = 0; g < length; g++) {
+            image = images[g];
+            image = image.replace(/^data:[a-z]*;,/, '');
+            var image1 = image.split(',');
+            var byteString = atob(image1[1]);
+            var buffer = new ArrayBuffer(byteString.length);
+            var intArray = new Uint8Array(buffer);
+            for (var i = 0; i < byteString.length; i++) {
+                intArray[i] = byteString.charCodeAt(i);
+            }
+            buffers.push(buffer);
+        }
+        for (var j = 0; j < buffers.length; j++) {
+            var b = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            if (Browser.info.name === 'msie') {
+                window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType.toLocaleLowerCase());
+            }
+        }
+    };
+    /**
+     * To print the heatmap elements.
+     * @param elements
+     * @private
+     */
+    ExportUtils.prototype.print = function () {
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        if (this.control.renderingMode === 'SVG') {
+            print(this.getHTMLContent(), this.printWindow);
+        }
+        else {
+            var element = this.control.svgObject;
+            var dataUrl = element.toDataURL();
+            var image_2 = new Image();
+            var ctx_2 = element.getContext('2d');
+            image_2.onload = (function () {
+                ctx_2.drawImage(image_2, 0, 0);
+            });
+            image_2.src = dataUrl;
+            print(image_2, this.printWindow);
+        }
+    };
+    /**
+     * To get the html string of the heatmap.
+     * @param elements
+     * @private
+     */
+    ExportUtils.prototype.getHTMLContent = function () {
+        var div = createElement('div');
+        div.appendChild(this.control.element.cloneNode(true));
+        return div;
+    };
+    return ExportUtils;
+}());
+
 /**
  * Heat Map Component
  */
@@ -6294,6 +6637,16 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         this.initPrivateVariable();
         this.unWireEvents();
         this.wireEvents();
+    };
+    /**
+     * Handles the export method for heatmap control.
+     * @param type
+     * @param fileName
+     * @param orientation
+     */
+    HeatMap.prototype.export = function (type, fileName, orientation) {
+        var exportMap = new ExportUtils(this);
+        exportMap.export(type, fileName, orientation);
     };
     HeatMap.prototype.initPrivateVariable = function () {
         this.renderer = new SvgRenderer(this.element.id);
@@ -6719,6 +7072,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
     HeatMap.prototype.axisTooltip = function (event, x, y, isTouch) {
         var targetId = event.target.id;
         if ((targetId.indexOf(this.element.id + '_XAxis_Label') !== -1) ||
+            (targetId.indexOf(this.element.id + '_YAxis_Label') !== -1) ||
             (targetId.indexOf(this.element.id + '_XAxis_MultiLevel') !== -1) ||
             (targetId.indexOf(this.element.id + '_YAxis_MultiLevel') !== -1)) {
             var tooltipText = getTooltipText(this.tooltipCollection, x, y);
@@ -6864,6 +7218,13 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+    };
+    /**
+     * Method to print the heatmap.
+     */
+    HeatMap.prototype.print = function () {
+        var exportChart = new ExportUtils(this);
+        exportChart.print();
     };
     /**
      * Method to unbind events for HeatMap
@@ -7809,5 +8170,5 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
  * HeatMap index file
  */
 
-export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, FillColor, PaletteCollection, AxisLabelBorder, BubbleSize, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
+export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, FillColor, PaletteCollection, AxisLabelBorder, BubbleSize, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, MultipleRow, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, ExportUtils, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
 //# sourceMappingURL=ej2-heatmap.es5.js.map

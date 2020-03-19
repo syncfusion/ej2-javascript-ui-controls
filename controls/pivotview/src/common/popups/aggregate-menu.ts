@@ -1,9 +1,9 @@
-import { createElement, remove, extend, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance } from '@syncfusion/ej2-base';
 import { MouseEventArgs } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import * as cls from '../../common/base/css-constant';
-import { MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
+import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ContextMenu } from '@syncfusion/ej2-navigations';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
@@ -13,6 +13,8 @@ import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import * as events from '../../common/base/constant';
 import { PivotUtil } from '../../base/util';
+import { AggregateTypes } from '../base/enum';
+import { AggregateMenuOpenEventArgs } from '../base/interface';
 
 /**
  * `AggregateMenu` module to create aggregate type popup.
@@ -24,6 +26,7 @@ export class AggregateMenu {
     private parentElement: HTMLElement;
     private currentMenu: Element;
     private valueDialog: Dialog;
+    private summaryTypes: AggregateTypes[];
 
     /**
      * Constructor for the rener action.
@@ -45,64 +48,101 @@ export class AggregateMenu {
     private openContextMenu(args: MouseEventArgs): void {
         let fieldName: string = (args.target as HTMLElement).parentElement.id;
         let isStringField: number = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
-        if (isNullOrUndefined( this.menuInfo[isStringField])) {
-            this.createContextMenu(isStringField);
-        }
-        this.currentMenu = args.currentTarget as Element;
-        let pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
-        if (this.parent.enableRtl) {
-            this.menuInfo[isStringField].open(pos.top + (isStringField ? window.scrollY || document.documentElement.scrollTop : 0),
-                                              pos.left - 105);
-        } else {
-            this.menuInfo[isStringField].open(pos.top + (isStringField ? window.scrollY || document.documentElement.scrollTop : 0),
-                                              pos.left);
-        }
+        this.summaryTypes = [...this.getMenuItem(isStringField)];
+        let eventArgs: AggregateMenuOpenEventArgs = {
+            cancel: false, fieldName: fieldName, aggregateTypes: this.summaryTypes
+        };
+        let control: PivotView | PivotFieldList =
+            this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).isPopupView ?
+                (this.parent as PivotFieldList).pivotGridModule : this.parent;
+        control.trigger(events.aggregateMenuOpen, eventArgs, (observedArgs: AggregateMenuOpenEventArgs) => {
+            if (!observedArgs.cancel) {
+                this.summaryTypes = observedArgs.aggregateTypes;
+                this.createContextMenu(isStringField);
+                this.currentMenu = args.currentTarget as Element;
+                let pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
+                if (this.parent.enableRtl) {
+                    this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left - 105);
+                } else {
+                    this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left);
+                }
+            }
+        });
     }
+
     private createContextMenu(isStringField: number): void {
         let menuItems: MenuItemModel[][] = [];
-        if (isStringField) {
-            menuItems[isStringField] = [
-                { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + 'StringMenu_Count' },
-                {text: this.parent.localeObj.getConstant('DistinctCount'),
-                id: this.parent.element.id + 'StringMenu_DistinctCount'
-                }];
-        } else {
-            menuItems[isStringField] = [
-                { text: this.parent.localeObj.getConstant('Sum'), id: this.parent.element.id + '_Sum' },
-                { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + '_Count' },
-                { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + '_DistinctCount' },
-                { text: this.parent.localeObj.getConstant('Product'), id: this.parent.element.id + '_Product' },
-                { text: this.parent.localeObj.getConstant('Avg'), id: this.parent.element.id + '_Avg' },
-                { text: this.parent.localeObj.getConstant('Min'), id: this.parent.element.id + '_Min' },
-                { text: this.parent.localeObj.getConstant('Max'), id: this.parent.element.id + '_Max' },
-                { text: this.parent.localeObj.getConstant('MoreOption'), id: this.parent.element.id + '_MoreOption' }];
+        menuItems[isStringField] = [];
+        if (this.menuInfo[isStringField] && !this.menuInfo[isStringField].isDestroyed) {
+            this.menuInfo[isStringField].destroy();
         }
-        let menuOptions: ContextMenuModel ;
+        let checkDuplicates: AggregateTypes[] = [];
+        for (let i: number = 0; i < this.summaryTypes.length; i++) {
+            let key: AggregateTypes = this.summaryTypes[i] as AggregateTypes;
+            if (isStringField) {
+                if ((['Count', 'DistinctCount'].indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
+                    menuItems[isStringField].push(
+                        { text: this.parent.localeObj.getConstant(key), id: this.parent.element.id + 'StringMenu_' + key });
+                    checkDuplicates.push(key);
+                }
+            } else {
+                if ((this.parent.getAllSummaryType().indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
+                    menuItems[isStringField].push({ text: this.parent.localeObj.getConstant(key), id: this.parent.element.id + '_' + key });
+                    checkDuplicates.push(key);
+                }
+            }
+        }
+        if (menuItems[isStringField].length >= 7) {
+            menuItems[isStringField].splice(7);
+            menuItems[isStringField].push(
+                {
+                    text: this.parent.localeObj.getConstant('MoreOption'),
+                    id: this.parent.element.id + '_' + 'MoreOption'
+                });
+        }
+        let menuOptions: ContextMenuModel;
         menuOptions = {
             items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             select: this.selectOptionInContextMenu.bind(this)
         };
-        let removeContextMenu: HTMLElement =
-         document.getElementById(this.parent.element.id + isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu');
-        if (removeContextMenu !== null) {
-            removeContextMenu.innerHTML = '';
+        let contextMenu: HTMLElement =
+            document.getElementById(this.parent.element.id + (isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu'));
+        if (contextMenu !== null) {
+            contextMenu.innerHTML = '';
+        } else {
+            contextMenu = createElement('ul', {
+                id: this.parent.element.id + (isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu')
+            });
         }
-        let contextMenu: HTMLElement = createElement('ul', {
-            id: this.parent.element.id + (isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu')
-        });
         this.parent.element.appendChild(contextMenu);
         this.menuInfo[isStringField] = new Menu(menuOptions);
         this.menuInfo[isStringField].isStringTemplate = true;
         this.menuInfo[isStringField].appendTo(contextMenu);
+    }
+    private getMenuItem(isStringField: number): AggregateTypes[] {
+        let menuItems: AggregateTypes[] = [];
+        for (let i: number = 0; i < this.parent.aggregateTypes.length; i++) {
+            let key: AggregateTypes = this.parent.aggregateTypes[i] as AggregateTypes;
+            if (isStringField) {
+                if ((['Count', 'DistinctCount'].indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
+                    menuItems.push(key);
+                }
+            } else {
+                if ((this.parent.getAllSummaryType().indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
+                    menuItems.push(key);
+                }
+            }
+        }
+        return menuItems;
     }
     private beforeMenuOpen(isString: number, args: BeforeOpenCloseMenuEventArgs): void {
         args.element.style.zIndex = (this.menuInfo[isString].element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     }
     /** @hidden */
-    public createValueSettingsDialog(target: HTMLElement, parentElement: HTMLElement): void {
+    public createValueSettingsDialog(target: HTMLElement, parentElement: HTMLElement, type?: string): void {
         this.parentElement = parentElement;
         let valueDialog: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_ValueDialog',
@@ -114,7 +154,7 @@ export class AggregateMenu {
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
             header: this.parent.localeObj.getConstant('valueFieldSettings'),
-            content: this.createFieldOptions(target),
+            content: this.createFieldOptions(target, type),
             isModal: true,
             visible: true,
             showCloseIcon: true,
@@ -132,7 +172,7 @@ export class AggregateMenu {
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
-            closeOnEscape: true,
+            closeOnEscape: (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') ? false : true,
             target: this.parentElement,
             overlayClick: () => { this.removeDialog(); },
             close: this.removeDialog.bind(this)
@@ -141,36 +181,22 @@ export class AggregateMenu {
         this.valueDialog.appendTo(valueDialog);
         // this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
     }
-    /* tslint:disable:all */
-    private createFieldOptions(buttonElement: HTMLElement): HTMLElement {
+    /* tslint:disable:max-func-body-length */
+    private createFieldOptions(buttonElement: HTMLElement, type?: string): HTMLElement {
         let fieldCaption: string = buttonElement.getAttribute('data-caption');
-        let summaryType: string = buttonElement.getAttribute('data-type');
+        let summaryType: string = (type && type !== 'MoreOption') ? type : buttonElement.getAttribute('data-type');
         let baseField: string = buttonElement.getAttribute('data-basefield');
         let baseItem: string = buttonElement.getAttribute('data-baseitem');
         summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
-        let summaryDataSource: { [key: string]: Object }[] = [
-            { value: 'Sum', text: this.parent.localeObj.getConstant('Sum') },
-            { value: 'Count', text: this.parent.localeObj.getConstant('Count') },
-            { value: 'DistinctCount', text: this.parent.localeObj.getConstant('DistinctCount') },
-            { value: 'Product', text: this.parent.localeObj.getConstant('Product') },
-            { value: 'Avg', text: this.parent.localeObj.getConstant('Avg') },
-            { value: 'Min', text: this.parent.localeObj.getConstant('Min') },
-            { value: 'Max', text: this.parent.localeObj.getConstant('Max') },
-            { value: 'Index', text: this.parent.localeObj.getConstant('Index') },
-            { value: 'SampleStDev', text: this.parent.localeObj.getConstant('SampleStDev') },
-            { value: 'PopulationStDev', text: this.parent.localeObj.getConstant('PopulationStDev') },
-            { value: 'SampleVar', text: this.parent.localeObj.getConstant('SampleVar') },
-            { value: 'PopulationVar', text: this.parent.localeObj.getConstant('PopulationVar') },
-            { value: 'RunningTotals', text: this.parent.localeObj.getConstant('RunningTotals') },
-            { value: 'DifferenceFrom', text: this.parent.localeObj.getConstant('DifferenceFrom') },
-            { value: 'PercentageOfDifferenceFrom', text: this.parent.localeObj.getConstant('PercentageOfDifferenceFrom') },
-            { value: 'PercentageOfGrandTotal', text: this.parent.localeObj.getConstant('PercentageOfGrandTotal') },
-            { value: 'PercentageOfColumnTotal', text: this.parent.localeObj.getConstant('PercentageOfColumnTotal') },
-            { value: 'PercentageOfRowTotal', text: this.parent.localeObj.getConstant('PercentageOfRowTotal') },
-            { value: 'PercentageOfParentTotal', text: this.parent.localeObj.getConstant('PercentageOfParentTotal') },
-            { value: 'PercentageOfParentColumnTotal', text: this.parent.localeObj.getConstant('PercentageOfParentColumnTotal') },
-            { value: 'PercentageOfParentRowTotal', text: this.parent.localeObj.getConstant('PercentageOfParentRowTotal') }
-        ];
+        let summaryDataSource: { [key: string]: Object }[] = [];
+        let summaryItems: AggregateTypes[] = this.parent.aggregateTypes;
+        let checkDuplicates: AggregateTypes[] = [];
+        for (let i: number = 0; i < summaryItems.length; i++) {
+            if (this.parent.getAllSummaryType().indexOf(summaryItems[i]) > -1 && checkDuplicates.indexOf(summaryItems[i]) < 0) {
+                summaryDataSource.push({ value: summaryItems[i], text: this.parent.localeObj.getConstant(summaryItems[i]) });
+                checkDuplicates.push(summaryItems[i]);
+            }
+        }
         let baseItemTypes: string[] = ['DifferenceFrom', 'PercentageOfDifferenceFrom'];
         let baseFieldTypes: string[] = ['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
         let dataFields: IFieldOptions[] = extend([], this.parent.dataSourceSettings.rows, null, true) as IFieldOptions[];
@@ -186,6 +212,7 @@ export class AggregateMenu {
             let text: string = (field.caption ? field.caption : field.name);
             fieldDataSource.push({ value: value, text: text });
         }
+        /* tslint:disable-next-line:max-line-length */
         baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value as string);
         fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
             baseField : fieldDataSource[0].value as string)].formattedMembers);
@@ -199,6 +226,7 @@ export class AggregateMenu {
         let optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-wrapper' });
         let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-wrapper' });
         let optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-wrapper' });
+        /* tslint:disable-next-line:max-line-length */
         let texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title', innerHTML: this.parent.localeObj.getConstant('sourceName') + '&nbsp;' });
         let textContent: HTMLElement = createElement('div', { className: 'e-field-name-content', innerHTML: buttonElement.id.toString() });
         let inputTextDiv1: HTMLElement = createElement('div', {
@@ -245,7 +273,7 @@ export class AggregateMenu {
             value: summaryType,
             // popupWidth: 'auto',
             cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
-            change(args: ChangeEventArgs): void {
+            change: (args: ChangeEventArgs) => {
                 optionWrapper2.enabled = baseFieldTypes.indexOf(args.value as string) !== -1 ? true : false;
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
                 if (optionWrapper3.enabled && (optionWrapper3.dataSource as string[]).length === 1) {
@@ -263,7 +291,7 @@ export class AggregateMenu {
             // popupWidth: 'auto',
             enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
             cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
-            change(args: ChangeEventArgs): void {
+            change: (args: ChangeEventArgs) => {
                 fieldItemDataSource = Object.keys(popupInstance.parent.engineModule.fieldList[args.value as string].formattedMembers);
                 optionWrapper3.dataSource = fieldItemDataSource;
                 optionWrapper3.value = fieldItemDataSource[0];
@@ -295,13 +323,13 @@ export class AggregateMenu {
         inputObj1.appendTo(inputField1);
         return mainDiv;
     }
-    /* tslint:enable:all */
     private selectOptionInContextMenu(menu: MenuEventArgs): void {
         if (menu.item.text !== null) {
             let buttonElement: HTMLElement = this.currentMenu.parentElement as HTMLElement;
             let type: string = menu.item.id.split('_').pop();
-            if (type === 'MoreOption') {
-                this.createValueSettingsDialog(buttonElement, this.parentElement);
+            if (type === 'MoreOption' || type === 'PercentageOfDifferenceFrom'
+                || type === 'PercentageOfParentTotal' || type === 'DifferenceFrom') {
+                this.createValueSettingsDialog(buttonElement, this.parentElement, type);
             } else {
                 let field: string = buttonElement.getAttribute('data-uid');
                 let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -338,6 +366,7 @@ export class AggregateMenu {
                 }, true);
                 (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
                 (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
+                /* tslint:enable:align */
             } else {
                 (this.parent as PivotFieldList).triggerPopulateEvent();
             }

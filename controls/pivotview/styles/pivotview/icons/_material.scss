@@ -15,7 +15,7 @@
     }
 
     .e-sort::before {
-      content: '\e840';
+      content: '\e667';
     }
 
     .e-pv-filter::before {
@@ -89,6 +89,18 @@
 
     .e-toolbar-formatting::before {
       content: '\e725';
+    }
+
+    .e-pivot-button .e-edit::before {
+      content: '\e891';
+    }
+
+    .e-sort-ascend-icon::before {
+      content: '\e734';
+    }
+
+    .e-sort-descend-icon::before {
+      content: '\e733';
     }
   }
 

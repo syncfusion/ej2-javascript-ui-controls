@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';
+﻿import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
@@ -18,12 +18,13 @@ type Str = string;
 export type HeaderPosition = 'Top' | 'Bottom' | 'Left' | 'Right';
 /**
  * Options to set the content element height adjust modes.
+ * @deprecated
  */
 export type HeightStyles = 'None' | 'Auto' | 'Content' | 'Fill';
 /**
  * Specifies the options of Tab content display mode.
  */
-export type ContentLoad = 'Dynamic' | 'Init';
+export type ContentLoad = 'Dynamic' | 'Init' | 'Demand';
 
 const CLS_TAB: string = 'e-tab';
 const CLS_HEADER: string = 'e-tab-header';
@@ -367,6 +368,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * The possible modes are:
      * `Dynamic` Load Tab content dynamically at the time of switching it's header.
      * `Init` Load all tab contents at initial load.
+     * `Demand` Load Tab content when required but keep content once it is rendered.
      * @default 'Dynamic'
      */
     @Property('Dynamic')
@@ -487,7 +489,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public refresh(): void {
         if (!this.isServerRendered) {
             super.refresh();
-        } else if (this.isServerRendered && this.loadOn === 'Init') {
+        } else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
             this.setActiveBorder();
         }
     }
@@ -579,6 +581,20 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private serverItemsChanged(): void {
         this.enableAnimation = false;
         this.setActive(this.selectedItem, true);
+        if (this.loadOn !== 'Dynamic' && !isNOU(this.cntEle)) {
+            let itemCollection: HTMLElement[] = [].slice.call(this.cntEle.children);
+            let content: string = CLS_CONTENT + this.tabId + '_' + this.selectedItem;
+            itemCollection.forEach((item: HTEle) => {
+                if (item.classList.contains(CLS_ACTIVE) && item.id !== content) {
+                    item.classList.remove(CLS_ACTIVE);
+                }
+                if (item.id === content) {
+                    item.classList.add(CLS_ACTIVE);
+                }
+            });
+            this.prevIndex = this.selectedItem;
+            this.triggerAnimation(CLS_ITEM + this.tabId + '_' + this.selectedItem, false);
+        }
         this.enableAnimation = true;
     }
 
@@ -608,8 +624,21 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
         this.cntEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
         if (!isNOU(this.cntEle)) { this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) }); }
+        if (this.loadOn === 'Demand') {
+            let id: string = this.setActiveContent();
+            this.triggerAnimation(id, false);
+        }
         this.initRender = false;
         this.renderComplete();
+    }
+
+    private setActiveContent(): string {
+        let id: string = CLS_ITEM + this.tabId + '_' + this.selectedItem;
+        let item: HTEle = this.getTrgContent(this.cntEle, this.extIndex(id));
+        if (!isNOU(item)) {
+            item.classList.add(CLS_ACTIVE);
+        }
+        return id;
     }
 
     private renderHeader(): void {
@@ -867,7 +896,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let prevIndex: number = this.prevIndex;
         let oldCnt: HTEle;
         let newCnt: HTEle;
-        if (!this.isServerRendered || (this.isServerRendered && this.loadOn === 'Init')) {
+        if (!this.isServerRendered || (this.isServerRendered && this.loadOn !== 'Dynamic')) {
             let itemCollection: HTMLElement[] = [].slice.call(this.element.querySelector('.' + CLS_CONTENT).children);
             itemCollection.forEach((item: HTEle) => {
                 if (item.id === this.prevActiveEle) {
@@ -883,7 +912,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else {
             newCnt = this.cntEle.firstElementChild as HTMLElement;
         }
-        this.prevActiveEle = newCnt.id;
+        if (!isNOU(newCnt)) {
+            this.prevActiveEle = newCnt.id;
+        }
         if (this.initRender || value === false || this.animation === {} || isNOU(this.animation)) {
             if (oldCnt && oldCnt !== newCnt) { oldCnt.classList.remove(CLS_ACTIVE); }
             return;
@@ -1285,10 +1316,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
 
     private contentReady(): void {
-        if (this.isServerRendered && this.loadOn === 'Dynamic') {
-            let id: string = CLS_ITEM + this.tabId + '_' + this.selectedItem;
-            this.triggerAnimation(id, this.enableAnimation);
-        }
+        let id: string = this.setActiveContent();
+        this.triggerAnimation(id, this.enableAnimation);
     }
 
     private setItems(items: object[]): void {

@@ -1,4 +1,4 @@
-import { Row } from './row';import { Column } from './column';import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { Property, Collection, ChildProperty, Complex } from '@syncfusion/ej2-base';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState } from '../common/index';
+import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState, ProtectSettingsModel } from '../common/index';import { ProtectSettings } from '../common/index';import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { Row } from './row';import { Column } from './column';import { WorkbookModel } from './workbook-model';
 
 /**
  * Interface for a class RangeSetting
@@ -90,6 +90,12 @@ export interface SheetModel {
     columns?: ColumnModel[];
 
     /**
+     * Configures protect and its options.
+     * @default { selectCells: false, formatCells: false, formatRows: false, formatColumns: false, insertLink: false  }
+     */
+    protectSettings?: ProtectSettingsModel;
+
+    /**
      * Specifies the range settings for the sheet.
      * @default []
      */
@@ -171,9 +177,22 @@ export interface SheetModel {
     showGridLines?: boolean;
 
     /**
+     * Specifies to  protect the cells in the sheet.
+     * @default false
+     */
+    isProtected?: boolean;
+
+    /**
      * Specifies the sheet visibility state. There must be at least one visible sheet in Spreadsheet.
      * @default 'Visible'
      */
     state?: SheetState;
+
+    /**
+     * Represents the maximum row height collection.
+     * @default []
+     * @hidden
+     */
+    maxHgts?: object[];
 
 }

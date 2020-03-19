@@ -364,7 +364,7 @@ let Button = class Button extends Component {
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    if (!isBlazor()) {
+                    if (!isBlazor() || (isBlazor() && !this.isServerRendered && this.getModuleName() !== 'progress-btn')) {
                         if (this.enableHtmlSanitizer) {
                             newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
                         }
@@ -541,26 +541,33 @@ let CheckBox = class CheckBox extends Component {
      */
     destroy() {
         let wrapper = this.getWrapper();
-        super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            wrapper.parentNode.insertBefore(this.element, wrapper);
-            detach(wrapper);
-            this.element.checked = false;
-            if (this.indeterminate) {
-                this.element.indeterminate = false;
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
             }
-            ['name', 'value', 'disabled'].forEach((key) => {
-                this.element.removeAttribute(key);
-            });
         }
         else {
-            ['role', 'aria-checked', 'class'].forEach((key) => {
-                wrapper.removeAttribute(key);
-            });
-            wrapper.innerHTML = '';
+            super.destroy();
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                wrapper.parentNode.insertBefore(this.element, wrapper);
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
+                }
+                ['name', 'value', 'disabled'].forEach((key) => {
+                    this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach((key) => {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
+            }
         }
     }
     focusHandler() {
@@ -733,6 +740,9 @@ let CheckBox = class CheckBox extends Component {
      * @private
      */
     preRender() {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -750,12 +760,20 @@ let CheckBox = class CheckBox extends Component {
      * @private
      */
     render() {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
+        this.renderComplete();
     }
     setDisabled() {
         let wrapper = this.getWrapper();
@@ -845,7 +863,6 @@ let CheckBox = class CheckBox extends Component {
      * Click the CheckBox element
      * its native method
      * @public
-     * @deprecated
      */
     click() {
         this.element.click();
@@ -854,7 +871,6 @@ let CheckBox = class CheckBox extends Component {
      * Sets the focus to CheckBox
      * its native method
      * @public
-     * @deprecated
      */
     focusIn() {
         this.element.focus();
@@ -1733,6 +1749,7 @@ const classNames = {
 let ChipList = class ChipList extends Component {
     constructor(options, element) {
         super(options, element);
+        this.multiSelectedChip = [];
     }
     /**
      * Initialize the event handler
@@ -1755,7 +1772,7 @@ let ChipList = class ChipList extends Component {
             this.select(this.selectedChips);
         }
         this.wireEvent(false);
-        this.rippleFunctin = rippleEffect(this.element, {
+        this.rippleFunction = rippleEffect(this.element, {
             selector: '.e-chip'
         });
         this.renderComplete();
@@ -1832,7 +1849,7 @@ let ChipList = class ChipList extends Component {
         append(chipListArray, this.element);
     }
     getFieldValues(data) {
-        let chipEnabled = this.enabled.toString() === 'false' ? false : true;
+        let chipEnabled = !(this.enabled.toString() === 'false');
         let fields = {
             text: typeof data === 'object' ? (data.text ? data.text.toString() : this.text.toString()) :
                 (this.type === 'chip' ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
@@ -1900,6 +1917,7 @@ let ChipList = class ChipList extends Component {
      * A function that adds chip items based on given input.
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
+     * @deprecated
      */
     add(chipsData) {
         if (this.type !== 'chip') {
@@ -1916,6 +1934,24 @@ let ChipList = class ChipList extends Component {
      */
     select(fields) {
         this.onSelect(fields, false);
+    }
+    multiSelection(newProp) {
+        const items = this.element.querySelectorAll('.' + 'e-chip');
+        for (let j = 0; j < newProp.length; j++) {
+            if (typeof newProp[j] === 'string') {
+                for (let k = 0; k < items.length; k++) {
+                    if (newProp[j] !== k) {
+                        if (newProp[j] === items[k].attributes[5].value) {
+                            this.multiSelectedChip.push(k);
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                this.multiSelectedChip.push(newProp[j]);
+            }
+        }
     }
     onSelect(fields, callFromProperty) {
         if (this.type !== 'chip' && this.selection !== 'None') {
@@ -1975,7 +2011,8 @@ let ChipList = class ChipList extends Component {
                 selectedItems.Indexes.push(index);
                 selectedItems.data.push(this.chips[index]);
                 let text = typeof this.chips[index] === 'object' ?
-                    this.chips[index].text.toString() : this.chips[index].toString();
+                    this.chips[index].text ? this.chips[index].text.toString()
+                        : null : this.chips[index].toString();
                 selectedItems.texts.push(text);
             }
             let selectedItem = {
@@ -2123,41 +2160,36 @@ let ChipList = class ChipList extends Component {
             if (selectedEle.getAttribute('aria-selected') === 'true') {
                 value = selectedEle.getAttribute('data-value');
                 if (this.selection === 'Single' && selectedEle.classList.contains('e-active')) {
-                    if (value) {
-                        chip = value;
-                    }
-                    else {
-                        chip = i;
-                    }
+                    chip = value ? value : i;
                     break;
                 }
                 else {
-                    if (value) {
-                        chipCollValue.push(value);
-                    }
-                    else {
-                        chipCollIndex.push(i);
-                    }
+                    value ? chipCollValue.push(value) : chipCollIndex.push(i);
                 }
             }
         }
         this.setProperties({ selectedChips: this.selection === 'Single' ? chip : value ? chipCollValue : chipCollIndex }, true);
     }
     deleteHandler(chipWrapper, index) {
+        this.allowServerDataBinding = true;
         this.chips.splice(index, 1);
-        detach(chipWrapper);
+        this.setProperties({ chips: this.chips }, true);
+        this.serverDataBind();
+        this.allowServerDataBinding = false;
+        if (!(isBlazor() && this.isServerRendered)) {
+            detach(chipWrapper);
+        }
     }
     /**
      * It is used to destroy the ChipList component.
      */
     destroy() {
-        super.destroy();
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,
             classNames.multiSelection, classNames.singleSelection, classNames.disabled, classNames.chipWrapper, classNames.iconWrapper,
             classNames.active, classNames.focused].concat(this.cssClass.toString().split(' ').filter((css) => css)));
         this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
         this.wireEvent(true);
-        this.rippleFunctin();
+        this.rippleFunction();
         if (isBlazor()) {
             let chipChildElement = this.element.querySelectorAll('.e-chip');
             for (let i = 0; i < chipChildElement.length; i++) {
@@ -2167,6 +2199,7 @@ let ChipList = class ChipList extends Component {
             }
         }
         else {
+            super.destroy();
             this.element.innerHTML = '';
             this.element.innerText = this.innerText;
         }
@@ -2199,9 +2232,11 @@ let ChipList = class ChipList extends Component {
                 case 'selection':
                 case 'enableDelete':
                 case 'enabled':
-                    this.isServerRendered = false;
-                    this.refresh();
-                    this.isServerRendered = true;
+                    if (!(prop === 'chips' && (isBlazor() && this.isServerRendered))) {
+                        this.isServerRendered = false;
+                        this.refresh();
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'cssClass':
                     if (this.type === 'chip') {
@@ -2216,7 +2251,15 @@ let ChipList = class ChipList extends Component {
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
-                    this.onSelect(newProp.selectedChips, true);
+                    if (this.selection === 'Multiple') {
+                        this.multiSelectedChip = [];
+                        this.multiSelection(newProp.selectedChips);
+                        this.onSelect(this.multiSelectedChip, true);
+                        this.updateSelectedChips();
+                    }
+                    else {
+                        this.onSelect(newProp.selectedChips, true);
+                    }
                     break;
                 case 'enableRtl':
                     this.setRtl();

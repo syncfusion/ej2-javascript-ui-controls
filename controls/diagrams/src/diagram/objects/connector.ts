@@ -1040,7 +1040,7 @@ export class Connector extends NodeBase implements IElement {
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
      * @blazorDefaultValueIgnore
-     * @blazorDefaultValue  Syncfusion.EJ2.Blazor.Diagrams.Segments.Straight
+     * @blazorDefaultValue  Syncfusion.Blazor.Diagrams.Segments.Straight
      */
     @Property('Straight')
     public type: Segments;

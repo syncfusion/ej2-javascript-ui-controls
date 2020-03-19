@@ -313,6 +313,8 @@ export const showEmptyGrid: string = 'showEmptyGrid';
 /** @hidden */
 export const foreignKeyData: string = 'foreignKeyData';
 /** @hidden */
+export const columnDataStateChange: string = 'columnDataStateChange';
+/** @hidden */
 export const dataStateChange: string = 'dataStateChange';
 /** @hidden */
 export const dataSourceChanged: string = 'dataSourceChanged';

@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isBlazor } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs} from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType } from './enum';import { EditorMode } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isBlazor } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType } from './enum';import { EditorMode } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -21,6 +21,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * * itemConfigs: Modify the default toolbar item configuration like icon class.
      * 
      * > By default, The toolbar is rendered with scrollable in mobile devices and does not support the toolbar type.
+     * 
+     * {% codeBlock src='rich-text-editor/toolbar-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: true,
@@ -44,6 +47,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * * image - Specifies the items to be rendered in quick toolbar based on image element such as 'Replace',
      * 'Align', 'Caption', 'Remove', 'InsertLink', 'Display', 'AltText', 'Dimension'.
      * * text	 - Specifies the items to be rendered in quick toolbar based on text element such as 'Cut', 'Copy', 'Paste'.
+     * 
+     * {% codeBlock src='rich-text-editor/quick-toolbar-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: true,
@@ -63,6 +69,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * * deniedTags	 -  Specifies the tags to restrict when pasting in RTE.
      * * keepFormat	 -   Set boolean value to keep or remove the from when pasting.
      * * plainText	 -   Set boolean value to paste as plain text or not.
+     * 
+     * {% codeBlock src='rich-text-editor/paste-cleanup-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  prompt: false,
@@ -89,6 +98,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * * resources - we can add both styles and scripts to the iframe.
      *    1. styles[] - An array of CSS style files to inject inside the iframe to display content
      *    2. scripts[] - An array of JS script files to inject inside the iframe
+     * 
+     * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: false,
@@ -109,6 +121,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
      * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
      * * path - Specifies the path of the location to store the images and refer it to display the images.
+     * 
+     * {% codeBlock src='rich-text-editor/insert-image-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  allowedTypes: ['.jpeg', '.jpg', '.png'],
@@ -130,6 +145,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * * minWidth - Sets the default minWidth of the table when it is inserted in the RichTextEditor.
      * * maxWidth - Sets the default maxWidth of the table when it is inserted in the RichTextEditor.
      * * resize - To enable resize the table.
+     * 
+     * {% codeBlock src='rich-text-editor/table-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  width: '100%',
@@ -154,6 +172,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * * enable -  set boolean value to enable or disable the inline edit mode.
      * * onSelection - If its set to true, upon selecting the text, the toolbar is opened in inline. 
      * If its set to false, upon clicking to the target element, the toolbar is opened.
+     * 
+     * {% codeBlock src='rich-text-editor/inline-mode/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: false,
@@ -171,6 +192,9 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Enables or disables the persisting component's state between page reloads. 
      * If enabled, the value of RichTextEditor is persisted
+     * 
+     * {% codeBlock src='rich-text-editor/enable-persistence/index.md' %}{% endcodeBlock %}
+     * 
      * @default false.
      */
     enablePersistence?: boolean;
@@ -178,6 +202,9 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Enables or disables the resizing option in the editor. 
      * If enabled, the RichTextEditor can be resized by dragging the resize icon in the bottom right corner.
+     * 
+     * {% codeBlock src='rich-text-editor/enable-resize/index.md' %}{% endcodeBlock %}
+     * 
      * @default false.
      */
     enableResize?: boolean;
@@ -203,6 +230,9 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Specifies a value that indicates whether the component is enabled or not.
+     * 
+     * {% codeBlock src='rich-text-editor/enabled/index.md' %}{% endcodeBlock %}
+     * 
      * @default true.
      */
     enabled?: boolean;
@@ -241,12 +271,18 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Specifies the value displayed in the RichTextEditor's content area and it should be string. 
      * The content of RichTextEditor can be loaded with dynamic data such as database, AJAX content, and more.
+     * 
+     * {% codeBlock src='rich-text-editor/value/index.md' %}{% endcodeBlock %}
+     * 
      * @default null 
      */
     value?: string;
 
     /**
      * Specifies the count of undo history which is stored in undoRedoManager. 
+     * 
+     * {% codeBlock src='rich-text-editor/undo-redo-steps/index.md' %}{% endcodeBlock %}
+     * 
      * @default 30 
      */
     undoRedoSteps?: number;
@@ -272,18 +308,27 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Customizes the key actions in RichTextEditor.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * 
+     * {% codeBlock src='rich-text-editor/keyconfig/index.md' %}{% endcodeBlock %}
+     * 
      * @default null 
      */
     keyConfig?: { [key: string]: string };
 
     /**
      * Sets Boolean value to enable or disable the display of the character counter. 
+     * 
+     * {% codeBlock src='rich-text-editor/show-char-count/index.md' %}{% endcodeBlock %}
+     * 
      * @default false 
      */
     showCharCount?: boolean;
 
     /**
      * Allows the tab key action in the RichTextEditor content. 
+     * 
+     * {% codeBlock src='rich-text-editor/enable-tab-key/index.md' %}{% endcodeBlock %}
+     * 
      * @default false 
      */
     enableTabKey?: boolean;
@@ -291,18 +336,27 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks, otherwise
      * the given URL will automatically convert to absolute path URL by prefixing `https://` for hyperlinks.
+     * 
+     * {% codeBlock src='rich-text-editor/enable-autourl/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     enableAutoUrl?: boolean;
 
     /**
      * Specifies the maximum number of characters allowed in the RichTextEditor component.
+     * 
+     * {% codeBlock src='rich-text-editor/max-length/index.md' %}{% endcodeBlock %}
+     * 
      * @default -1
      */
     maxLength?: number;
 
     /**
      * Predefine the collection of paragraph styles along with quote and code style that populate in format dropdown from the toolbar.
+     * 
+     * {% codeBlock src='rich-text-editor/format/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  default: 'Paragraph',
@@ -324,6 +378,9 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Predefine the font families that populate in font family dropdown list from the toolbar.
+     * 
+     * {% codeBlock src='rich-text-editor/font-family/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  default: 'Segoe UI',
@@ -346,6 +403,9 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Predefine the font sizes that populate in font size dropdown list from the toolbar.
+     * 
+     * {% codeBlock src='rich-text-editor/font-size/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  default: '10',
@@ -365,6 +425,9 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Predefine the color palette that can be rendered for font color toolbar command .
+     * 
+     * {% codeBlock src='rich-text-editor/font-color/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  columns: 10,
@@ -383,6 +446,9 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Predefine the color palette that can be rendered for background color (text highlighted color) toolbar command.
+     * 
+     * {% codeBlock src='rich-text-editor/background-color/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  columns: 5,
@@ -399,6 +465,9 @@ export interface RichTextEditorModel extends ComponentModel{
      * Accepts the template design and assigns it as RichTextEditor’s content.
      * The built-in template engine which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals
+     * 
+     * {% codeBlock src='rich-text-editor/value-template/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     valueTemplate?: string;
@@ -406,6 +475,9 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Specifies the saveInterval in milliseconds for autosave the value.
      * The change event will be triggered if the content was changed from the last saved interval.
+     * 
+     * {% codeBlock src='rich-text-editor/save-interval/index.md' %}{% endcodeBlock %}
+     * 
      * @default 10000
      */
     saveInterval?: number;
@@ -595,6 +667,9 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Customize keyCode to change the key value. 
+     * 
+     * {% codeBlock src='rich-text-editor/formatter/index.md' %}{% endcodeBlock %}
+     * 
      * @default null 
      * @blazorType object
      */

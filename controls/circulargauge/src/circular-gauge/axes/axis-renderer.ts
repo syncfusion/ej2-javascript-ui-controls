@@ -9,6 +9,7 @@ import { TickModel } from './axis-model';
 import { getRangePalette } from '../model/theme';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
+
 /**
  * Specifies the Axis rendering for circular gauge
  */
@@ -264,7 +265,7 @@ export class AxisRenderer {
                         new PathOption(
                             gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width,
                             isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
-                            null, '0', this.calculateTicks(i, <Tick>minorLineStyle, axis), '', 'pointer-events:none;'
+                            null, minorLineStyle.dashArray, this.calculateTicks(i, <Tick>minorLineStyle, axis), '', 'pointer-events:none;'
                         ),
                         minorTickElements, gauge
                     );
@@ -295,7 +296,7 @@ export class AxisRenderer {
                     new PathOption(
                         gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width,
                         isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
-                        null, '0', this.calculateTicks(i, <Tick>majorLineStyle, axis), '', 'pointer-events:none;'
+                        null, majorLineStyle.dashArray, this.calculateTicks(i, <Tick>majorLineStyle, axis), '', 'pointer-events:none;'
                     ),
                     majorTickElements, gauge
                 );
@@ -334,16 +335,19 @@ export class AxisRenderer {
      * @return {void}
      * @private
      */
-    public drawAxisRange(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
-        let rangeElement: Element = gauge.renderer.createGroup({
-            id: gauge.element.id + '_Axis_Ranges_' + index
-        });
+    public drawAxisRange(axis: Axis, index: number, element: Element, gauge:
+        CircularGauge): void {
+        let startValue: number;
+        let endValue: number;
+        let rangeElement: Element;
+        let ele: Element;
+        ele = (document.getElementById(gauge.element.id + '_Axis_Ranges_ ' + index));
+        rangeElement = (ele) ? document.getElementById(gauge.element.id + '_Axis_Ranges_ ' + index) :
+            gauge.renderer.createGroup({ id: gauge.element.id + '_Axis_Ranges_' + index });
         let location: GaugeLocation = this.gauge.midPoint;
         let startAngle: number;
         let endAngle: number;
         let isClockWise: boolean = axis.direction === 'ClockWise';
-        let startValue: number;
-        let endValue: number;
         let min: number = axis.visibleRange.min;
         let max: number = axis.visibleRange.max;
         let startWidth: number;
@@ -353,6 +357,8 @@ export class AxisRenderer {
         let oldStart: number;
         let oldEnd: number;
         axis.ranges.map((range: Range, rangeIndex: number) => {
+            rangeIndex = rangeIndex;
+            range.pathElement = [];
             if (!isNullOrUndefined(range.offset) && (<string>range.offset).length > 0) {
                 range.currentDistanceFromScale = stringToNumber(<string>range.offset, axis.currentRadius);
             } else {
@@ -394,7 +400,7 @@ export class AxisRenderer {
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
                     radius) / (range.currentRadius)) * 180) / Math.PI;
                 if (range.roundedCornerRadius) {
-                    appendPath(
+                    range.pathElement.push( appendPath(
                         new PathOption(
                             gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor,
                             0, range.rangeColor, range.opacity, '0',
@@ -406,24 +412,28 @@ export class AxisRenderer {
                             '', ''
                         ),
                         rangeElement, gauge
+                    )
                     );
                 } else {
-                    appendPath(
-                        new PathOption(
-                            gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor,
-                            0, range.rangeColor, range.opacity, '0',
-                            getPathArc(
-                                gauge.midPoint,
-                                Math.floor(startAngle), Math.ceil(endAngle),
-                                range.currentRadius, startWidth, endWidth, range, axis
-                            ),
-                            '', ''
-                        ),
-                        rangeElement, gauge
-                    );
-                }
+                         range.pathElement.push(appendPath(
+                                                          new PathOption(
+                                                                            gauge.element.id + '_Axis_' + index + '_Range_' +
+                                                                            rangeIndex,
+                                                                            range.rangeColor,
+                                                                            0, range.rangeColor, range.opacity, '0',
+                                                                            getPathArc(
+                                                                                        gauge.midPoint,
+                                                                                        Math.floor(startAngle), Math.ceil(endAngle),
+                                                                                        range.currentRadius, startWidth,
+                                                                                        endWidth, range, axis
+                                                                                      ),
+                                                                            '', ''
+                                                                        ),
+                                                          rangeElement, gauge
+                                                           ));                        }
             }
-        });
+        }
+        );
         element.appendChild(rangeElement);
     }
 

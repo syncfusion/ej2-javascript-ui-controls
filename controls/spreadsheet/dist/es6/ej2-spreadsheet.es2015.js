@@ -1,12 +1,12 @@
 import { Base, Browser, ChildProperty, Collection, Complex, Component, Event as Event$1, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, attributes, closest, compile, detach, enableRipple, extend, formatUnit, getComponent, getDefaultDateObject, getNumberDependable, getNumericObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { ContextMenu, Item, Menu, MenuItem, Tab, Toolbar, TreeView } from '@syncfusion/ej2-navigations';
-import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
-import { Dialog, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
+import { ColorPicker, FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
-import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { AutoComplete, ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ListView } from '@syncfusion/ej2-lists';
+import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { Dialog, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { CheckBoxFilterBase, ExcelFilterBase, beforeCustomFilterOpen, beforeFltrcMenuOpen, filterCboxValue, parentsUntil } from '@syncfusion/ej2-grids';
 
 /**
@@ -15,6 +15,7 @@ import { CheckBoxFilterBase, ExcelFilterBase, beforeCustomFilterOpen, beforeFltr
 function getRangeIndexes(range) {
     let cellindexes;
     let indexes = [];
+    range = range.indexOf('!') > -1 ? range.split('!')[1] : range;
     range = range.indexOf(':') === -1 ? range + ':' + range : range;
     range.split(':').forEach((address) => {
         cellindexes = getCellIndexes(address);
@@ -78,6 +79,26 @@ function getIndexesFromAddress(address) {
  */
 function getRangeFromAddress(address) {
     return address.split('!')[1] || address;
+}
+/**
+ * Get complete address for selected range
+ * @hidden
+ */
+function getAddressFromSelectedRange(sheet) {
+    return sheet.name + '!' + sheet.selectedRange;
+}
+/**
+ * @hidden
+ */
+function getAddressInfo(context, address) {
+    let sIdx;
+    if (address.indexOf('!') > -1) {
+        sIdx = getSheetIndex(context, getSheetNameFromAddress(address));
+    }
+    else {
+        sIdx = context.activeSheetTab - 1;
+    }
+    return { sheetIndex: sIdx, indices: getIndexesFromAddress(address) };
 }
 /**
  * Given range will be swapped/arranged in increasing order.
@@ -268,7 +289,7 @@ function dateToInt(val, isTime) {
     let date = isDateTime(val) ? val : new Date(val);
     let timeDiff = (date.getTime() - startDate.getTime());
     let diffDays = (timeDiff / (1000 * 3600 * 24)) + 1;
-    return isTime ? diffDays + 1 : parseInt(diffDays.toString(), 10) + 2;
+    return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 /**
  * @hidden
@@ -305,6 +326,10 @@ function toDate(text, intl) {
             dObj.dateObj = intl.parseDate(text, { format: availabelDateTimeFormat[key], skeleton: key });
             if (dObj.dateObj) {
                 dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+                if (dObj.type === 'time') {
+                    let time = dObj.dateObj.toLocaleTimeString();
+                    dObj.dateObj = new Date('01/01/1900 ' + time);
+                }
                 dObj.isCustom = true;
                 break;
             }
@@ -314,6 +339,8 @@ function toDate(text, intl) {
         for (let key of Object.keys(defaultDateFormats.timeFormats)) {
             dObj.dateObj = intl.parseDate(text, { format: defaultDateFormats.timeFormats[key], skeleton: key });
             if (dObj.dateObj) {
+                let time = dObj.dateObj.toLocaleTimeString();
+                dObj.dateObj = new Date('01/01/1900 ' + time);
                 dObj.type = 'time';
                 dObj.isCustom = false;
                 break;
@@ -408,7 +435,63 @@ const filterRangeAlert = 'filterRangeAlert';
 /** @hidden */
 const clearAllFilter = 'clearAllFilter';
 /** @hidden */
+const wrapEvent = 'wrapText';
+/** @hidden */
 const onSave = 'onSave';
+/** @hidden */
+const insert = 'insert';
+/** @hidden */
+const deleteAction = 'delete';
+/** @hidden */
+const insertModel = 'insertModel';
+/** @hidden */
+const deleteModel = 'deleteModel';
+/** @hidden */
+const isValidation = 'isValidation';
+/** @hidden */
+const setValidation = 'setValidation';
+/** @hidden */
+const addHighlight = 'addHighlight';
+/** @hidden */
+const dataValidate = 'dataValidate';
+/** @hidden */
+const findNext = 'findNext';
+/** @hidden */
+const findPrevious = 'findPrevious';
+/** @hidden */
+const goto = 'gotoHandler';
+/** @hidden */
+const findWorkbookHandler = 'findHandler';
+/** @hidden */
+const replaceHandler = 'replace';
+/** @hidden */
+const replaceAllHandler = 'replaceAll';
+/** @hidden */
+const showDialog = 'ShowDialog';
+/** @hidden */
+const findUndoRedo = 'findUndoRedo';
+/** @hidden */
+const findKeyUp = 'findKeyUp';
+/** @hidden */
+const removeValidation = 'removeValidation';
+/** @hidden */
+const removeHighlight = 'removeHighlight';
+/** @hidden */
+const queryCellInfo = 'queryCellInfo';
+/** @hidden */
+const count = 'count';
+/** @hidden */
+const findCount = 'findCount';
+/** @hidden */
+const protectSheetWorkBook = 'protectSheet';
+/** @hidden */
+const updateToggle = 'updateToggleItem';
+/** @hidden */
+const protectsheetHandler = 'protectsheetHandler';
+/** @hidden */
+const replaceAllDialog = 'replaceAllDialog';
+/** @hidden */
+const workBookeditAlert = 'editAlert';
 
 /**
  * Specifies number format.
@@ -436,7 +519,6 @@ class WorkbookNumberFormat {
             for (let j = selectedRange[1]; j <= selectedRange[3]; j++) {
                 setCell(i, j, sheet, { format: args.format }, true);
                 cell = getCell(i, j, sheet, true);
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.getFormattedCell({
                     type: getTypeFromFormat(cell.format), value: cell.value,
                     format: cell.format, rowIndex: i, colIndex: j,
@@ -452,6 +534,7 @@ class WorkbookNumberFormat {
         let fResult = isNullOrUndefined(args.value) ? '' : args.value;
         let sheet = args.sheetIndex ? this.parent.sheets[args.sheetIndex - 1] : this.parent.getActiveSheet();
         let range = getRangeIndexes(sheet.activeCell);
+        let sheetIdx = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetTab;
         let cell = args.cell ? args.cell : getCell(range[0], range[1], sheet);
         let rightAlign = false;
         let currencySymbol = getNumberDependable(this.parent.locale, 'USD');
@@ -475,7 +558,7 @@ class WorkbookNumberFormat {
         }
         args.type = args.format ? getTypeFromFormat(args.format) : 'General';
         let result = this.processFormats(args, fResult, rightAlign, cell);
-        if (!args.onLoad && (this.parent.getActiveSheet().id - 1 === args.sheetIndex - 1)) {
+        if ((this.parent.getActiveSheet().id - 1 === sheetIdx - 1)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value,
                 rowIndex: args.rowIndex, colIndex: args.colIndex, sheetIndex: args.sheetIndex,
@@ -484,7 +567,6 @@ class WorkbookNumberFormat {
         }
         if (!args.onLoad && (args.rowIndex > sheet.usedRange.rowIndex || args.colIndex > sheet.usedRange.colIndex)) {
             this.parent.setUsedRange(args.rowIndex, args.colIndex);
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         args.formattedText = result.fResult || args.value;
         args.isRightAlign = result.rightAlign;
@@ -501,7 +583,8 @@ class WorkbookNumberFormat {
                 case 'General':
                     result = this.autoDetectGeneralFormat({
                         args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                        isRightAlign: isRightAlign, curCode: 'USD', cell: cell
+                        isRightAlign: isRightAlign, curCode: 'USD', cell: cell, rowIdx: Number(args.rowIdx),
+                        colIdx: Number(args.colIdx)
                     });
                     fResult = result.fResult;
                     isRightAlign = result.isRightAlign;
@@ -562,6 +645,7 @@ class WorkbookNumberFormat {
         return { fResult: fResult, rightAlign: isRightAlign };
     }
     autoDetectGeneralFormat(options) {
+        let range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         if (isNumber(options.fResult)) {
             if (options.args.format && options.args.format !== '') {
                 if (options.args.format.toString().indexOf('%') > -1) {
@@ -587,6 +671,7 @@ class WorkbookNumberFormat {
                 options.cell.format = options.args.format = getFormatFromType('Percentage');
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
+                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             }
             else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
@@ -595,9 +680,9 @@ class WorkbookNumberFormat {
                 options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
+                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             }
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         return { isRightAlign: options.isRightAlign, fResult: options.fResult };
     }
@@ -753,7 +838,7 @@ class WorkbookNumberFormat {
         let intl = new Internationalization();
         let value = !isNullOrUndefined(args.value) ? args.value.toString() : '';
         let cell = getCell(args.rowIndex, args.colIndex, getSheet(this.parent, (args.sheetIndex || this.parent.activeSheetTab) - 1));
-        if (value && value.indexOf('/') > -1 || value.indexOf('-') > -1 || value.indexOf(':') > -1) {
+        if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
             dateObj = toDate(value, intl);
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                 cell = cell ? cell : {};
@@ -766,7 +851,6 @@ class WorkbookNumberFormat {
                         cell.format = getFormatFromType('ShortDate');
                     }
                 }
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
                 args.isTime = dateObj.type === 'time';
                 args.dateObj = dateObj.dateObj;
@@ -926,19 +1010,12 @@ function getTypeFromFormat(format) {
 class DataBind {
     constructor(parent) {
         this.parent = parent;
+        this.requestedInfo = [];
         this.addEventListener();
     }
     addEventListener() {
         this.parent.on(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler, this);
         this.parent.on(dataSourceChanged, this.dataSourceChangedHandler, this);
-    }
-    /**
-     * Destroys the Data binding module.
-     * @return {void}
-     */
-    destroy() {
-        this.removeEventListener();
-        this.parent = null;
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
@@ -949,6 +1026,7 @@ class DataBind {
     /**
      * Update given data source to sheet.
      */
+    // tslint:disable-next-line
     updateSheetFromDataSourceHandler(args) {
         let cell;
         let flds;
@@ -991,17 +1069,26 @@ class DataBind {
                     sRange -= 1;
                 }
                 let isEndReached = false;
+                let insertRowCount = 0;
                 this.initRangeInfo(range);
                 let count = this.getMaxCount(range);
                 loadedInfo = this.getLoadedInfo(sRange, eRange, range);
                 sRange = loadedInfo.unloadedRange[0];
                 eRange = loadedInfo.unloadedRange[1];
+                if (range.info.insertRowRange) {
+                    range.info.insertRowRange.forEach((range) => {
+                        insertRowCount += ((range[1] - range[0]) + 1);
+                    });
+                    sRange -= insertRowCount;
+                    eRange -= insertRowCount;
+                }
                 if (sRange > count) {
                     isEndReached = true;
                 }
                 else if (eRange > count) {
                     eRange = count;
                 }
+                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange;
                     requestedRange.push(false);
@@ -1013,35 +1100,51 @@ class DataBind {
                         }
                         result = (e.result && e.result.result ? e.result.result : e.result);
                         if (result.length) {
-                            range.info.count = e.count;
+                            if (!range.info.count) {
+                                count = e.count;
+                                range.info.count = e.count;
+                            }
                             flds = Object.keys(result[0]);
-                            range.info.fldLen = flds.length;
+                            if (!range.info.fldLen) {
+                                range.info.fldLen = flds.length;
+                            }
                             sCellIdx = getRangeIndexes(range.startCell);
                             sRowIdx = sCellIdx[0];
                             sColIdx = sCellIdx[1];
-                            if (sRanges[k] === 0 && range.showFieldAsHeader) {
-                                flds.forEach((field, i) => {
-                                    cell = getCell(sRowIdx + sRanges[k], sColIdx + i, args.sheet, true);
-                                    if (!cell) {
-                                        args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = { value: field };
+                            if (range.info.insertColumnRange) {
+                                let insertCount = 0;
+                                range.info.insertColumnRange.forEach((insertRange) => {
+                                    for (let i = insertRange[0]; i <= insertRange[1]; i++) {
+                                        i <= sColIdx ? flds.splice(0, 0, `emptyCell${insertCount}`) : flds.splice(i - sColIdx, 0, `emptyCell${insertCount}`);
+                                        insertCount++;
                                     }
-                                    else if (!cell.value) {
+                                });
+                            }
+                            if (sRanges[k] === 0 && range.showFieldAsHeader) {
+                                rowIdx = sRowIdx + sRanges[k] + insertRowCount;
+                                flds.forEach((field, i) => {
+                                    cell = getCell(rowIdx, sColIdx + i, args.sheet, true);
+                                    if (!cell) {
+                                        args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
+                                            : { value: field };
+                                    }
+                                    else if (!cell.value && !field.includes('emptyCell')) {
                                         cell.value = field;
                                     }
                                 });
                             }
                             result.forEach((item, i) => {
+                                rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
                                 for (let j = 0; j < flds.length; j++) {
-                                    rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0);
                                     cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
                                     if (cell) {
-                                        if (!cell.value) {
+                                        if (!cell.value && !flds[j].includes('emptyCell')) {
                                             setCell(rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j]]), true);
                                         }
                                     }
                                     else {
-                                        args.sheet.rows[rowIdx]
-                                            .cells[sColIdx + j] = this.getCellDataFromProp(item[flds[j]]);
+                                        args.sheet.rows[rowIdx].cells[sColIdx + j] =
+                                            flds[j].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j]]);
                                     }
                                     this.checkDataForFormat({
                                         args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k,
@@ -1053,30 +1156,94 @@ class DataBind {
                         else {
                             flds = [];
                         }
-                        args.sheet.usedRange.rowIndex =
-                            Math.max(sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0), args.sheet.usedRange.rowIndex);
+                        args.sheet.usedRange.rowIndex = Math.max((sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1, args.sheet.usedRange.rowIndex);
                         args.sheet.usedRange.colIndex = Math.max(sColIdx + flds.length - 1, args.sheet.usedRange.colIndex);
-                        range.info.loadedRange.push([sRange, eRange]);
+                        if (insertRowCount) {
+                            loadedInfo = this.getLoadedInfo(sRange, eRange, range);
+                            sRange = loadedInfo.unloadedRange[0];
+                            eRange = loadedInfo.unloadedRange[1];
+                            if (sRange > count) {
+                                loadedInfo.isNotLoaded = false;
+                            }
+                            if (loadedInfo.isNotLoaded) {
+                                if (eRange > count) {
+                                    eRange = count;
+                                }
+                                range.info.loadedRange.push([sRange, eRange]);
+                            }
+                        }
+                        else {
+                            range.info.loadedRange.push([sRange, eRange]);
+                        }
                         requestedRange[k] = true;
                         if (requestedRange.indexOf(false) === -1) {
-                            if (remoteUrl) {
-                                this.updateSheetFromDataSourceHandler({
+                            if (eRange + sRowIdx < args.sheet.usedRange.rowIndex) {
+                                if (!args.rangeSettingCount) {
+                                    args.rangeSettingCount = [];
+                                }
+                                args.rangeSettingCount.push(k);
+                                //if (remoteUrl) {
+                                let unloadedArgs = {
                                     sheet: args.sheet, indexes: [0, 0, args.sheet.usedRange.rowIndex, args.sheet.usedRange.colIndex],
-                                    promise: new Promise((resolve) => { resolve((() => { })()); })
+                                    promise: new Promise((resolve, reject) => { resolve((() => { })()); }),
+                                    rangeSettingCount: args.rangeSettingCount
+                                };
+                                this.updateSheetFromDataSourceHandler(unloadedArgs);
+                                unloadedArgs.promise.then(() => {
+                                    if (this.parent.getModuleName() === 'workbook') {
+                                        return;
+                                    }
+                                    args.rangeSettingCount.pop();
+                                    if (!args.rangeSettingCount.length) {
+                                        this.parent.notify('created', null);
+                                    }
                                 });
+                                //}
                             }
-                            deferred.resolve();
+                            this.checkResolve(args.indexes);
                         }
                     });
                 }
                 else if (k === 0 && requestedRange.indexOf(false) === -1) {
-                    deferred.resolve();
+                    this.checkResolve(args.indexes);
                 }
             }
         }
         else {
             deferred.resolve();
         }
+    }
+    checkResolve(indexes) {
+        let resolved;
+        let isSameRng;
+        let cnt = 0;
+        this.requestedInfo.forEach((info, idx) => {
+            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes);
+            if (isSameRng || resolved) {
+                if (idx === 0) {
+                    info.deferred.resolve();
+                    cnt++;
+                    resolved = true;
+                }
+                else {
+                    if (resolved && (info.isLoaded || !info.isNotLoaded)) {
+                        info.deferred.resolve();
+                        cnt++;
+                    }
+                    else if (isSameRng && resolved) {
+                        info.deferred.resolve();
+                        cnt++;
+                    }
+                    else if (isSameRng) {
+                        info.isLoaded = true;
+                    }
+                    else {
+                        resolved = false;
+                    }
+                }
+            }
+        });
+        this.requestedInfo.splice(0, cnt);
     }
     getCellDataFromProp(prop) {
         let data = {};
@@ -1219,6 +1386,15 @@ class DataBind {
     getModuleName() {
         return 'dataBind';
     }
+    /**
+     * Destroys the Data binding module.
+     * @return {void}
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+        this.requestedInfo = [];
+    }
 }
 
 /**
@@ -1279,7 +1455,7 @@ const selectionComplete = 'selectionComplete';
 /** @hidden */
 const cMenuBeforeOpen = 'contextmenuBeforeOpen';
 /** @hidden */
-const addSheetTab = 'addSheetTab';
+const insertSheetTab = 'insertSheetTab';
 /** @hidden */
 const removeSheetTab = 'removeSheetTab';
 /** @hidden */
@@ -1351,9 +1527,7 @@ const applySort = 'applySort';
 /** @hidden */
 const collaborativeUpdate = 'collaborativeUpdate';
 /** @hidden */
-const hideShowRow = 'hideShowRow';
-/** @hidden */
-const hideShowCol = 'hideShowCol';
+const hideShow = 'hideShow';
 /** @hidden */
 const autoFit = 'autoFitRowsColumns';
 /** @hidden */
@@ -1406,6 +1580,42 @@ const getFilterRange = 'getFilterRange';
 const setAutoFit = 'setAutoFit';
 /** @hidden */
 const refreshFormulaDatasource = 'refreshFormulaDatasource';
+/** @hidden */
+const setScrollEvent = 'setScrollEvent';
+/** @hidden */
+const initiateDataValidation = 'initiatedatavalidation';
+/** @hidden */
+const validationError = 'validationError';
+/** @hidden */
+const startEdit = 'startEdit';
+/** @hidden */
+const invalidData = 'invalidData';
+/** @hidden */
+const clearInvalid = 'clearInvalid';
+/** @hidden */
+const protectSheet = 'protectSheet';
+/** @hidden */
+const applyProtect = 'applyProtect';
+/** @hidden */
+const protectCellFormat = 'protectCellFormat';
+/** @hidden */
+const gotoDlg = 'renderGotoDlgt';
+/** @hidden */
+const findDlg = 'renderFindDlg';
+/** @hidden */
+const findHandler = 'findHandler';
+/** @hidden */
+const replace = 'replaceHandler';
+/** @hidden */
+const created = 'created';
+/** @hidden */
+const editAlert = 'editAlert';
+/** @hidden */
+const setUndoRedo = 'setUndoRedo';
+/** @hidden */
+const enableFormulaInput = 'enableFormulaInput';
+/** @hidden */
+const protectSelection = 'protectSelection';
 
 /**
  * Open properties.
@@ -1502,10 +1712,8 @@ class WorkbookOpen {
             'activeSheetTab': workbookModel.activeSheetTab,
             'definedNames': workbookModel.definedNames || []
         }, true);
+        initSheet(this.parent);
         this.parent.notify(sheetCreated, null);
-        this.parent.sheets.forEach((key) => {
-            key.id = getMaxSheetId(this.parent.sheets);
-        });
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
     }
@@ -1698,10 +1906,10 @@ class WorkbookSave extends SaveWorker {
     updateBasicSettings() {
         let jsonStr = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
-            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
-            'contextMenuBeforeOpen', 'created', 'dataBound', 'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure',
+            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
+            'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
-            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete']);
+            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo']);
         let basicSettings = JSON.parse(jsonStr);
         let sheetCount = this.parent.sheets.length;
         if (sheetCount) {
@@ -2603,8 +2811,8 @@ class BasicFormulas {
         if (startDate[0] === '#') {
             return startDate;
         }
-        let d1 = this.parent.parseDate(endDate);
-        let d2 = this.parent.parseDate(startDate);
+        let d1 = this.parent.intToDate(endDate);
+        let d2 = this.parent.intToDate(startDate);
         if (d1.toString()[0] === '#') {
             return d1.toString();
         }
@@ -4665,7 +4873,7 @@ class Parser {
     ;
 }
 
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -4980,6 +5188,15 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         else {
             return null;
         }
+    }
+    /** @hidden */
+    intToDate(val) {
+        let dateVal = Number(val);
+        dateVal = (dateVal > 0 && dateVal < 1) ? (1 + dateVal) : (dateVal === 0) ? 1 : dateVal;
+        if (dateVal > 60) {
+            dateVal -= 1; // Due to leap year issue of 1900 in MSExcel.
+        }
+        return new Date(((dateVal - 1) * (1000 * 3600 * 24)) + new Date('01/01/1900').getTime());
     }
     getFormulaInfoTable() {
         if (this.isSheetMember()) {
@@ -5401,6 +5618,14 @@ let Calculate = Calculate_1 = class Calculate extends Base {
                     let libFormula = sFormula.split(this.leftBracket)[0].split('q').join(this.emptyString);
                     let args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
                         .split(this.getParseArgumentSeparator());
+                    if (this.getLibraryFormulas().get(libFormula.toUpperCase()).isCustom) {
+                        let j = 0;
+                        let customArgs = [];
+                        for (j = 0; j < args.length; j++) {
+                            customArgs.push(this.getValueFromArg(args[j]));
+                        }
+                        args = customArgs;
+                    }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
                         this.getFunction(libFormula)(...args);
                     if (nestedFormula) {
@@ -7019,6 +7244,15 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         }
     }
     ;
+    /**
+     * @hidden
+     */
+    computeExpression(formula) {
+        let parsedFormula = this.parser.parseFormula(formula);
+        let calcValue = this.computeFormula(parsedFormula);
+        return calcValue;
+    }
+    ;
     isSheetMember() {
         let family = this.getSheetFamilyItem(this.grid);
         return isNullOrUndefined(family) ? false : family.isSheetMember;
@@ -7128,13 +7362,13 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         }
     }
 };
-__decorate$4([
+__decorate$2([
     Property(true)
 ], Calculate.prototype, "includeBasicFormulas", void 0);
-__decorate$4([
+__decorate$2([
     Event$1()
 ], Calculate.prototype, "onFailure", void 0);
-Calculate = Calculate_1 = __decorate$4([
+Calculate = Calculate_1 = __decorate$2([
     NotifyPropertyChanges
 ], Calculate);
 /** @hidden */
@@ -7302,7 +7536,6 @@ class WorkbookFormula {
         this.addEventListener();
         this.initCalculate();
         this.registerSheet();
-        this.initiateDefinedNames();
     }
     /**
      * To destroy the formula module.
@@ -7423,6 +7656,9 @@ class WorkbookFormula {
                 break;
             case 'addCustomFunction':
                 this.addCustomFunction(args.functionHandler, args.functionName);
+                break;
+            case 'computeExpression':
+                args.calcValue = this.calculateInstance.computeExpression(args.formula);
                 break;
         }
     }
@@ -7643,8 +7879,11 @@ class WorkbookFormula {
         }
     }
     autoCorrectFormula(formula) {
-        if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
-            formula += ')';
+        if (!isNullOrUndefined(formula)) {
+            formula = formula.toString();
+            if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
+                formula += ')';
+            }
         }
         return formula;
     }
@@ -7654,7 +7893,7 @@ class WorkbookFormula {
         let i = 0;
         while (i < len) {
             let definedname = definedNames[i];
-            this.addDefinedName(definedname);
+            this.addDefinedName(definedname, true);
             i++;
         }
     }
@@ -7663,12 +7902,18 @@ class WorkbookFormula {
      * Used to add defined name to workbook.
      * @param {DefineNameModel} name - Define named range.
      */
-    addDefinedName(definedName) {
+    addDefinedName(definedName, isValidate) {
         let isAdded = true;
         let sheetIdx;
         let name = definedName.name;
-        let refersTo = definedName.refersTo.indexOf('!') > 0 ? definedName.refersTo :
-            getSheetName(this.parent) + '!' + definedName.refersTo;
+        if (definedName.refersTo.indexOf('!') < 0) {
+            let sheetName = getSheetName(this.parent);
+            sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
+            definedName.refersTo = sheetName + '!' + ((definedName.refersTo.indexOf('=') < 0) ?
+                definedName.refersTo : definedName.refersTo.split('=')[1]);
+        }
+        let visibleRefersTo = definedName.refersTo;
+        let refersTo = this.parseSheetRef(definedName.refersTo);
         if (definedName.scope) {
             sheetIdx = getSheetIndex(this.parent, definedName.scope);
             if (sheetIdx > -1) {
@@ -7682,15 +7927,17 @@ class WorkbookFormula {
             definedName.comment = '';
         }
         //need to extend once internal sheet value changes done.
-        if (this.checkIsNameExist(definedName.name, definedName.scope)) {
+        if (!isValidate && this.checkIsNameExist(definedName.name, definedName.scope)) {
             isAdded = false;
         }
         else {
             this.calculateInstance.addNamedRange(name, refersTo[0] === '=' ? refersTo.substr(1) : refersTo);
             if (refersTo[0] !== '=') {
-                definedName.refersTo = '=' + refersTo;
+                definedName.refersTo = '=' + visibleRefersTo;
             }
-            this.parent.definedNames.push(definedName);
+            if (this.parent.definedNames.indexOf(definedName) < 0) {
+                this.parent.definedNames.push(definedName);
+            }
         }
         return isAdded;
     }
@@ -7795,7 +8042,7 @@ class WorkbookSort {
         let sortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
         let isSingleCell = false;
         eventArgs.promise = deferred.promise;
-        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+        if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             deferred.reject(this.parent.serviceLocator.getService(workbookLocale).getConstant('SortOutOfRangeError'));
             return;
         }
@@ -7803,7 +8050,7 @@ class WorkbookSort {
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
-            range[2] = sheet.usedRange.rowIndex - 1;
+            range[2] = sheet.usedRange.rowIndex;
             range[3] = sheet.usedRange.colIndex;
             isSingleCell = true;
             containsHeader = isNullOrUndefined(sortOptions.containsHeader) ? true : sortOptions.containsHeader;
@@ -7955,7 +8202,7 @@ class WorkbookFilter {
         }
         else {
             let range = getSwapRange(getIndexesFromAddress(args.range));
-            if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+            if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
                 deferred.reject('Select a cell or range inside the used range and try again.');
                 return;
             }
@@ -7964,7 +8211,7 @@ class WorkbookFilter {
                 range[1] = 0;
                 range[3] = sheet.usedRange.colIndex;
             }
-            range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+            range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             range[0] = range[0] + 1; //ignore first row        
             let address = getRangeAddress(range);
             getData(this.parent, `${sheet.name}!${address}`, true, true).then((jsonData) => {
@@ -7991,7 +8238,7 @@ class WorkbookFilter {
                 if (!data) {
                     return;
                 }
-                this.parent.showHideRow(result.indexOf(data) < 0, parseInt(data[rowKey], 10) - 1);
+                this.parent.hideRow(parseInt(data[rowKey], 10) - 1, undefined, result.indexOf(data) < 0);
             });
         }
     }
@@ -8002,7 +8249,7 @@ class WorkbookFilter {
         if (this.filterRange) {
             let range = getCellIndexes(this.filterRange);
             let sheet = this.parent.getActiveSheet();
-            this.parent.showHideRow(false, range[0], sheet.usedRange.rowIndex - 1);
+            this.parent.hideRow(range[0], sheet.usedRange.rowIndex - 1, false);
         }
     }
     /**
@@ -8029,6 +8276,7 @@ class WorkbookCellFormat {
     format(args) {
         let sheet;
         let rng = args.range;
+        let eventArgs;
         if (rng && typeof rng === 'string' && rng.indexOf('!') > -1) {
             rng = rng.split('!')[1];
             sheet = this.parent.sheets[getSheetIndex(this.parent, args.range.split('!')[0])];
@@ -8036,7 +8284,6 @@ class WorkbookCellFormat {
         else {
             sheet = this.parent.getActiveSheet();
         }
-        let eventArgs;
         if (rng === undefined) {
             rng = sheet.selectedRange;
         }
@@ -8052,26 +8299,143 @@ class WorkbookCellFormat {
         }
         let indexes = typeof (eventArgs.range) === 'object' ? eventArgs.range :
             getSwapRange(getRangeIndexes(eventArgs.range));
-        for (let i = indexes[0]; i <= indexes[2]; i++) {
-            for (let j = indexes[1]; j <= indexes[3]; j++) {
-                setCell(i, j, sheet, { style: eventArgs.style }, true);
-                if (this.parent.getActiveSheet().id === sheet.id) {
-                    this.parent.notify(applyCellFormat, {
-                        style: eventArgs.style, rowIdx: i, colIdx: j, lastCell: j === indexes[3],
-                        isHeightCheckNeeded: true, manualUpdate: true,
-                        onActionUpdate: args.onActionUpdate
-                    });
+        if (args.borderType) {
+            this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate);
+            delete args.style.border;
+        }
+        if (eventArgs.style.borderTop !== undefined) {
+            for (let i = indexes[1]; i <= indexes[3]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderBottom', indexes[0] - 1, i);
+                this.checkFullBorder(sheet, 'borderBottom', indexes[0] - 1, i);
+                this.checkFullBorder(sheet, 'borderTop', indexes[0], i);
+                this.setCellBorder(sheet, { borderTop: eventArgs.style.borderTop }, indexes[0], i, args.onActionUpdate, i === indexes[3]);
+            }
+            delete eventArgs.style.borderTop;
+        }
+        if (eventArgs.style.borderBottom !== undefined) {
+            for (let i = indexes[1]; i <= indexes[3]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderTop', indexes[2] + 1, i);
+                this.checkFullBorder(sheet, 'borderTop', indexes[2] + 1, i);
+                this.checkFullBorder(sheet, 'borderBottom', indexes[2], i);
+                this.setCellBorder(sheet, { borderBottom: eventArgs.style.borderBottom }, indexes[2], i, args.onActionUpdate, i === indexes[3]);
+                this.setBottomBorderPriority(sheet, indexes[2], i);
+            }
+            delete eventArgs.style.borderBottom;
+        }
+        if (eventArgs.style.borderLeft !== undefined) {
+            for (let i = indexes[0]; i <= indexes[2]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderRight', i, indexes[1] - 1);
+                this.checkFullBorder(sheet, 'borderRight', i, indexes[1] - 1);
+                this.checkFullBorder(sheet, 'borderLeft', i, indexes[1]);
+                this.setCellBorder(sheet, { borderLeft: eventArgs.style.borderLeft }, i, indexes[1], args.onActionUpdate);
+            }
+            delete eventArgs.style.borderLeft;
+        }
+        if (eventArgs.style.borderRight !== undefined) {
+            for (let i = indexes[0]; i <= indexes[2]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderLeft', i, indexes[3] - 1);
+                this.checkFullBorder(sheet, 'borderLeft', i, indexes[3] - 1);
+                this.checkFullBorder(sheet, 'borderRight', i, indexes[3]);
+                this.setCellBorder(sheet, { borderRight: eventArgs.style.borderRight }, i, indexes[3], args.onActionUpdate);
+            }
+            delete eventArgs.style.borderRight;
+        }
+        let border;
+        let isFullBorder;
+        if (Object.keys(args.style).length) {
+            for (let i = indexes[0]; i <= indexes[2]; i++) {
+                for (let j = indexes[1]; j <= indexes[3]; j++) {
+                    if (isFullBorder === undefined) {
+                        if (eventArgs.style.border !== undefined) {
+                            border = eventArgs.style.border;
+                            eventArgs.style.border = undefined;
+                            isFullBorder = true;
+                        }
+                        else {
+                            isFullBorder = false;
+                        }
+                    }
+                    if (isFullBorder) {
+                        this.setFullBorder(sheet, border, indexes, i, j, args.onActionUpdate);
+                    }
+                    this.setCellStyle(sheet, i, j, eventArgs.style);
+                    if (this.parent.getActiveSheet().id === sheet.id) {
+                        this.parent.notify(applyCellFormat, { style: eventArgs.style, rowIdx: i, colIdx: j,
+                            lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate
+                        });
+                    }
                 }
             }
+        }
+        if (isFullBorder) {
+            eventArgs.style.border = border;
         }
         this.parent.setUsedRange(indexes[2], indexes[3]);
         if (args.refreshRibbon) {
             this.parent.notify(activeCellChanged, null);
         }
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         if (triggerEvent) {
-            eventArgs.range = sheet.name + '!' + rng;
+            eventArgs.range = `${sheet.name}!${rng}`;
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+        }
+    }
+    setBottomBorderPriority(sheet, rowIdx, colIdx) {
+        if (isHiddenRow(sheet, rowIdx + 1)) {
+            let pIdx = this.skipHiddenRows(sheet, rowIdx + 1);
+            let pCellStyle = this.parent.getCellStyleValue(['borderTop'], [pIdx, colIdx]).borderTop;
+            if (pCellStyle !== '') {
+                sheet.rows[rowIdx].cells[colIdx].style.bottomPriority = true;
+            }
+        }
+    }
+    setFullBorder(sheet, border, indexes, i, j, actionUpdate) {
+        let style = {};
+        if (i === indexes[0]) {
+            this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
+            this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
+        }
+        if (j === indexes[1]) {
+            this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1);
+            this.checkFullBorder(sheet, 'borderRight', i, j - 1);
+        }
+        if (j === indexes[3]) {
+            this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1);
+            this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+        }
+        else {
+            this.checkAdjustantBorder(sheet, 'border', i, j + 1);
+        }
+        style.borderRight = border;
+        style.borderTop = border;
+        style.borderLeft = border;
+        style.borderBottom = border;
+        this.setCellBorder(sheet, style, i, j, actionUpdate, j === indexes[3]);
+        if (i === indexes[2]) {
+            this.checkAdjustantBorder(sheet, 'borderTop', i + 1, j);
+            this.checkFullBorder(sheet, 'borderTop', i + 1, j);
+            this.setBottomBorderPriority(sheet, i, j);
+        }
+        else {
+            this.checkAdjustantBorder(sheet, 'border', i + 1, j);
+        }
+    }
+    checkAdjustantBorder(sheet, prop, rowIdx, colIdx) {
+        let style = {};
+        if (this.parent.getCellStyleValue([prop], [rowIdx, colIdx])[prop] !== '') {
+            style[prop] = undefined;
+            this.setCellStyle(sheet, rowIdx, colIdx, style);
+        }
+    }
+    checkFullBorder(sheet, prop, rowIdx, colIdx) {
+        let border = this.parent.getCellStyleValue(['border'], [rowIdx, colIdx]).border;
+        if (border !== '') {
+            let style = { border: undefined };
+            ['borderBottom', 'borderTop', 'borderLeft', 'borderRight'].forEach((value) => {
+                if (value !== prop) {
+                    style[value] = border;
+                }
+            });
+            this.setCellStyle(sheet, rowIdx, colIdx, style);
         }
     }
     textDecorationActionUpdate(args) {
@@ -8149,6 +8513,130 @@ class WorkbookCellFormat {
         }
         eventArgs.range = sheet.name + '!' + eventArgs.range;
         this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+    }
+    setTypedBorder(sheet, border, range, type, actionUpdate) {
+        let prevBorder;
+        if (type === 'Outer') {
+            for (let colIdx = range[1]; colIdx <= range[3]; colIdx++) {
+                this.checkAdjustantBorder(sheet, 'borderBottom', range[0] - 1, colIdx);
+                this.checkFullBorder(sheet, 'borderBottom', range[0] - 1, colIdx);
+                this.setCellBorder(sheet, { borderTop: border }, range[0], colIdx, actionUpdate, colIdx === range[3]);
+                this.checkAdjustantBorder(sheet, 'borderTop', range[2] + 1, colIdx);
+                this.checkFullBorder(sheet, 'borderTop', range[2] + 1, colIdx);
+                this.setCellBorder(sheet, { borderBottom: border }, range[2], colIdx, actionUpdate, colIdx === range[3]);
+                this.setBottomBorderPriority(sheet, range[2], colIdx);
+            }
+            for (let rowIdx = range[0]; rowIdx <= range[2]; rowIdx++) {
+                this.checkAdjustantBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
+                this.checkFullBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
+                this.setCellBorder(sheet, { borderLeft: border }, rowIdx, range[1], actionUpdate);
+                this.checkAdjustantBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
+                this.checkFullBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
+                this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[3], actionUpdate);
+            }
+        }
+        else if (type === 'Inner') {
+            for (let i = range[0]; i <= range[2]; i++) {
+                for (let j = range[1]; j <= range[3]; j++) {
+                    let style = {};
+                    prevBorder = this.parent.getCellStyleValue(['border'], [i, j]).border;
+                    if (prevBorder !== '') {
+                        style.border = undefined;
+                        if (j === range[3] || j === range[1] || i === range[0] || i === range[2]) {
+                            if (i === range[0]) {
+                                style.borderTop = prevBorder;
+                            }
+                            if (i === range[2]) {
+                                style.borderBottom = prevBorder;
+                            }
+                            if (j === range[3]) {
+                                style.borderRight = prevBorder;
+                            }
+                            if (j === range[1]) {
+                                style.borderLeft = prevBorder;
+                            }
+                        }
+                    }
+                    if (j !== range[3]) {
+                        style.borderRight = border;
+                    }
+                    if (i !== range[0]) {
+                        style.borderTop = border;
+                    }
+                    if (i !== range[2]) {
+                        style.borderBottom = border;
+                    }
+                    if (j !== range[1]) {
+                        style.borderLeft = border;
+                    }
+                    this.setCellBorder(sheet, style, i, j, actionUpdate, j === range[3]);
+                }
+            }
+        }
+        else if (type === 'Vertical') {
+            for (let i = range[0]; i <= range[2]; i++) {
+                for (let j = range[1]; j <= range[3]; j++) {
+                    let style = { borderRight: border, borderLeft: border };
+                    if (j === range[1]) {
+                        this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1);
+                        this.checkFullBorder(sheet, 'borderRight', i, j - 1);
+                    }
+                    if (j === range[3]) {
+                        this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1);
+                        this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+                    }
+                    this.setCellBorder(sheet, style, i, j, actionUpdate);
+                }
+            }
+        }
+        else {
+            for (let i = range[0]; i <= range[2]; i++) {
+                for (let j = range[1]; j <= range[3]; j++) {
+                    let style = { borderTop: border, borderBottom: border };
+                    if (i === range[0]) {
+                        this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
+                        this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
+                    }
+                    this.setCellBorder(sheet, style, i, j, actionUpdate, j === range[3]);
+                    if (i === range[2]) {
+                        this.checkAdjustantBorder(sheet, 'borderTop', i + 1, j);
+                        this.checkFullBorder(sheet, 'borderTop', i + 1, j);
+                        this.setBottomBorderPriority(sheet, i, j);
+                    }
+                }
+            }
+        }
+    }
+    setCellBorder(sheet, style, rowIdx, colIdx, actionUpdate, lastCell) {
+        this.setCellStyle(sheet, rowIdx, colIdx, style);
+        if (this.parent.getActiveSheet().id === sheet.id) {
+            this.parent.notify(applyCellFormat, {
+                style: style, rowIdx: rowIdx, colIdx: colIdx, onActionUpdate: actionUpdate, first: '', lastCell: lastCell,
+                isHeightCheckNeeded: true, manualUpdate: true
+            });
+        }
+    }
+    setCellStyle(sheet, rowIdx, colIdx, style) {
+        if (!sheet.rows[rowIdx]) {
+            sheet.rows[rowIdx] = { cells: [] };
+        }
+        else if (!sheet.rows[rowIdx].cells) {
+            sheet.rows[rowIdx].cells = [];
+        }
+        if (!sheet.rows[rowIdx].cells[colIdx]) {
+            sheet.rows[rowIdx].cells[colIdx] = {};
+        }
+        if (!sheet.rows[rowIdx].cells[colIdx].style) {
+            sheet.rows[rowIdx].cells[colIdx].style = {};
+        }
+        Object.assign(sheet.rows[rowIdx].cells[colIdx].style, style, null, true);
+    }
+    skipHiddenRows(sheet, startIdx) {
+        startIdx++;
+        if (isHiddenRow(sheet, startIdx)) {
+            startIdx = this.skipHiddenRows(sheet, startIdx);
+        }
+        return startIdx;
     }
     addEventListener() {
         this.parent.on(setCellFormat, this.format, this);
@@ -8281,7 +8769,6 @@ class WorkbookEdit {
             this.parent.notify(checkDateFormat, dateEventArgs);
             if (!isNullOrUndefined(dateEventArgs.updatedVal) && dateEventArgs.updatedVal.length > 0) {
                 cell.value = dateEventArgs.updatedVal;
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
             }
         }
         else {
@@ -8289,7 +8776,6 @@ class WorkbookEdit {
                 value = this.checkDecimalPoint(value);
             }
             cell.value = value;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         this.parent.setUsedRange(range[0] + 1, range[1]);
     }
@@ -8383,6 +8869,1381 @@ class WorkbookHyperlink {
 }
 
 /**
+ * The `WorkbookInsert` module is used to insert cells, rows, columns and sheets in to workbook.
+ */
+class WorkbookInsert {
+    /**
+     * Constructor for the workbook insert module.
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    insertModel(args) {
+        let index;
+        let model = [];
+        if (typeof (args.start) === 'number') {
+            index = args.start;
+            args.end = args.end || index;
+            if (index > args.end) {
+                index = args.end;
+                args.end = args.start;
+            }
+            for (let i = index; i <= args.end; i++) {
+                model.push({});
+            }
+        }
+        else {
+            if (args.start) {
+                index = args.start[0].index || 0;
+                model = args.start;
+            }
+            else {
+                index = 0;
+                model.push({});
+            }
+        }
+        if (args.modelType === 'Row') {
+            args.model = args.model;
+            if (!args.model.rows) {
+                args.model.rows = [];
+            }
+            args.model.rows.splice(index, 0, ...model);
+            //this.setInsertInfo(args.model, index, model.length, 'count');
+            if (index > args.model.usedRange.rowIndex) {
+                this.parent.setUsedRange(index + (model.length - 1), args.model.usedRange.colIndex);
+            }
+            else {
+                this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex);
+            }
+        }
+        else if (args.modelType === 'Column') {
+            args.model = args.model;
+            if (!args.model.columns) {
+                args.model.columns = [];
+            }
+            args.model.columns.splice(index, 0, ...model);
+            //this.setInsertInfo(args.model, index, model.length, 'fldLen', 'Column');
+            if (index > args.model.usedRange.colIndex) {
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, index + (model.length - 1));
+            }
+            else {
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, args.model.usedRange.colIndex + model.length);
+            }
+            if (!args.model.rows) {
+                args.model.rows = [];
+            }
+            let cellModel = [];
+            if (!args.columnCellsModel) {
+                args.columnCellsModel = [];
+            }
+            for (let i = 0; i < model.length; i++) {
+                cellModel.push({});
+            }
+            for (let i = 0; i <= args.model.usedRange.rowIndex; i++) {
+                if (!args.model.rows[i]) {
+                    args.model.rows[i] = { cells: [] };
+                }
+                else if (!args.model.rows[i].cells) {
+                    args.model.rows[i].cells = [];
+                }
+                if (index && !args.model.rows[i].cells[index - 1]) {
+                    args.model.rows[i].cells[index - 1] = {};
+                }
+                args.model.rows[i].cells.splice(index, 0, ...(args.columnCellsModel[i] && args.columnCellsModel[i].cells ?
+                    args.columnCellsModel[i].cells : cellModel));
+            }
+        }
+        else {
+            if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) {
+                return;
+            }
+            this.parent.createSheet(index, model);
+            let id;
+            if (args.activeSheetTab) {
+                this.parent.setProperties({ activeSheetTab: args.activeSheetTab }, true);
+            }
+            model.forEach((sheet) => {
+                id = sheet.id;
+                this.parent.notify(workbookFormulaOperation, { action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id,
+                    index: id });
+            });
+        }
+        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetTab: args.activeSheetTab, sheetCount: this.parent.sheets.length });
+    }
+    setInsertInfo(sheet, startIndex, count, totalKey, modelType = 'Row') {
+        let endIndex = count = startIndex + (count - 1);
+        sheet.rangeSettings.forEach((range) => {
+            if (range.info && startIndex < range.info[totalKey]) {
+                if (!range.info[`insert${modelType}Range`]) {
+                    range.info[`insert${modelType}Range`] = [[startIndex, endIndex]];
+                }
+                else {
+                    range.info[`insert${modelType}Range`].push([startIndex, endIndex]);
+                }
+                range.info[totalKey] += ((endIndex - startIndex) + 1);
+            }
+        });
+    }
+    addEventListener() {
+        this.parent.on(insertModel, this.insertModel, this);
+    }
+    /**
+     * Destroy workbook insert module.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(insertModel, this.insertModel);
+        }
+    }
+    /**
+     * Get the workbook insert module name.
+     */
+    getModuleName() {
+        return 'workbookinsert';
+    }
+}
+
+/**
+ * The `WorkbookDelete` module is used to delete cells, rows, columns and sheets from workbook.
+ */
+class WorkbookDelete {
+    /**
+     * Constructor for the workbook delete module.
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    deleteModel(args) {
+        let modelName = `${args.modelType.toLowerCase()}s`;
+        args.start = args.start;
+        if (args.start > args.end) {
+            let temp = args.start;
+            args.start = args.end;
+            args.end = temp;
+        }
+        let deletedCells;
+        if (args.modelType === 'Row') {
+            args.model = args.model;
+            if (args.start > args.model.usedRange.rowIndex) {
+                return;
+            }
+            if (args.end > args.model.usedRange.rowIndex) {
+                args.end -= (args.end - args.model.usedRange.rowIndex);
+            }
+            args.model.usedRange.rowIndex -= ((args.end - args.start) + 1);
+            if (args.model.usedRange.rowIndex < 0) {
+                args.model.usedRange.rowIndex = 0;
+            }
+            this.parent.notify(updateUsedRange, { index: args.model.usedRange.rowIndex, update: 'row' });
+        }
+        else if (args.modelType === 'Column') {
+            args.model = args.model;
+            if (args.start > args.model.usedRange.colIndex) {
+                return;
+            }
+            if (args.end > args.model.usedRange.colIndex) {
+                args.end -= (args.end - args.model.usedRange.colIndex);
+            }
+            let count = (args.end - args.start) + 1;
+            args.model.usedRange.colIndex -= count;
+            if (args.model.usedRange.colIndex < 0) {
+                args.model.usedRange.colIndex = 0;
+            }
+            //this.setDeleteInfo(args.start, args.end, 'fldLen', 'Column');
+            this.parent.notify(updateUsedRange, { index: args.model.usedRange.colIndex, update: 'col' });
+            deletedCells = [];
+            for (let i = 0; i <= args.model.usedRange.rowIndex; i++) {
+                deletedCells.push({});
+                if (args.model.rows[i] && args.model.rows[i].cells) {
+                    deletedCells[i].cells = (args.model.rows[i].cells.splice(args.start, count));
+                }
+            }
+        }
+        let deletedModel = [];
+        for (let i = args.start; i <= args.end; i++) {
+            if (args.model[modelName][args.start]) {
+                deletedModel.push(args.model[modelName][args.start]);
+                args.model[modelName].splice(args.start, 1);
+            }
+            else {
+                deletedModel.push({});
+            }
+            if (i === args.start) {
+                deletedModel[0].index = args.start;
+            }
+        }
+        this.parent.notify(deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+            isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells });
+    }
+    setDeleteInfo(startIndex, endIndex, totalKey, modelType = 'Row') {
+        let total = (endIndex - startIndex) + 1;
+        let newRange = [];
+        this.parent.getActiveSheet().rangeSettings.forEach((range) => {
+            if (range.info && startIndex < range.info[totalKey]) {
+                if (range.info[`delete${modelType}Range`]) {
+                    range.info[`delete${modelType}Range`].push([startIndex, endIndex]);
+                }
+                else {
+                    range.info[`delete${modelType}Range`] = [[startIndex, endIndex]];
+                }
+                range.info[totalKey] -= total;
+                if (range.info[`insert${modelType}Range`]) {
+                    range.info[`insert${modelType}Range`] = newRange;
+                }
+            }
+        });
+    }
+    addEventListener() {
+        this.parent.on(deleteModel, this.deleteModel, this);
+    }
+    /**
+     * Destroy workbook delete module.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(deleteModel, this.deleteModel);
+        }
+    }
+    /**
+     * Get the workbook delete module name.
+     */
+    getModuleName() {
+        return 'workbookdelete';
+    }
+}
+
+/**
+ * The `WorkbookHyperlink` module is used to handle Hyperlink action in Spreadsheet.
+ */
+class WorkbookDataValidation {
+    /**
+     * Constructor for WorkbookSort module.
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the sort module.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    addEventListener() {
+        this.parent.on(setValidation, this.addValidationHandler, this);
+        this.parent.on(removeValidation, this.removeValidationHandler, this);
+        this.parent.on(addHighlight, this.addHighlightHandler, this);
+        this.parent.on(removeHighlight, this.removeHighlightHandler, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(setValidation, this.addValidationHandler);
+            this.parent.off(removeValidation, this.removeValidationHandler);
+            this.parent.off(addHighlight, this.addHighlightHandler);
+            this.parent.off(removeHighlight, this.removeHighlightHandler);
+        }
+    }
+    addValidationHandler(args) {
+        this.ValidationHandler(args.rules, args.range, false);
+    }
+    removeValidationHandler(args) {
+        this.ValidationHandler(args.rules, args.range, true);
+    }
+    ValidationHandler(rules, range, isRemoveValidation) {
+        let cell;
+        let sheet = this.parent.getActiveSheet();
+        let indexes = getRangeIndexes(range);
+        for (let rowIdx = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+            if (!sheet.rows[rowIdx]) {
+                setRow(sheet, rowIdx, {});
+            }
+            for (let colIdx = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                if (!sheet.rows[rowIdx].cells || !sheet.rows[rowIdx].cells[colIdx]) {
+                    setCell(rowIdx, colIdx, sheet, {});
+                }
+                cell = sheet.rows[rowIdx].cells[colIdx];
+                if (isRemoveValidation && cell.validation) {
+                    delete (cell.validation);
+                }
+                else {
+                    cell.validation = {
+                        type: rules.type,
+                        operator: rules.operator,
+                        value1: rules.value1,
+                        value2: rules.value2,
+                        ignoreBlank: rules.ignoreBlank,
+                        inCellDropDown: rules.inCellDropDown,
+                    };
+                }
+            }
+        }
+    }
+    addHighlightHandler(args) {
+        this.InvalidDataHandler(args.range, false);
+    }
+    removeHighlightHandler(args) {
+        this.InvalidDataHandler(args.range, true);
+    }
+    InvalidDataHandler(range, isRemoveHighlightedData) {
+        let isCell = false;
+        let cell;
+        let value;
+        let sheet = this.parent.getActiveSheet();
+        let indexes = range ? getRangeIndexes(range) : [];
+        let rowIdx = range ? indexes[0] : 0;
+        let lastRowIdx = range ? indexes[2] : sheet.rows.length;
+        for (rowIdx; rowIdx <= lastRowIdx; rowIdx++) {
+            if (sheet.rows[rowIdx]) {
+                let colIdx = range ? indexes[1] : 0;
+                let lastColIdx = range ? indexes[3] : sheet.rows[rowIdx].cells.length;
+                for (colIdx; colIdx <= lastColIdx; colIdx++) {
+                    if (sheet.rows[rowIdx].cells[colIdx]) {
+                        cell = sheet.rows[rowIdx].cells[colIdx];
+                        value = cell.value ? cell.value : '';
+                        let range = [rowIdx, colIdx];
+                        let sheetIdx = this.parent.activeSheetTab;
+                        if (cell.validation && this.parent.allowDataValidation) {
+                            this.parent.notify(isValidation, { value, range, sheetIdx, isCell });
+                            let isValid = this.parent.allowDataValidation;
+                            this.parent.allowDataValidation = true;
+                            if (!isValid) {
+                                if (!isRemoveHighlightedData) {
+                                    setCell(rowIdx, colIdx, sheet, { style: { backgroundColor: '#ffff00', color: '#ff0000' } }, true);
+                                    this.parent.notify(applyCellFormat, {
+                                        style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx,
+                                        isHeightCheckNeeded: true, manualUpdate: true,
+                                        onActionUpdate: true
+                                    });
+                                }
+                                else if (isRemoveHighlightedData) {
+                                    if (cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
+                                        cell.style.backgroundColor = '';
+                                        cell.style.color = '';
+                                        this.parent.notify(applyCellFormat, {
+                                            style: { backgroundColor: '', color: '' }, rowIdx: rowIdx, colIdx: colIdx,
+                                            isHeightCheckNeeded: true, manualUpdate: true,
+                                            onActionUpdate: true
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    getModuleName() {
+        return 'workbookDataValidation';
+    }
+}
+
+/**
+ * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
+ */
+class WorkbookFindAndReplace {
+    /**
+     * Constructor for WorkbookFindAndReplace module.
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the FindAndReplace module.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    addEventListener() {
+        this.parent.on(findNext, this.findNext, this);
+        this.parent.on(findPrevious, this.findPrevious, this);
+        this.parent.on(replaceHandler, this.replace, this);
+        this.parent.on(replaceAllHandler, this.replaceAll, this);
+        this.parent.on(count, this.totalCount, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(findNext, this.findNext);
+            this.parent.off(findPrevious, this.findPrevious);
+            this.parent.off(replaceHandler, this.replace);
+            this.parent.off(replaceAllHandler, this.replaceAll);
+            this.parent.off(count, this.totalCount);
+        }
+    }
+    findNext(args) {
+        let sheets = this.parent.sheets;
+        let val;
+        let sheetIndex = args.sheetIndex;
+        let sheet = sheets[sheetIndex - 1];
+        let activecell = getCellIndexes(sheet.activeCell);
+        let usedRange = sheet.usedRange;
+        let endColumn = usedRange.colIndex;
+        let stringValue = args.value.toString();
+        let cidx;
+        let ridx;
+        let count = 0;
+        let endRow = usedRange.rowIndex;
+        let loopCount = 0;
+        let cellFormat;
+        let valueOfCell;
+        cidx = activecell[1];
+        ridx = activecell[0];
+        let startColumn = cidx;
+        let startRow = ridx;
+        if (sheet.rows[ridx]) {
+            if (sheet.rows[ridx].cells[cidx]) {
+                cellFormat = sheet.rows[ridx].cells[cidx].format;
+                if (cellFormat) {
+                    let dispTxt = this.parent.getDisplayText(sheet.rows[ridx].cells[cidx]);
+                    valueOfCell = dispTxt.toString();
+                }
+                else {
+                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                }
+            }
+        }
+        if (valueOfCell) {
+            let lcValueOfCell = valueOfCell.toLowerCase();
+            let ivalueOfCell = valueOfCell.indexOf(args.value) > -1;
+            let lowerCaseIndex = lcValueOfCell.indexOf(args.value) > -1;
+            if ((stringValue === valueOfCell) || (stringValue === lcValueOfCell) || (ivalueOfCell) || (lowerCaseIndex)) {
+                if (args.searchBy === 'By Column') {
+                    ridx++;
+                }
+                else {
+                    cidx++;
+                }
+                count++;
+            }
+        }
+        if (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex) {
+            if (activecell[0] > sheet.usedRange.rowIndex && activecell[1] <= sheet.usedRange.colIndex) {
+                ridx = 0;
+                cidx = activecell[1];
+            }
+            else if (activecell[0] <= sheet.usedRange.rowIndex && activecell[1] > sheet.usedRange.colIndex) {
+                ridx = activecell[0];
+                cidx = 0;
+            }
+            else {
+                ridx = 0;
+                cidx = 0;
+            }
+        }
+        let findNextArgs = {
+            rowIndex: ridx, colIndex: cidx, usedRange: usedRange, endRow: endRow, endColumn: endColumn, startRow: startRow,
+            mode: args.mode, loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
+            sheetIndex: sheetIndex, startColumn: startColumn, sheets: sheets
+        };
+        if (args.searchBy === 'By Row') {
+            this.findNxtRow(findNextArgs);
+        }
+        if (args.searchBy === 'By Column') {
+            this.findNxtCol(findNextArgs);
+        }
+    }
+    findNxtRow(findNextArgs) {
+        let usedRange;
+        let sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        let sheetsLen = this.parent.sheets.length;
+        let activecell = getCellIndexes(sheet.activeCell);
+        if (findNextArgs.colIndex >= findNextArgs.usedRange.colIndex + 1) {
+            findNextArgs.colIndex = 0;
+            findNextArgs.rowIndex++;
+        }
+        for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.endRow + 1; findNextArgs.rowIndex++) {
+            if (findNextArgs.rowIndex > findNextArgs.endRow) {
+                if (findNextArgs.mode === 'Workbook') {
+                    let noCellfound = this.parent.activeSheetTab;
+                    findNextArgs.sheetIndex++;
+                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
+                        findNextArgs.sheetIndex = 1;
+                    }
+                    if (noCellfound === findNextArgs.sheetIndex) {
+                        if (findNextArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    usedRange = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findNextArgs.rowIndex = 0;
+                    findNextArgs.colIndex = 0;
+                    findNextArgs.endColumn = usedRange.colIndex;
+                    findNextArgs.endRow = usedRange.rowIndex;
+                }
+                if (findNextArgs.colIndex === 0 && findNextArgs.rowIndex > findNextArgs.endRow) {
+                    if ((activecell[0] === 0 && activecell[1] === 0) ||
+                        (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex)) {
+                        if (findNextArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    else if ((activecell[0] !== 0 && activecell[1] !== 0) || (activecell[0] !== 0 || activecell[1] !== 0)) {
+                        findNextArgs.startColumn = 0;
+                        findNextArgs.startRow = 0;
+                        findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
+                        findNextArgs.endRow = activecell[0];
+                        findNextArgs.rowIndex = findNextArgs.startRow;
+                        findNextArgs.colIndex = findNextArgs.startColumn;
+                        findNextArgs.loopCount++;
+                    }
+                }
+            }
+            if (findNextArgs.count > 0) {
+                if (findNextArgs.usedRange.rowIndex < findNextArgs.rowIndex) {
+                    findNextArgs.rowIndex = 0;
+                    if (findNextArgs.rowIndex === 0) {
+                        findNextArgs.colIndex = 0;
+                    }
+                }
+            }
+            if (sheet.rows[findNextArgs.rowIndex]) {
+                let row = sheet.rows[findNextArgs.rowIndex];
+                for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.endColumn; findNextArgs.colIndex++) {
+                    if (row) {
+                        if (row.cells[findNextArgs.colIndex]) {
+                            let checkTrue = this.nextCommon(findNextArgs);
+                            if (checkTrue) {
+                                return;
+                            }
+                        }
+                    }
+                }
+                if (findNextArgs.colIndex > findNextArgs.endColumn) {
+                    findNextArgs.colIndex = 0;
+                }
+                if (findNextArgs.loopCount > 0) {
+                    if (activecell[0] === findNextArgs.rowIndex) {
+                        this.parent.notify(showDialog, null);
+                        return;
+                    }
+                }
+            }
+        }
+        if (findNextArgs.count === 0) {
+            this.parent.notify(showDialog, null);
+            return;
+        }
+    }
+    findNxtCol(findNextArgs) {
+        let sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        let noFound;
+        let activecell = getCellIndexes(sheet.activeCell);
+        let sheetsLen = this.parent.sheets.length;
+        if (findNextArgs.rowIndex >= findNextArgs.usedRange.rowIndex) {
+            findNextArgs.rowIndex = 0;
+            findNextArgs.colIndex++;
+        }
+        for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.usedRange.colIndex + 1; findNextArgs.colIndex++) {
+            if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
+                if (findNextArgs.mode === 'Workbook') {
+                    noFound = this.parent.activeSheetTab;
+                    findNextArgs.sheetIndex++;
+                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
+                        findNextArgs.sheetIndex = 1;
+                    }
+                    if (noFound === findNextArgs.sheetIndex) {
+                        if (findNextArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    findNextArgs.usedRange = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findNextArgs.colIndex = 0;
+                    findNextArgs.rowIndex = 0;
+                    findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
+                    findNextArgs.endRow = findNextArgs.usedRange.rowIndex;
+                }
+            }
+            if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
+                findNextArgs.colIndex = 0;
+            }
+            if (findNextArgs.rowIndex > findNextArgs.endRow && findNextArgs.colIndex === 0) {
+                if ((activecell[0] === 0 && activecell[1] === 0) ||
+                    (activecell[1] > sheet.usedRange.rowIndex || activecell[0] > sheet.usedRange.colIndex)) {
+                    if (findNextArgs.count === 0) {
+                        this.parent.notify(showDialog, null);
+                        return;
+                    }
+                }
+                else if ((activecell[1] !== 0 || activecell[0] !== 0) || (activecell[1] !== 0 && activecell[0] !== 0)) {
+                    findNextArgs.startRow = 0;
+                    findNextArgs.startColumn = 0;
+                    findNextArgs.endRow = activecell[0];
+                    findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
+                    findNextArgs.colIndex = findNextArgs.startColumn;
+                    findNextArgs.rowIndex = findNextArgs.startRow;
+                    findNextArgs.loopCount++;
+                }
+            }
+            if (findNextArgs.count > 0) {
+                if (findNextArgs.usedRange.colIndex + 1 < findNextArgs.colIndex) {
+                    findNextArgs.colIndex = 0;
+                    findNextArgs.rowIndex = 0;
+                }
+            }
+            if (findNextArgs.rowIndex >= findNextArgs.endRow) {
+                findNextArgs.rowIndex = 0;
+            }
+            if (findNextArgs.colIndex <= findNextArgs.usedRange.colIndex) {
+                for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.usedRange.rowIndex; findNextArgs.rowIndex++) {
+                    if (sheet.rows[findNextArgs.rowIndex]) {
+                        if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
+                            let checkTrue = this.nextCommon(findNextArgs);
+                            if (checkTrue) {
+                                return;
+                            }
+                        }
+                    }
+                }
+                if (findNextArgs.loopCount > 0) {
+                    if (activecell[1] === findNextArgs.colIndex) {
+                        this.parent.notify(showDialog, null);
+                        return;
+                    }
+                }
+            }
+        }
+        if (findNextArgs.count === 0) {
+            this.parent.notify(showDialog, null);
+            return;
+        }
+    }
+    nextCommon(findNextArgs) {
+        let sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        if (sheet.rows[findNextArgs.rowIndex]) {
+            if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
+                let cellTyp = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+                if (cellTyp) {
+                    let cellTypeVal = cellTyp.format;
+                    let cellval;
+                    if (cellTypeVal) {
+                        let displayTxt = this.parent.getDisplayText(sheet.rows[findNextArgs.rowIndex].
+                            cells[findNextArgs.colIndex]);
+                        cellval = displayTxt;
+                    }
+                    else {
+                        cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
+                    }
+                    if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                        if (cellval === findNextArgs.stringValue) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                        let index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        let lowerCase = cellval.toString().toLowerCase();
+                        if ((cellval === findNextArgs.stringValue) || (index)) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                        findNextArgs.val = cellval.toString().toLowerCase();
+                        if (findNextArgs.val === findNextArgs.stringValue) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                        findNextArgs.val = cellval.toString().toLowerCase();
+                        let index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        let lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
+                        if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
+                            (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    findPrevious(args) {
+        let sheets = this.parent.sheets;
+        let sheetIndex = args.sheetIndex;
+        let sheet = sheets[sheetIndex - 1];
+        let valueOfCell;
+        let cellFormat;
+        let val;
+        let activecell = getCellIndexes(sheet.activeCell);
+        let loopCount = 0;
+        let count = 0;
+        let endRow = sheet.usedRange.rowIndex;
+        let endColumn = sheet.usedRange.colIndex;
+        let stringValue = args.value.toString();
+        let cidx = activecell[1];
+        let ridx = activecell[0];
+        let startColumn = cidx;
+        let startRow = ridx;
+        if (sheet.rows[ridx]) {
+            if (sheet.rows[ridx].cells[cidx]) {
+                cellFormat = sheet.rows[ridx].cells[cidx].format;
+                if (cellFormat) {
+                    let displayTxt = this.parent.getDisplayText(sheet.rows[ridx].cells[cidx]);
+                    valueOfCell = displayTxt.toString();
+                }
+                else {
+                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                }
+            }
+        }
+        if (valueOfCell) {
+            let lcValue = valueOfCell.toLowerCase();
+            let ivalue = valueOfCell.indexOf(args.value) > -1;
+            let lowerCaseIndex = lcValue.indexOf(args.value) > -1;
+            if ((stringValue === valueOfCell) || (stringValue === lcValue) || (ivalue) || (lowerCaseIndex)) {
+                if (args.searchBy === 'By Row') {
+                    cidx--;
+                }
+                if (args.searchBy === 'By Column') {
+                    ridx--;
+                }
+                count++;
+            }
+        }
+        if (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex) {
+            if (activecell[0] > sheet.usedRange.rowIndex && activecell[1] <= sheet.usedRange.colIndex) {
+                ridx = sheet.usedRange.rowIndex;
+                cidx = activecell[1];
+            }
+            else if (activecell[0] <= sheet.usedRange.rowIndex && activecell[1] > sheet.usedRange.colIndex) {
+                ridx = activecell[0];
+                cidx = sheet.usedRange.colIndex;
+            }
+            else {
+                ridx = sheet.usedRange.rowIndex;
+                cidx = sheet.usedRange.colIndex;
+            }
+        }
+        let findPrevArgs = {
+            rowIndex: ridx, colIndex: cidx, endRow: endRow, endColumn: endColumn, startRow: startRow,
+            loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
+            sheets: sheets, sheetIndex: sheetIndex, startColumn: startColumn,
+        };
+        if (args.searchBy === 'By Row') {
+            this.findPreRow(findPrevArgs);
+        }
+        if (args.searchBy === 'By Column') {
+            this.findPreCol(findPrevArgs);
+        }
+    }
+    findPreRow(findPrevArgs) {
+        let usedRan;
+        let sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        let sheetsLength = this.parent.sheets.length;
+        let noValueBoolean = false;
+        let activecell = getCellIndexes(sheet.activeCell);
+        if (findPrevArgs.colIndex === -1) {
+            findPrevArgs.colIndex = findPrevArgs.endColumn;
+            findPrevArgs.rowIndex--;
+        }
+        for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= -1; findPrevArgs.rowIndex--) {
+            if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
+                if (findPrevArgs.args.mode === 'Workbook') {
+                    let noCellfound = this.parent.activeSheetTab;
+                    findPrevArgs.sheetIndex--;
+                    if (findPrevArgs.sheetIndex === 0) {
+                        findPrevArgs.sheetIndex = sheetsLength;
+                    }
+                    if (noCellfound === findPrevArgs.sheetIndex) {
+                        if (findPrevArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    usedRan = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findPrevArgs.rowIndex = usedRan.rowIndex;
+                    findPrevArgs.colIndex = usedRan.colIndex;
+                    findPrevArgs.endColumn = 0;
+                    findPrevArgs.endRow = 0;
+                }
+                noValueBoolean = this.commonCondition(findPrevArgs, activecell);
+            }
+            if (!noValueBoolean) {
+                if (findPrevArgs.args.mode !== 'Workbook') {
+                    if (findPrevArgs.count > 0) {
+                        if (findPrevArgs.rowIndex === -1) {
+                            findPrevArgs.rowIndex = findPrevArgs.endRow;
+                        }
+                    }
+                }
+                if (findPrevArgs.rowIndex === -1) {
+                    findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
+                    findPrevArgs.colIndex = sheet.usedRange.colIndex;
+                }
+                if (sheet.rows[findPrevArgs.rowIndex]) {
+                    if (findPrevArgs.colIndex === -1) {
+                        findPrevArgs.colIndex = sheet.usedRange.colIndex;
+                    }
+                    for (findPrevArgs.colIndex; findPrevArgs.colIndex >= 0; findPrevArgs.colIndex--) {
+                        if (sheet.rows[findPrevArgs.rowIndex]) {
+                            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                                let checkTrue = this.prevCommon(findPrevArgs);
+                                if (checkTrue) {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    if (findPrevArgs.loopCount > 0) {
+                        if (activecell[0] === findPrevArgs.rowIndex) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        if (!noValueBoolean) {
+            if (findPrevArgs.count === 0) {
+                this.parent.notify(showDialog, null);
+                return;
+            }
+        }
+    }
+    findPreCol(findPrevArgs) {
+        let usedRange;
+        let sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        let sheetsLen = this.parent.sheets.length;
+        let noValueBoolean = false;
+        let activecell = getCellIndexes(sheet.activeCell);
+        for (findPrevArgs.colIndex; findPrevArgs.colIndex >= -1; findPrevArgs.colIndex--) {
+            if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
+                if (findPrevArgs.args.mode === 'Workbook') {
+                    let noCellfound = this.parent.activeSheetTab;
+                    findPrevArgs.sheetIndex--;
+                    if (findPrevArgs.sheetIndex === 0) {
+                        findPrevArgs.sheetIndex = sheetsLen;
+                    }
+                    if (noCellfound === findPrevArgs.sheetIndex) {
+                        if (findPrevArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    usedRange = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findPrevArgs.rowIndex = usedRange.rowIndex;
+                    findPrevArgs.colIndex = usedRange.colIndex;
+                    findPrevArgs.endColumn = 0;
+                    findPrevArgs.endRow = 0;
+                }
+                noValueBoolean = this.commonCondition(findPrevArgs, activecell);
+            }
+            if (!noValueBoolean) {
+                if (findPrevArgs.count > 0) {
+                    if (findPrevArgs.colIndex < 0) {
+                        findPrevArgs.colIndex = findPrevArgs.endColumn;
+                    }
+                }
+                if (findPrevArgs.rowIndex < 0) {
+                    findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
+                }
+                if (findPrevArgs.colIndex < -1) {
+                    findPrevArgs.colIndex = sheet.usedRange.colIndex;
+                    findPrevArgs.rowIndex--;
+                }
+                if (sheet.rows[findPrevArgs.rowIndex]) {
+                    if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                        if (findPrevArgs.rowIndex === -1) {
+                            findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
+                        }
+                    }
+                }
+                for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= 0; findPrevArgs.rowIndex--) {
+                    if (sheet.rows[findPrevArgs.rowIndex]) {
+                        if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                            let check = this.prevCommon(findPrevArgs);
+                            if (check) {
+                                return;
+                            }
+                        }
+                    }
+                    if (findPrevArgs.loopCount > 0) {
+                        if (activecell[1] === findPrevArgs.colIndex) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        if (!noValueBoolean) {
+            if (findPrevArgs.count === 0) {
+                this.parent.notify(showDialog, null);
+                return;
+            }
+        }
+    }
+    commonCondition(findPrevArgs, activecell) {
+        let sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        let isTrue;
+        if ((activecell[0] !== findPrevArgs.endRow && activecell[1] !== findPrevArgs.endColumn) ||
+            (activecell[0] !== findPrevArgs.endRow || activecell[1] !== findPrevArgs.endColumn)) {
+            findPrevArgs.startColumn = sheet.usedRange.colIndex;
+            findPrevArgs.startRow = sheet.usedRange.rowIndex;
+            findPrevArgs.endColumn = 0;
+            findPrevArgs.endRow = activecell[0];
+            findPrevArgs.rowIndex = findPrevArgs.startRow;
+            findPrevArgs.colIndex = findPrevArgs.startColumn;
+            findPrevArgs.loopCount++;
+            isTrue = false;
+        }
+        else if ((activecell[0] === sheet.usedRange.rowIndex && activecell[1] === sheet.usedRange.colIndex) ||
+            (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex)) {
+            this.parent.notify(showDialog, null);
+            isTrue = true;
+        }
+        return isTrue;
+    }
+    prevCommon(findPrevArgs) {
+        let sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        if (sheet.rows[findPrevArgs.rowIndex]) {
+            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                let cellTyp = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+                if (cellTyp) {
+                    let cellTypeVal = cellTyp.format;
+                    let cellval;
+                    if (cellTypeVal) {
+                        let displayTxt = this.parent.getDisplayText(sheet.rows[findPrevArgs.rowIndex]
+                            .cells[findPrevArgs.colIndex]);
+                        cellval = displayTxt;
+                    }
+                    else {
+                        cellval = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
+                    }
+                    if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                        if (cellval === findPrevArgs.stringValue) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                        let index = cellval.indexOf(findPrevArgs.args.value) > -1;
+                        let lowerCase = cellval.toString().toLowerCase();
+                        if ((cellval === findPrevArgs.stringValue) || (index)) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                        findPrevArgs.val = cellval.toString().toLowerCase();
+                        if (findPrevArgs.val === findPrevArgs.stringValue) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                        findPrevArgs.val = cellval.toString().toLowerCase();
+                        let index = cellval.indexOf(findPrevArgs.args.value) > -1;
+                        let lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
+                        if ((cellval === findPrevArgs.stringValue) || ((cellval === findPrevArgs.stringValue) ||
+                            (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
+                            let sheetName = sheet.name;
+                            let address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    replace(args) {
+        if (this.parent.getActiveSheet().isProtected) {
+            this.parent.notify(workBookeditAlert, null);
+            return;
+        }
+        let sheet = this.parent.getActiveSheet();
+        let activecell = getCellIndexes(sheet.activeCell);
+        let currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
+        let index = currentCell.indexOf(args.value) > -1;
+        let lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
+        let val = currentCell.toString().toLowerCase();
+        if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
+            args.findOpt = 'next';
+            this.findNext(args);
+        }
+        this.parent.getActiveSheet();
+        let activecel = getCellIndexes(sheet.activeCell);
+        let address = sheet.activeCell;
+        let cell = sheet.rows[activecel[0]].cells[activecel[1]];
+        let cellFormat = sheet.rows[activecel[0]].cells[activecel[1]].format;
+        let compareVal;
+        let sheetName = sheet.name;
+        let undoRedoOpt = 'before';
+        let replaceAddress = sheetName + '!' + getCellAddress(activecel[0], activecel[1]);
+        if (cellFormat) {
+            let dispTxt = this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]);
+            compareVal = dispTxt.toString();
+        }
+        else {
+            compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
+        }
+        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: compareVal });
+        let lcValueOfCell = compareVal.toLowerCase();
+        let ivalueOfCell = compareVal.indexOf(args.value) > -1;
+        let caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
+        if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
+            sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
+            this.parent.updateCell(cell, address);
+            let undoRedoOpt = 'after';
+            this.parent.notify(findUndoRedo, { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: undoRedoOpt });
+        }
+        else if (ivalueOfCell) {
+            let newValue = compareVal.replace(args.value, args.replaceValue);
+            sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
+            this.parent.updateCell(cell, address);
+            let undoRedoOpt = 'after';
+            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: args.replaceValue });
+        }
+        else if (caseInSensitive) {
+            let regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+            let updateValue = compareVal.replace(regx, args.replaceValue);
+            sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
+            this.parent.updateCell(cell, address);
+            let undoRedoOpt = 'after';
+            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: args.replaceValue });
+        }
+    }
+    replaceAll(args) {
+        let startSheet = 0;
+        let sheet = this.parent.sheets[startSheet];
+        let endRow = sheet.usedRange.rowIndex;
+        let count = 0;
+        let startRow = 0;
+        let endColumn = sheet.usedRange.colIndex;
+        let startColumn = 0;
+        let undoRedoOpt = 'beforeReplaceAll';
+        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
+        for (startRow; startRow <= endRow; startRow++) {
+            if (startColumn > endColumn && startRow === endRow) {
+                if (args.mode === 'Workbook') {
+                    startSheet++;
+                    sheet = this.parent.sheets[startSheet];
+                    if (sheet) {
+                        startColumn = 0;
+                        startRow = 0;
+                        endColumn = sheet.usedRange.colIndex;
+                        endRow = sheet.usedRange.rowIndex;
+                        sheet = sheet;
+                    }
+                }
+            }
+            if (sheet) {
+                if (sheet.rows[startRow]) {
+                    let row = sheet.rows[startRow];
+                    if (startColumn === endColumn + 1) {
+                        startColumn = 0;
+                    }
+                    for (startColumn; startColumn <= endColumn; startColumn++) {
+                        let cell = sheet.rows[startRow].cells[startColumn];
+                        let srow = startRow;
+                        let scol = startColumn;
+                        // let address: string = getCellAddress(srow, scol);
+                        let address = sheet.name + '!' + getCellAddress(srow, scol);
+                        if (row) {
+                            if (row.cells[startColumn]) {
+                                let cellTyp = sheet.rows[startRow].cells[startColumn];
+                                if (cellTyp) {
+                                    let cellTypeVal = cellTyp.format;
+                                    let cellval;
+                                    if (cellTypeVal) {
+                                        let displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
+                                            cells[startColumn]);
+                                        cellval = displayTxt.toString();
+                                    }
+                                    else {
+                                        cellval = sheet.rows[startRow].cells[startColumn].value.toString();
+                                    }
+                                    if (args.isCSen && args.isEMatch) {
+                                        if (cellval === args.value) {
+                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (args.isCSen && !args.isEMatch) {
+                                        let index = cellval.indexOf(args.value) > -1;
+                                        if ((cellval === args.value) || (index)) {
+                                            let newValue = cellval.replace(args.value, args.replaceValue);
+                                            sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && args.isEMatch) {
+                                        let val = cellval.toString().toLowerCase();
+                                        if (val === args.value) {
+                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && !args.isEMatch) {
+                                        let val = cellval.toString().toLowerCase();
+                                        let index = cellval.indexOf(args.value) > -1;
+                                        let lowerCaseValue = val.indexOf(args.value) > -1;
+                                        if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
+                                            (lowerCaseValue)) {
+                                            let regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                                            let newValue = cellval.replace(regExepression, args.replaceValue);
+                                            sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        let countNumber = count;
+        this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
+        undoRedoOpt = 'afterReplaceAll';
+        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
+    }
+    totalCount(args) {
+        let startSheet = 0;
+        let sheet = this.parent.sheets[startSheet];
+        let endRow = sheet.usedRange.rowIndex;
+        let count = 0;
+        let rowIndex = 0;
+        let endColumn = sheet.usedRange.colIndex;
+        let columnIndex = 0;
+        for (rowIndex; rowIndex <= endRow; rowIndex++) {
+            if (sheet.rows[rowIndex]) {
+                let row = sheet.rows[rowIndex];
+                if (columnIndex === endColumn + 1) {
+                    columnIndex = 0;
+                }
+                for (columnIndex; columnIndex <= endColumn; columnIndex++) {
+                    if (row) {
+                        if (row.cells[columnIndex]) {
+                            let cellType = sheet.rows[rowIndex].cells[columnIndex];
+                            if (cellType) {
+                                let cellFormat = cellType.format;
+                                let cellvalue;
+                                if (cellFormat) {
+                                    let displayTxt = this.parent.getDisplayText(sheet.rows[rowIndex].
+                                        cells[columnIndex]);
+                                    cellvalue = displayTxt.toString();
+                                }
+                                else {
+                                    cellvalue = cellType.value.toString();
+                                }
+                                if (args.isCSen && args.isEMatch) {
+                                    if (cellvalue === args.value) {
+                                        count++;
+                                    }
+                                }
+                                else if (args.isCSen && !args.isEMatch) {
+                                    let index = cellvalue.indexOf(args.value) > -1;
+                                    if ((cellvalue === args.value) || (index)) {
+                                        count++;
+                                    }
+                                }
+                                else if (!args.isCSen && args.isEMatch) {
+                                    let val = cellvalue.toString().toLowerCase();
+                                    if (val === args.value) {
+                                        count++;
+                                    }
+                                }
+                                else if (!args.isCSen && !args.isEMatch) {
+                                    let val = cellvalue.toString().toLowerCase();
+                                    let index = cellvalue.indexOf(args.value) > -1;
+                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || ((cellvalue === args.value))) {
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        let totalCount = count;
+        let requiredCount = this.requiredCount(args) - 1;
+        count = totalCount - requiredCount - 1;
+        args.findCount = count + 'of' + totalCount;
+        return;
+    }
+    requiredCount(args) {
+        let sheetIndex = this.parent.activeSheetTab;
+        let sheet = this.parent.sheets[sheetIndex - 1];
+        let activecel = getCellIndexes(sheet.activeCell);
+        let endRow = sheet.usedRange.rowIndex;
+        let requiredCount = 0;
+        let startRow = activecel[0];
+        let endColumn = sheet.usedRange.colIndex;
+        let startColumn = activecel[1];
+        for (startRow; startRow <= endRow; startRow++) {
+            if (sheet.rows[startRow]) {
+                let row = sheet.rows[startRow];
+                if (startColumn === endColumn + 1) {
+                    startColumn = 0;
+                }
+                for (startColumn; startColumn <= endColumn; startColumn++) {
+                    if (row) {
+                        if (row.cells[startColumn]) {
+                            let cellTyp = sheet.rows[startRow].cells[startColumn];
+                            if (cellTyp) {
+                                let cellTypeVal = cellTyp.format;
+                                let cellval;
+                                if (cellTypeVal) {
+                                    let displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
+                                        cells[startColumn]);
+                                    cellval = displayTxt.toString();
+                                }
+                                else {
+                                    cellval = cellTyp.value.toString();
+                                }
+                                if (args.isCSen && !args.isEMatch) {
+                                    let index = cellval.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || (index)) {
+                                        requiredCount++;
+                                    }
+                                }
+                                else if (args.isCSen && args.isEMatch) {
+                                    if (cellval === args.value) {
+                                        requiredCount++;
+                                    }
+                                }
+                                else if (!args.isCSen && args.isEMatch) {
+                                    let val = cellval.toString().toLowerCase();
+                                    if (val === args.value) {
+                                        requiredCount++;
+                                    }
+                                }
+                                else if (!args.isCSen && !args.isEMatch) {
+                                    let val = cellval.toString().toLowerCase();
+                                    let index = cellval.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value)) {
+                                        requiredCount++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return requiredCount;
+    }
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    getModuleName() {
+        return 'workbookfindAndReplace';
+    }
+}
+
+/**
+ * The `WorkbookSpreadSheet` module is used to handle the Protecting functionalities in Workbook.
+ */
+class WorkbookProtectSheet {
+    /**
+     * Constructor for edit module in Workbook.
+     * @private
+     */
+    constructor(workbook) {
+        this.parent = workbook;
+        this.addEventListener();
+    }
+    protectsheetHandler(args) {
+        let sheet = this.parent.getActiveSheet();
+        sheet.protectSettings.selectCells = args.selectCells;
+        sheet.protectSettings.formatCells = args.formatCells;
+        sheet.protectSettings.formatColumns = args.formatColumns;
+        sheet.protectSettings.formatRows = args.formatRows;
+        sheet.protectSettings.insertLink = args.insertLink;
+        this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
+        this.parent.notify(updateToggle, { props: 'Protect' });
+    }
+    /**
+     * To destroy the edit module.
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    addEventListener() {
+        this.parent.on(protectsheetHandler, this.protectsheetHandler, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(protectsheetHandler, this.protectsheetHandler);
+        }
+    }
+    /**
+     * Get the module name.
+     * @returns string
+     * @private
+     */
+    getModuleName() {
+        return 'workbookProtectSheet';
+    }
+}
+
+/**
  * Export Workbook action modules
  */
 
@@ -8396,7 +10257,7 @@ class WorkbookBasicModule {
      * @private
      */
     constructor() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation);
     }
     /**
      * For internal use only - Get the module name.
@@ -8424,7 +10285,7 @@ class WorkbookAllModule {
      * @private
      */
     constructor() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation);
     }
     /**
      * For internal use only - Get the module name.
@@ -8452,6 +10313,10 @@ function getWorkbookRequiredModules(context, modules = []) {
     modules.push({ member: 'workbookAll', args: [] });
     modules.push({
         member: 'dataBind',
+        args: [context]
+    });
+    modules.push({
+        member: 'workbookProtectSheet',
         args: [context]
     });
     if (context.allowSave) {
@@ -8497,10 +10362,22 @@ function getWorkbookRequiredModules(context, modules = []) {
     if (context.allowFiltering) {
         modules.push({ member: 'workbookFilter', args: [context] });
     }
+    if (context.allowFindAndReplace) {
+        modules.push({ member: 'workbookfindAndReplace', args: [context] });
+    }
+    if (context.allowInsert) {
+        modules.push({ member: 'workbookinsert', args: [context] });
+    }
+    if (context.allowDelete) {
+        modules.push({ member: 'workbookdelete', args: [context] });
+    }
+    if (context.allowDataValidation) {
+        modules.push({ member: 'workbookDataValidation', args: [context] });
+    }
     return modules;
 }
 
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8511,61 +10388,119 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class CellStyle extends ChildProperty {
 }
-__decorate$5([
+__decorate$3([
     Property('Calibri')
 ], CellStyle.prototype, "fontFamily", void 0);
-__decorate$5([
+__decorate$3([
     Property('bottom')
 ], CellStyle.prototype, "verticalAlign", void 0);
-__decorate$5([
+__decorate$3([
     Property('left')
 ], CellStyle.prototype, "textAlign", void 0);
-__decorate$5([
+__decorate$3([
     Property('0pt')
 ], CellStyle.prototype, "textIndent", void 0);
-__decorate$5([
+__decorate$3([
     Property('#000000')
 ], CellStyle.prototype, "color", void 0);
-__decorate$5([
+__decorate$3([
     Property('#ffffff')
 ], CellStyle.prototype, "backgroundColor", void 0);
-__decorate$5([
+__decorate$3([
     Property('normal')
 ], CellStyle.prototype, "fontWeight", void 0);
-__decorate$5([
+__decorate$3([
     Property('normal')
 ], CellStyle.prototype, "fontStyle", void 0);
-__decorate$5([
+__decorate$3([
     Property('11pt')
 ], CellStyle.prototype, "fontSize", void 0);
-__decorate$5([
+__decorate$3([
     Property('none')
 ], CellStyle.prototype, "textDecoration", void 0);
+__decorate$3([
+    Property('')
+], CellStyle.prototype, "border", void 0);
+__decorate$3([
+    Property('')
+], CellStyle.prototype, "borderTop", void 0);
+__decorate$3([
+    Property('')
+], CellStyle.prototype, "borderBottom", void 0);
+__decorate$3([
+    Property('')
+], CellStyle.prototype, "borderLeft", void 0);
+__decorate$3([
+    Property('')
+], CellStyle.prototype, "borderRight", void 0);
 /**
  * Represents the DefineName.
  */
 class DefineName extends ChildProperty {
 }
-__decorate$5([
+__decorate$3([
     Property('')
 ], DefineName.prototype, "name", void 0);
-__decorate$5([
+__decorate$3([
     Property('')
 ], DefineName.prototype, "scope", void 0);
-__decorate$5([
+__decorate$3([
     Property('')
 ], DefineName.prototype, "comment", void 0);
-__decorate$5([
+__decorate$3([
     Property('')
 ], DefineName.prototype, "refersTo", void 0);
+/**
+ * Configures the Protect behavior for the spreadsheet.
+ */
+class ProtectSettings extends ChildProperty {
+}
+__decorate$3([
+    Property(false)
+], ProtectSettings.prototype, "selectCells", void 0);
+__decorate$3([
+    Property(false)
+], ProtectSettings.prototype, "formatCells", void 0);
+__decorate$3([
+    Property(false)
+], ProtectSettings.prototype, "formatRows", void 0);
+__decorate$3([
+    Property(false)
+], ProtectSettings.prototype, "formatColumns", void 0);
+__decorate$3([
+    Property(false)
+], ProtectSettings.prototype, "insertLink", void 0);
 /**
  * Represents the Hyperlink.
  */
 class Hyperlink extends ChildProperty {
 }
-__decorate$5([
+__decorate$3([
     Property('')
 ], Hyperlink.prototype, "address", void 0);
+/**
+ * Represents the DataValidation.
+ */
+class Validation extends ChildProperty {
+}
+__decorate$3([
+    Property('WholeNumber')
+], Validation.prototype, "type", void 0);
+__decorate$3([
+    Property('Between')
+], Validation.prototype, "operator", void 0);
+__decorate$3([
+    Property('0')
+], Validation.prototype, "value1", void 0);
+__decorate$3([
+    Property('0')
+], Validation.prototype, "value2", void 0);
+__decorate$3([
+    Property(true)
+], Validation.prototype, "ignoreBlank", void 0);
+__decorate$3([
+    Property(true)
+], Validation.prototype, "inCellDropDown", void 0);
 
 /**
  * Check whether the text is formula or not.
@@ -8589,7 +10524,208 @@ let localeData = {
  * Common tasks.
  */
 
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+/**
+ * Update data source to Sheet and returns Sheet
+ * @hidden
+ */
+function getData(context, address, columnWiseData, valueOnly) {
+    return new Promise((resolve, reject) => {
+        resolve((() => {
+            let i;
+            let row;
+            let data = new Map();
+            let sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
+            let sheet = getSheet(context, sheetIdx);
+            let indexes = getIndexesFromAddress(address);
+            let sRow = indexes[0];
+            let index = 0;
+            let args = {
+                sheet: sheet, indexes: indexes, promise: new Promise((resolve, reject) => { resolve((() => { })()); })
+            };
+            context.notify(updateSheetFromDataSource, args);
+            return args.promise.then(() => {
+                while (sRow <= indexes[2]) {
+                    if (!valueOnly && isHiddenRow(sheet, sRow)) {
+                        sRow++;
+                        continue;
+                    }
+                    let cells = {};
+                    row = getRow(sheet, sRow);
+                    i = indexes[1];
+                    while (i <= indexes[3]) {
+                        if (columnWiseData) {
+                            if (data instanceof Map) {
+                                data = [];
+                            }
+                            let key = getColumnHeaderText(i + 1);
+                            let rowKey = '__rowIndex';
+                            if (valueOnly) {
+                                cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
+                            }
+                            else {
+                                cells[key] = row ? getCell(sRow, i, sheet) : null;
+                            }
+                            if (indexes[3] < i + 1) {
+                                cells[rowKey] = (sRow + 1).toString();
+                            }
+                            data[index.toString()] = cells;
+                        }
+                        else {
+                            if (!valueOnly && isHiddenCol(sheet, i)) {
+                                i++;
+                                continue;
+                            }
+                            let cellObj = {};
+                            Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
+                            if (cellObj.style) {
+                                let style = {};
+                                Object.assign(style, cellObj.style);
+                                cellObj.style = style;
+                            }
+                            let eventArgs = { cell: cellObj, address: getCellAddress(sRow, i) };
+                            context.trigger(queryCellInfo, eventArgs);
+                            data.set(eventArgs.address, eventArgs.cell);
+                        }
+                        i++;
+                    }
+                    sRow++;
+                    index++;
+                }
+                return data;
+            });
+        })());
+    });
+}
+function getValueFromFormat(context, rowIndex, colIndex, sheetIdx, sheet) {
+    let cell = getCell(rowIndex, colIndex, sheet);
+    if (cell) {
+        if (cell.format) {
+            let args = {
+                value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
+                sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
+            };
+            context.notify(checkDateFormat, args);
+            if (args.isDate) {
+                return args.dateObj;
+            }
+            else {
+                return cell.value;
+            }
+        }
+        else {
+            return cell.value;
+        }
+    }
+    else {
+        return '';
+    }
+}
+/**
+ * @hidden
+ */
+function getModel(model, idx) {
+    let diff;
+    let j;
+    let prevIdx;
+    if (isUndefined(model[idx]) || !(model[idx] && model[idx].index === idx)) {
+        for (let i = 0; i <= idx; i++) {
+            if (model && model[i]) {
+                diff = model[i].index - i;
+                if (diff > 0) {
+                    model.forEach((value, index) => {
+                        if (value && value.index) {
+                            prevIdx = value.index;
+                            j = 1;
+                        }
+                        if (value && !value.index && index !== 0) {
+                            value.index = prevIdx + j;
+                        }
+                        j++;
+                    });
+                    while (diff--) {
+                        model.splice(i, 0, null);
+                    }
+                    i += diff;
+                }
+            }
+            else if (model) {
+                model[i] = null;
+            }
+            else {
+                model = [];
+            }
+        }
+    }
+    return model[idx];
+}
+/**
+ * @hidden
+ */
+function processIdx(model, isSheet, context) {
+    let j;
+    let diff = 0;
+    let cnt;
+    let len = model.length;
+    for (let i = 0; i < len; i++) {
+        if (!isNullOrUndefined(model[i]) && !isUndefined(model[i].index)) {
+            cnt = diff = model[i].index - i;
+            delete model[i].index;
+        }
+        if (diff > 0) {
+            j = 0;
+            while (diff--) {
+                if (isSheet) {
+                    context.createSheet(i + j);
+                    j++;
+                }
+                else {
+                    model.splice(i, 0, null);
+                }
+            }
+            i += cnt;
+            len += cnt;
+        }
+        if (isSheet) {
+            if (model[i].id < 1) {
+                model[i].id = getMaxSheetId(context.sheets);
+            }
+            if (!model[i].name) {
+                model[i].name = 'Sheet' + getSheetNameCount(context);
+            }
+            let cellCnt = 0;
+            model[i].rows.forEach((row) => {
+                cellCnt = Math.max(cellCnt, (row && row.cells && row.cells.length - 1) || 0);
+            });
+            model[i].usedRange = { rowIndex: model[i].rows.length - 1, colIndex: cellCnt };
+        }
+    }
+}
+/**
+ * @hidden
+ */
+function clearRange(context, address, sheetIdx, valueOnly) {
+    let sheet = getSheet(context, sheetIdx - 1);
+    let range = getIndexesFromAddress(address);
+    let sRIdx = range[0];
+    let eRIdx = range[2];
+    let sCIdx;
+    let eCIdx;
+    for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
+        sCIdx = range[1];
+        eCIdx = range[3];
+        for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
+            let cell = getCell(sRIdx, sCIdx, sheet);
+            if (!isNullOrUndefined(cell) && valueOnly) {
+                delete cell.value;
+                if (!isNullOrUndefined(cell.formula)) {
+                    delete cell.formula;
+                }
+            }
+        }
+    }
+}
+
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8600,24 +10736,30 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class Cell extends ChildProperty {
 }
-__decorate$3([
+__decorate$5([
     Property('')
 ], Cell.prototype, "value", void 0);
-__decorate$3([
+__decorate$5([
     Property('')
 ], Cell.prototype, "formula", void 0);
-__decorate$3([
+__decorate$5([
     Property(0)
 ], Cell.prototype, "index", void 0);
-__decorate$3([
+__decorate$5([
     Property('General')
 ], Cell.prototype, "format", void 0);
-__decorate$3([
+__decorate$5([
     Complex({}, CellStyle)
 ], Cell.prototype, "style", void 0);
-__decorate$3([
+__decorate$5([
     Property('')
 ], Cell.prototype, "hyperlink", void 0);
+__decorate$5([
+    Property(false)
+], Cell.prototype, "wrap", void 0);
+__decorate$5([
+    Property('')
+], Cell.prototype, "validation", void 0);
 /**
  * @hidden
  */
@@ -8636,7 +10778,7 @@ function getCell(rowIndex, colIndex, sheet, isInitRow) {
             return null;
         }
     }
-    return sheet.rows[rowIndex].cells[colIndex];
+    return sheet.rows[rowIndex].cells[colIndex] || null;
 }
 /**
  * @hidden
@@ -8673,7 +10815,8 @@ function getCellPosition(sheet, indexes) {
 /** @hidden */
 function skipDefaultValue(style, defaultKey) {
     let defaultProps = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
-        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' };
+        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
+        border: '', borderLeft: '', borderTop: '', borderRight: '', borderBottom: '' };
     let changedProps = {};
     Object.keys(defaultKey ? defaultProps : style).forEach((propName) => {
         if (style[propName] !== defaultProps[propName]) {
@@ -8682,8 +10825,21 @@ function skipDefaultValue(style, defaultKey) {
     });
     return changedProps;
 }
+/** @hidden */
+function wrap(address, wrap = true, context) {
+    let addressInfo = context.getAddressInfo(address);
+    let rng = addressInfo.indices;
+    let sheet = getSheet(context, addressInfo.sheetIndex);
+    for (let i = rng[0]; i <= rng[2]; i++) {
+        for (let j = rng[1]; j <= rng[3]; j++) {
+            setCell(i, j, sheet, { wrap: wrap }, true);
+        }
+    }
+    context.setProperties({ sheets: context.sheets }, true);
+    context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
+}
 
-var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8709,19 +10865,19 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class Row extends ChildProperty {
 }
-__decorate$2([
+__decorate$4([
     Collection([], Cell)
 ], Row.prototype, "cells", void 0);
-__decorate$2([
+__decorate$4([
     Property(0)
 ], Row.prototype, "index", void 0);
-__decorate$2([
+__decorate$4([
     Property(20)
 ], Row.prototype, "height", void 0);
-__decorate$2([
+__decorate$4([
     Property(false)
 ], Row.prototype, "customHeight", void 0);
-__decorate$2([
+__decorate$4([
     Property(false)
 ], Row.prototype, "hidden", void 0);
 /**
@@ -8823,12 +10979,22 @@ function getColumn(sheet, colIndex) {
     }
     return sheet.columns[colIndex];
 }
+/** @hidden */
+function setColumn(sheet, colIndex, column) {
+    let curColumn = getColumn(sheet, colIndex);
+    Object.keys(column).forEach((key) => {
+        curColumn[key] = column[key];
+    });
+}
 /**
  * @hidden
  */
-function getColumnWidth(sheet, index) {
-    if (sheet && sheet.columns && sheet.columns[index] && (sheet.columns[index].width || sheet.columns[index].customWidth)) {
-        return sheet.columns[index].width;
+function getColumnWidth(sheet, index, skipHidden) {
+    if (sheet && sheet.columns && sheet.columns[index]) {
+        if (!skipHidden && sheet.columns[index].hidden) {
+            return 0;
+        }
+        return (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
     }
     else {
         return 64;
@@ -8851,190 +11017,7 @@ function getColumnsWidth(sheet, startCol, endCol = startCol) {
 }
 /** @hidden */
 function isHiddenCol(sheet, index) {
-    return sheet.columns[index] && (sheet.columns[index].hidden || (sheet.columns[index].width !== undefined &&
-        sheet.columns[index].width === 0));
-}
-
-/**
- * Update data source to Sheet and returns Sheet
- * @hidden
- */
-function getData(context, address, columnWiseData, valueOnly) {
-    return new Promise((resolve, reject) => {
-        resolve((() => {
-            let i;
-            let row;
-            let data = new Map();
-            let sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
-            let sheet = getSheet(context, sheetIdx);
-            let indexes = getIndexesFromAddress(address);
-            let sRow = indexes[0];
-            let index = 0;
-            let args = {
-                sheet: sheet, indexes: indexes, promise: new Promise((resolve, reject) => { resolve((() => { })()); })
-            };
-            context.notify(updateSheetFromDataSource, args);
-            return args.promise.then(() => {
-                while (sRow <= indexes[2]) {
-                    if (!valueOnly && isHiddenRow(sheet, sRow)) {
-                        sRow++;
-                        continue;
-                    }
-                    let cells = {};
-                    row = getRow(sheet, sRow);
-                    i = indexes[1];
-                    while (i <= indexes[3]) {
-                        if (columnWiseData) {
-                            if (data instanceof Map) {
-                                data = [];
-                            }
-                            let key = getColumnHeaderText(i + 1);
-                            let rowKey = '__rowIndex';
-                            if (valueOnly) {
-                                cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
-                            }
-                            else {
-                                cells[key] = row ? getCell(sRow, i, sheet) : null;
-                            }
-                            if (indexes[3] < i + 1) {
-                                cells[rowKey] = (sRow + 1).toString();
-                            }
-                            data[index.toString()] = cells;
-                        }
-                        else {
-                            data.set(getCellAddress(sRow, i), row ? getCell(sRow, i, sheet) : null);
-                        }
-                        i++;
-                    }
-                    sRow++;
-                    index++;
-                }
-                return data;
-            });
-        })());
-    });
-}
-function getValueFromFormat(context, rowIndex, colIndex, sheetIdx, sheet) {
-    let cell = getCell(rowIndex, colIndex, sheet);
-    if (cell) {
-        if (cell.format) {
-            let args = {
-                value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
-                sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
-            };
-            context.notify(checkDateFormat, args);
-            if (args.isDate) {
-                return args.dateObj;
-            }
-            else {
-                return cell.value;
-            }
-        }
-        else {
-            return cell.value;
-        }
-    }
-    else {
-        return '';
-    }
-}
-/**
- * @hidden
- */
-function getModel(model, idx) {
-    let diff;
-    let j;
-    let prevIdx;
-    if (isUndefined(model[idx]) || !(model[idx] && model[idx].index === idx)) {
-        for (let i = 0; i <= idx; i++) {
-            if (model && model[i]) {
-                diff = model[i].index - i;
-                if (diff > 0) {
-                    model.forEach((value, index) => {
-                        if (value && value.index) {
-                            prevIdx = value.index;
-                            j = 1;
-                        }
-                        if (value && !value.index && index !== 0) {
-                            value.index = prevIdx + j;
-                        }
-                        j++;
-                    });
-                    while (diff--) {
-                        model.splice(i, 0, null);
-                    }
-                    i += diff;
-                }
-            }
-            else if (model) {
-                model[i] = null;
-            }
-            else {
-                model = [];
-            }
-        }
-    }
-    return model[idx];
-}
-/**
- * @hidden
- */
-function processIdx(model, isSheet, context) {
-    let j;
-    let diff;
-    let cnt;
-    let len = model.length;
-    for (let i = 0; i < len; i++) {
-        cnt = diff = model[i].index - i;
-        model[i].index = null;
-        if (diff > 0) {
-            j = 0;
-            while (diff--) {
-                if (isSheet) {
-                    context.createSheet(i + j);
-                    j++;
-                }
-                else {
-                    model.splice(i, 0, null);
-                }
-            }
-            i += cnt;
-            len += cnt;
-        }
-        if (isSheet) {
-            model[i].id = getMaxSheetId(context.sheets);
-            if (!model[i].name) {
-                model[i].name = 'Sheet' + getSheetNameCount(context);
-            }
-        }
-    }
-    if (isSheet) {
-        context.setProperties({ 'sheets': context.sheets }, true);
-    }
-}
-/**
- * @hidden
- */
-function clearRange(context, address, sheetIdx, valueOnly) {
-    let sheet = getSheet(context, sheetIdx - 1);
-    let range = getIndexesFromAddress(address);
-    let sRIdx = range[0];
-    let eRIdx = range[2];
-    let sCIdx;
-    let eCIdx;
-    for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
-        sCIdx = range[1];
-        eCIdx = range[3];
-        for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-            let cell = getCell(sRIdx, sCIdx, sheet);
-            if (!isNullOrUndefined(cell) && valueOnly) {
-                delete cell.value;
-                if (!isNullOrUndefined(cell.formula)) {
-                    delete cell.formula;
-                }
-            }
-        }
-    }
+    return sheet.columns[index] && sheet.columns[index].hidden;
 }
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -9109,6 +11092,9 @@ __decorate$1([
     Collection([], Column)
 ], Sheet.prototype, "columns", void 0);
 __decorate$1([
+    Complex({}, ProtectSettings)
+], Sheet.prototype, "protectSettings", void 0);
+__decorate$1([
     Collection([], RangeSetting)
 ], Sheet.prototype, "rangeSettings", void 0);
 __decorate$1([
@@ -9142,8 +11128,14 @@ __decorate$1([
     Property(true)
 ], Sheet.prototype, "showGridLines", void 0);
 __decorate$1([
+    Property(false)
+], Sheet.prototype, "isProtected", void 0);
+__decorate$1([
     Property('Visible')
 ], Sheet.prototype, "state", void 0);
+__decorate$1([
+    Property([])
+], Sheet.prototype, "maxHgts", void 0);
 /**
  * To get sheet index from address.
  * @hidden
@@ -9177,7 +11169,7 @@ function getSheetIndexFromId(context, id) {
  * @hidden
  */
 function getSheetNameFromAddress(address) {
-    return address.split('!')[0];
+    return address.split('!')[0].replace(/\'/gi, '');
 }
 /**
  * To get sheet index from sheet name.
@@ -9198,7 +11190,6 @@ function getSheetIndexByName(context, name, info) {
  */
 function updateSelectedRange(context, range, sheet = {}) {
     sheet.selectedRange = range;
-    context.setProperties({ 'sheets': context.sheets }, true);
 }
 /**
  * get selected range
@@ -9244,16 +11235,44 @@ function getMaxSheetId(sheets) {
 /**
  * @hidden
  */
-function initSheet(context) {
-    context.sheets.forEach((sheet) => {
+function initSheet(context, sheet) {
+    let sheets = sheet ? sheet : context.sheets;
+    sheets.forEach((sheet) => {
+        sheet.id = sheet.id || 0;
+        sheet.name = sheet.name || '';
+        sheet.rowCount = isUndefined(sheet.rowCount) ? 100 : sheet.rowCount;
+        sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
+        sheet.topLeftCell = sheet.topLeftCell || 'A1';
+        sheet.activeCell = sheet.activeCell || 'A1';
+        sheet.selectedRange = sheet.selectedRange || 'A1';
+        sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
+        sheet.rangeSettings = sheet.rangeSettings ? initRangeSettings(sheet.rangeSettings) : [];
+        sheet.rows = sheet.rows || [];
+        sheet.columns = sheet.columns || [];
+        sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
+        sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
+        sheet.state = sheet.state || 'Visible';
+        sheet.maxHgts = [];
+        sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
+            insertLink: false };
+        sheet.isProtected = sheet.isProtected || false;
         processIdx(sheet.columns);
         initRow(sheet.rows);
     });
-    processIdx(context.sheets, true, context);
+    processIdx(sheets, true, context);
+}
+function initRangeSettings(rangeSettings) {
+    rangeSettings.forEach((rangeSetting) => {
+        rangeSetting.startCell = rangeSetting.startCell || 'A1';
+        rangeSetting.range = rangeSetting.range || 'A1';
+        rangeSetting.template = rangeSetting.template || '';
+        rangeSetting.showFieldAsHeader = isUndefined(rangeSetting.showFieldAsHeader) ? true : rangeSetting.showFieldAsHeader;
+    });
+    return rangeSettings;
 }
 function initRow(rows) {
     rows.forEach((row) => {
-        if (row.cells) {
+        if (row && row.cells) {
             processIdx(row.cells);
         }
     });
@@ -9318,7 +11337,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
          * @hidden
          */
         this.isOpen = false;
-        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet);
         this.commonCellStyle = {};
         if (options && options.cellStyle) {
             this.commonCellStyle = options.cellStyle;
@@ -9404,17 +11423,11 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * Used to create new sheet.
      * @hidden
      */
-    createSheet(index) {
-        let sheet = new Sheet(this, 'sheets', { id: getMaxSheetId(this.sheets), name: 'Sheet' + getSheetNameCount(this) }, true);
-        if (index > -1) {
-            this.sheets.splice(index, 0, sheet);
-        }
-        else {
-            this.sheets.push(sheet);
-        }
-        this.setProperties({ 'sheet': this.sheets }, true);
-        this.notify(sheetCreated, { sheetIndex: index | 0 });
-        this.notify(workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index });
+    createSheet(index = this.sheets.length, sheets = [{}]) {
+        this.sheets.splice(index, 0, ...sheets);
+        initSheet(this, sheets);
+        this.notify(sheetCreated, { sheetIndex: index, sheets: sheets });
+        this.notify(workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index, sheetCount: index + sheets.length });
     }
     /**
      * Used to remove sheet.
@@ -9443,6 +11456,9 @@ let Workbook = Workbook_1 = class Workbook extends Component {
                 case 'cellStyle':
                     merge(this.commonCellStyle, skipDefaultValue(newProp.cellStyle));
                     break;
+                case 'sheets':
+                    initSheet(this);
+                    break;
             }
         }
     }
@@ -9456,24 +11472,98 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     /**
      * Used to hide/show the rows in spreadsheet.
      * @param {number} startRow - Specifies the start row index.
-     * @param {number} endRow - Specifies the end row index.
-     * @param {boolean} hide - To hide/show the rows in specified range.
-     * @hidden
+     * @param {number} endRow? - Specifies the end row index.
+     * @param {boolean} hide? - To hide/show the rows in specified range.
+     * @returns void
      */
-    showHideRow(hide, startRow, endRow = startRow) {
+    hideRow(startIndex, endIndex = startIndex, hide = true) {
         let sheet = this.getActiveSheet();
-        for (let i = startRow; i < endRow; i++) {
+        for (let i = startIndex; i <= endIndex; i++) {
             setRow(sheet, i, { hidden: hide });
         }
-        this.setProperties({ 'sheets': this.sheets }, true);
+    }
+    /**
+     * Used to hide/show the columns in spreadsheet.
+     * @param {number} startIndex - Specifies the start column index.
+     * @param {number} endIndex? - Specifies the end column index.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the columns.
+     * @returns void
+     */
+    hideColumn(startIndex, endIndex = startIndex, hide = true) {
+        let sheet = this.getActiveSheet();
+        for (let i = startIndex; i <= endIndex; i++) {
+            setColumn(sheet, i, { hidden: hide });
+        }
+    }
+    /**
+     * Sets the border to specified range of cells.
+     * @param {CellStyleModel} style? - Specifies the style property which contains border value.
+     * @param {string} range? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @param {BorderType} type? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @returns void
+     */
+    setBorder(style, range, type) {
+        this.notify(setCellFormat, { style: style, borderType: type, range: range || this.getActiveSheet().selectedRange });
+    }
+    /**
+     * Used to insert rows in to the spreadsheet.
+     * @param {number | RowModel[]} startRow? - Specifies the start row index / row model which needs to be inserted.
+     * @param {number} endRow? - Specifies the end row index.
+     * @returns void
+     */
+    insertRow(startRow, endRow) {
+        this.notify(insertModel, { model: this.getActiveSheet(), start: startRow, end: endRow, modelType: 'Row' });
+    }
+    /**
+     * Used to insert columns in to the spreadsheet.
+     * @param {number | ColumnModel[]} startColumn? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endColumn? - Specifies the end column index.
+     * @returns void
+     */
+    insertColumn(startColumn, endColumn) {
+        this.notify(insertModel, { model: this.getActiveSheet(), start: startColumn, end: endColumn,
+            modelType: 'Column' });
+    }
+    /**
+     * Used to insert sheets in to the spreadsheet.
+     * @param {number | SheetModel[]} startSheet? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endSheet? - Specifies the end column index.
+     * @returns void
+     */
+    insertSheet(startSheet, endSheet) {
+        this.notify(insertModel, { model: this, start: startSheet, end: endSheet, modelType: 'Sheet' });
+    }
+    /**
+     * Used to delete rows, columns and sheets from the spreadsheet.
+     * @param {number | RowModel[]} startIndex? - Specifies the start sheet / row / column index.
+     * @param {number} endIndex? - Specifies the end sheet / row / column index.
+     * @param {ModelType} model? - Specifies the delete model type. By default, the model is considered as `Sheet`. The possible values are,
+     * - Row: To delete rows.
+     * - Column: To delete columns.
+     * - Sheet: To delete sheets.
+     * @returns void
+     */
+    delete(startIndex, endIndex, model) {
+        this.notify(deleteModel, { model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start: startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet' });
+    }
+    /**
+     * Used to compute the specified expression/formula.
+     * @param {string} formula - Specifies the formula(=SUM(A1:A3)) or expression(2+3).
+     * @returns string | number
+     */
+    computeExpression(formula) {
+        let args = {
+            action: 'computeExpression', formula: formula
+        };
+        this.notify(workbookFormulaOperation, args);
+        return args.calcValue;
     }
     initEmptySheet() {
-        let len = this.sheets.length;
-        if (len) {
-            initSheet(this);
+        if (!this.sheets.length) {
+            this.createSheet();
         }
         else {
-            this.createSheet();
+            initSheet(this);
         }
     }
     /** @hidden */
@@ -9488,12 +11578,10 @@ let Workbook = Workbook_1 = class Workbook extends Component {
         let sheet = this.getActiveSheet();
         if (rowIdx > sheet.usedRange.rowIndex) {
             sheet.usedRange.rowIndex = rowIdx;
-            this.setProperties({ 'sheets': this.sheets }, true);
             this.notify(updateUsedRange, { index: rowIdx, update: 'row' });
         }
         if (colIdx > sheet.usedRange.colIndex) {
             sheet.usedRange.colIndex = colIdx;
-            this.setProperties({ 'sheets': this.sheets }, true);
             this.notify(updateUsedRange, { index: colIdx, update: 'col' });
         }
     }
@@ -9594,6 +11682,37 @@ let Workbook = Workbook_1 = class Workbook extends Component {
         this.notify(setLinkModel, args);
     }
     /**
+     * To find the specified cell value.
+     * @param args - options for find.
+     */
+    findHandler(args) {
+        if (args.findOpt === 'next') {
+            this.notify(findNext, args);
+        }
+        else if (args.findOpt === 'prev') {
+            this.notify(findPrevious, args);
+        }
+    }
+    /**
+     * To replace the specified cell or entire match value.
+     * @param args - options for replace.
+     */
+    replaceHandler(args) {
+        if (args.replaceBy === 'replace') {
+            this.notify(replaceHandler, args);
+        }
+        else {
+            this.notify(replaceAllHandler, args);
+        }
+    }
+    /**
+     * Protect the active sheet based on the protect sheetings.
+     * @param protectSettings - Specifies the protect settings of the sheet.
+     */
+    protectSheet(protectSettings) {
+        this.notify(protectsheetHandler, protectSettings);
+    }
+    /**
      * Sorts the range of cells in the active Spreadsheet.
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
@@ -9612,6 +11731,35 @@ let Workbook = Workbook_1 = class Workbook extends Component {
         this.notify(initiateSort, sortArgs);
         return sortArgs.promise;
     }
+    addDataValidation(rules, range) {
+        range = range ? range : this.getActiveSheet().selectedRange;
+        let eventArgs = {
+            range: range, type: rules.type, operator: rules.operator, value1: rules.value1,
+            value2: rules.value2, ignoreBlank: rules.ignoreBlank, inCellDropDown: rules.inCellDropDown, cancel: false
+        };
+        this.notify(beginAction, { eventArgs: eventArgs, action: 'validation' });
+        if (!eventArgs.cancel) {
+            range = eventArgs.range;
+            rules.type = eventArgs.type;
+            rules.operator = eventArgs.operator;
+            rules.value1 = eventArgs.value1;
+            rules.value2 = eventArgs.value2;
+            rules.ignoreBlank = eventArgs.ignoreBlank;
+            rules.inCellDropDown = eventArgs.inCellDropDown;
+            this.notify(setValidation, { rules: rules, range: range });
+            delete eventArgs.cancel;
+            this.notify(completeAction, { eventArgs: eventArgs, action: 'validation' });
+        }
+    }
+    removeDataValidation(range) {
+        this.notify(removeValidation, { range: range });
+    }
+    addInvalidHighlight(range) {
+        this.notify(addHighlight, { range: range });
+    }
+    removeInvalidHighlight(range) {
+        this.notify(removeHighlight, { range: range });
+    }
     /**
      * To update a cell properties.
      * @param {CellModel} cell - Cell properties.
@@ -9624,9 +11772,18 @@ let Workbook = Workbook_1 = class Workbook extends Component {
         if (cell.value) {
             this.notify(workbookEditOperation, {
                 action: 'updateCellValue', address: range, value: cell.value,
-                sheetIndex: sheetIdx
+                sheetIndex: sheetIdx + 1
             });
         }
+    }
+    /**
+     * This method is used to wrap/unwrap the text content of the cell.
+     * @param address - Address of the cell to be wrapped.
+     * @param wrap - Set `false` if the text content of the cell to be unwrapped.
+     * @returns void
+     */
+    wrap(address, wrap$$1 = true) {
+        wrap(address, wrap$$1, this);
     }
     /**
      * Adds the defined name to the Spreadsheet.
@@ -9723,9 +11880,15 @@ let Workbook = Workbook_1 = class Workbook extends Component {
             return cell.value ? cell.value.toString() : '';
         }
     }
+    /**
+     * @hidden
+     */
+    getAddressInfo(address) {
+        return getAddressInfo(this, address);
+    }
 };
 __decorate([
-    Collection([], Sheet)
+    Property([])
 ], Workbook.prototype, "sheets", void 0);
 __decorate([
     Property(1)
@@ -9733,6 +11896,9 @@ __decorate([
 __decorate([
     Property('100%')
 ], Workbook.prototype, "height", void 0);
+__decorate([
+    Property(true)
+], Workbook.prototype, "allowFindAndReplace", void 0);
 __decorate([
     Property('100%')
 ], Workbook.prototype, "width", void 0);
@@ -9770,6 +11936,15 @@ __decorate([
     Property(true)
 ], Workbook.prototype, "allowHyperlink", void 0);
 __decorate([
+    Property(true)
+], Workbook.prototype, "allowInsert", void 0);
+__decorate([
+    Property(true)
+], Workbook.prototype, "allowDelete", void 0);
+__decorate([
+    Property(true)
+], Workbook.prototype, "allowDataValidation", void 0);
+__decorate([
     Complex({}, CellStyle)
 ], Workbook.prototype, "cellStyle", void 0);
 __decorate([
@@ -9796,6 +11971,9 @@ __decorate([
 __decorate([
     Event$1()
 ], Workbook.prototype, "beforeCellFormat", void 0);
+__decorate([
+    Event$1()
+], Workbook.prototype, "queryCellInfo", void 0);
 Workbook = Workbook_1 = __decorate([
     NotifyPropertyChanges
 ], Workbook);
@@ -9926,6 +12104,10 @@ function pushBasicModules(context, modules) {
         member: 'collaborativeEditing',
         args: [context]
     });
+    modules.push({
+        member: 'protectSheet',
+        args: [context]
+    });
     if (context.allowHyperlink) {
         modules.push({
             member: 'spreadsheetHyperlink',
@@ -9940,6 +12122,21 @@ function pushBasicModules(context, modules) {
     }
     if (context.allowFiltering) {
         modules.push({ member: 'filter', args: [context] });
+    }
+    if (context.allowWrap) {
+        modules.push({ member: 'wrapText', args: [context] });
+    }
+    if (context.allowInsert) {
+        modules.push({ member: 'insert', args: [context] });
+    }
+    if (context.allowDelete) {
+        modules.push({ member: 'delete', args: [context] });
+    }
+    if (context.allowDataValidation) {
+        modules.push({ member: 'dataValidation', args: [context] });
+    }
+    if (context.allowFindAndReplace) {
+        modules.push({ member: 'findAndReplace', args: [context] });
     }
 }
 
@@ -9965,7 +12162,7 @@ function removeAllChildren(parent, index) {
     }
 }
 /**
- * The function used to remove the dom element children.
+ * The function used to get colgroup width based on the row index.
  * @param  parent -
  * @hidden
  */
@@ -10064,12 +12261,13 @@ function inView(context, range, isModify) {
 function locateElem(ele, range, sheet, isRtl) {
     let swapRange = getSwapRange(range);
     let cellPosition = getCellPosition(sheet, swapRange);
+    let startIndex = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     let attrs = {
-        'top': (swapRange[0] === 0 ? cellPosition.top : cellPosition.top - 1) + 'px',
-        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === 0 ? 0 : 1) + 'px',
-        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === 0 ? 0 : 1) + 'px'
+        'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - 1) + 'px',
+        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === startIndex[0] ? 0 : 1) + 'px',
+        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + 'px'
     };
-    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === 0 ? cellPosition.left : cellPosition.left - 1) + 'px';
+    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
     setStyleAttribute$1([{ element: ele, attrs: attrs }]);
 }
 /**
@@ -10569,8 +12767,9 @@ function findMaxValue(table, text, isCol, parent) {
 /**
  * @hidden
  */
-/* tslint:disable no-any */
-function updateAction(options, spreadsheet, isCutRedo) {
+// tslint:disable-next-line
+function updateAction(options, spreadsheet, isRedo) {
+    /* tslint:disable-next-line no-any */
     let eventArgs = options.eventArgs;
     switch (options.action) {
         case 'sorting':
@@ -10602,7 +12801,7 @@ function updateAction(options, spreadsheet, isCutRedo) {
             }
             break;
         case 'clipboard':
-            if (eventArgs.copiedInfo.isCut && !isCutRedo) {
+            if (eventArgs.copiedInfo.isCut && !isRedo) {
                 return;
             }
             let clipboardPromise = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
@@ -10620,17 +12819,21 @@ function updateAction(options, spreadsheet, isCutRedo) {
         case 'resize':
         case 'resizeToFit':
             if (eventArgs.isCol) {
-                spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                if (eventArgs.hide === undefined) {
+                    spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                }
+                else {
+                    spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
+                }
             }
             else {
-                spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx);
+                if (eventArgs.hide === undefined) {
+                    spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx);
+                }
+                else {
+                    spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
+                }
             }
-            break;
-        case 'addSheet':
-            spreadsheet.notify(addSheetTab, {
-                text: eventArgs.text, isAction: true, count: eventArgs.sheetCount,
-                previousIndex: eventArgs.previousIndex
-            });
             break;
         case 'renameSheet':
             spreadsheet.sheets[eventArgs.index - 1].name = eventArgs.value;
@@ -10642,6 +12845,49 @@ function updateAction(options, spreadsheet, isCutRedo) {
                 count: eventArgs.sheetCount,
                 clicked: true
             });
+            break;
+        case 'wrap':
+            wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
+            break;
+        case 'hideShow':
+            eventArgs.isCol ? spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide) :
+                spreadsheet.hideRow(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+            break;
+        case 'replace':
+            spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
+            break;
+        case 'insert':
+            if (isRedo === false) {
+                spreadsheet.delete(options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
+            }
+            else {
+                spreadsheet.notify(insertModel, { model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                        spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index + (options.eventArgs.model
+                        .length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount: options.eventArgs.sheetCount,
+                    activeSheetTab: options.eventArgs.activeSheetTab });
+            }
+            break;
+        case 'delete':
+            if (isRedo === false) {
+                spreadsheet.notify(insertModel, { model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                        spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
+                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel });
+            }
+            else {
+                spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
+            }
+            break;
+        case 'validation':
+            if (isRedo) {
+                let rules = {
+                    type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1,
+                    value2: eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown
+                };
+                spreadsheet.notify(setValidation, { rules: rules, range: eventArgs.range });
+            }
+            else {
+                spreadsheet.notify(removeValidation, { range: eventArgs.range });
+            }
             break;
     }
 }
@@ -10661,6 +12907,120 @@ function hasTemplate(workbook, rowIdx, colIdx, sheetIdx) {
         }
     }
     return false;
+}
+/**
+ * Setting row height in view an model.
+ * @hidden
+ */
+function setRowEleHeight(parent, sheet, height, rowIdx, row, hRow, notifyRowHgtChange = true) {
+    let prevHgt = getRowHeight(sheet, rowIdx);
+    (row || parent.getRow(rowIdx)).style.height = `${height}px`;
+    if (sheet.showHeaders) {
+        (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = `${height}px`;
+    }
+    setRowHeight(sheet, rowIdx, height);
+    parent.setProperties({ sheets: parent.sheets }, true);
+    if (notifyRowHgtChange) {
+        parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - prevHgt });
+    }
+}
+/** @hidden */
+function getTextHeight(context, style, lines = 1) {
+    let fontSize = (style && style.fontSize) || context.cellStyle.fontSize;
+    let fontSizePx = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
+    return Math.ceil(fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines);
+}
+/** @hidden */
+function getTextWidth(text, style, parentStyle) {
+    if (!style) {
+        style = parentStyle;
+    }
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
+    context.font = (style.fontStyle || parentStyle.fontStyle) + ' ' + (style.fontWeight || parentStyle.fontWeight) + ' '
+        + (style.fontSize || parentStyle.fontSize) + ' ' + (style.fontFamily || parentStyle.fontFamily);
+    return context.measureText(text).width;
+}
+/**
+ * @hidden
+ */
+function getLines(text, colwidth, style, parentStyle) {
+    let width;
+    let prevWidth = 0;
+    let textArr = text.toString().split(' ');
+    let spaceWidth = getTextWidth(' ', style, parentStyle);
+    let lines;
+    let cnt = 0;
+    colwidth -= 5; // for padding
+    textArr.forEach((txt) => {
+        let lWidth = 0;
+        let cWidth = 0;
+        width = getTextWidth(txt, style, parentStyle);
+        lines = (prevWidth + width) / colwidth;
+        if (lines >= 1) {
+            if (prevWidth) {
+                cnt++;
+            }
+            if (width / colwidth >= 1) {
+                txt.split('').forEach((val) => {
+                    cWidth = getTextWidth(val, style, parentStyle);
+                    lWidth += cWidth;
+                    if (lWidth > colwidth) {
+                        cnt++;
+                        lWidth = cWidth;
+                    }
+                });
+                prevWidth = lWidth + spaceWidth;
+            }
+            else {
+                prevWidth = width + spaceWidth;
+            }
+        }
+        else {
+            prevWidth += (width + spaceWidth);
+        }
+    });
+    if (prevWidth) {
+        cnt += Math.ceil((prevWidth - spaceWidth) / colwidth);
+    }
+    return cnt;
+}
+/**
+ * Setting maximum height while doing formats and wraptext
+ * @hidden
+ */
+function setMaxHgt(sheet, rIdx, cIdx, hgt) {
+    if (!sheet.maxHgts[rIdx]) {
+        sheet.maxHgts[rIdx] = {};
+    }
+    sheet.maxHgts[rIdx][cIdx] = hgt;
+}
+/**
+ * Getting maximum height by comparing each cell's modified height.
+ * @hidden
+ */
+function getMaxHgt(sheet, rIdx) {
+    let maxHgt = 0;
+    let rowHgt = sheet.maxHgts[rIdx];
+    if (rowHgt) {
+        Object.keys(rowHgt).forEach((key) => {
+            if (rowHgt[key] > maxHgt) {
+                maxHgt = rowHgt[key];
+            }
+        });
+    }
+    return maxHgt;
+}
+/** @hidden */
+function skipHiddenIdx(sheet, index, increase, layout = 'rows') {
+    if (index < 0) {
+        index = -1;
+    }
+    if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+        increase ? index++ : index--;
+        index = skipHiddenIdx(sheet, index, increase, layout);
+    }
+    return index;
 }
 
 /**
@@ -10726,9 +13086,17 @@ class Clipboard {
         }
     }
     cMenuBeforeOpenHandler(e) {
-        if (e.target === 'Content' || e.target === 'Header') {
-            let l10n = this.parent.serviceLocator.getService(locale);
-            this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], this.copiedInfo ? true : false);
+        let sheet = this.parent.getActiveSheet();
+        let l10n = this.parent.serviceLocator.getService(locale);
+        if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
+            this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !sheet.isProtected) ? true : false);
+            this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!sheet.isProtected) ? true : false);
+        }
+        if ((e.target === 'Content') && sheet.isProtected) {
+            this.parent.enableContextMenuItems([l10n.getConstant('Cut'), l10n.getConstant('Filter'), l10n.getConstant('Sort')], false);
+        }
+        if ((e.target === 'Content') && (sheet.isProtected && !sheet.protectSettings.insertLink)) {
+            this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
         }
     }
     rowHeightChanged(args) {
@@ -10830,7 +13198,7 @@ class Clipboard {
                         }
                     }
                     if (!isExternal && this.copiedInfo.isCut) {
-                        this.setCell(i, j, prevSheet, getCell(i, j, prevSheet), false, true);
+                        this.setCell(i, j, prevSheet, null, false, true);
                     }
                 }
                 rowIdx++;
@@ -10876,11 +13244,22 @@ class Clipboard {
                 colIndex: cIdx, sheetIndex: this.parent.activeSheetTab, isFormula: true
             });
         }
-        if (isCut && cell && cell.style) {
-            this.parent.notify(applyCellFormat, {
-                style: extend({}, this.getEmptyStyle(cell.style), this.parent.commonCellStyle), rowIdx: rIdx, colIdx: cIdx, cell: null,
-                lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
+        if (cell && !cell.formula) {
+            this.parent.notify(workbookEditOperation, {
+                action: 'updateCellValue', address: [rIdx, cIdx, rIdx,
+                    cIdx], value: cell.value
             });
+        }
+        if (isCut && cell) {
+            if (cell.style) {
+                this.parent.notify(applyCellFormat, {
+                    style: extend({}, this.getEmptyStyle(cell.style), this.parent.commonCellStyle), rowIdx: rIdx, colIdx: cIdx, cell: null,
+                    lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
+                });
+            }
+            if (cell.wrap) {
+                this.parent.notify(wrapEvent, { range: [rIdx, cIdx, rIdx, cIdx], wrap: false, sheet: sheet });
+            }
         }
     }
     getEmptyStyle(cellStyle) {
@@ -10973,6 +13352,9 @@ class Clipboard {
         });
     }
     hidePaste(isShow) {
+        if (this.parent.getActiveSheet().isProtected) {
+            isShow = false;
+        }
         this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_paste'], enable: isShow || false }]);
     }
     setExternalCells(args) {
@@ -11114,11 +13496,11 @@ class Clipboard {
 }
 
 /**
- * The `Edit` module is used to handle the editing functionalities in Spreadsheet.
+ * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
 class Edit {
     /**
-     * Constructor for edit module in Spreadsheet.
+     * Constructor for protect-sheet module in Spreadsheet.
      * @private
      */
     constructor(parent) {
@@ -11241,49 +13623,68 @@ class Edit {
     keyDownHandler(e) {
         let trgtElem = e.target;
         let keyCode = e.keyCode;
-        if (this.isEdit) {
-            if (this.isCellEdit) {
-                this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
-            }
-            switch (keyCode) {
-                case this.keyCodes.ENTER:
-                    if (Browser.isWindows) {
-                        e.preventDefault();
+        if (!closest(e.target, '.e-findtool-dlg') && !closest(e.target, '.e-validationerror-dlg')) {
+            if (!this.parent.getActiveSheet().isProtected || closest(e.target, '.e-sheet-rename')) {
+                if (this.isEdit) {
+                    if (this.isCellEdit) {
+                        this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                     }
-                    this.endEdit();
-                    break;
-                case this.keyCodes.TAB:
-                    if (!this.hasFormulaSuggSelected()) {
-                        this.endEdit();
+                    switch (keyCode) {
+                        case this.keyCodes.ENTER:
+                            if (Browser.isWindows) {
+                                e.preventDefault();
+                            }
+                            this.endEdit(false, e);
+                            break;
+                        case this.keyCodes.TAB:
+                            if (!this.hasFormulaSuggSelected()) {
+                                this.endEdit(false, e);
+                            }
+                            break;
+                        case this.keyCodes.ESC:
+                            this.cancelEdit(true, true, e);
+                            break;
                     }
-                    break;
-                case this.keyCodes.ESC:
-                    this.cancelEdit();
-                    break;
-            }
-        }
-        else {
-            if (!this.isEdit && (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel'))) {
-                let isAlphabet = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET);
-                let isNumeric = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
-                let isNumpadKeys = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
-                let isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND);
-                if (!isSymbolkeys) {
-                    isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
                 }
-                let isFirefoxExceptionkeys = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
-                    (keyCode === this.keyCodes.FIREFOXMINUS);
-                let isF2Edit = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
-                let isBackSpace = keyCode === this.keyCodes.BACKSPACE;
-                if ((!e.ctrlKey && !e.altKey && ((!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
-                    isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys))) || isF2Edit || isBackSpace) {
-                    if (isF2Edit) {
-                        this.isNewValueEdit = false;
+                else {
+                    if (!this.isEdit && (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel'))) {
+                        let isAlphabet = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET);
+                        let isNumeric = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
+                        let isNumpadKeys = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
+                        let isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETONESTART &&
+                            keyCode <= this.keyCodes.SYMBOLSETONEEND);
+                        if (!isSymbolkeys) {
+                            isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
+                        }
+                        let isFirefoxExceptionkeys = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
+                            (keyCode === this.keyCodes.FIREFOXMINUS);
+                        let isF2Edit = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
+                        let isBackSpace = keyCode === this.keyCodes.BACKSPACE;
+                        if ((!e.ctrlKey && !e.altKey && ((!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
+                            isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys))) || isF2Edit || isBackSpace) {
+                            if (isF2Edit) {
+                                this.isNewValueEdit = false;
+                            }
+                            this.startEdit();
+                        }
+                        if (keyCode === this.keyCodes.DELETE) {
+                            this.editingHandler('delete');
+                        }
                     }
-                    this.startEdit();
                 }
-                if (keyCode === this.keyCodes.DELETE) {
-                    this.editingHandler('delete');
+            }
+            else {
+                if (((keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET) ||
+                    (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER)
+                    || (keyCode === this.keyCodes.DELETE) || (keyCode === this.keyCodes.BACKSPACE) || (keyCode === this.keyCodes.SPACE)
+                    || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
+                    (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
+                    || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2))
+                    && (keyCode !== 67)) {
+                    if (this.parent.getActiveSheet().protectSettings.insertLink && keyCode === 75) {
+                        return;
+                    }
+                    this.parent.notify(editAlert, null);
                 }
             }
         }
@@ -11367,25 +13768,35 @@ class Edit {
         }
     }
     mouseDownHandler(e) {
-        if (this.isEdit) {
-            let trgtElem = e.target;
-            this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
-            if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
-                trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
-                this.endEdit();
+        if (!closest(e.target, '.e-findtool-dlg')) {
+            if (this.isEdit) {
+                let trgtElem = e.target;
+                this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
+                if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
+                    trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
+                    this.endEdit(false, e);
+                }
             }
         }
     }
     dblClickHandler(e) {
         let trgtElem = e.target;
-        if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
-            || closest(trgtElem, '.e-main-content')) {
-            if (this.isEdit) {
-                this.endEdit();
+        let target = e.target;
+        if (!this.parent.getActiveSheet().isProtected) {
+            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
+                || closest(trgtElem, '.e-main-content')) {
+                if (this.isEdit) {
+                    this.endEdit();
+                }
+                else {
+                    this.isNewValueEdit = false;
+                    this.startEdit();
+                }
             }
-            else {
-                this.isNewValueEdit = false;
-                this.startEdit();
+        }
+        else {
+            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')) {
+                this.parent.notify(editAlert, null);
             }
         }
     }
@@ -11463,6 +13874,7 @@ class Edit {
     positionEditor() {
         let tdElem = this.editCellData.element;
         tdElem.classList.add('e-ss-edited');
+        let cell = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         let left = this.editCellData.position.left + 1;
         let top = this.editCellData.position.top + 1;
         let minHeight = this.editCellData.element.offsetHeight - 3;
@@ -11471,7 +13883,8 @@ class Edit {
         let editWidth = mainContElement.offsetWidth - left - 28;
         //let editHeight: number = mainContElement.offsetHeight - top - 28;
         let inlineStyles = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;height:' + minHeight + 'px;';
+            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'min-height:' : 'height:') +
+            minHeight + 'px;' + ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '');
         inlineStyles += tdElem.style.cssText;
         this.editorElem.setAttribute('style', inlineStyles);
         if (tdElem.classList.contains('e-right-align')) {
@@ -11484,22 +13897,48 @@ class Edit {
     updateEditedValue(tdRefresh = true) {
         let oldCellValue = this.editCellData.oldValue;
         let oldValue = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
+        let isValidate = true;
+        let address = this.editCellData.addr;
+        let cellIndex = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        let sheet = this.parent.getActiveSheet();
+        let cell = getCell(cellIndex[0], cellIndex[1], sheet);
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
-        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
-            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
-            let cellIndex = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        if (this.parent.allowDataValidation && cell && cell.validation) {
+            let value = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].innerText;
+            let isCell = true;
+            let sheetIdx = this.parent.activeSheetTab;
+            let range;
+            if (typeof address === 'string') {
+                range = getRangeIndexes(address);
+            }
+            else {
+                range = address;
+            }
+            this.parent.notify(isValidation, { value, range, sheetIdx, isCell });
+            isValidate = this.parent.allowDataValidation;
+            this.editCellData.value = isValidate ? value : this.editCellData.value;
+            this.parent.allowDataValidation = true;
+        }
+        if ((oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
+            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
+            let sheet = this.parent.getActiveSheet();
+            let cellIndex = getRangeIndexes(sheet.activeCell);
             this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
-            let cell = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet(), true);
+            let cell = getCell(cellIndex[0], cellIndex[1], sheet, true);
             let eventArgs = this.getRefreshNodeArgs(cell);
             this.editCellData.value = eventArgs.value;
             if (cell.formula) {
                 this.editCellData.formula = cell.formula;
             }
+            if (cell.wrap) {
+                this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
+            }
             if (tdRefresh) {
                 this.parent.refreshNode(this.editCellData.element, eventArgs);
             }
         }
+        return isValidate;
     }
     refreshDependentCellValue(rowIdx, colIdx, sheetIdx) {
         if (rowIdx && colIdx) {
@@ -11536,19 +13975,28 @@ class Edit {
         };
         return args;
     }
-    endEdit(refreshFormulaBar = false) {
+    endEdit(refreshFormulaBar = false, event) {
         if (refreshFormulaBar) {
             this.refreshEditor(this.editCellData.oldValue, false, true, false, false);
         }
-        this.updateEditedValue();
-        this.triggerEvent('cellSave');
-        this.resetEditState();
-        this.focusElement();
+        if (this.triggerEvent('beforeCellSave')) {
+            event.preventDefault();
+            return;
+        }
+        let isValidate = this.updateEditedValue();
+        if (isValidate) {
+            this.triggerEvent('cellSave', event);
+            this.resetEditState();
+            this.focusElement();
+        }
+        else {
+            event.preventDefault();
+        }
     }
-    cancelEdit(refreshFormulaBar = true, trigEvent = true) {
+    cancelEdit(refreshFormulaBar = true, trigEvent = true, event) {
         this.refreshEditor(this.editCellData.oldValue, refreshFormulaBar, false, false, false);
         if (trigEvent) {
-            this.triggerEvent('cellSave');
+            this.triggerEvent('cellSave', event);
         }
         this.resetEditState();
         this.focusElement();
@@ -11557,7 +14005,7 @@ class Edit {
         this.parent.element.focus();
         this.parent.notify(enableToolbarItems, [{ enable: true }]);
     }
-    triggerEvent(eventName) {
+    triggerEvent(eventName, event) {
         let eventArgs = {
             element: this.editCellData.element,
             value: this.editCellData.value,
@@ -11568,6 +14016,7 @@ class Edit {
             if (this.editCellData.formula) {
                 eventArgs.formula = this.editCellData.formula;
             }
+            eventArgs.originalEvent = event;
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
         }
         if (eventName !== 'cellSave') {
@@ -11636,6 +14085,7 @@ class Selection {
         this.parent.on(selectRange, this.selectRange, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
         this.parent.on(colWidthChanged, this.colWidthChanged, this);
+        this.parent.on(protectSelection, this.protectHandler, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
@@ -11646,6 +14096,7 @@ class Selection {
             this.parent.off(selectRange, this.selectRange);
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
             this.parent.off(colWidthChanged, this.colWidthChanged);
+            this.parent.off(protectSelection, this.protectHandler);
         }
     }
     rowHeightChanged(args) {
@@ -11700,6 +14151,8 @@ class Selection {
         this.selectRangeByIdx(this.parent.selectionSettings.mode === 'Single' ? indexes.slice(0, 2).concat(indexes.slice(0, 2)) : indexes);
     }
     init() {
+        let isInit = true;
+        let sheet = this.parent.getActiveSheet();
         let range = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
         let sRange = getSwapRange(range);
         let actRange = getCellIndexes(this.parent.getActiveSheet().activeCell);
@@ -11707,6 +14160,7 @@ class Selection {
             && sRange[3] >= actRange[1];
         this.createSelectionElement();
         this.selectRangeByIdx(range, null, null, inRange);
+        this.selectRangeByIdx(range, null, null, inRange, isInit);
     }
     createSelectionElement() {
         let cont = this.parent.getMainContent();
@@ -11717,68 +14171,73 @@ class Selection {
     }
     mouseDownHandler(e) {
         if (!this.parent.isEdit) {
-            if (this.getSheetElement().contains(e.target) && !e.target.classList.contains('e-colresize')
-                && !e.target.classList.contains('e-rowresize')) {
-                let sheet = this.parent.getActiveSheet();
-                let mode = this.parent.selectionSettings.mode;
-                let rowIdx = this.getRowIdxFromClientY(getClientY(e));
-                let colIdx = this.getColIdxFromClientX(getClientX(e));
-                let activeIdx = getCellIndexes(sheet.activeCell);
-                let isRowSelected = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target);
-                let isColSelected = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target);
-                if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
-                    return;
-                }
-                if (mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
-                    (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
-                    document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
-                    if (!Browser.isPointer) {
-                        document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
+            if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
+                return;
+            }
+            if (!closest(e.target, '.e-findtool-dlg')) {
+                if (this.getSheetElement().contains(e.target) && !e.target.classList.contains('e-colresize')
+                    && !e.target.classList.contains('e-rowresize')) {
+                    let sheet = this.parent.getActiveSheet();
+                    let mode = this.parent.selectionSettings.mode;
+                    let rowIdx = this.getRowIdxFromClientY(getClientY(e));
+                    let colIdx = this.getColIdxFromClientX(getClientX(e));
+                    let activeIdx = getCellIndexes(sheet.activeCell);
+                    let isRowSelected = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target);
+                    let isColSelected = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target);
+                    if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
+                        return;
                     }
-                }
-                if (!isTouchEnd(e)) {
-                    EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
-                }
-                if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
-                    this.touchEvt = e;
-                    return;
-                }
-                if (isRowSelected) {
-                    this.isRowSelected = true;
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [rowIdx, 0];
+                    if (mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
+                        (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
+                        document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
+                        if (!Browser.isPointer) {
+                            document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
+                        }
                     }
-                    this.selectRangeByIdx([this.startCell[0], 0, rowIdx, sheet.colCount - 1], e);
-                }
-                else if (isColSelected) {
-                    this.isColSelected = true;
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [0, colIdx];
+                    if (!isTouchEnd(e)) {
+                        EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
                     }
-                    this.selectRangeByIdx([0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
-                }
-                else if (e.target.classList.contains('e-selectall')) {
-                    this.startCell = [0, 0];
-                    this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
-                }
-                else if (!e.target.classList.contains('e-main-content')) {
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [rowIdx, colIdx];
+                    if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
+                        this.touchEvt = e;
+                        return;
                     }
-                    this.selectRangeByIdx([].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
-                }
-                if (this.parent.isMobileView()) {
-                    this.parent.element.classList.add('e-mobile-focused');
-                    this.parent.renderModule.setSheetPanelSize();
+                    if (isRowSelected) {
+                        this.isRowSelected = true;
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [rowIdx, 0];
+                        }
+                        this.selectRangeByIdx([this.startCell[0], 0, rowIdx, sheet.colCount - 1], e);
+                    }
+                    else if (isColSelected) {
+                        this.isColSelected = true;
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [0, colIdx];
+                        }
+                        this.selectRangeByIdx([0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
+                    }
+                    else if (e.target.classList.contains('e-selectall')) {
+                        this.startCell = [0, 0];
+                        this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
+                    }
+                    else if (!e.target.classList.contains('e-main-content')) {
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [rowIdx, colIdx];
+                        }
+                        this.selectRangeByIdx([].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+                    }
+                    if (this.parent.isMobileView()) {
+                        this.parent.element.classList.add('e-mobile-focused');
+                        this.parent.renderModule.setSheetPanelSize();
+                    }
                 }
             }
         }
     }
     mouseMoveHandler(e) {
+        let sheet = this.parent.getActiveSheet();
         if (isTouchMove(e)) {
             e.preventDefault();
         }
-        let sheet = this.parent.getActiveSheet();
         let cont = this.getScrollContent();
         let clientRect = cont.getBoundingClientRect();
         let clientX = getClientX(e);
@@ -11865,6 +14324,10 @@ class Selection {
         return this.parent.scrollModule ? this.parent.scrollModule.prevScroll.scrollLeft : 0;
     }
     cellNavigateHandler(args) {
+        let sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+            return;
+        }
         this.selectRangeByIdx(args.range.concat(args.range));
     }
     getColIdxFromClientX(clientX) {
@@ -11891,7 +14354,7 @@ class Selection {
             }
         }
     }
-    selectRangeByIdx(range, e, isScrollRefresh, isActCellChanged) {
+    selectRangeByIdx(range, e, isScrollRefresh, isActCellChanged, isInit) {
         let ele = this.getSelectionElement();
         let sheet = this.parent.getActiveSheet();
         let args = { range: getRangeAddress(range), cancel: false };
@@ -11910,7 +14373,7 @@ class Selection {
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range);
+            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range, isInit);
         }
         if (isNullOrUndefined(e)) {
             e = { type: 'mousedown' };
@@ -11922,15 +14385,19 @@ class Selection {
         this.isRowSelected = (indexes[1] === 0 && indexes[3] === sheet.colCount - 1);
         this.isColSelected = (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1);
     }
-    updateActiveCell(range) {
+    updateActiveCell(range, isInit) {
         let sheet = this.parent.getActiveSheet();
         let topLeftIdx = getRangeIndexes(sheet.topLeftCell);
         let rowIdx = this.isColSelected ? topLeftIdx[0] : range[0];
         let colIdx = this.isRowSelected ? topLeftIdx[1] : range[1];
-        sheet.activeCell = getCellAddress(rowIdx, colIdx);
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-        locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
-        this.parent.notify(activeCellChanged, null);
+        if (sheet.activeCell !== getCellAddress(rowIdx, colIdx) || isInit) {
+            sheet.activeCell = getCellAddress(rowIdx, colIdx);
+            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+            this.parent.notify(activeCellChanged, null);
+        }
+        else {
+            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+        }
     }
     getSelectionElement() {
         return this.parent.element.getElementsByClassName('e-selection')[0];
@@ -11943,6 +14410,7 @@ class Selection {
     }
     highlightHdr(range, isRowRefresh = true, isColRefresh = true) {
         if (this.parent.getActiveSheet().showHeaders) {
+            let sheet = this.parent.getActiveSheet();
             let rowHdr = [];
             let colHdr = [];
             let swapRange = getSwapRange(range);
@@ -11957,7 +14425,12 @@ class Selection {
             if (isColRefresh) {
                 colHdr = [].slice.call(this.parent.getColumnHeaderContent().querySelectorAll('th')).slice(swapRange[1], swapRange[3] + 1);
             }
-            addClass([].concat(rowHdr, colHdr), 'e-highlight');
+            if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+                removeClass([].concat(rowHdr, colHdr), 'e-highlight');
+            }
+            else {
+                addClass([].concat(rowHdr, colHdr), 'e-highlight');
+            }
             if (rowHdr.length && rowHdr[0].parentElement.previousElementSibling) {
                 rowHdr[0].parentElement.previousElementSibling.classList.add('e-prev-highlight');
             }
@@ -11965,7 +14438,12 @@ class Selection {
                 colHdr[0].previousElementSibling.classList.add('e-prev-highlight');
             }
             if (this.isRowSelected && this.isColSelected) {
-                document.getElementById(`${this.parent.element.id}_select_all`).classList.add('e-highlight');
+                if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+                    document.getElementById(`${this.parent.element.id}_select_all`).classList.remove('e-highlight');
+                }
+                else {
+                    document.getElementById(`${this.parent.element.id}_select_all`).classList.add('e-highlight');
+                }
             }
             if (swapRange[0] === 0) {
                 selectAll$$1.classList.add('e-prev-highlight-bottom');
@@ -11975,18 +14453,27 @@ class Selection {
             }
         }
     }
+    protectHandler() {
+        let range = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        let swapRange = getSwapRange(range);
+        let actRange = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        let inRange = swapRange[0] <= actRange[0] && swapRange[2] >= actRange[0] && swapRange[1] <= actRange[1]
+            && swapRange[3] >= actRange[1];
+        this.selectRangeByIdx(range, null, null, inRange);
+    }
     getHdrIndexes(range) {
         if (this.parent.scrollSettings.enableVirtualization) {
             let indexes = [];
-            let hiddenRowCount = this.parent.hiddenRowsCount(this.parent.viewport.topIndex, range[0]);
+            let hiddenRowCount = this.parent.hiddenCount(this.parent.viewport.topIndex, range[0]);
+            let hiddenColCount = this.parent.hiddenCount(this.parent.viewport.leftIndex, range[1], 'columns');
             indexes[0] = this.isColSelected ? range[0] : (range[0] - this.parent.viewport.topIndex) < 0
                 ? 0 : ((range[0] - hiddenRowCount) - this.parent.viewport.topIndex);
             indexes[1] = this.isRowSelected ? range[1] : (range[1] - this.parent.viewport.leftIndex) < 0
-                ? 0 : (range[1] - this.parent.viewport.leftIndex);
+                ? 0 : ((range[1] - hiddenColCount) - this.parent.viewport.leftIndex);
             indexes[2] = this.isColSelected ? this.parent.viewport.rowCount + this.parent.getThreshold('row') * 2 : range[2] -
-                this.parent.hiddenRowsCount(range[0], range[2]) - hiddenRowCount - this.parent.viewport.topIndex;
-            indexes[3] = this.isRowSelected ? this.parent.viewport.colCount + this.parent.getThreshold('col') * 2 : indexes[1] === 0
-                ? range[3] - this.parent.viewport.leftIndex : range[3] - range[1] + indexes[1];
+                this.parent.hiddenCount(range[0], range[2]) - hiddenRowCount - this.parent.viewport.topIndex;
+            indexes[3] = this.isRowSelected ? this.parent.viewport.colCount + this.parent.getThreshold('col') * 2 :
+                range[3] - this.parent.hiddenCount(range[1], range[3], 'columns') - hiddenColCount - this.parent.viewport.leftIndex;
             return indexes;
         }
         return range;
@@ -12028,7 +14515,7 @@ class Scroll {
         if (this.prevScroll.scrollLeft !== left) {
             let scrollRight = left > this.prevScroll.scrollLeft;
             prevSize = this.offset.left.size;
-            this.offset.left = this.getColOffset(left, scrollRight);
+            this.offset.left = this.getColOffset(left, scrollRight, e.skipHidden);
             if (this.parent.getActiveSheet().showHeaders) {
                 this.parent.getColumnHeaderContent().scrollLeft = scrollLeft;
             }
@@ -12036,7 +14523,7 @@ class Scroll {
                 cur: this.offset.left, prev: { idx: this.leftIndex, size: prevSize }, increase: scrollRight, preventScroll: e.preventScroll
             };
             this.parent.notify(onHorizontalScroll, scrollArgs);
-            this.updateTopLeftCell();
+            this.updateTopLeftCell(scrollRight);
             if (!this.parent.scrollSettings.enableVirtualization && scrollRight && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualCols();
             }
@@ -12054,7 +14541,7 @@ class Scroll {
                 cur: this.offset.top, prev: { idx: this.topIndex, size: prevSize }, increase: scrollDown, preventScroll: e.preventScroll
             };
             this.parent.notify(onVerticalScroll, scrollArgs);
-            this.updateTopLeftCell();
+            this.updateTopLeftCell(scrollDown);
             if (!this.parent.scrollSettings.enableVirtualization && scrollDown && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualRows();
             }
@@ -12068,7 +14555,6 @@ class Scroll {
         if (this.offset.top.idx > sheet.rowCount - (this.parent.viewport.rowCount + threshold)) {
             this.parent.renderModule.refreshUI({ colIndex: 0, direction: 'first', refresh: 'RowPart' }, `${getCellAddress(sheet.rowCount, 0)}:${getCellAddress(sheet.rowCount + threshold - 1, sheet.colCount - 1)}`);
             sheet.rowCount += threshold;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
     }
     updateNonVirtualCols() {
@@ -12077,12 +14563,17 @@ class Scroll {
         if (this.offset.left.idx > sheet.colCount - (this.parent.viewport.colCount + threshold)) {
             this.parent.renderModule.refreshUI({ rowIndex: 0, colIndex: sheet.colCount, direction: 'first', refresh: 'ColumnPart' }, `${getCellAddress(0, sheet.colCount)}:${getCellAddress(sheet.rowCount - 1, sheet.colCount + threshold - 1)}`);
             sheet.colCount += threshold;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
     }
-    updateTopLeftCell() {
-        this.parent.getActiveSheet().topLeftCell = getCellAddress(this.offset.top.idx, this.offset.left.idx);
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+    updateTopLeftCell(increase) {
+        let top = this.offset.top.idx;
+        let left = this.offset.left.idx;
+        if (!increase) {
+            let sheet = this.parent.getActiveSheet();
+            top = skipHiddenIdx(sheet, top, true);
+            left = skipHiddenIdx(sheet, left, true, 'columns');
+        }
+        this.parent.getActiveSheet().topLeftCell = getCellAddress(top, left);
     }
     getRowOffset(scrollTop, scrollDown) {
         let temp = this.offset.top.size;
@@ -12131,7 +14622,7 @@ class Scroll {
         }
         return { idx: this.offset.top.idx, size: this.offset.top.size };
     }
-    getColOffset(scrollLeft, increase) {
+    getColOffset(scrollLeft, increase, skipHidden) {
         let temp = this.offset.left.size;
         let sheet = this.parent.getActiveSheet();
         let i = increase ? this.offset.left.idx + 1 : this.offset.left.idx - 1;
@@ -12147,12 +14638,12 @@ class Scroll {
         }
         while (i < count) {
             if (increase) {
-                temp += getColumnWidth(sheet, i - 1);
+                temp += getColumnWidth(sheet, i - 1, skipHidden);
                 if (temp === scrollLeft) {
                     return { idx: i, size: temp };
                 }
                 if (temp > scrollLeft) {
-                    return { idx: i - 1, size: temp - getColumnWidth(sheet, i - 1) };
+                    return { idx: i - 1, size: temp - getColumnWidth(sheet, i - 1, skipHidden) };
                 }
                 i++;
             }
@@ -12160,14 +14651,14 @@ class Scroll {
                 if (temp === 0) {
                     return { idx: 0, size: 0 };
                 }
-                temp -= getColumnWidth(sheet, i);
+                temp -= getColumnWidth(sheet, i, skipHidden);
                 if (temp === scrollLeft) {
                     return { idx: i, size: temp };
                 }
                 if (temp < scrollLeft) {
-                    temp += getColumnWidth(sheet, i);
+                    temp += getColumnWidth(sheet, i, skipHidden);
                     if (temp > scrollLeft) {
-                        return { idx: i, size: temp - getColumnWidth(sheet, i) };
+                        return { idx: i, size: temp - getColumnWidth(sheet, i, skipHidden) };
                     }
                     else {
                         return { idx: i + 1, size: temp };
@@ -12178,12 +14669,16 @@ class Scroll {
         }
         return { idx: this.offset.left.idx, size: this.offset.left.size };
     }
-    wireEvents() {
+    contentLoaded() {
         this.onScroll = this.onContentScroll.bind(this);
-        EventHandler.add(this.parent.getMainContent(), 'scroll', this.onScroll, this);
+        this.setScrollEvent();
         if (this.parent.enableRtl) {
             this.initScrollValue = this.parent.getMainContent().scrollLeft;
         }
+    }
+    setScrollEvent(args = { set: true }) {
+        args.set ? EventHandler.add(this.parent.getMainContent(), 'scroll', this.onScroll, this) :
+            EventHandler.remove(this.parent.getMainContent(), 'scroll', this.onScroll);
     }
     initProps() {
         this.topIndex = 0;
@@ -12218,10 +14713,11 @@ class Scroll {
         }
     }
     addEventListener() {
-        this.parent.on(contentLoaded, this.wireEvents, this);
+        this.parent.on(contentLoaded, this.contentLoaded, this);
         this.parent.on(onContentScroll, this.onContentScroll, this);
         this.parent.on(deInitProperties, this.initProps, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
+        this.parent.on(setScrollEvent, this.setScrollEvent, this);
     }
     destroy() {
         EventHandler.remove(this.parent.getMainContent(), 'scroll', this.onScroll);
@@ -12229,10 +14725,11 @@ class Scroll {
         this.parent = null;
     }
     removeEventListener() {
-        this.parent.off(contentLoaded, this.wireEvents);
+        this.parent.off(contentLoaded, this.contentLoaded);
         this.parent.off(onContentScroll, this.onContentScroll);
         this.parent.off(deInitProperties, this.initProps);
         this.parent.off(spreadsheetDestroyed, this.destroy);
+        this.parent.off(setScrollEvent, this.setScrollEvent);
     }
 }
 
@@ -12261,40 +14758,49 @@ class VirtualScroll {
             this.initScroll();
         }
         let domCount = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
-        if (sheet.rowCount > domCount || sheet.usedRange.rowIndex > domCount) {
-            if (sheet.rowCount < sheet.usedRange.rowIndex) {
-                sheet.rowCount = sheet.usedRange.rowIndex;
+        if (sheet.rowCount > domCount || sheet.usedRange.rowIndex > domCount - 1) {
+            if (!this.parent.scrollSettings.isFinite && sheet.rowCount <= sheet.usedRange.rowIndex) {
+                sheet.rowCount = sheet.usedRange.rowIndex + 1;
             }
             this.setScrollCount(sheet.rowCount, 'row');
             height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
         }
         else {
-            this.scroll[this.parent.activeSheetTab - 1].rowCount = sheet.rowCount = domCount;
+            if (!this.parent.scrollSettings.isFinite) {
+                sheet.rowCount = domCount;
+            }
+            this.scroll[this.parent.activeSheetTab - 1].rowCount = sheet.rowCount;
             height = 1;
         }
         domCount = this.parent.viewport.colCount + 1 + (this.parent.getThreshold('col') * 2);
-        let size = getColumnsWidth(sheet, 0, domCount - 1);
-        if (sheet.colCount > domCount) {
-            if (sheet.colCount < sheet.usedRange.colIndex) {
-                sheet.colCount = sheet.usedRange.colIndex;
+        let size;
+        if (sheet.colCount > domCount || sheet.usedRange.colIndex > domCount - 1) {
+            if (!this.parent.scrollSettings.isFinite && sheet.colCount <= sheet.usedRange.colIndex) {
+                sheet.colCount = sheet.usedRange.colIndex + 1;
             }
+            size = getColumnsWidth(sheet, 0, domCount - 1);
             this.setScrollCount(sheet.colCount, 'col');
             width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetTab - 1].colCount - 1);
         }
         else {
-            this.scroll[this.parent.activeSheetTab - 1].colCount = sheet.colCount = domCount;
+            if (!this.parent.scrollSettings.isFinite) {
+                sheet.colCount = domCount;
+            }
+            size = getColumnsWidth(sheet, 0, sheet.colCount - 1);
+            this.scroll[this.parent.activeSheetTab - 1].colCount = sheet.colCount;
             width = size;
         }
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         if (args.startColIdx) {
             size = getColumnsWidth(sheet, args.startColIdx, args.startColIdx + domCount - 1);
         }
-        if (isNullOrUndefined(this.translateX)) {
+        if (isNullOrUndefined(this.parent.viewport.leftIndex)) {
             this.parent.viewport.leftIndex = 0;
-            this.translateX = 0;
         }
         if (isNullOrUndefined(this.parent.viewport.topIndex)) {
             this.parent.viewport.topIndex = 0;
+        }
+        if (isNullOrUndefined(this.translateX)) {
+            this.translateX = 0;
         }
         if (isNullOrUndefined(this.translateY)) {
             this.translateY = 0;
@@ -12330,17 +14836,17 @@ class VirtualScroll {
             i++;
         }
     }
-    setScrollCount(count, layout) {
+    setScrollCount(count$$1, layout) {
         let activeSheetIdx = this.parent.activeSheetTab - 1;
         if (!this.scroll[activeSheetIdx][layout + 'Count']) {
-            this.scroll[activeSheetIdx][layout + 'Count'] = count;
+            this.scroll[activeSheetIdx][layout + 'Count'] = count$$1;
         }
     }
-    getAddress(topIdx) {
-        return `${getCellAddress(topIdx[0], this.parent.viewport.leftIndex)}:${getCellAddress(topIdx[1], this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2))}`;
+    getRowAddress(indexes) {
+        return getRangeAddress([indexes[0], this.parent.viewport.leftIndex, indexes[1], this.parent.viewport.rightIndex]);
     }
-    getColAddress(leftIdx) {
-        return `${getCellAddress(this.parent.viewport.topIndex, leftIdx[0])}:${getCellAddress(this.parent.viewport.topIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2), leftIdx[1])}`;
+    getColAddress(indexes) {
+        return getRangeAddress([this.parent.viewport.topIndex, indexes[0], this.parent.viewport.bottomIndex, indexes[1]]);
     }
     updateScrollCount(idx, layout, threshold = idx) {
         let sheet = this.parent.getActiveSheet();
@@ -12354,7 +14860,6 @@ class VirtualScroll {
         }
         if (!this.parent.scrollSettings.isFinite) {
             sheet[layout + 'Count'] = rowCount;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
     }
     onVerticalScroll(args) {
@@ -12375,17 +14880,21 @@ class VirtualScroll {
                         if (!args.preventScroll) {
                             if (idxDiff < this.parent.viewport.rowCount + threshold) {
                                 lastIdx = this.parent.viewport.topIndex - 1;
-                                startIdx = this.parent.skipHiddenRows(0, lastIdx)[0];
+                                startIdx = this.parent.skipHidden(0, lastIdx)[0];
                                 this.parent.viewport.topIndex = startIdx;
-                                let hiddenCount = this.checkHiddenCount(startIdx, lastIdx);
-                                let skippedHiddenIdx = this.checkHiddenIndex(this.parent.getActiveSheet(), (this.parent.viewport.bottomIndex - ((lastIdx - startIdx + 1) - hiddenCount)), args.increase);
+                                let hiddenCount = this.hiddenCount(startIdx, lastIdx);
+                                let skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.bottomIndex - ((lastIdx - startIdx + 1) - hiddenCount)), args.increase);
                                 this.parent.viewport.bottomIndex -= (((lastIdx - startIdx + 1) - hiddenCount) +
-                                    (this.checkHiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
-                                this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: 'last', refresh: 'RowPart' }, this.getAddress([0, lastIdx]));
+                                    (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
+                                this.parent.renderModule.refreshUI({
+                                    colIndex: this.parent.viewport.leftIndex, rowIndex: startIdx, direction: 'last', refresh: 'RowPart',
+                                    skipUpdateOnFirst: true
+                                }, this.getRowAddress([0, this.skipHiddenIdx(lastIdx, false)]));
                             }
                             else {
-                                this.parent.renderModule.refreshUI({ rowIndex: 0, colIndex: this.parent.viewport.leftIndex, refresh: 'Row' });
+                                this.parent.renderModule.refreshUI({ rowIndex: 0, colIndex: this.parent.viewport.leftIndex, refresh: 'Row', skipUpdateOnFirst: true });
                             }
+                            this.parent.element.focus();
                         }
                     }
                     this.updateScrollCount(threshold, 'row');
@@ -12407,54 +14916,53 @@ class VirtualScroll {
                         if (args.increase) {
                             startIdx = this.parent.viewport.bottomIndex + 1;
                             lastIdx = this.parent.viewport.bottomIndex + (this.parent.viewport.topIndex - prevTopIdx);
-                            lastIdx -= this.checkHiddenCount(prevTopIdx, this.parent.viewport.topIndex - 1);
-                            this.parent.viewport.topIndex = this.checkHiddenIndex(this.parent.getActiveSheet(), this.parent.viewport.topIndex, args.increase);
-                            if (lastIdx === this.parent.viewport.bottomIndex) {
+                            lastIdx -= this.hiddenCount(prevTopIdx, this.parent.viewport.topIndex - 1);
+                            this.parent.viewport.topIndex = this.skipHiddenIdx(this.parent.viewport.topIndex, args.increase);
+                            if (lastIdx <= this.parent.viewport.bottomIndex) {
                                 return;
                             }
-                            let indexes = this.parent.skipHiddenRows(startIdx, lastIdx);
+                            let indexes = this.parent.skipHidden(startIdx, lastIdx);
                             startIdx = indexes[0];
-                            lastIdx = indexes[1];
-                            lastIdx = this.checkLastIdx(lastIdx, 'row');
+                            lastIdx = this.checkLastIdx(indexes[1], 'row');
                             this.parent.viewport.bottomIndex = lastIdx;
-                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: 'first', refresh: 'RowPart' }, this.getAddress([startIdx, lastIdx]));
+                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, rowIndex: startIdx, direction: 'first', refresh: 'RowPart' }, this.getRowAddress([startIdx, lastIdx]));
                         }
                         else {
                             startIdx = this.parent.viewport.topIndex;
                             lastIdx = startIdx + idxDiff - 1;
-                            let hiddenCount = this.checkHiddenCount(startIdx, lastIdx);
-                            let skippedHiddenIdx = this.checkHiddenIndex(this.parent.getActiveSheet(), (this.parent.viewport.bottomIndex - ((lastIdx - startIdx) - hiddenCount)), args.increase);
+                            let hiddenCount = this.hiddenCount(startIdx, lastIdx);
+                            let skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.bottomIndex - ((lastIdx - startIdx) - hiddenCount)), args.increase);
                             this.parent.viewport.bottomIndex -= ((idxDiff - hiddenCount) +
-                                (this.checkHiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
-                            startIdx = this.parent.skipHiddenRows(startIdx, lastIdx)[0];
+                                (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
+                            startIdx = this.parent.skipHidden(startIdx, lastIdx)[0];
                             this.parent.viewport.topIndex = startIdx;
-                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: 'last', refresh: 'RowPart' }, this.getAddress([startIdx, lastIdx]));
+                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, rowIndex: startIdx, direction: 'last', refresh: 'RowPart' }, this.getRowAddress([startIdx, lastIdx]));
                         }
                     }
                     else {
                         this.parent.renderModule.refreshUI({
-                            rowIndex: this.parent.viewport.topIndex,
-                            colIndex: this.parent.viewport.leftIndex, refresh: 'Row'
+                            rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row'
                         });
                     }
                     this.updateScrollCount(idx, 'row', threshold);
+                    this.parent.element.focus();
                 }
             }
             args.prev.idx = idx;
         }
     }
-    checkHiddenIndex(sheet, index, increase) {
-        if (isHiddenRow(sheet, index)) {
+    skipHiddenIdx(index, increase, layout = 'rows', sheet = this.parent.getActiveSheet()) {
+        if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
             increase ? index++ : index--;
-            index = this.checkHiddenIndex(sheet, index, increase);
+            index = this.skipHiddenIdx(index, increase, layout, sheet);
         }
         return index;
     }
-    checkHiddenCount(startIdx, endIdx) {
+    hiddenCount(startIdx, endIdx, layout = 'rows') {
         let index = 0;
         let sheet = this.parent.getActiveSheet();
         for (let i = startIdx; i <= endIdx; i++) {
-            if (isHiddenRow(sheet, i)) {
+            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
                 index++;
             }
         }
@@ -12462,9 +14970,9 @@ class VirtualScroll {
     }
     checkLastIdx(idx, layout) {
         if (this.parent.scrollSettings.isFinite) {
-            let count = this.parent.getActiveSheet()[layout + 'Count'] - 1;
-            if (idx > count) {
-                idx = count;
+            let count$$1 = this.parent.getActiveSheet()[layout + 'Count'] - 1;
+            if (idx > count$$1) {
+                idx = count$$1;
             }
         }
         return idx;
@@ -12476,51 +14984,81 @@ class VirtualScroll {
         let idxDiff = Math.abs(idx - prevIdx);
         let threshold = this.parent.getThreshold('col');
         if (idxDiff > Math.round(threshold / 2)) {
+            let startIdx;
+            let endIdx;
+            let prevLeftIdx;
             if (idx <= threshold) {
                 if (!args.increase) {
-                    this.updateScrollCount(threshold, 'col');
                     if (this.translateX && prevIdx > threshold) {
                         this.translateX = 0;
                         this.parent.viewport.leftIndex = prevIdx - threshold;
-                        if (idxDiff < this.parent.viewport.rowCount + threshold) {
-                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: 0, direction: 'last', refresh: 'ColumnPart' }, this.getColAddress([0, this.parent.viewport.leftIndex - 1]));
+                        if (!args.preventScroll) {
+                            if (idxDiff < this.parent.viewport.colCount + threshold) {
+                                endIdx = this.parent.viewport.leftIndex - 1;
+                                startIdx = this.parent.skipHidden(0, endIdx, 'columns')[0];
+                                this.parent.viewport.leftIndex = startIdx;
+                                let hiddenCount = this.hiddenCount(startIdx, endIdx, 'columns');
+                                let skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.rightIndex - ((endIdx - startIdx + 1) - hiddenCount)), args.increase, 'columns');
+                                this.parent.viewport.rightIndex -= (((endIdx - startIdx + 1) - hiddenCount) +
+                                    (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.rightIndex, 'columns')));
+                                this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: startIdx, direction: 'last', refresh: 'ColumnPart',
+                                    skipUpdateOnFirst: true }, this.getColAddress([0, this.skipHiddenIdx(endIdx, false, 'columns')]));
+                            }
+                            else {
+                                this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: 0, refresh: 'Column', skipUpdateOnFirst: true });
+                            }
+                            this.parent.element.focus();
                         }
-                        else {
-                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: 0, refresh: 'Column' });
-                        }
-                        this.parent.viewport.leftIndex = 0;
                     }
+                    this.updateScrollCount(threshold, 'col');
                 }
             }
             if (prevIdx < threshold) {
                 idxDiff = Math.abs(idx - threshold);
             }
             if (idx > threshold) {
-                this.updateScrollCount(args.cur.idx, 'col', threshold);
+                prevLeftIdx = this.parent.viewport.leftIndex;
                 this.parent.viewport.leftIndex = idx - threshold;
+                if (args.increase && prevLeftIdx > this.parent.viewport.leftIndex) {
+                    this.parent.viewport.leftIndex = prevLeftIdx;
+                    return;
+                }
                 this.translateX = width - this.getThresholdWidth(this.parent.viewport.leftIndex, threshold);
                 if (!args.preventScroll) {
                     if (idxDiff < this.parent.viewport.colCount + threshold) {
                         if (args.increase) {
-                            let lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (threshold * 2);
-                            this.parent.renderModule.refreshUI({
-                                rowIndex: this.parent.viewport.topIndex, colIndex: lastIdx - idxDiff + 1,
-                                direction: 'first', refresh: 'ColumnPart'
-                            }, this.getColAddress([lastIdx - idxDiff + 1, this.checkLastIdx(lastIdx, 'col')]));
+                            startIdx = this.parent.viewport.rightIndex + 1;
+                            endIdx = this.parent.viewport.rightIndex + (this.parent.viewport.leftIndex - prevLeftIdx);
+                            endIdx -= this.hiddenCount(prevLeftIdx, this.parent.viewport.leftIndex - 1, 'columns');
+                            this.parent.viewport.leftIndex = this.skipHiddenIdx(this.parent.viewport.leftIndex, args.increase, 'columns');
+                            if (endIdx <= this.parent.viewport.rightIndex) {
+                                return;
+                            }
+                            let indexes = this.parent.skipHidden(startIdx, endIdx, 'columns');
+                            startIdx = indexes[0];
+                            endIdx = this.checkLastIdx(indexes[1], 'col');
+                            this.parent.viewport.rightIndex = endIdx;
+                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: startIdx, direction: 'first', refresh: 'ColumnPart' }, this.getColAddress([startIdx, endIdx]));
                         }
                         else {
-                            this.parent.renderModule.refreshUI({
-                                rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex,
-                                direction: 'last', refresh: 'ColumnPart'
-                            }, this.getColAddress([this.parent.viewport.leftIndex, this.parent.viewport.leftIndex + idxDiff - 1]));
+                            startIdx = this.parent.viewport.leftIndex;
+                            endIdx = startIdx + idxDiff - 1;
+                            let hiddenCount = this.hiddenCount(startIdx, endIdx, 'columns');
+                            let skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.rightIndex - ((endIdx - startIdx) - hiddenCount)), args.increase, 'columns');
+                            this.parent.viewport.rightIndex -= ((idxDiff - hiddenCount) +
+                                (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.rightIndex, 'columns')));
+                            startIdx = this.parent.skipHidden(startIdx, endIdx, 'columns')[0];
+                            this.parent.viewport.leftIndex = startIdx;
+                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: startIdx, direction: 'last', refresh: 'ColumnPart' }, this.getColAddress([startIdx, endIdx]));
                         }
                     }
                     else {
                         this.parent.renderModule.refreshUI({
-                            rowIndex: this.parent.viewport.topIndex,
-                            colIndex: this.parent.viewport.leftIndex, refresh: 'Column'
+                            rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column'
                         });
                     }
+                    this.updateScrollCount(idx, 'col', threshold);
+                    this.parent.element.focus();
                 }
             }
             args.prev.idx = idx;
@@ -12574,9 +15112,14 @@ class VirtualScroll {
         }
         let sheet = this.parent.getActiveSheet();
         if (args.update === 'row') {
-            if (args.index > this.scroll[this.parent.activeSheetTab - 1].rowCount) {
+            if (args.index !== this.scroll[this.parent.activeSheetTab - 1].rowCount - 1) {
                 let height = this.getVTrackHeight('height');
-                height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetTab - 1].rowCount, args.index);
+                if (args.index >= this.scroll[this.parent.activeSheetTab - 1].rowCount) {
+                    height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetTab - 1].rowCount, args.index);
+                }
+                else {
+                    height -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
+                }
                 this.scroll[this.parent.activeSheetTab - 1].rowCount = args.index + 1;
                 this.updateVTrack(this.rowHeader, height, 'height');
                 if (this.scroll[this.parent.activeSheetTab - 1].rowCount > sheet.rowCount) {
@@ -12615,7 +15158,15 @@ class VirtualScroll {
         container.appendChild(colVTrack);
     }
     getVTrackHeight(str) {
-        return parseInt(this.content.nextElementSibling.style[str], 10);
+        let height = this.content.nextElementSibling.style[str];
+        if (height.includes('e+')) {
+            height = height.split('px')[0];
+            let heightArr = height.split('e+');
+            return Number(heightArr[0]) * Math.pow(10, Number(heightArr[1]));
+        }
+        else {
+            return parseInt(height, 10);
+        }
     }
     updateVTrackHeight(args) {
         let domCount = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
@@ -12624,9 +15175,7 @@ class VirtualScroll {
         }
     }
     updateVTrackWidth(args) {
-        let threshold = this.parent.getThreshold('col');
-        let lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (threshold * 2);
-        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= lastIdx) {
+        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex) {
             let hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
             hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
             let cntVTrack = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0];
@@ -12650,12 +15199,12 @@ class VirtualScroll {
         this.translateX = null;
         this.translateY = null;
     }
-    updateScrollProps(args = { sheetIndex: 0 }) {
+    updateScrollProps(args = { sheetIndex: 0, sheets: this.parent.sheets }) {
         if (this.scroll.length === 0) {
             this.initScroll();
         }
         else {
-            this.scroll.splice(args.sheetIndex, 0, { rowCount: 0, colCount: 0 });
+            args.sheets.forEach(() => { this.scroll.splice(args.sheetIndex, 0, { rowCount: 0, colCount: 0 }); });
         }
     }
     sliceScrollProps(args) {
@@ -12799,7 +15348,6 @@ class KeyboardNavigation {
             if (isNavigate) {
                 this.scrollNavigation(scrollIdxes || actIdxes, scrollIdxes ? true : false);
                 sheet.activeCell = getRangeAddress(actIdxes);
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.parent.notify(cellNavigate, { range: actIdxes });
             }
         }
@@ -12888,26 +15436,9 @@ class KeyboardShortcut {
     }
     keyDownHandler(e) {
         if (e.ctrlKey) {
-            if ([79, 83, 65].indexOf(e.keyCode) > -1) {
-                e.preventDefault();
-            }
-            if (e.keyCode === 75) {
-                let sheet = this.parent.getActiveSheet();
-                let indexes = getCellIndexes(sheet.activeCell);
-                let row = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
-                let cell;
-                if (!isNullOrUndefined(row)) {
-                    cell = row.cells[indexes[1]];
-                }
-                if (isNullOrUndefined(cell)) {
-                    setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
-                }
-                e.preventDefault();
-                if (cell && cell.hyperlink) {
-                    this.parent.notify(editHyperlink, null);
-                }
-                else {
-                    this.parent.notify(initiateHyperlink, null);
+            if (!closest(e.target, '.e-find-dlg')) {
+                if ([79, 83, 65].indexOf(e.keyCode) > -1) {
+                    e.preventDefault();
                 }
             }
             if (e.keyCode === 79) {
@@ -12918,52 +15449,88 @@ class KeyboardShortcut {
                     this.parent.save();
                 }
             }
-            else if (e.keyCode === 88) {
-                this.parent.notify(cut, { promise: Promise });
-            }
             else if (e.keyCode === 67) {
                 this.parent.notify(copy, { promise: Promise });
             }
-            else if (e.keyCode === 86) {
-                this.parent.notify(paste, { isAction: true });
-            }
-            else if (e.keyCode === 66) {
+            else if (e.keyCode === 75) {
+                let sheet = this.parent.getActiveSheet();
+                let indexes = getCellIndexes(sheet.activeCell);
+                let row = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+                let cell;
                 e.preventDefault();
-                let value = this.parent.getCellStyleValue(['fontWeight'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontWeight;
-                value = value === 'bold' ? 'normal' : 'bold';
-                this.parent.notify(setCellFormat, { style: { fontWeight: value }, onActionUpdate: true, refreshRibbon: true });
-            }
-            else if (e.keyCode === 73) {
-                e.preventDefault();
-                let value = this.parent.getCellStyleValue(['fontStyle'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontStyle;
-                value = value === 'italic' ? 'normal' : 'italic';
-                this.parent.notify(setCellFormat, { style: { fontStyle: value }, onActionUpdate: true, refreshRibbon: true });
-            }
-            else if (e.keyCode === 85) {
-                e.preventDefault();
-                this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'underline' }, refreshRibbon: true });
-            }
-            else if (e.keyCode === 53) {
-                e.preventDefault();
-                this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'line-through' }, refreshRibbon: true });
-            }
-            else if (e.keyCode === 90) { /* Ctrl + Z */
-                if (!this.parent.isEdit) {
-                    e.preventDefault();
-                    this.parent.notify(performUndoRedo, { isUndo: true });
+                if (!isNullOrUndefined(row)) {
+                    cell = row.cells[indexes[1]];
+                }
+                if (isNullOrUndefined(cell)) {
+                    setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
+                }
+                if (cell && cell.hyperlink) {
+                    this.parent.notify(editHyperlink, null);
+                }
+                else {
+                    this.parent.notify(initiateHyperlink, null);
                 }
             }
-            else if (e.keyCode === 89) { /* Ctrl + Y */
-                if (!this.parent.isEdit) {
+            if (!this.parent.getActiveSheet().isProtected) {
+                if (e.keyCode === 70) {
                     e.preventDefault();
-                    this.parent.notify(performUndoRedo, { isUndo: false });
+                    let toolBarElem = document.querySelector('.e-spreadsheet-find-ddb');
+                    if (!isNullOrUndefined(toolBarElem)) {
+                        toolBarElem.click();
+                    }
                 }
-            }
-            if (e.shiftKey) {
-                if (e.keyCode === 76) { /* Ctrl + Shift + L */
+                else if (e.keyCode === 71) {
+                    e.preventDefault();
+                    this.parent.notify(gotoDlg, null);
+                }
+                else if (e.keyCode === 72) {
+                    e.preventDefault();
+                    this.parent.notify(findDlg, null);
+                }
+                else if (e.keyCode === 88) {
+                    this.parent.notify(cut, { promise: Promise });
+                }
+                else if (e.keyCode === 86) {
+                    this.parent.notify(paste, { isAction: true });
+                }
+                else if (e.keyCode === 66) {
+                    e.preventDefault();
+                    let value = this.parent.getCellStyleValue(['fontWeight'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontWeight;
+                    value = value === 'bold' ? 'normal' : 'bold';
+                    this.parent.notify(setCellFormat, { style: { fontWeight: value }, onActionUpdate: true, refreshRibbon: true });
+                }
+                else if (e.keyCode === 73) {
+                    e.preventDefault();
+                    let value = this.parent.getCellStyleValue(['fontStyle'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontStyle;
+                    value = value === 'italic' ? 'normal' : 'italic';
+                    this.parent.notify(setCellFormat, { style: { fontStyle: value }, onActionUpdate: true, refreshRibbon: true });
+                }
+                else if (e.keyCode === 85) {
+                    e.preventDefault();
+                    this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'underline' }, refreshRibbon: true });
+                }
+                else if (e.keyCode === 53) {
+                    e.preventDefault();
+                    this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'line-through' }, refreshRibbon: true });
+                }
+                else if (e.keyCode === 90) { /* Ctrl + Z */
                     if (!this.parent.isEdit) {
                         e.preventDefault();
-                        this.parent.applyFilter();
+                        this.parent.notify(performUndoRedo, { isUndo: true });
+                    }
+                }
+                else if (e.keyCode === 89) { /* Ctrl + Y */
+                    if (!this.parent.isEdit) {
+                        e.preventDefault();
+                        this.parent.notify(performUndoRedo, { isUndo: false });
+                    }
+                }
+                if (e.shiftKey) {
+                    if (e.keyCode === 76) { /* Ctrl + Shift + L */
+                        if (!this.parent.isEdit) {
+                            e.preventDefault();
+                            this.parent.applyFilter();
+                        }
                     }
                 }
             }
@@ -12987,100 +15554,96 @@ class KeyboardShortcut {
 class CellFormat {
     constructor(parent) {
         this.checkHeight = false;
-        //Spreadsheet.Inject(WorkbookCellFormat);
         this.parent = parent;
         this.row = parent.createElement('tr', { className: 'e-row' });
-        this.addEventListener();
+        this.parent.on(initialLoad, this.addEventListener, this);
     }
     applyCellFormat(args) {
         let keys = Object.keys(args.style);
-        if (args.lastCell && !this.row.childElementCount && !keys.length) {
+        let sheet = this.parent.getActiveSheet();
+        if (args.lastCell && getMaxHgt(sheet, args.rowIdx) <= 20 && !keys.length) {
             return;
         }
         let cell = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
-            Object.assign(cell.style, args.style);
-            if (args.isHeightCheckNeeded) {
-                if (!args.manualUpdate) {
-                    if (this.isHeightCheckNeeded(args.style)) {
-                        let clonedCell = cell.cloneNode(true);
-                        if (!clonedCell.innerHTML) {
-                            clonedCell.textContent = 'Test';
-                        }
-                        this.row.appendChild(clonedCell);
-                    }
-                    if (args.lastCell && this.row.childElementCount) {
-                        let sheet = this.parent.getActiveSheet();
-                        let row = this.parent.getRow(args.rowIdx) || args.row;
-                        let prevHeight = getRowHeight(sheet, args.rowIdx);
-                        let height = this.getRowHeightOnInit();
-                        if (height > prevHeight) {
-                            row.style.height = `${height}px`;
-                            if (sheet.showHeaders) {
-                                (this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()) || args.hRow).style.height =
-                                    `${height}px`;
-                            }
-                            setRowHeight(sheet, args.rowIdx, height);
-                        }
-                        this.row.innerHTML = '';
-                    }
+            if (args.style.border !== undefined || args.style.borderTop !== undefined || args.style.borderLeft !== undefined) {
+                let curStyle = {};
+                Object.keys(args.style).forEach((key) => { curStyle[key] = args.style[key]; });
+                if (curStyle.border !== undefined) {
+                    Object.assign(cell.style, { borderRight: args.style.border, borderBottom: args.style.border });
+                    this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    this.setTopBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first, args.lastCell, args.manualUpdate);
+                    delete curStyle.border;
                 }
-                else {
-                    let idx;
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        idx = args.rowIdx - this.parent.viewport.topIndex;
+                if (curStyle.borderTop !== undefined) {
+                    this.setTopBorder(args.style.borderTop, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first, args.lastCell, args.manualUpdate);
+                    delete curStyle.borderTop;
+                }
+                if (curStyle.borderLeft !== undefined) {
+                    this.setLeftBorder(args.style.borderLeft, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    delete curStyle.borderLeft;
+                }
+                if (Object.keys(curStyle).length) {
+                    if (curStyle.borderBottom !== undefined) {
+                        this.setThickBorderHeight(curStyle.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell, args.manualUpdate);
                     }
-                    if (!this.checkHeight) {
-                        this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
-                    }
-                    if (isNullOrUndefined(this.parent.getActiveSheet().rows[idx]) ||
-                        isNullOrUndefined(this.parent.getActiveSheet().rows[idx].customHeight)) {
-                        this.updateRowHeight(cell, args.rowIdx, args.lastCell, args.onActionUpdate);
+                    Object.assign(cell.style, curStyle);
+                }
+            }
+            else {
+                if (args.style.borderBottom !== undefined) {
+                    this.setThickBorderHeight(args.style.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell, args.manualUpdate);
+                }
+                Object.assign(cell.style, args.style);
+            }
+            if (args.isHeightCheckNeeded) {
+                if (!sheet.rows[args.rowIdx] || !sheet.rows[args.rowIdx].customHeight) {
+                    if (!args.manualUpdate) {
+                        let cellModel = getCell(args.rowIdx, args.colIdx, sheet);
+                        if (!(cellModel && cellModel.wrap) && this.isHeightCheckNeeded(args.style)) {
+                            setMaxHgt(sheet, args.rowIdx, args.colIdx, getTextHeight(this.parent, args.style));
+                        }
+                        if (args.lastCell) {
+                            let height = getMaxHgt(sheet, args.rowIdx);
+                            if (height > 20 && height > getRowHeight(sheet, args.rowIdx)) {
+                                setRowEleHeight(this.parent, sheet, height, args.rowIdx, args.row, args.hRow, false);
+                            }
+                        }
                     }
                     else {
-                        cell.parentElement.style.lineHeight = parseInt(cell.parentElement.style.height, 10) - 1 + 'px';
+                        if (!this.checkHeight) {
+                            this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
+                        }
+                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
                     }
                 }
             }
         }
         else {
-            this.updateRowHeight(cell, args.rowIdx, true, args.onActionUpdate);
+            this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate);
         }
     }
-    updateRowHeight(cell, rowIdx, isLastCell, onActionUpdate) {
-        if (this.checkHeight && isLastCell) {
+    updateRowHeight(rowIdx, colIdx, isLastCell, onActionUpdate, borderSize = 0) {
+        if (this.checkHeight) {
             this.checkHeight = false;
+            let hgt = 0;
+            let maxHgt;
             let sheet = this.parent.getActiveSheet();
-            let row = this.parent.getRow(rowIdx);
-            if (!row) {
-                return;
-            }
-            if (!cell) {
-                cell = row.lastElementChild;
-            }
-            let test = false;
-            row.style.height = '';
-            if (!cell.innerHTML) {
-                cell.textContent = 'test';
-                test = true;
-            }
-            let height = Math.ceil(row.getBoundingClientRect().height);
-            if (test) {
-                cell.textContent = '';
-            }
-            height = height < 20 ? 20 : height;
-            let prevHeight = getRowHeight(sheet, rowIdx);
-            let heightChanged = onActionUpdate ? height !== prevHeight : height > prevHeight;
-            if (heightChanged) {
-                row.style.height = `${height}px`;
-                if (sheet.showHeaders) {
-                    this.parent.getRow(rowIdx, this.parent.getRowHeaderTable()).style.height = `${height}px`;
+            let cell = getCell(rowIdx, colIdx, sheet);
+            hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
+                getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
+            setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
+            if (isLastCell) {
+                let row = this.parent.getRow(rowIdx);
+                if (!row) {
+                    return;
                 }
-                setRowHeight(sheet, rowIdx, height);
-                this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - prevHeight });
-            }
-            else {
-                row.style.height = `${prevHeight}px`;
+                let prevHeight = getRowHeight(sheet, rowIdx);
+                maxHgt = getMaxHgt(sheet, rowIdx);
+                let heightChanged = onActionUpdate ? maxHgt !== prevHeight : maxHgt > prevHeight;
+                if (heightChanged) {
+                    setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row);
+                }
             }
         }
     }
@@ -13089,21 +15652,81 @@ class CellFormat {
         return (onActionUpdate ? keys.indexOf('fontSize') > -1 : keys.indexOf('fontSize') > -1
             && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1;
     }
-    getRowHeightOnInit() {
-        let table = this.parent.createElement('table', { className: 'e-table e-test-table' });
-        let tBody = table.appendChild(this.parent.createElement('tbody'));
-        tBody.appendChild(this.row);
-        this.parent.element.appendChild(table);
-        let height = Math.round(this.row.getBoundingClientRect().height);
-        this.parent.element.removeChild(table);
-        return height < 20 ? 20 : height;
+    setLeftBorder(border, cell, rowIdx, colIdx, row, actionUpdate, first) {
+        if (first.includes('Column')) {
+            return;
+        }
+        let prevCell = this.parent.getCell(rowIdx, colIdx - 1, row);
+        if (prevCell) {
+            if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
+                this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
+            }
+            prevCell.style.borderRight = border;
+        }
+        else {
+            cell.style.borderLeft = border;
+        }
+    }
+    setTopBorder(border, cell, rowIdx, colIdx, pRow, pHRow, actionUpdate, first, lastCell, manualUpdate) {
+        if (first.includes('Row')) {
+            return;
+        }
+        let prevCell = this.parent.getCell(rowIdx - 1, colIdx, pRow);
+        if (prevCell) {
+            if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
+                let index = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
+                if (this.parent.getCellStyleValue(['bottomPriority'], index).bottomPriority) {
+                    return;
+                }
+            }
+            if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes(`${rowIdx + 1}`)) {
+                this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
+            }
+            this.setThickBorderHeight(border, rowIdx - 1, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+            prevCell.style.borderBottom = border;
+        }
+        else {
+            cell.style.borderTop = border;
+        }
+    }
+    setThickBorderHeight(border, rowIdx, colIdx, cell, row, hRow, actionUpdate, lastCell, manualUpdate) {
+        let size = border ? this.getBorderSize(border) : 1;
+        let sheet = this.parent.getActiveSheet();
+        if (size > 2 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+            if (manualUpdate) {
+                if (!this.checkHeight) {
+                    this.checkHeight = true;
+                }
+                this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+            }
+            else {
+                let prevHeight = getRowHeight(sheet, rowIdx);
+                let height = Math.ceil(this.parent.calculateHeight(this.parent.getCellStyleValue(['fontFamily', 'fontSize'], [rowIdx, colIdx]), 1, 3));
+                if (height > prevHeight) {
+                    setRowEleHeight(this.parent, sheet, height, rowIdx, row, hRow, false);
+                    this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - 20 });
+                }
+            }
+        }
+        if (actionUpdate && (lastCell || !this.checkHeight) && size < 3 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+            if (!this.checkHeight) {
+                this.checkHeight = true;
+            }
+            this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+        }
+    }
+    getBorderSize(border) {
+        let size = border.split(' ')[0];
+        return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
+            (parseInt(size, 10) ? parseInt(size, 10) : 1)));
     }
     addEventListener() {
-        this.parent.on(applyCellFormat, this.applyCellFormat.bind(this));
+        this.parent.on(applyCellFormat, this.applyCellFormat, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
-            this.parent.on(applyCellFormat, this.applyCellFormat.bind(this));
+            this.parent.off(initialLoad, this.addEventListener);
+            this.parent.off(applyCellFormat, this.applyCellFormat);
         }
     }
     /**
@@ -13142,11 +15765,11 @@ class Resize {
         this.parent.on(setAutoFit, this.setAutoFitHandler, this);
     }
     autoFit(args) {
-        args.isRow = args.isRow ? false : true;
-        let rowHdrTable = this.parent.getRowHeaderTable();
+        let element = args.isRow ? this.parent.getRowHeaderTable() : this.parent.getColHeaderTable().rows[0];
         for (let i = args.startIndex; i <= args.endIndex; i++) {
-            this.trgtEle = this.parent.getRow(i, rowHdrTable);
-            this.setAutofit(i, args.isRow);
+            this.trgtEle = args.isRow ? this.parent.getRow(i, element) :
+                this.parent.getCell(null, i, element);
+            this.setAutofit(i, !args.isRow);
         }
     }
     wireEvents(args) {
@@ -13206,11 +15829,11 @@ class Resize {
     mouseDownHandler(e) {
         this.event = e;
         this.trgtEle = e.target;
-        if (this.trgtEle.parentElement.classList.contains('e-hide-end')) {
-            let offset = this.trgtEle.offsetHeight;
-            let offsetY = e.offsetY;
-            if ((offset >= 10 && offsetY < 5) || (offset - 2 < 8 && offsetY < Math.ceil((offset - 2) / 2))) {
-                this.trgtEle.parentElement.classList.add('e-skip-resize');
+        if (this.trgtEle.parentElement.classList.contains('e-hide-end') || this.trgtEle.classList.contains('e-hide-end')) {
+            let offsetSize = this.trgtEle.offsetHeight;
+            let offset = e.offsetY;
+            if ((offsetSize >= 10 && offset < 5) || (offsetSize - 2 < 8 && offset < Math.ceil((offset - 2) / 2))) {
+                this.trgtEle.classList.add('e-skip-resize');
             }
         }
         this.updateTarget(e, this.trgtEle);
@@ -13239,22 +15862,40 @@ class Resize {
     dblClickHandler(e) {
         this.trgtEle = e.target;
         this.updateTarget(e, this.trgtEle);
-        let trgt = this.trgtEle;
-        if (trgt.classList.contains('e-colresize') || trgt.classList.contains('e-rowresize')) {
-            let colIndx = parseInt(trgt.getAttribute('aria-colindex'), 10) - 1;
+        if (this.trgtEle.classList.contains('e-colresize')) {
+            let colIndx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+            let prevWidth = `${getColumnWidth(this.parent.getActiveSheet(), colIndx)}px`;
+            if (this.trgtEle.classList.contains('e-unhide-column')) {
+                this.showHiddenColumns(colIndx - 1);
+            }
+            else {
+                this.setAutofit(colIndx, true, prevWidth);
+            }
+        }
+        else if (this.trgtEle.classList.contains('e-rowresize')) {
             let rowIndx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
-            if (trgt.classList.contains('e-colresize')) {
-                let prevWdt = `${getColumnWidth(this.parent.getActiveSheet(), colIndx)}px`;
-                this.setAutofit(colIndx, true, prevWdt);
-            }
-            else if (trgt.classList.contains('e-rowresize')) {
-                let prevHgt = `${getRowHeight(this.parent.getActiveSheet(), rowIndx)}px`;
-                this.setAutofit(rowIndx, false, prevHgt);
-            }
+            let prevHeight = `${getRowHeight(this.parent.getActiveSheet(), rowIndx)}px`;
+            this.setAutofit(rowIndx, false, prevHeight);
         }
     }
     setTarget(e) {
         let trgt = e.target;
+        let sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected && (!sheet.protectSettings.formatColumns || !sheet.protectSettings.formatRows)) {
+            if (!sheet.protectSettings.formatRows && !sheet.protectSettings.formatColumns) {
+                return;
+            }
+            if (sheet.protectSettings.formatRows) {
+                if (closest(trgt, '.e-colhdr-table')) {
+                    return;
+                }
+            }
+            if (sheet.protectSettings.formatColumns) {
+                if (closest(trgt, '.e-rowhdr-table')) {
+                    return;
+                }
+            }
+        }
         let newTrgt;
         let tOffsetV;
         let eOffsetV;
@@ -13263,23 +15904,26 @@ class Resize {
             eOffsetV = e.offsetX;
             tOffsetV = trgt.offsetWidth;
             tClass = 'e-colresize';
-            if (!isNullOrUndefined(trgt.previousElementSibling)) {
+            if (trgt.previousElementSibling) {
                 newTrgt = trgt.previousElementSibling;
+            }
+            else {
+                if (Number(trgt.getAttribute('aria-colindex')) > 1) {
+                    newTrgt = trgt;
+                }
             }
         }
         else if (closest(trgt, '.e-row')) {
             eOffsetV = e.offsetY;
             tOffsetV = trgt.offsetHeight;
             tClass = 'e-rowresize';
-            if (isNullOrUndefined(trgt.parentElement.previousElementSibling)) {
-                let idx = Number(trgt.parentElement.getAttribute('aria-rowindex'));
-                if (idx > 1) {
-                    newTrgt = trgt;
-                }
+            if (trgt.parentElement.previousElementSibling) {
+                newTrgt = trgt.parentElement.previousElementSibling.firstElementChild;
             }
             else {
-                newTrgt =
-                    trgt.parentElement.previousElementSibling.firstElementChild;
+                if (Number(trgt.parentElement.getAttribute('aria-rowindex')) > 1) {
+                    newTrgt = trgt;
+                }
             }
         }
         if (tOffsetV - 2 < 8 && eOffsetV !== Math.ceil((tOffsetV - 2) / 2)) {
@@ -13309,8 +15953,17 @@ class Resize {
     updateTarget(e, trgt) {
         if (closest(trgt, '.e-header-row')) {
             if ((trgt.offsetWidth < 10 && e.offsetX < Math.ceil((trgt.offsetWidth - 2) / 2)) || (e.offsetX < 5 &&
-                trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize') && trgt.previousElementSibling) {
-                this.trgtEle = trgt.previousElementSibling;
+                trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize')) {
+                let sheet = this.parent.getActiveSheet();
+                let prevIdx = Number(this.trgtEle.getAttribute('aria-colindex')) - 2;
+                if (trgt.previousElementSibling && !isHiddenCol(sheet, prevIdx)) {
+                    this.trgtEle = trgt.previousElementSibling;
+                }
+                else {
+                    if (prevIdx > -1) {
+                        this.trgtEle.classList.add('e-unhide-column');
+                    }
+                }
             }
         }
         else {
@@ -13319,17 +15972,16 @@ class Resize {
                 let sheet = this.parent.getActiveSheet();
                 let prevIdx = Number(trgt.parentElement.getAttribute('aria-rowindex')) - 2;
                 if (trgt.parentElement.previousElementSibling || isHiddenRow(sheet, prevIdx)) {
-                    if (e.type === 'dblclick' && isHiddenRow(sheet, prevIdx) && trgt.parentElement.classList.contains('e-skip-resize')) {
+                    if (e.type === 'dblclick' && isHiddenRow(sheet, prevIdx)) {
                         let selectRange = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                         let eventArgs;
                         if (prevIdx <= selectRange[2] && prevIdx > selectRange[0]) {
-                            eventArgs = { startRow: selectRange[0], endRow: selectRange[2], hide: false, autoFit: true };
+                            eventArgs = { startIndex: selectRange[0], endIndex: selectRange[2], hide: false, autoFit: true };
                         }
                         else {
-                            eventArgs = { startRow: prevIdx, endRow: prevIdx, hide: false, autoFit: true };
+                            eventArgs = { startIndex: prevIdx, endIndex: prevIdx, hide: false, autoFit: true };
                         }
-                        this.parent.notify(hideShowRow, eventArgs);
-                        trgt.parentElement.classList.remove('e-skip-resize');
+                        this.parent.notify(hideShow, eventArgs);
                     }
                     else {
                         if (!isHiddenRow(sheet, prevIdx)) {
@@ -13346,22 +15998,10 @@ class Resize {
     // tslint:disable-next-line:max-func-body-length
     setAutofit(idx, isCol, prevData) {
         let index = 0;
-        let oldIdx = idx;
         let sheet = this.parent.getActiveSheet();
         let mainContent = this.parent.getMainContent();
-        let oldValue;
-        if ((isCol && this.parent.viewport.leftIndex <= idx) && (!isCol && this.parent.viewport.topIndex <= idx)) {
-            if (this.parent.scrollSettings.enableVirtualization) {
-                idx = isCol ? idx - this.parent.viewport.leftIndex :
-                    idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
-            }
-            oldValue = isCol ?
-                mainContent.getElementsByTagName('col')[idx].style.width : mainContent.getElementsByTagName('tr')[idx].style.height;
-        }
-        else {
-            oldValue = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
-                `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
-        }
+        let oldValue = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
+            `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
         let headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
         let contentClone = [];
         let contentTable = mainContent.getElementsByClassName('e-content-table')[0];
@@ -13369,13 +16009,13 @@ class Resize {
         if (isCol) {
             let rowLength = sheet.rows.length;
             for (let rowIdx = 0; rowIdx < rowLength; rowIdx++) {
-                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[oldIdx]) {
+                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[idx]) {
                     let td = this.parent.createElement('td', {
                         className: 'e-cell',
-                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[oldIdx])
+                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
                     });
-                    if (sheet.rows[rowIdx].cells[oldIdx].style) {
-                        let style = sheet.rows[rowIdx].cells[oldIdx].style;
+                    if (sheet.rows[rowIdx].cells[idx].style) {
+                        let style = sheet.rows[rowIdx].cells[idx].style;
                         if (style.fontFamily) {
                             td.style.fontFamily = style.fontFamily;
                         }
@@ -13389,15 +16029,15 @@ class Resize {
             }
         }
         else {
-            let colLength = sheet.rows[oldIdx] && sheet.rows[oldIdx].cells ? sheet.rows[oldIdx].cells.length : 0;
+            let colLength = sheet.rows[idx] && sheet.rows[idx].cells ? sheet.rows[idx].cells.length : 0;
             for (let colIdx = 0; colIdx < colLength; colIdx++) {
-                if (sheet.rows[oldIdx] && sheet.rows[oldIdx].cells[colIdx]) {
-                    let style = sheet.rows[oldIdx].cells[colIdx].style;
+                if (sheet.rows[idx] && sheet.rows[idx].cells[colIdx]) {
+                    let style = sheet.rows[idx].cells[colIdx].style;
                     let td = this.parent.createElement('td', {
-                        innerHTML: this.parent.getDisplayText(sheet.rows[oldIdx].cells[colIdx])
+                        innerHTML: this.parent.getDisplayText(sheet.rows[idx].cells[colIdx])
                     });
-                    if (sheet.rows[oldIdx].cells[colIdx].style) {
-                        let style = sheet.rows[oldIdx].cells[colIdx].style;
+                    if (sheet.rows[idx].cells[colIdx].style) {
+                        let style = sheet.rows[idx].cells[colIdx].style;
                         if (style.fontFamily) {
                             td.style.fontFamily = style.fontFamily;
                         }
@@ -13411,19 +16051,20 @@ class Resize {
             }
         }
         let contentFit = findMaxValue(contentTable, contentClone, isCol, this.parent);
+        if (isCol) {
+            contentFit = this.getFloatingElementWidth(contentFit, idx);
+        }
         let autofitValue = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
         let threshold = parseInt(oldValue, 10) > autofitValue ?
             -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
         if (isCol) {
-            let colThreshold = this.parent.getThreshold('col');
-            let lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (colThreshold * 2);
-            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= lastIdx) {
-                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
-                this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
-                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            if (idx >= this.parent.viewport.leftIndex && idx <= this.parent.viewport.rightIndex) {
+                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+                this.parent.notify(colWidthChanged, { threshold, colIdx: idx });
+                this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
             }
             else {
-                let oldWidth = getColumnWidth(sheet, oldIdx);
+                let oldWidth = getColumnWidth(sheet, idx);
                 let threshold;
                 if (autofitValue > 0) {
                     threshold = -(oldWidth - autofitValue);
@@ -13431,18 +16072,19 @@ class Resize {
                 else {
                     threshold = -oldWidth;
                 }
-                this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
-                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
+                this.parent.notify(colWidthChanged, { threshold, colIdx: idx });
+                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
             }
         }
         else if (!isCol) {
-            if (oldIdx >= this.parent.viewport.topIndex && oldIdx <= this.parent.viewport.bottomIndex) {
-                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
-                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
-                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            if (idx >= this.parent.viewport.topIndex && idx <= this.parent.viewport.bottomIndex) {
+                autofitValue = autofitValue > 20 ? autofitValue : 20;
+                setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
             }
             else {
-                let oldHeight = getRowHeight(sheet, oldIdx);
+                let oldHeight = getRowHeight(sheet, idx);
                 let threshold;
                 if (autofitValue > 0) {
                     threshold = -(oldHeight - autofitValue);
@@ -13450,8 +16092,8 @@ class Resize {
                 else {
                     threshold = -oldHeight;
                 }
-                this.parent.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
-                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
+                this.parent.notify(rowHeightChanged, { threshold, rowIdx: idx });
+                setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
             }
         }
     }
@@ -13471,24 +16113,67 @@ class Resize {
         this.parent.element.getElementsByClassName('e-sheet-panel')[0].appendChild(editor);
         this.updateCursor(this.event);
     }
-    setColWidth(index, width, prevData) {
+    setColWidth(index, viewportIdx, width, curWidth) {
         let sheet = this.parent.getActiveSheet();
-        let mIndex = index;
-        if (this.parent.scrollSettings.enableVirtualization) {
-            mIndex = mIndex + this.parent.viewport.leftIndex;
+        let threshold = width - curWidth;
+        if (threshold < 0 && curWidth < -(threshold)) {
+            threshold = -curWidth;
         }
-        let eleWidth = parseInt(this.parent.getMainContent().getElementsByTagName('col')[index].style.width, 10);
-        let colWidth = width;
-        let threshold = parseInt(colWidth, 10) - eleWidth;
-        if (threshold < 0 && eleWidth < -(threshold)) {
-            threshold = -eleWidth;
+        if (width > 0) {
+            if (this.isMouseMoved && this.trgtEle.classList.contains('e-unhide-column')) {
+                this.showHiddenColumns(index, width);
+                this.parent.notify(completeAction, {
+                    eventArgs: {
+                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: `${curWidth}px`,
+                        hide: false
+                    }, action: 'resize'
+                });
+                return;
+            }
+            this.parent.notify(colWidthChanged, { threshold, colIdx: index });
+            this.resizeStart(index, viewportIdx, `${width}px`, true, false, `${curWidth}px`);
+            setColumn(sheet, index, { width: width, customWidth: true });
         }
-        let oldIdx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
-        this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
-        this.resizeStart(index, index, colWidth, true, false, prevData);
-        getColumn(sheet, mIndex).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
-        sheet.columns[mIndex].customWidth = true;
-        this.parent.setProperties({ sheets: this.parent.sheets }, true);
+        else {
+            if (this.isMouseMoved) {
+                this.parent.hideColumn(index);
+                this.parent.notify(completeAction, {
+                    eventArgs: {
+                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: `${curWidth}px`,
+                        hide: true
+                    }, action: 'resize'
+                });
+            }
+        }
+    }
+    showHiddenColumns(index, width) {
+        let sheet = this.parent.getActiveSheet();
+        let selectedRange = getRangeIndexes(sheet.selectedRange);
+        let startIdx;
+        let endIdx;
+        let colgroup;
+        if (index >= selectedRange[1] && index <= selectedRange[3] && selectedRange[2] === sheet.rowCount - 1 &&
+            getCellIndexes(sheet.activeCell)[0] === getCellIndexes(sheet.topLeftCell)[0]) {
+            startIdx = selectedRange[1];
+            endIdx = selectedRange[3];
+            colgroup = this.parent.getMainContent().querySelector('colgroup');
+        }
+        else {
+            startIdx = endIdx = index;
+        }
+        if (width !== undefined) {
+            for (let i = startIdx; i <= endIdx; i++) {
+                setColumn(sheet, i, { width: width, customWidth: true });
+                if (i >= this.parent.viewport.leftIndex && i <= this.parent.viewport.rightIndex && !isHiddenCol(sheet, i)) {
+                    colgroup.children[this.parent.getViewportIndex(i, true)].style.width = `${width}px`;
+                }
+            }
+        }
+        this.trgtEle.classList.remove('e-unhide-column');
+        this.parent.hideColumn(startIdx, endIdx, false);
+        if (width === undefined) {
+            this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx });
+        }
     }
     setRowHeight(rowIdx, viewportIdx, height, prevData) {
         let sheet = this.parent.getActiveSheet();
@@ -13498,10 +16183,9 @@ class Resize {
         if (threshold < 0 && eleHeight < -(threshold)) {
             threshold = -eleHeight;
         }
-        this.parent.notify(rowHeightChanged, { threshold, rowIdx: rowIdx });
+        this.parent.notify(rowHeightChanged, { threshold, rowIdx: rowIdx, isCustomHgt: true });
         this.resizeStart(rowIdx, viewportIdx, rowHeight, false, false, prevData);
         setRow(sheet, rowIdx, { height: parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0, customHeight: true });
-        this.parent.setProperties({ sheets: this.parent.sheets }, true);
     }
     resizeOn(e) {
         let idx;
@@ -13509,11 +16193,11 @@ class Resize {
         if (this.trgtEle.classList.contains('e-rowresize')) {
             let sheet = this.parent.getActiveSheet();
             let prevIdx = Number(this.trgtEle.parentElement.getAttribute('aria-rowindex')) - 2;
-            if (this.isMouseMoved && isHiddenRow(sheet, prevIdx) && this.trgtEle.parentElement.classList.contains('e-skip-resize') &&
+            if (this.isMouseMoved && isHiddenRow(sheet, prevIdx) && this.trgtEle.classList.contains('e-skip-resize') &&
                 e.clientY > this.trgtEle.getBoundingClientRect().top) {
-                this.trgtEle.parentElement.classList.remove('e-skip-resize');
-                let eventArgs = { startRow: prevIdx, endRow: prevIdx, hide: false, skipAppend: true };
-                this.parent.notify(hideShowRow, eventArgs);
+                this.trgtEle.classList.remove('e-skip-resize');
+                let eventArgs = { startIndex: prevIdx, endIndex: prevIdx, hide: false, skipAppend: true };
+                this.parent.notify(hideShow, eventArgs);
                 let rTbody = this.parent.getRowHeaderTable().tBodies[0];
                 let tbody = this.parent.getContentTable().tBodies[0];
                 eventArgs.hdrRow.style.display = 'none';
@@ -13524,23 +16208,25 @@ class Resize {
                 eventArgs.hdrRow.nextElementSibling.classList.remove('e-hide-end');
             }
             else {
-                if (this.trgtEle.parentElement.classList.contains('e-skip-resize')) {
-                    this.trgtEle.parentElement.classList.remove('e-skip-resize');
-                    return;
+                if (this.trgtEle.classList.contains('e-skip-resize')) {
+                    this.trgtEle.classList.remove('e-skip-resize');
+                    if ((!this.isMouseMoved && isHiddenRow(sheet, prevIdx)) || !this.trgtEle.parentElement.previousElementSibling) {
+                        return;
+                    }
+                    this.trgtEle = this.trgtEle.parentElement.previousElementSibling.getElementsByClassName('e-header-cell')[0];
                 }
             }
             actualIdx = idx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
-            if (this.parent.scrollSettings.enableVirtualization) {
-                idx = idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
-            }
+            idx = this.parent.getViewportIndex(actualIdx);
             let prevData = this.parent.getMainContent().getElementsByClassName('e-row')[idx].style.height;
             let rowHeight = e.clientY - this.event.clientY + parseInt(prevData, 10);
             if (rowHeight <= 0) {
-                this.parent.showHideRow(true, actualIdx);
+                this.parent.hideRow(actualIdx);
                 setRow(sheet, actualIdx, { height: 0, customHeight: true });
-                this.parent.setProperties({ sheets: this.parent.sheets }, true);
-                this.parent.notify(completeAction, { eventArgs: { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
-                    action: 'resize' });
+                this.parent.notify(completeAction, {
+                    eventArgs: { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
+                    action: 'resize'
+                });
                 return;
             }
             this.setRowHeight(actualIdx, idx, `${rowHeight}px`, prevData);
@@ -13567,11 +16253,15 @@ class Resize {
                                 this.parent.getRow(i, this.parent.getRowHeaderTable()).style.height = `${rowHeight}px`;
                             }
                         }
-                        this.parent.notify(completeAction, { eventArgs: { index: i, height: `${rowHeight}px`, isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
-                            action: 'resize' });
+                        this.parent.notify(completeAction, {
+                            eventArgs: {
+                                index: i, height: `${rowHeight}px`, isCol: false,
+                                sheetIdx: this.parent.activeSheetTab, oldHeight: prevData
+                            },
+                            action: 'resize'
+                        });
                     }
-                    this.parent.setProperties({ sheets: this.parent.sheets }, true);
-                    this.parent.showHideRow(false, selectedRange[0], actualIdx - 1);
+                    this.parent.hideRow(selectedRange[0], actualIdx - 1, false);
                     idx += Math.abs(actualIdx - count);
                 }
                 else {
@@ -13590,14 +16280,23 @@ class Resize {
             }
         }
         else if (this.trgtEle.classList.contains('e-colresize')) {
-            let mIndex = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
-            idx = mIndex;
-            if (this.parent.scrollSettings.enableVirtualization) {
-                idx = idx - this.parent.viewport.leftIndex;
+            if (this.isMouseMoved && this.trgtEle.classList.contains('e-unhide-column') &&
+                e.clientX < this.trgtEle.getBoundingClientRect().left) {
+                this.trgtEle.classList.remove('e-unhide-column');
+                if (this.trgtEle.previousElementSibling) {
+                    this.trgtEle = this.trgtEle.previousElementSibling;
+                }
             }
-            let colWidth = e.clientX - this.event.clientX +
-                parseInt(this.parent.getMainContent().getElementsByTagName('col')[idx].style.width, 10) + 'px';
-            this.setColWidth(idx, colWidth, this.parent.getMainContent().getElementsByTagName('col')[idx].style.width);
+            idx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+            let curWidth;
+            if (this.trgtEle.classList.contains('e-unhide-column')) {
+                idx -= 1;
+                curWidth = 0;
+            }
+            else {
+                curWidth = getColumnWidth(this.parent.getActiveSheet(), idx);
+            }
+            this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (e.clientX - this.event.clientX) + curWidth, curWidth);
         }
     }
     setWidthAndHeight(trgt, value, isCol) {
@@ -13609,16 +16308,6 @@ class Resize {
         }
     }
     resizeStart(idx, viewportIdx, value, isCol, isFit, prevData) {
-        if (!isCol) {
-            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.topIndex < viewportIdx) {
-                viewportIdx = viewportIdx - this.parent.viewport.topIndex;
-            }
-        }
-        else {
-            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.leftIndex < viewportIdx) {
-                viewportIdx = viewportIdx - this.parent.viewport.leftIndex;
-            }
-        }
         setResize(viewportIdx, value, isCol, this.parent);
         let action = isFit ? 'resizeToFit' : 'resize';
         let eventArgs;
@@ -13648,6 +16337,18 @@ class Resize {
         else if (this.parent.element.classList.contains('e-row-resizing')) {
             this.parent.element.classList.remove('e-row-resizing');
         }
+    }
+    // To get the floating element width like filter
+    getFloatingElementWidth(oldWidth, colIdx) {
+        let floatingWidth = oldWidth;
+        let eventArgs = { filterRange: [], hasFilter: false };
+        this.parent.notify(getFilterRange, eventArgs);
+        if (eventArgs.hasFilter && eventArgs.filterRange) {
+            if (eventArgs.filterRange[1] <= colIdx && eventArgs.filterRange[3] >= colIdx) {
+                floatingWidth = oldWidth + 22; // default width and padding for button 
+            }
+        }
+        return floatingWidth;
     }
     /**
      * To destroy the resize module.
@@ -13714,16 +16415,31 @@ class ShowHide {
         this.parent = parent;
         this.addEventListener();
     }
+    hideShow(args) {
+        if (args.startIndex > args.endIndex) {
+            let temp = args.startIndex;
+            args.startIndex = args.endIndex;
+            args.endIndex = temp;
+        }
+        if (args.actionUpdate) {
+            this.parent.notify(beginAction, { eventArgs: args, action: 'hideShow' });
+        }
+        args.isCol ? this.hideCol(args) : this.hideRow(args);
+        if (args.actionUpdate) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'hideShow' });
+        }
+    }
     // tslint:disable-next-line
-    showHideRow(args) {
+    hideRow(args) {
         let sheet = this.parent.getActiveSheet();
         let count = 0;
         let idx;
+        let nextIdx;
         if (args.hide) {
             let content;
             let rowHdr;
             let row;
-            for (let i = args.startRow; i <= args.endRow; i++) {
+            for (let i = args.startIndex; i <= args.endIndex; i++) {
                 if (isHiddenRow(sheet, i)) {
                     continue;
                 }
@@ -13732,7 +16448,7 @@ class ShowHide {
                         rowHdr = this.parent.getRowHeaderTable();
                     }
                     content = this.parent.getContentTable();
-                    idx = this.getViewportIdx(i);
+                    idx = this.parent.getViewportIndex(i);
                     count = 0;
                 }
                 setRow(sheet, i, { hidden: true });
@@ -13743,34 +16459,61 @@ class ShowHide {
                     }
                     detach(row);
                     count++;
+                    row = content.rows[idx];
+                    if (row && i === args.endIndex) {
+                        let cell;
+                        nextIdx = skipHiddenIdx(sheet, i + 1, true);
+                        let first = nextIdx !== skipHiddenIdx(sheet, 0, true) && nextIdx ===
+                            (this.parent.viewport.topIndex >= args.startIndex ? args.endIndex + 1 : this.parent.viewport.topIndex) ? 'Row' : '';
+                        for (let j = this.parent.viewport.leftIndex; j <= this.parent.viewport.rightIndex; j++) {
+                            let borderTop = this.parent.getCellStyleValue(['borderTop'], [nextIdx, j]).borderTop;
+                            if (borderTop !== '') {
+                                cell = row.cells[j];
+                                this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: nextIdx, colIdx: j,
+                                    style: { borderTop: borderTop }, row: row, pRow: row.previousElementSibling,
+                                    first: first, cell: cell });
+                            }
+                        }
+                    }
                 }
                 else {
-                    count--;
+                    if (i <= this.parent.viewport.bottomIndex) {
+                        count++;
+                    }
+                    else {
+                        count--;
+                    }
                 }
             }
             if (!count) {
                 return;
             }
             this.parent.selectRange(sheet.selectedRange);
-            if (this.parent.viewport.topIndex >= args.startRow) {
-                this.parent.viewport.topIndex = args.endRow + 1;
-            }
             if (this.parent.scrollSettings.enableVirtualization) {
-                args.startRow = this.parent.viewport.bottomIndex + 1;
-                args.endRow = args.startRow + count - 1;
-                let indexes = this.parent.skipHiddenRows(args.startRow, args.endRow);
-                args.startRow = indexes[0];
-                args.endRow = indexes[1];
-                this.parent.viewport.bottomIndex = args.endRow;
-                this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: '', refresh: 'RowPart' }, `${getCellAddress(args.startRow, this.parent.viewport.leftIndex)}:${getCellAddress(args.endRow, this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2))}`);
+                if (this.parent.viewport.topIndex >= args.startIndex) {
+                    this.parent.viewport.topIndex = args.endIndex + 1;
+                }
+                args.startIndex = this.parent.viewport.bottomIndex + 1;
+                args.endIndex = args.startIndex + count - 1;
+                let indexes = this.parent.skipHidden(args.startIndex, args.endIndex);
+                args.startIndex = indexes[0];
+                args.endIndex = indexes[1];
+                this.parent.viewport.bottomIndex = args.endIndex;
+                this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: '', refresh: 'RowPart' }, `${getCellAddress(args.startIndex, this.parent.viewport.leftIndex)}:${getCellAddress(args.endIndex, this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2))}`);
             }
             if (sheet.showHeaders) {
                 if (idx === 0) {
-                    rowHdr.rows[0].classList.add('e-hide-end');
+                    if (rowHdr.rows[0]) {
+                        rowHdr.rows[0].classList.add('e-hide-end');
+                    }
                 }
                 else {
-                    rowHdr.rows[idx - 1].classList.add('e-hide-start');
-                    rowHdr.rows[idx].classList.add('e-hide-end');
+                    if (rowHdr.rows[idx - 1]) {
+                        rowHdr.rows[idx - 1].classList.add('e-hide-start');
+                    }
+                    if (rowHdr.rows[idx]) {
+                        rowHdr.rows[idx].classList.add('e-hide-end');
+                    }
                 }
             }
         }
@@ -13778,14 +16521,16 @@ class ShowHide {
             let hFrag;
             let frag;
             let hRow;
+            let row;
             let rowRenderer;
             let rTBody;
             let tBody;
-            let endRow = args.startRow - 1;
+            let startRow;
+            let endRow = args.startIndex - 1;
             let newStartRow;
-            for (let i = args.startRow, len = args.endRow; i <= len; i++) {
+            for (let i = args.startIndex, len = args.endIndex; i <= len; i++) {
                 if (!isHiddenRow(sheet, i)) {
-                    if (args.startRow === args.endRow) {
+                    if (args.startIndex === args.endIndex) {
                         return;
                     }
                     if (idx === undefined) {
@@ -13802,7 +16547,13 @@ class ShowHide {
                 }
                 if (i > this.parent.viewport.bottomIndex) {
                     setRow(sheet, i, { hidden: false });
+                    if (startRow === undefined) {
+                        return;
+                    }
                     continue;
+                }
+                if (startRow === undefined) {
+                    startRow = i;
                 }
                 setRow(sheet, i, { hidden: false });
                 if (idx === undefined) {
@@ -13820,38 +16571,61 @@ class ShowHide {
                         idx = 0;
                     }
                     else {
-                        idx = this.getViewportIdx(i);
+                        idx = this.parent.getViewportIndex(i);
                     }
                 }
                 endRow++;
-                hRow = rowRenderer.refresh(i);
-                hFrag.appendChild(hRow);
-                frag.appendChild(rowRenderer.refresh(i, hRow));
                 if (sheet.showHeaders) {
+                    hRow = rowRenderer.refresh(i, null, null, true);
+                    hFrag.appendChild(hRow);
                     detach(rTBody.lastElementChild);
                 }
+                row = frag.appendChild(rowRenderer.refresh(i, row, hRow));
                 detach(tBody.lastElementChild);
             }
             this.parent.viewport.bottomIndex = this.parent.viewport.topIndex + this.parent.viewport.rowCount +
                 (this.parent.getThreshold('row') * 2);
-            count = this.parent.hiddenRowsCount(this.parent.viewport.topIndex, args.startRow) +
-                this.parent.hiddenRowsCount(args.endRow + 1, this.parent.viewport.bottomIndex);
+            count = this.parent.hiddenCount(this.parent.viewport.topIndex, args.startIndex) +
+                this.parent.hiddenCount(args.endIndex + 1, this.parent.viewport.bottomIndex);
             this.parent.viewport.bottomIndex += count;
             args.insertIdx = idx;
             args.row = frag.querySelector('.e-row');
             if (sheet.showHeaders) {
                 args.hdrRow = hFrag.querySelector('.e-row');
-                if (idx !== 0 && !isHiddenRow(sheet, endRow - 1)) {
+                if (idx !== 0 && !isHiddenRow(sheet, endRow - 1) && rTBody.children[idx - 1]) {
                     rTBody.children[idx - 1].classList.remove('e-hide-start');
                 }
-                if (args.startRow !== 0 && isHiddenRow(sheet, args.startRow - 1)) {
+                if (args.startIndex !== 0 && isHiddenRow(sheet, args.startIndex - 1)) {
                     args.hdrRow.classList.add('e-hide-end');
                 }
                 if (isHiddenRow(sheet, endRow + 1)) {
                     hFrag.lastElementChild.classList.add('e-hide-start');
                 }
                 else {
-                    rTBody.children[idx].classList.remove('e-hide-end');
+                    if (rTBody.children[idx]) {
+                        rTBody.children[idx].classList.remove('e-hide-end');
+                    }
+                }
+            }
+            if (row && tBody.children[idx]) {
+                nextIdx = skipHiddenIdx(sheet, endRow + 1, true);
+                for (let i = this.parent.viewport.leftIndex; i <= this.parent.viewport.rightIndex; i++) {
+                    let borderTop = this.parent.getCellStyleValue(['borderTop'], [nextIdx, i]).borderTop;
+                    if (borderTop !== '') {
+                        this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: nextIdx, colIdx: i,
+                            style: { borderTop: borderTop }, pRow: row, cell: tBody.children[idx].children[i],
+                            first: '' });
+                        let prevIdx = skipHiddenIdx(sheet, startRow - 1, false);
+                        if (prevIdx > -1) {
+                            if (tBody.children[idx - 1] && !this.parent.getCellStyleValue(['borderBottom'], [prevIdx, i]).borderBottom &&
+                                !this.parent.getCellStyleValue(['borderTop'], [startRow, i]).borderTop) {
+                                tBody.children[idx - 1].children[i].style.borderBottom = '';
+                            }
+                        }
+                        else {
+                            tBody.children[idx].children[i].style.borderTop = '';
+                        }
+                    }
                 }
             }
             if (args.skipAppend) {
@@ -13863,27 +16637,277 @@ class ShowHide {
             tBody.insertBefore(frag, tBody.children[idx]);
             this.parent.selectRange(sheet.selectedRange);
             if (args.autoFit && sheet.showHeaders) {
-                this.parent.notify(autoFit, { startIndex: args.startRow, endIndex: args.endRow, isRow: true });
+                this.parent.notify(autoFit, { startIndex: args.startIndex, endIndex: args.endIndex, isRow: true });
             }
-            if (newStartRow !== undefined && newStartRow !== args.endRow) {
-                args.startRow = newStartRow;
-                this.showHideRow(args);
+            if (newStartRow !== undefined && newStartRow !== args.endIndex) {
+                args.startIndex = newStartRow;
+                this.hideRow(args);
             }
         }
     }
-    showHideCol() {
-        /** */
+    hideCol(args) {
+        let sheet = this.parent.getActiveSheet();
+        let hiddenIndex = [];
+        let beforeViewportIdx = [];
+        let topLeftCell = getCellIndexes(sheet.topLeftCell);
+        let scrollable;
+        for (let i = args.startIndex; i <= args.endIndex; i++) {
+            if (args.hide ? isHiddenCol(sheet, i) : !isHiddenCol(sheet, i)) {
+                continue;
+            }
+            setColumn(sheet, i, { hidden: args.hide });
+            if (this.parent.scrollSettings.enableVirtualization && (i < this.parent.viewport.leftIndex ||
+                i > this.parent.viewport.rightIndex)) {
+                if (i < this.parent.viewport.leftIndex) {
+                    beforeViewportIdx.push(i);
+                }
+                continue;
+            }
+            hiddenIndex.push(i);
+            if (args.hide && topLeftCell[1] === i) {
+                scrollable = true;
+            }
+        }
+        if (!beforeViewportIdx.length && !hiddenIndex.length) {
+            return;
+        }
+        if (args.hide) {
+            if (!hiddenIndex.length) {
+                return;
+            }
+            if (hiddenIndex.length <= this.parent.getThreshold('col') || !this.parent.scrollSettings.enableVirtualization) {
+                this.removeCell(sheet, hiddenIndex);
+            }
+            if (this.parent.scrollSettings.enableVirtualization) {
+                if (hiddenIndex[0] === this.parent.viewport.leftIndex) {
+                    this.parent.viewport.leftIndex = skipHiddenIdx(sheet, hiddenIndex[hiddenIndex.length - 1] + 1, true, 'columns');
+                }
+                if (scrollable) {
+                    let scrollWidth = 0;
+                    hiddenIndex.slice(0, hiddenIndex.indexOf(topLeftCell[1])).forEach((colIdx) => {
+                        scrollWidth += getColumnWidth(sheet, colIdx, true);
+                    });
+                    if (scrollWidth) {
+                        this.parent.notify(setScrollEvent, { set: false });
+                        let content = this.parent.getMainContent();
+                        content.scrollLeft -= scrollWidth;
+                        this.parent.notify(onContentScroll, { scrollLeft: content.scrollLeft, preventScroll: true, skipHidden: true });
+                        getUpdateUsingRaf(() => this.parent.notify(setScrollEvent, { set: true }));
+                    }
+                }
+                if (this.parent.scrollSettings.isFinite) {
+                    let colCount = skipHiddenIdx(sheet, sheet.colCount - 1, false, 'columns');
+                    let startIdx = this.parent.viewport.leftIndex;
+                    let endIndex = this.parent.viewport.rightIndex;
+                    if (endIndex + hiddenIndex.length >= colCount) {
+                        let index = skipHiddenIdx(sheet, startIdx - ((endIndex + hiddenIndex.length) - colCount), false, 'columns');
+                        if (index > -1) {
+                            this.parent.viewport.leftIndex = index;
+                            this.parent.viewport.leftIndex -= this.parent.hiddenCount(endIndex, colCount);
+                        }
+                        this.parent.viewport.rightIndex = colCount;
+                        if (startIdx !== this.parent.viewport.leftIndex || endIndex !== this.parent.viewport.rightIndex) {
+                            this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column' });
+                        }
+                        this.parent.selectRange(sheet.selectedRange);
+                        return;
+                    }
+                }
+                if (hiddenIndex.length <= this.parent.getThreshold('col')) {
+                    let indexes = this.parent.skipHidden(this.parent.viewport.rightIndex + 1, this.parent.viewport.rightIndex + hiddenIndex.length, 'columns');
+                    this.parent.viewport.rightIndex = indexes[1];
+                    this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: indexes[0], direction: '', refresh: 'ColumnPart' }, `${getRangeAddress([this.parent.viewport.topIndex, indexes[0], this.parent.viewport.bottomIndex, indexes[1]])}`);
+                }
+                else {
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex,
+                        refresh: 'Column' });
+                }
+            }
+            this.parent.selectRange(sheet.selectedRange);
+        }
+        else {
+            if (beforeViewportIdx.length) {
+                beforeViewportIdx.sort((i, j) => { return i - j; });
+                if (this.parent.scrollSettings.enableVirtualization && beforeViewportIdx[0] < this.parent.getThreshold('col')) {
+                    let rowIdx = getCellIndexes(sheet.topLeftCell)[0] + 1;
+                    sheet.topLeftCell = `A${rowIdx}`;
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: this.parent.viewport.topIndex, colIndex: 0,
+                        refresh: 'Column' });
+                    this.parent.selectRange(sheet.selectedRange);
+                }
+                else {
+                    this.parent.goTo(getCellAddress(this.parent.viewport.topIndex, beforeViewportIdx[0]));
+                }
+                return;
+            }
+            if (hiddenIndex.length <= this.parent.getThreshold('col') || !this.parent.scrollSettings.enableVirtualization) {
+                this.appendCell(sheet, hiddenIndex);
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    this.parent.notify(virtualContentLoaded, { refresh: 'Column' });
+                }
+            }
+            else {
+                this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex,
+                    refresh: 'Column' });
+            }
+            this.parent.selectRange(sheet.selectedRange);
+        }
     }
-    getViewportIdx(index) {
+    removeCell(sheet, indexes) {
+        let startIdx;
+        let endIdx;
+        let hRow;
+        let row;
+        let hColgrp;
+        let colgrp;
+        let rowIdx = 0;
+        let cellIdx = this.parent.getViewportIndex(indexes[0], true) + 1;
         if (this.parent.scrollSettings.enableVirtualization) {
-            index -= this.parent.hiddenRowsCount(this.parent.viewport.topIndex, index);
-            index -= this.parent.viewport.topIndex;
+            startIdx = this.parent.viewport.topIndex;
+            endIdx = this.parent.viewport.bottomIndex;
         }
-        return index;
+        else {
+            startIdx = 0;
+            endIdx = sheet.rowCount - 1;
+        }
+        let table = this.parent.getContentTable();
+        let nextIdx;
+        colgrp = table.getElementsByTagName('colgroup')[0];
+        if (sheet.showHeaders) {
+            let hTable = this.parent.getColHeaderTable();
+            hColgrp = hTable.getElementsByTagName('colgroup')[0];
+            hRow = hTable.rows[0];
+        }
+        while (startIdx <= endIdx) {
+            if (isHiddenRow(sheet, startIdx)) {
+                startIdx++;
+                continue;
+            }
+            row = table.rows[rowIdx];
+            indexes.forEach((idx, index) => {
+                detach(row.cells[cellIdx]);
+                if (rowIdx === 0) {
+                    if (sheet.showHeaders) {
+                        detach(hRow.cells[cellIdx]);
+                        detach(hColgrp.children[cellIdx]);
+                    }
+                    detach(colgrp.children[cellIdx]);
+                }
+                if (index === indexes.length - 1) {
+                    nextIdx = skipHiddenIdx(sheet, idx + 1, true, 'columns');
+                    let borderLeft = this.parent.getCellStyleValue(['borderLeft'], [rowIdx, nextIdx]).borderLeft;
+                    if (borderLeft !== '') {
+                        this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: rowIdx, colIdx: nextIdx,
+                            style: { borderLeft: borderLeft }, row: row, first: '' });
+                    }
+                }
+            });
+            startIdx++;
+            rowIdx++;
+        }
+        if (cellIdx - 1 > -1) {
+            if (sheet.showHeaders && hRow.cells[cellIdx - 1]) {
+                hRow.cells[cellIdx - 1].classList.add('e-hide-start');
+            }
+        }
+        if (hRow.cells[cellIdx]) {
+            hRow.cells[cellIdx].classList.add('e-hide-end');
+        }
+    }
+    appendCell(sheet, indexes) {
+        let startIdx;
+        let endIdx;
+        let hRow;
+        let row;
+        let hColgrp;
+        let colgrp;
+        let rowIdx = 0;
+        let prevIdx;
+        let hFrag = document.createDocumentFragment();
+        let frag = document.createDocumentFragment();
+        let colFrag = document.createDocumentFragment();
+        if (this.parent.scrollSettings.enableVirtualization) {
+            startIdx = this.parent.viewport.topIndex;
+            endIdx = this.parent.viewport.bottomIndex;
+        }
+        else {
+            startIdx = 0;
+            endIdx = sheet.rowCount - 1;
+        }
+        let table = this.parent.getContentTable();
+        let hTable = this.parent.getColHeaderTable();
+        colgrp = table.getElementsByTagName('colgroup')[0];
+        if (sheet.showHeaders) {
+            hColgrp = hTable.getElementsByTagName('colgroup')[0];
+            hRow = hTable.rows[0];
+        }
+        let cellRenderer = this.parent.serviceLocator.getService('cell');
+        indexes.sort((i, j) => { return i - j; });
+        let cellIdx = [];
+        let cell;
+        let refCell;
+        while (startIdx <= endIdx) {
+            if (isHiddenRow(sheet, startIdx)) {
+                startIdx++;
+                continue;
+            }
+            row = table.rows[rowIdx];
+            indexes.forEach((idx, index) => {
+                if (rowIdx === 0) {
+                    cellIdx[index] = this.parent.getViewportIndex(idx, true);
+                    if (colgrp.children[cellIdx[index]]) {
+                        colgrp.insertBefore(this.parent.sheetModule.updateCol(sheet, idx), colgrp.children[cellIdx[index]]);
+                        if (sheet.showHeaders) {
+                            refCell = hRow.cells[cellIdx[index]];
+                            if (index === 0 && indexes[index] && !isHiddenCol(sheet, indexes[index] - 1)) {
+                                refCell.previousElementSibling.classList.remove('e-hide-start');
+                            }
+                            hRow.insertBefore(cellRenderer.renderColHeader(idx), refCell);
+                            if (index === indexes.length - 1) {
+                                refCell.classList.remove('e-hide-end');
+                            }
+                        }
+                    }
+                    else {
+                        colgrp.appendChild(this.parent.sheetModule.updateCol(sheet, idx));
+                        if (sheet.showHeaders) {
+                            hRow.appendChild(cellRenderer.renderColHeader(idx));
+                        }
+                    }
+                    detach(colgrp.lastChild);
+                    if (sheet.showHeaders) {
+                        detach(hRow.lastChild);
+                        if (index === indexes.length - 1) {
+                            detach(hColgrp);
+                            hTable.insertBefore(colgrp.cloneNode(true), hTable.tHead[0]);
+                        }
+                    }
+                }
+                detach(row.lastChild);
+                refCell = row.cells[cellIdx[index]];
+                cell = cellRenderer.render({ rowIdx: startIdx, colIdx: idx, cell: getCell(startIdx, idx, sheet),
+                    address: getCellAddress(startIdx, idx), lastCell: idx === indexes.length - 1, isHeightCheckNeeded: true,
+                    first: idx !== skipHiddenIdx(sheet, 0, true, 'columns') && idx === this.parent.viewport.leftIndex ? 'Column' : '',
+                    checkNextBorder: index === indexes.length - 1 ? 'Column' : '' });
+                refCell ? row.insertBefore(cell, refCell) : row.appendChild(cell);
+                if (index === 0 && cell.previousSibling) {
+                    let borderLeft = this.parent.getCellStyleValue(['borderLeft'], [rowIdx, skipHiddenIdx(sheet, indexes[indexes.length - 1] + 1, true, 'columns')]).borderLeft;
+                    if (borderLeft !== '') {
+                        prevIdx = skipHiddenIdx(sheet, indexes[0] - 1, false, 'columns');
+                        if (prevIdx > -1 && !this.parent.getCellStyleValue(['borderRight'], [rowIdx, prevIdx]).borderRight &&
+                            !this.parent.getCellStyleValue(['borderLeft'], [rowIdx, indexes[0]]).borderLeft) {
+                            cell.previousSibling.style.borderRight = '';
+                        }
+                    }
+                }
+            });
+            startIdx++;
+            rowIdx++;
+        }
+        this.parent.viewport.rightIndex = skipHiddenIdx(sheet, this.parent.viewport.rightIndex - indexes.length, false, 'columns');
     }
     addEventListener() {
-        this.parent.on(hideShowRow, this.showHideRow, this);
-        this.parent.on(hideShowCol, this.showHideCol, this);
+        this.parent.on(hideShow, this.hideShow, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
     destroy() {
@@ -13891,8 +16915,7 @@ class ShowHide {
         this.parent = null;
     }
     removeEventListener() {
-        this.parent.off(hideShowRow, this.showHideRow);
-        this.parent.off(hideShowCol, this.showHideCol);
+        this.parent.off(hideShow, this.hideShow);
         this.parent.off(spreadsheetDestroyed, this.destroy);
     }
 }
@@ -13921,7 +16944,7 @@ class SpreadsheetHyperlink {
         this.parent.on(editHyperlink, this.editHyperlinkHandler, this);
         this.parent.on(removeHyperlink, this.removeHyperlinkHandler, this);
         this.parent.on(openHyperlink, this.openHyperlinkHandler, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.hyperlinkClickHandler, this);
         this.parent.on(createHyperlinkElement, this.createHyperlinkElementHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
     }
@@ -13931,7 +16954,7 @@ class SpreadsheetHyperlink {
             this.parent.off(editHyperlink, this.editHyperlinkHandler);
             this.parent.off(removeHyperlink, this.removeHyperlinkHandler);
             this.parent.off(openHyperlink, this.openHyperlinkHandler);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.hyperlinkClickHandler);
             this.parent.off(createHyperlinkElement, this.createHyperlinkElementHandler);
             this.parent.off(keyUp, this.keyUpHandler);
         }
@@ -13966,6 +16989,11 @@ class SpreadsheetHyperlink {
     }
     initiateHyperlinkHandler() {
         let l10n = this.parent.serviceLocator.getService(locale);
+        let sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected && !sheet.protectSettings.insertLink) {
+            this.parent.notify(editAlert, null);
+            return;
+        }
         if (!this.parent.element.querySelector('.e-dlg-container')) {
             let dialogInst = this.parent.serviceLocator.getService(dialog);
             dialogInst.show({
@@ -14177,9 +17205,9 @@ class SpreadsheetHyperlink {
             this.parent.trigger(afterHyperlinkClick, aftArgs);
         }
     }
-    clickHandler(e) {
+    hyperlinkClickHandler(e) {
         let trgt = e.target;
-        if (closest(trgt, '.e-dlg-content') && closest(trgt, '.e-toolbar-item')) {
+        if (closest(trgt, '.e-link-dialog') && closest(trgt, '.e-toolbar-item')) {
             let dlgEle = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
             let ftrEle = dlgEle.getElementsByClassName('e-footer-content')[0];
             let insertBut = ftrEle.firstChild;
@@ -14251,7 +17279,7 @@ class SpreadsheetHyperlink {
         let rowIdx = args.rowIdx;
         let colIdx = args.colIdx;
         let hyperEle = this.parent.createElement('a', { className: 'e-hyperlink' });
-        if (!isNullOrUndefined(cell.hyperlink)) {
+        if (!isNullOrUndefined(cell.hyperlink) && !td.querySelector('a')) {
             let hyperlink = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
                 if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('https://') === -1 &&
@@ -14279,7 +17307,12 @@ class SpreadsheetHyperlink {
                 else if (hyperlink.address.includes('=') || hyperlink.address.includes('!')) {
                     hyperEle.setAttribute('ref', hyperlink.address);
                 }
-                hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink.address;
+                if (getTypeFromFormat(cell.format) === 'Accounting') {
+                    hyperEle.innerHTML = td.innerHTML;
+                }
+                else {
+                    hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink.address;
+                }
                 td.textContent = '';
                 td.innerText = '';
                 td.appendChild(hyperEle);
@@ -14587,12 +17620,18 @@ class UndoRedo {
                 if (address[0] === address[2] && (address[2] - address[0]) === 0) { //if selected range is a single cell 
                     address[0] = 0;
                     address[1] = 0;
-                    address[2] = sheet.usedRange.rowIndex - 1;
+                    address[2] = sheet.usedRange.rowIndex;
                     address[3] = sheet.usedRange.colIndex;
                 }
                 break;
             case 'beforeCellSave':
                 address = getRangeIndexes(eventArgs.address);
+                break;
+            case 'beforeWrap':
+                address = this.parent.getAddressInfo(eventArgs.address).indices;
+                break;
+            case 'beforeReplace':
+                address = this.parent.getAddressInfo(eventArgs.address).indices;
                 break;
         }
         cells = this.getCellDetails(address, sheet);
@@ -14609,6 +17648,7 @@ class UndoRedo {
                 case 'cellSave':
                 case 'format':
                 case 'sorting':
+                case 'wrap':
                     undoRedoArgs = this.performOperation(undoRedoArgs);
                     break;
                 case 'clipboard':
@@ -14616,6 +17656,22 @@ class UndoRedo {
                     break;
                 case 'resize':
                     undoRedoArgs = this.undoForResize(undoRedoArgs);
+                    break;
+                case 'hideShow':
+                    undoRedoArgs.eventArgs.hide = !undoRedoArgs.eventArgs.hide;
+                    updateAction(undoRedoArgs, this.parent);
+                    break;
+                case 'replace':
+                    undoRedoArgs = this.performOperation(undoRedoArgs);
+                    break;
+                case 'insert':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'delete':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'validation':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
@@ -14635,13 +17691,18 @@ class UndoRedo {
         }
     }
     updateUndoRedoCollection(options) {
-        let actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit'];
+        let actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
+            'validation'];
+        if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
+            actionList.push(options.args.action);
+        }
         let action = options.args.action;
         if (actionList.indexOf(action) === -1 && !options.isPublic) {
             return;
         }
         let eventArgs = options.args.eventArgs;
-        if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave') {
+        if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
+            action === 'wrap' || action === 'replace' || action === 'validation') {
             let beforeActionDetails = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -14688,29 +17749,36 @@ class UndoRedo {
     }
     undoForResize(args) {
         let eventArgs = args.eventArgs;
-        if (eventArgs.isCol) {
-            let temp = eventArgs.oldWidth;
-            eventArgs.oldWidth = eventArgs.width;
-            eventArgs.width = temp;
+        if (eventArgs.hide === undefined) {
+            if (eventArgs.isCol) {
+                let temp = eventArgs.oldWidth;
+                eventArgs.oldWidth = eventArgs.width;
+                eventArgs.width = temp;
+            }
+            else {
+                let temp = eventArgs.oldHeight;
+                eventArgs.oldHeight = eventArgs.height;
+                eventArgs.height = temp;
+            }
         }
         else {
-            let temp = eventArgs.oldHeight;
-            eventArgs.oldHeight = eventArgs.height;
-            eventArgs.height = temp;
+            eventArgs.hide = !eventArgs.hide;
         }
         updateAction(args, this.parent);
         return args;
     }
     performOperation(args) {
         let eventArgs = args.eventArgs;
-        let address = (args.action === 'cellSave') ? eventArgs.address.split('!') : eventArgs.range.split('!');
+        let address = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace') ?
+            eventArgs.address.split('!')
+            : eventArgs.range.split('!');
         let range = getRangeIndexes(address[1]);
         let sheetIndex = getSheetIndex(this.parent, address[0]);
         let sheet = getSheet(this.parent, sheetIndex);
         let actionData = eventArgs.beforeActionData;
         let isRefresh = this.checkRefreshNeeded(sheetIndex);
         if (this.isUndo) {
-            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
         }
         else {
             updateAction(args, this.parent);
@@ -14728,23 +17796,31 @@ class UndoRedo {
                 cell = getCell(i, j, sheet);
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
-                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : ''
+                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
+                    wrap: cell && cell.wrap
                 });
             }
         }
         return cells;
     }
-    updateCellDetails(cells, sheet, range, isRefresh) {
+    updateCellDetails(cells, sheet, range, isRefresh, args) {
         let len = cells.length;
         for (let i = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format,
-                style: cells[i].style, formula: cells[i].formula
+                style: cells[i].style, formula: cells[i].formula,
+                wrap: cells[i].wrap
             });
             if (cells[i].formula) {
                 this.parent.notify(workbookEditOperation, {
                     action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
                         cells[i].colIndex], value: cells[i].formula
+                });
+            }
+            if (args && args.action === 'wrap' && args.eventArgs.wrap) {
+                this.parent.notify(wrapEvent, {
+                    range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
+                        cells[i].colIndex], wrap: false, sheet: sheet
                 });
             }
         }
@@ -14767,6 +17843,7 @@ class UndoRedo {
         this.parent.on(setActionData, this.setActionData, this);
         this.parent.on(getBeforeActionData, this.getBeforeActionData, this);
         this.parent.on(clearUndoRedoCollection, this.clearUndoRedoCollection, this);
+        this.parent.on(setUndoRedo, this.updateUndoRedoIcons, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
@@ -14775,6 +17852,7 @@ class UndoRedo {
             this.parent.off(setActionData, this.setActionData);
             this.parent.off(getBeforeActionData, this.getBeforeActionData);
             this.parent.off(clearUndoRedoCollection, this.clearUndoRedoCollection);
+            this.parent.off(setUndoRedo, this.updateUndoRedoIcons);
         }
     }
     /**
@@ -14789,6 +17867,1837 @@ class UndoRedo {
      */
     getModuleName() {
         return 'undoredo';
+    }
+}
+
+/**
+ * Represents Wrap Text support for Spreadsheet.
+ */
+class WrapText {
+    /**
+     * Constructor for the Spreadsheet Wrap Text module.
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    addEventListener() {
+        this.parent.on(ribbonClick, this.ribbonClickHandler, this);
+        this.parent.on(wrapEvent, this.wrapTextHandler, this);
+        this.parent.on(rowHeightChanged, this.rowHeightChangedHandler, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(ribbonClick, this.ribbonClickHandler);
+            this.parent.off(wrapEvent, this.wrapTextHandler);
+            this.parent.off(rowHeightChanged, this.rowHeightChangedHandler);
+        }
+    }
+    wrapTextHandler(args) {
+        if (inView(this.parent, args.range, true)) {
+            let ele;
+            let cell;
+            let colwidth;
+            let isCustomHgt;
+            let maxHgt;
+            let hgt;
+            for (let i = args.range[0]; i <= args.range[2]; i++) {
+                maxHgt = 0;
+                isCustomHgt = getRow(args.sheet, i).customHeight;
+                for (let j = args.range[1]; j <= args.range[3]; j++) {
+                    ele = args.initial ? args.td : this.parent.getCell(i, j);
+                    if (ele) {
+                        args.wrap ? ele.classList.add(WRAPTEXT) : ele.classList.remove(WRAPTEXT);
+                        if (isCustomHgt) {
+                            ele.innerHTML
+                                = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                        }
+                    }
+                    if (!isCustomHgt) {
+                        colwidth = getColumnWidth(args.sheet, j);
+                        cell = getCell(i, j, args.sheet);
+                        let displayText = this.parent.getDisplayText(cell);
+                        if (displayText) {
+                            if (args.wrap) {
+                                let lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
+                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, lines) + 1;
+                                maxHgt = Math.max(maxHgt, hgt);
+                                setMaxHgt(args.sheet, i, j, hgt);
+                            }
+                            else {
+                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, 1);
+                                setMaxHgt(args.sheet, i, j, hgt);
+                                maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
+                            }
+                        }
+                        else if (!args.wrap) {
+                            setMaxHgt(args.sheet, i, j, 20);
+                            maxHgt = 20;
+                        }
+                        if (j === args.range[3] && ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || (!args.wrap
+                            && getMaxHgt(args.sheet, i) < getRowHeight(args.sheet, i) && getRowHeight(args.sheet, i) > 20))) {
+                            setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ribbonClickHandler(args) {
+        let target = closest(args.originalEvent.target, '.e-btn');
+        if (target && target.id === this.parent.element.id + '_wrap') {
+            let wrap$$1 = target.classList.contains('e-active');
+            let address = getAddressFromSelectedRange(this.parent.getActiveSheet());
+            let eventArgs = { address: address, wrap: wrap$$1, cancel: false };
+            this.parent.notify(beginAction, { action: 'beforeWrap', eventArgs: eventArgs });
+            if (!eventArgs.cancel) {
+                wrap(this.parent.getActiveSheet().selectedRange, wrap$$1, this.parent);
+                this.parent.notify(completeAction, { action: 'wrap', eventArgs: { address: address, wrap: wrap$$1 } });
+            }
+        }
+    }
+    getTextWidth(text, style = this.parent.cellStyle) {
+        let defaultStyle = this.parent.cellStyle;
+        let canvas = document.createElement('canvas');
+        let context = canvas.getContext('2d');
+        context.font = (style.fontStyle || defaultStyle.fontStyle) + ' ' + (style.fontWeight || defaultStyle.fontWeight) + ' '
+            + (style.fontSize || defaultStyle.fontSize) + ' ' + (style.fontFamily || defaultStyle.fontFamily);
+        return context.measureText(text).width;
+    }
+    rowHeightChangedHandler(args) {
+        if (args.isCustomHgt) {
+            let sheet = this.parent.getActiveSheet();
+            let leftIdx = this.parent.viewport.leftIndex;
+            let rightIdx = leftIdx + this.parent.viewport.colCount + this.parent.getThreshold('col') * 2;
+            for (let i = leftIdx; i < rightIdx; i++) {
+                let cell = getCell(args.rowIdx, i, sheet);
+                if (cell && cell.wrap) {
+                    let ele = this.parent.getCell(args.rowIdx, i);
+                    ele.innerHTML = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                }
+            }
+        }
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'wrapText';
+    }
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+}
+
+/**
+ * The `Insert` module is used to insert cells, rows, columns and sheets in to the spreadsheet.
+ */
+class Insert {
+    /**
+     * Constructor for the Spreadsheet insert module.
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    insert(args) {
+        let isAction;
+        if (args.isAction) {
+            isAction = true;
+            delete args.isAction;
+        }
+        if (isAction) {
+            this.parent.notify(beginAction, { eventArgs: args, action: 'insert' });
+        }
+        switch (args.modelType) {
+            case 'Sheet':
+                this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1) });
+                this.parent.renderModule.refreshSheet();
+                this.parent.element.focus();
+                break;
+            case 'Row':
+                if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.bottomIndex) {
+                    if (this.parent.scrollSettings.enableVirtualization) {
+                        if (args.index < this.parent.viewport.topIndex) {
+                            this.parent.viewport.topIndex += args.model.length;
+                        }
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row' });
+                    }
+                    else {
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: args.index, colIndex: 0, refresh: 'Row' });
+                    }
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+                }
+                break;
+            case 'Column':
+                if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.rightIndex) {
+                    if (this.parent.scrollSettings.enableVirtualization) {
+                        if (args.index < this.parent.viewport.leftIndex) {
+                            this.parent.viewport.leftIndex += args.model.length;
+                        }
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column' });
+                    }
+                    else {
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: 0, colIndex: args.index, refresh: 'Column' });
+                    }
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+                }
+                break;
+        }
+        if (isAction) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'insert' });
+        }
+    }
+    addEventListener() {
+        this.parent.on(insert, this.insert, this);
+    }
+    /**
+     * Destroy insert module.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(insert, this.insert);
+        }
+    }
+    /**
+     * Get the insert module name.
+     */
+    getModuleName() {
+        return 'insert';
+    }
+}
+
+/**
+ * The `Delete` module is used to delete cells, rows, columns and sheets from the spreadsheet.
+ */
+class Delete {
+    /**
+     * Constructor for the Spreadsheet insert module.
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    delete(args) {
+        let isAction;
+        if (args.isAction) {
+            isAction = true;
+            delete args.isAction;
+        }
+        if (isAction) {
+            this.parent.notify(beginAction, { eventArgs: args, action: 'delete' });
+        }
+        if (args.modelType === 'Sheet') {
+            // Delete sheet code
+        }
+        else if (args.modelType === 'Row') {
+            if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    if (args.startIndex < this.parent.viewport.topIndex) {
+                        this.parent.viewport.topIndex -= args.model.length;
+                    }
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, refresh: 'Row',
+                        colIndex: this.parent.viewport.leftIndex });
+                }
+                else {
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Row', rowIndex: args.startIndex, colIndex: 0 });
+                }
+            }
+            this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+        }
+        else {
+            if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.rightIndex) {
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    if (args.startIndex < this.parent.viewport.leftIndex) {
+                        this.parent.viewport.leftIndex -= args.model.length;
+                    }
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
+                        colIndex: this.parent.viewport.leftIndex });
+                }
+                else {
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
+                        colIndex: args.startIndex });
+                }
+            }
+            this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+        }
+        if (isAction) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'delete' });
+        }
+    }
+    addEventListener() {
+        this.parent.on(deleteAction, this.delete, this);
+    }
+    /**
+     * Destroy delete module.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(deleteAction, this.delete);
+        }
+    }
+    /**
+     * Get the delete module name.
+     */
+    getModuleName() {
+        return 'delete';
+    }
+}
+
+/**
+ * Represents Data Validation support for Spreadsheet.
+ */
+class DataValidation {
+    /**
+     * Constructor for the Spreadsheet Data Validation module.
+     */
+    constructor(parent) {
+        this.data = [];
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the Data Validation module.
+     * @return {void}
+     */
+    destroy() {
+        this.removeEventListener();
+        let dataValPopup = document.querySelector('#' + this.parent.element.id + '_datavalidation-popup');
+        if (dataValPopup) {
+            dataValPopup.remove();
+        }
+        this.parent = null;
+    }
+    addEventListener() {
+        EventHandler.add(this.parent.element, 'dblclick', this.listOpen, this);
+        EventHandler.add(document, 'mousedown', this.mouseDownHandler, this);
+        this.parent.on(initiateDataValidation, this.initiateDataValidationHandler, this);
+        this.parent.on(invalidData, this.invalidDataHandler, this);
+        this.parent.on(isValidation, this.checkDataValidation, this);
+        this.parent.on(activeCellChanged, this.listHandler, this);
+        this.parent.on(keyUp, this.keyUpHandler, this);
+    }
+    removeEventListener() {
+        EventHandler.remove(this.parent.element, 'dblclick', this.listOpen);
+        EventHandler.remove(document, 'mousedown', this.mouseDownHandler);
+        if (!this.parent.isDestroyed) {
+            this.parent.off(initiateDataValidation, this.initiateDataValidationHandler);
+            this.parent.off(invalidData, this.invalidDataHandler);
+            this.parent.off(isValidation, this.checkDataValidation);
+            this.parent.off(activeCellChanged, this.listHandler);
+            this.parent.on(keyUp, this.keyUpHandler, this);
+        }
+    }
+    mouseDownHandler(e) {
+        let target = e.target;
+        let parEle = closest(target, '.e-ddl');
+        if (parEle && parEle.getAttribute('id') === 'listValid_popup') {
+            this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: target.innerText });
+        }
+    }
+    keyUpHandler(e) {
+        let target = e.target;
+        let dlgEle = this.parent.element.querySelector('.e-datavalidation-dlg');
+        if (closest(target, '.e-values') && dlgEle && e.keyCode !== 13) {
+            let valuesCont = dlgEle.querySelector('.e-values');
+            let errorEle = valuesCont.querySelector('.e-dlg-error');
+            let footerCont = dlgEle.querySelector('.e-footer-content');
+            let primaryBut = footerCont.querySelector('.e-primary');
+            if (primaryBut.hasAttribute('disabled')) {
+                primaryBut.removeAttribute('disabled');
+            }
+            if (errorEle) {
+                valuesCont.removeChild(errorEle);
+            }
+        }
+    }
+    listOpen(e) {
+        let target = e.target;
+        if (this.listObj && target.classList.contains('e-cell') && target.querySelector('.e-validation-list')) {
+            this.listObj.showPopup();
+        }
+    }
+    invalidDataHandler(args) {
+        if (args.isRemoveHighlight) {
+            this.parent.removeInvalidHighlight();
+        }
+        else {
+            this.parent.addInvalidHighlight();
+        }
+    }
+    listHandler() {
+        if (this.parent.allowDataValidation) {
+            let sheet = this.parent.getActiveSheet();
+            let mainCont = this.parent.getMainContent();
+            let indexes = getCellIndexes(sheet.activeCell);
+            let colIdx = indexes[1];
+            let rowIdx = indexes[0];
+            if (this.parent.scrollSettings.enableVirtualization) {
+                rowIdx = rowIdx >= this.parent.viewport.topIndex ?
+                    rowIdx - this.parent.viewport.topIndex : rowIdx;
+                colIdx = colIdx >= this.parent.viewport.leftIndex ?
+                    colIdx - this.parent.viewport.leftIndex : colIdx;
+            }
+            let cell = getCell(rowIdx, colIdx, sheet);
+            let tr = mainCont.getElementsByTagName('tr')[rowIdx];
+            if (cell && tr) {
+                let tdEle = tr.getElementsByClassName('e-cell')[colIdx];
+                if (!tdEle) {
+                    return;
+                }
+                if (document.getElementsByClassName('e-validation-list')[0]) {
+                    remove(document.getElementsByClassName('e-validation-list')[0]);
+                    this.data = [];
+                }
+                if (cell.validation && cell.validation.type === 'List') {
+                    cell.validation.ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ? cell.validation.ignoreBlank : true;
+                    cell.validation.inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
+                        cell.validation.inCellDropDown : true;
+                    if (cell.validation.inCellDropDown) {
+                        let ddlCont = this.parent.createElement('div', { className: 'e-validation-list' });
+                        let ddlEle = this.parent.createElement('input', { id: 'listValid' });
+                        ddlCont.appendChild(ddlEle);
+                        if (!cell.validation.inCellDropDown) {
+                            ddlCont.style.display = 'none';
+                        }
+                        tdEle.insertBefore(ddlCont, tdEle.firstChild);
+                        this.listObj = new DropDownList({
+                            index: 0,
+                            dataSource: this.data,
+                            fields: { text: 'text', value: 'id' },
+                            width: '0px',
+                            popupWidth: '200px',
+                            popupHeight: '200px',
+                            beforeOpen: () => {
+                                this.listObj.popupWidth = tdEle.offsetWidth - 1;
+                                this.data = [];
+                                this.updateDataSource(this.listObj, cell);
+                            },
+                            change: () => { this.listValueChange(this.listObj.text); },
+                            open: (args) => {
+                                args.popup.offsetX = -(tdEle.offsetWidth - 20) + 4;
+                                args.popup.offsetY = -13;
+                            }
+                        });
+                        this.listObj.appendTo('#listValid');
+                    }
+                }
+            }
+        }
+    }
+    updateDataSource(listObj, cell) {
+        let count$$1 = 0;
+        let sheet = this.parent.getActiveSheet();
+        let value = cell.validation.value1.toUpperCase();
+        let isRange = value.indexOf('=') !== -1 ? true : false;
+        if (isRange) {
+            let indexes = getRangeIndexes(value);
+            for (let rowIdx = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+                if (!sheet.rows[rowIdx]) {
+                    setRow(sheet, rowIdx, {});
+                }
+                for (let colIdx = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                    if (!sheet.rows[rowIdx].cells) {
+                        setCell(rowIdx, colIdx, sheet, {});
+                    }
+                    count$$1 += 1;
+                    cell = sheet.rows[rowIdx].cells[colIdx];
+                    let data = this.parent.getDisplayText(cell) ? this.parent.getDisplayText(cell) : '';
+                    this.data.push({ text: data, id: 'list-' + count$$1 });
+                }
+            }
+        }
+        else {
+            let listValues = cell.validation.value1.split(',');
+            for (let idx = 0; idx < listValues.length; idx++) {
+                count$$1 += 1;
+                this.data.push({ text: listValues[idx], id: 'list-' + count$$1 });
+            }
+        }
+        listObj.dataSource = this.data;
+    }
+    listValueChange(value) {
+        let cellIdx = getIndexesFromAddress(this.parent.getActiveSheet().activeCell);
+        this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: this.parent.getActiveSheet().activeCell, value: value });
+        this.parent.serviceLocator.getService('cell').refreshRange(cellIdx);
+    }
+    initiateDataValidationHandler() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let type;
+        let operator;
+        let value1;
+        let value2;
+        let ignoreBlank = true;
+        let inCellDropDown = true;
+        let isNew = true;
+        let sheet = this.parent.getActiveSheet();
+        let cell;
+        let indexes = getRangeIndexes(sheet.selectedRange);
+        for (let rowIdx = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+            if (sheet.rows[rowIdx]) {
+                for (let colIdx = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                    if (sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[colIdx]) {
+                        cell = sheet.rows[rowIdx].cells[colIdx];
+                        if (cell.validation) {
+                            isNew = false;
+                            type = cell.validation.type;
+                            operator = cell.validation.operator;
+                            value1 = cell.validation.value1;
+                            value2 = cell.validation.value2;
+                            ignoreBlank = cell.validation.ignoreBlank;
+                            inCellDropDown = cell.validation.inCellDropDown;
+                        }
+                    }
+                }
+            }
+        }
+        if (!this.parent.element.querySelector('.e-datavalidation-dlg')) {
+            let dialogInst = this.parent.serviceLocator.getService(dialog);
+            dialogInst.show({
+                width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
+                header: l10n.getConstant('DataValidation'),
+                target: document.querySelector('.e-control.e-spreadsheet'),
+                beforeOpen: () => {
+                    dialogInst.dialogInstance.content =
+                        this.dataValidationContent(isNew, type, operator, value1, value2, ignoreBlank, inCellDropDown);
+                    dialogInst.dialogInstance.dataBind();
+                    this.parent.element.focus();
+                },
+                buttons: [{
+                        buttonModel: {
+                            content: l10n.getConstant('CLEARALL'),
+                            cssClass: 'e-btn e-clearall-btn e-flat'
+                        },
+                        click: () => {
+                            dialogInst.dialogInstance.content =
+                                this.dataValidationContent(true, type, operator, value1, value2, ignoreBlank, inCellDropDown);
+                            dialogInst.dialogInstance.dataBind();
+                            this.parent.element.focus();
+                        }
+                    },
+                    {
+                        buttonModel: {
+                            content: l10n.getConstant('APPLY'), isPrimary: true
+                        },
+                        click: () => {
+                            this.dlgClickHandler(dialogInst);
+                        }
+                    }]
+            });
+            dialogInst.dialogInstance.refresh();
+        }
+    }
+    // tslint:disable-next-line:max-func-body-length
+    dataValidationContent(isNew, type, operator, val1, val2, ignoreBlank, inCellDropDown) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let value1 = isNew ? '0' : val1;
+        let value2 = isNew ? '0' : val2;
+        let dlgContent = this.parent.createElement('div', { className: 'e-validation-dlg' });
+        let cellRangeCont = this.parent.createElement('div', { className: 'e-cellrange' });
+        let allowDataCont = this.parent.createElement('div', { className: 'e-allowdata' });
+        let valuesCont = this.parent.createElement('div', { className: 'e-values' });
+        let ignoreBlankCont = this.parent.createElement('div', { className: 'e-ignoreblank' });
+        dlgContent.appendChild(cellRangeCont);
+        dlgContent.appendChild(allowDataCont);
+        dlgContent.appendChild(valuesCont);
+        dlgContent.appendChild(ignoreBlankCont);
+        let cellRangeText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('CellRange') });
+        let cellRangeEle = this.parent.createElement('input', {
+            className: 'e-input',
+            attrs: { value: this.parent.getActiveSheet().selectedRange }
+        });
+        cellRangeCont.appendChild(cellRangeText);
+        cellRangeCont.appendChild(cellRangeEle);
+        let allowCont = this.parent.createElement('div', { className: 'e-allow' });
+        let dataCont = this.parent.createElement('div', { className: 'e-data' });
+        allowDataCont.appendChild(allowCont);
+        allowDataCont.appendChild(dataCont);
+        let allowText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Allow') });
+        this.typeData = [
+            { text: l10n.getConstant('WholeNumber'), id: 'type-1' },
+            { text: l10n.getConstant('Decimal'), id: 'type-2' },
+            { text: l10n.getConstant('Date'), id: 'type-3' },
+            { text: l10n.getConstant('Time'), id: 'type-4' },
+            { text: l10n.getConstant('TextLength'), id: 'type-5' },
+            { text: l10n.getConstant('List'), id: 'type-6' }
+        ];
+        this.operatorData = [
+            { text: l10n.getConstant('Between'), id: 'operator-1' },
+            { text: l10n.getConstant('NotBetween'), id: 'operator-2' },
+            { text: l10n.getConstant('EqualTo'), id: 'operator-3' },
+            { text: l10n.getConstant('NotEqualTo'), id: 'operator-4' },
+            { text: l10n.getConstant('Greaterthan'), id: 'operator-5' },
+            { text: l10n.getConstant('Lessthan'), id: 'operator-6' },
+            { text: l10n.getConstant('GreaterThanOrEqualTo'), id: 'operator-7' },
+            { text: l10n.getConstant('LessThanOrEqualTo'), id: 'operator-8' }
+        ];
+        let allowSelectEle = this.parent.createElement('input', { className: 'e-select' });
+        let allowIdx = 0;
+        if (!isNew) {
+            for (let idx = 0; idx < this.typeData.length; idx++) {
+                if (type === this.typeData[idx].text.replace(' ', '')) {
+                    allowIdx = idx;
+                    break;
+                }
+            }
+        }
+        if (isNew || type !== 'List') {
+            let dataIdx = 0;
+            let dataText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Data') });
+            let dataSelectEle = this.parent.createElement('input', { className: 'e-select' });
+            if (!isNew) {
+                for (let idx = 0; idx < this.operatorData.length; idx++) {
+                    if (operator === this.FormattedValue(this.operatorData[idx].text)) {
+                        dataIdx = idx;
+                        break;
+                    }
+                }
+            }
+            dataCont.appendChild(dataText);
+            dataCont.appendChild(dataSelectEle);
+            this.dataList = new DropDownList({
+                dataSource: this.operatorData,
+                index: dataIdx,
+                popupHeight: '200px',
+                change: () => { this.userInput(listObj, this.dataList); }
+            });
+            this.dataList.appendTo(dataSelectEle);
+        }
+        else {
+            let ignoreBlankEle = this.parent.createElement('input', { className: 'e-checkbox' });
+            dataCont.appendChild(ignoreBlankEle);
+            let ignoreBlankObj = new CheckBox({ label: l10n.getConstant('InCellDropDown'), checked: inCellDropDown });
+            ignoreBlankObj.appendTo(ignoreBlankEle);
+        }
+        allowCont.appendChild(allowText);
+        allowCont.appendChild(allowSelectEle);
+        let listObj = new DropDownList({
+            dataSource: this.typeData,
+            index: allowIdx,
+            popupHeight: '200px',
+            change: () => { this.userInput(listObj, this.dataList); }
+        });
+        listObj.appendTo(allowSelectEle);
+        if (isNew || (listObj.value !== 'List' && (this.dataList.value === 'Between' || this.dataList.value === 'Not between'))) {
+            let minimumCont = this.parent.createElement('div', { className: 'e-minimum' });
+            let maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
+            valuesCont.appendChild(minimumCont);
+            valuesCont.appendChild(maximumCont);
+            let minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
+            let maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            let minimumInp = this.parent.createElement('input', {
+                id: 'minvalue',
+                className: 'e-input', attrs: { value: value1 }
+            });
+            let maximumInp = this.parent.createElement('input', {
+                id: 'maxvalue',
+                className: 'e-input', attrs: { value: value2 }
+            });
+            minimumCont.appendChild(minimumText);
+            minimumCont.appendChild(minimumInp);
+            maximumCont.appendChild(maximumText);
+            maximumCont.appendChild(maximumInp);
+            let numericMin = new NumericTextBox({
+                value: 0
+            });
+            numericMin.appendTo('#minvalue');
+            let numericMax = new NumericTextBox({
+                value: 0
+            });
+            numericMax.appendTo('#maxvalue');
+        }
+        else if (!isNew || type === ' List') {
+            let valueText = this.parent.createElement('span', {
+                className: 'e-header', innerHTML: l10n.getConstant('Sources')
+            });
+            let valueEle = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
+            valuesCont.appendChild(valueText);
+            valuesCont.appendChild(valueEle);
+        }
+        else {
+            let valueText = this.parent.createElement('span', {
+                className: 'e-header', innerHTML: l10n.getConstant('Value')
+            });
+            let valueEle = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
+            valuesCont.appendChild(valueText);
+            valuesCont.appendChild(valueEle);
+        }
+        let isChecked = ignoreBlank;
+        let ignoreBlankEle = this.parent.createElement('input', { className: 'e-checkbox' });
+        ignoreBlankCont.appendChild(ignoreBlankEle);
+        let ignoreBlankObj = new CheckBox({ label: l10n.getConstant('IgnoreBlank'), checked: isChecked });
+        ignoreBlankObj.appendTo(ignoreBlankEle);
+        return dlgContent;
+    }
+    userInput(listObj, listObj1) {
+        let dlgEle = this.parent.element.querySelector('.e-datavalidation-dlg');
+        let dlgCont = dlgEle.querySelector('.e-validation-dlg');
+        let allowDataCont = dlgCont.querySelector('.e-allowdata');
+        let valuesCont = dlgCont.querySelector('.e-values');
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let dataCont = allowDataCont.querySelector('.e-data');
+        let opeEle = dataCont.querySelector('.e-valid-input');
+        while (valuesCont.lastChild) {
+            valuesCont.removeChild(valuesCont.lastChild);
+        }
+        if (listObj.value === 'List') {
+            while (dataCont.lastChild) {
+                dataCont.removeChild(dataCont.lastChild);
+            }
+            let ignoreBlankEle = this.parent.createElement('input', { className: 'e-checkbox' });
+            dataCont.appendChild(ignoreBlankEle);
+            let ignoreBlankObj = new CheckBox({ label: l10n.getConstant('InCellDropDown'), checked: true });
+            ignoreBlankObj.appendTo(ignoreBlankEle);
+        }
+        else {
+            if (dataCont.getElementsByClassName('e-checkbox-wrapper')[0]) {
+                while (dataCont.lastChild) {
+                    dataCont.removeChild(dataCont.lastChild);
+                }
+                let dataText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Data' });
+                let dataSelectEle = this.parent.createElement('input', { className: 'e-select' });
+                dataCont.appendChild(dataText);
+                dataCont.appendChild(dataSelectEle);
+                listObj1.appendTo(dataSelectEle);
+            }
+        }
+        if (listObj.value !== 'List' && (listObj1.value === 'Between' || listObj1.value === 'Not between')) {
+            let minimumCont = this.parent.createElement('div', { className: 'e-minimum' });
+            let maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
+            valuesCont.appendChild(minimumCont);
+            valuesCont.appendChild(maximumCont);
+            let minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
+            let maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            let minimumInp = this.parent.createElement('input', { id: 'min', className: 'e-input', attrs: { value: '0' } });
+            let maximumInp = this.parent.createElement('input', { id: 'max', className: 'e-input', attrs: { value: '0' } });
+            let numericMin = new NumericTextBox({
+                value: 0
+            });
+            numericMin.appendTo('min');
+            let numericMax = new NumericTextBox({
+                value: 0
+            });
+            numericMax.appendTo('max');
+            minimumCont.appendChild(minimumText);
+            minimumCont.appendChild(minimumInp);
+            maximumCont.appendChild(maximumText);
+            maximumCont.appendChild(maximumInp);
+        }
+        else {
+            let text = listObj.value === 'List' ? l10n.getConstant('Sources') : l10n.getConstant('Value');
+            let valueText = this.parent.createElement('span', { className: 'e-header', innerHTML: text });
+            let valueEle = listObj.value === 'List' ? this.parent.createElement('input', {
+                className: 'e-input',
+                attrs: { placeholder: 'Enter value' }
+            }) :
+                this.parent.createElement('input', { className: 'e-input', attrs: { value: '0' } });
+            valuesCont.appendChild(valueText);
+            valuesCont.appendChild(valueEle);
+        }
+    }
+    dlgClickHandler(dialogInst) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let isValidList = true;
+        let errorMsg;
+        let dlgEle = this.parent.element.querySelector('.e-datavalidation-dlg');
+        let dlgFooter = dlgEle.querySelector('.e-footer-content');
+        let dlgContEle = dlgEle.getElementsByClassName('e-dlg-content')[0].
+            getElementsByClassName('e-validation-dlg')[0];
+        let allowData = dlgContEle.getElementsByClassName('e-allowdata')[0];
+        let allowEle = allowData.getElementsByClassName('e-allow')[0].getElementsByTagName('input')[0];
+        let dataEle = allowData.getElementsByClassName('e-data')[0].getElementsByTagName('input')[0];
+        let values = dlgContEle.getElementsByClassName('e-values')[0];
+        let value1 = values.getElementsByTagName('input')[0].value;
+        let value2 = values.getElementsByTagName('input')[1] ? values.getElementsByTagName('input')[1].value : '';
+        let ignoreBlank = dlgContEle.querySelector('.e-ignoreblank').querySelector('.e-checkbox-wrapper').
+            getAttribute('aria-checked') === 'true' ? true : false;
+        let inCellDropDown = allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper') ?
+            allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper').querySelector('.e-check') ? true : false : null;
+        let range = dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0].value;
+        let operator;
+        let type = allowEle.value;
+        if (dataEle) {
+            operator = dataEle.value;
+            operator = this.FormattedValue(operator);
+        }
+        if (type) {
+            type = type.replace(' ', '');
+        }
+        let rangeAdd = [];
+        let valArr = [];
+        if (value1 !== '') {
+            valArr.push(value1);
+        }
+        if (value2 !== '') {
+            valArr.push(value2);
+        }
+        if (type === 'List') {
+            if (value1.indexOf('=') !== -1) {
+                if (value1.indexOf(':') !== -1) {
+                    rangeAdd = value1.split(':');
+                    let arr1 = rangeAdd;
+                    let arr2 = rangeAdd;
+                    let isSingleCol = arr1[0].replace(/[0-9]/g, '').replace('=', '') ===
+                        arr1[1].replace(/[0-9]/g, '') ? true : false;
+                    let isSingleRow = arr2[0].replace(/\D/g, '').replace('=', '') === arr2[1].replace(/\D/g, '') ? true : false;
+                    isValidList = isSingleCol ? true : isSingleRow ? true : false;
+                    if (!isValidList) {
+                        errorMsg = l10n.getConstant('DialogError');
+                    }
+                }
+            }
+        }
+        if (type !== 'List' || isValidList) {
+            let sheet = this.parent.getActiveSheet();
+            let format = type;
+            let validDlg = this.isDialogValidator(valArr, format, operator);
+            errorMsg = validDlg.errorMsg;
+            isValidList = validDlg.isValidate;
+            if (isValidList) {
+                let indexes = getCellIndexes(this.parent.getActiveSheet().activeCell);
+                if (sheet && sheet.rows[indexes[0]] && sheet.rows[indexes[0]].cells[indexes[1]] &&
+                    sheet.rows[indexes[0]].cells[indexes[1]].validation &&
+                    sheet.rows[indexes[0]].cells[indexes[1]].validation.type === 'List') {
+                    let tdEle = this.parent.getMainContent().
+                        getElementsByTagName('tr')[indexes[0]].getElementsByClassName('e-cell')[indexes[1]];
+                    if (tdEle && tdEle.getElementsByClassName('e-validation-list')[0]) {
+                        tdEle.removeChild(tdEle.getElementsByClassName('e-validation-list')[0]);
+                        this.listObj.destroy();
+                    }
+                }
+                let rules = {
+                    type: type, operator: operator,
+                    value1: value1, value2: value2, ignoreBlank: ignoreBlank, inCellDropDown: inCellDropDown
+                };
+                this.parent.addDataValidation(rules, range);
+                if (type === 'List' && isValidList) {
+                    this.listHandler();
+                }
+                if (!document.getElementsByClassName('e-validationerror-dlg')[0]) {
+                    if (dialogInst.dialogInstance) {
+                        dialogInst.dialogInstance.hide();
+                    }
+                    else {
+                        dialogInst.hide();
+                    }
+                }
+            }
+        }
+        if (!isValidList) {
+            let errorEle = this.parent.createElement('div', {
+                className: 'e-dlg-error', id: 'e-invalid', innerHTML: errorMsg
+            });
+            values.appendChild(errorEle);
+            dlgFooter.querySelector('.e-primary').setAttribute('disabled', 'true');
+        }
+    }
+    FormattedValue(value) {
+        switch (value) {
+            case 'Between':
+                value = 'Between';
+                break;
+            case 'Not between':
+                value = 'NotBetween';
+                break;
+            case 'Equal to':
+                value = 'EqualTo';
+                break;
+            case 'Not equal to':
+                value = 'NotEqualTo';
+                break;
+            case 'Greater than':
+                value = 'GreaterThan';
+                break;
+            case 'Less than':
+                value = 'LessThan';
+                break;
+            case 'Greater than or equal to':
+                value = 'GreaterThanOrEqualTo';
+                break;
+            case 'Less than or equal to':
+                value = 'LessThanOrEqualTo';
+                break;
+            default:
+                value = 'Between';
+                break;
+        }
+        return value;
+    }
+    isDialogValidator(values, type, operator) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let count$$1 = 0;
+        let isEmpty = false;
+        let formValidation;
+        if (type === 'List') {
+            isEmpty = values.length > 0 ? false : true;
+        }
+        else {
+            if (operator === 'Between' || operator === 'NotBetween') {
+                isEmpty = values.length === 2 ? false : true;
+            }
+            else {
+                isEmpty = values.length > 0 ? false : true;
+            }
+        }
+        if (!isEmpty) {
+            for (let idx = 0; idx < values.length; idx++) {
+                formValidation = this.formatValidation(values[idx], type);
+                if (formValidation.isValidate) {
+                    count$$1 = count$$1 + 1;
+                }
+                else {
+                    break;
+                }
+            }
+            formValidation.isValidate = count$$1 === values.length ? true : false;
+        }
+        else {
+            formValidation = { isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
+        }
+        return { isValidate: formValidation.isValidate, errorMsg: formValidation.errorMsg };
+    }
+    // tslint:disable-next-line:max-func-body-length
+    isValidationHandler(args) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        args.value = args.value ? args.value : '';
+        let isValidate;
+        let errorMsg;
+        let enterValue = args.value;
+        let sheet = this.parent.sheets[args.sheetIdx - 1];
+        let cell = getCell(args.range[0], args.range[1], sheet);
+        let value = args.value;
+        let value1 = cell.validation.value1;
+        let value2 = cell.validation.value2;
+        let opt = cell.validation.operator;
+        let type = cell.validation.type;
+        let ignoreBlank = cell.validation.ignoreBlank;
+        let formValidation = this.formatValidation(args.value, type);
+        isValidate = formValidation.isValidate;
+        errorMsg = formValidation.errorMsg;
+        if (isValidate) {
+            isValidate = false;
+            if (type === 'Date' || type === 'Time') {
+                for (let idx = 0; idx <= 3; idx++) {
+                    args.value = idx === 0 ? args.value : idx === 1 ? cell.validation.value1 : cell.validation.value2;
+                    let dateEventArgs = {
+                        value: args.value,
+                        rowIndex: args.range[0],
+                        colIndex: args.range[1],
+                        sheetIndex: args.sheetIdx,
+                        updatedVal: ''
+                    };
+                    if (args.value !== '') {
+                        this.parent.notify(checkDateFormat, dateEventArgs);
+                    }
+                    let updatedVal = dateEventArgs.updatedVal;
+                    if (idx === 0) {
+                        value = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                    }
+                    else if (idx === 1) {
+                        value1 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                    }
+                    else {
+                        value2 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                    }
+                }
+            }
+            else if (cell.validation.type === 'TextLength') {
+                value = args.value.toString().length.toString();
+            }
+            if (type === 'List') {
+                if (value1.indexOf('=') !== -1) {
+                    for (let idx = 0; idx < this.data.length; idx++) {
+                        if (args.value === this.data[idx].text) {
+                            isValidate = true;
+                        }
+                    }
+                }
+                else {
+                    let values = value1.split(',');
+                    for (let idx = 0; idx < values.length; idx++) {
+                        if (args.value === values[idx]) {
+                            isValidate = true;
+                        }
+                    }
+                }
+            }
+            else {
+                if (type === 'Decimal') {
+                    value = parseFloat(value.toString());
+                    value1 = parseFloat(value1.toString());
+                    value2 = value2 ? parseFloat(value2.toString()) : null;
+                }
+                else {
+                    value = parseInt(value.toString(), 10);
+                    value1 = parseInt(value1.toString(), 10);
+                    value2 = value2 ? parseInt(value2.toString(), 10) : null;
+                }
+                switch (opt) {
+                    case 'EqualTo':
+                        if (value === value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'NotEqualTo':
+                        if (value !== value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'Between':
+                        if (value >= value1 && value <= value2) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'NotBetween':
+                        if (value >= value1 && value <= value2) {
+                            isValidate = false;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = true;
+                        }
+                        break;
+                    case 'GreaterThan':
+                        if (value > value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'LessThan':
+                        if (value < value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'GreaterThanOrEqualTo':
+                        if (value >= value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'LessThanOrEqualTo':
+                        if (value <= value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        errorMsg = l10n.getConstant('ValidationError');
+        if (isValidate && cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
+            cell.style.backgroundColor = '';
+            cell.style.color = '';
+            this.parent.notify(applyCellFormat, {
+                style: { backgroundColor: '', color: '' }, rowIdx: args.range[0],
+                colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
+                onActionUpdate: true
+            });
+        }
+        return { isValidate: isValidate, errorMsg: errorMsg };
+    }
+    checkDataValidation(args) {
+        let isValid = this.isValidationHandler({
+            value: args.value, range: args.range, sheetIdx: args.sheetIdx
+        });
+        if (!isValid.isValidate && args.isCell) {
+            this.validationErrorHandler(isValid.errorMsg);
+        }
+        this.parent.allowDataValidation = isValid.isValidate;
+    }
+    formatValidation(value, type) {
+        let sheetPanel = this.parent.element.getElementsByClassName('e-sheet-panel')[0];
+        let isValidate;
+        let errorMsg;
+        let formEle = this.parent.createElement('form', {
+            id: 'formId',
+            className: 'form-horizontal'
+        });
+        let inputEle = this.parent.createElement('input', {
+            id: 'e-validation', innerHTML: value
+        });
+        inputEle.setAttribute('name', 'validation');
+        inputEle.setAttribute('type', 'text');
+        inputEle.setAttribute('value', value);
+        formEle.appendChild(inputEle);
+        sheetPanel.appendChild(formEle);
+        let options;
+        switch (type) {
+            case 'Date':
+                options = {
+                    rules: {
+                        'validation': { date: true },
+                    },
+                    customPlacement: (inputElement, error) => {
+                        errorMsg = error.innerText;
+                    }
+                };
+                break;
+            case 'Decimal':
+                options = {
+                    rules: {
+                        'validation': { number: true },
+                    },
+                    customPlacement: (inputElement, error) => {
+                        errorMsg = error.innerText;
+                    }
+                };
+                break;
+            case 'WholeNumber':
+                options = {
+                    rules: {
+                        'validation': { regex: /^\d*\.?[0]*$/ },
+                    },
+                    customPlacement: (inputElement, error) => {
+                        errorMsg = error.innerText;
+                    }
+                };
+                break;
+            default:
+                break;
+        }
+        let formObj = new FormValidator('#formId', options);
+        isValidate = formObj.validate();
+        sheetPanel.removeChild(sheetPanel.getElementsByClassName('form-horizontal')[0]);
+        return { isValidate: isValidate, errorMsg: errorMsg };
+    }
+    validationErrorHandler(error) {
+        let el = document.getElementsByClassName('e-spreadsheet-edit')[0];
+        let l10n = this.parent.serviceLocator.getService(locale);
+        if (!this.parent.element.querySelector('.e-validationerror-dlg')) {
+            let erroDialogInst = this.parent.serviceLocator.getService(dialog);
+            let disableCancel = false;
+            let dlgModel = {
+                width: 400, height: 200, isModal: true, showCloseIcon: true, cssClass: 'e-validationerror-dlg',
+                target: document.querySelector('.e-control.e-spreadsheet'),
+                beforeOpen: () => {
+                    el.focus();
+                    erroDialogInst.dialogInstance.content = error;
+                    erroDialogInst.dialogInstance.dataBind();
+                },
+                buttons: [{
+                        buttonModel: {
+                            content: l10n.getConstant('Retry'), isPrimary: true,
+                        },
+                        click: () => {
+                            this.errorDlgHandler(erroDialogInst, 'Retry');
+                        }
+                    },
+                    {
+                        buttonModel: {
+                            content: l10n.getConstant('Cancel'),
+                        },
+                        click: () => {
+                            this.errorDlgHandler(erroDialogInst, 'Cancel');
+                        }
+                    }]
+            };
+            erroDialogInst.show(dlgModel, disableCancel);
+        }
+    }
+    errorDlgHandler(errorDialogInst, buttonName) {
+        if (buttonName === 'Retry') {
+            let el = document.getElementsByClassName('e-spreadsheet-edit')[0];
+            let mainCont = this.parent.getMainContent();
+            errorDialogInst.hide();
+            if (el.innerText) {
+                let range = document.createRange();
+                range.setStart(el.childNodes[0], 0);
+                range.setEnd(el.childNodes[0], el.innerText.length);
+                let selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                if (this.listObj) {
+                    this.listObj.showPopup();
+                }
+            }
+        }
+        else {
+            let indexes = getCellIndexes(this.parent.getActiveSheet().activeCell);
+            let value = this.parent.getDisplayText(this.parent.getActiveSheet().rows[indexes[0]].cells[indexes[1]]);
+            this.parent.notify(editOperation, {
+                action: 'cancelEdit', value: value, refreshFormulaBar: true,
+                refreshEditorElem: true, isAppend: false, trigEvent: true
+            });
+            errorDialogInst.hide();
+        }
+    }
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    getModuleName() {
+        return 'dataValidation';
+    }
+}
+
+/**
+ * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
+ */
+class ProtectSheet {
+    /**
+     * Constructor for protectSheet module in Spreadsheet.
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.init();
+    }
+    init() {
+        this.addEventListener();
+    }
+    /**
+     * To destroy the protectSheet module.
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    addEventListener() {
+        this.parent.on(applyProtect, this.protect, this);
+        this.parent.on(protectSheet, this.protectSheetHandler, this);
+        this.parent.on(editAlert, this.editProtectedAlert, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(applyProtect, this.protect);
+            this.parent.off(protectSheet, this.protectSheetHandler);
+            this.parent.off(editAlert, this.editProtectedAlert);
+        }
+    }
+    protect(args) {
+        this.parent.notify(clearCopy, null);
+        if (!args.isActive) {
+            this.createDialogue();
+        }
+        else {
+            this.parent.getActiveSheet().isProtected = false;
+            this.parent.notify(updateToggleItem, { props: 'Protect' });
+            this.parent.notify(protectSheet, { isActive: args.isActive });
+            this.parent.notify(protectSelection, null);
+        }
+    }
+    createDialogue() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let listData = [
+            { text: l10n.getConstant('SelectCells'), id: '1' },
+            { text: l10n.getConstant('FormatCells'), id: '2' },
+            { text: l10n.getConstant('FormatRows'), id: '3' },
+            { text: l10n.getConstant('FormatColumns'), id: '4' },
+            { text: l10n.getConstant('InsertLinks'), id: '5' }
+        ];
+        this.optionList = new ListView({
+            width: '250px',
+            dataSource: listData,
+            showCheckBox: true,
+            select: this.dialogOpen.bind(this),
+        });
+        let protectHeaderCntent = this.parent.createElement('div', { className: 'e-protect-content',
+            innerHTML: l10n.getConstant('ProtectAllowUser') });
+        this.parent.getActiveSheet().isProtected = false;
+        let checkbox = new CheckBox({ checked: true, label: l10n.getConstant('ProtectContent'), cssClass: 'e-protect-checkbox' });
+        let listViewElement = this.parent.createElement('div', { className: 'e-protect-option-list',
+            id: this.parent.element.id + '_option_list' });
+        let headerContent = this.parent.createElement('div', { className: 'e-header-content', innerHTML: l10n.getConstant('ProtectSheet') });
+        let checkBoxElement = this.parent.createElement('input', { id: this.parent.element.id + '_protect_check', attrs: { type: 'checkbox' } });
+        this.dialog = this.parent.serviceLocator.getService('dialog');
+        this.dialog.show({
+            header: headerContent.outerHTML,
+            content: checkBoxElement.outerHTML + protectHeaderCntent.outerHTML + listViewElement.outerHTML,
+            showCloseIcon: true, isModal: true,
+            cssClass: 'e-protect-dlg',
+            beforeOpen: () => this.parent.element.focus(),
+            open: () => {
+                this.okBtnFocus();
+            },
+            beforeClose: () => {
+                let checkboxElement = document.getElementById(this.parent.element.id + '_protect_check');
+                EventHandler.remove(checkboxElement, 'focus', this.okBtnFocus);
+                EventHandler.remove(checkbox.element, 'click', this.checkBoxClickHandler);
+                this.parent.element.focus();
+            },
+            buttons: [{ click: (this.selectOption.bind(this, this.dialog, this)),
+                    buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true } }]
+        });
+        checkbox.appendTo('#' + this.parent.element.id + '_protect_check');
+        this.optionList.appendTo('#' + this.parent.element.id + '_option_list');
+        this.optionList.selectMultipleItems([{ id: '1' }]);
+        EventHandler.add(checkbox.element, 'click', this.checkBoxClickHandler, this);
+    }
+    ;
+    okBtnFocus() {
+        let checkboxElement = document.getElementById(this.parent.element.id + '_protect_check');
+        checkboxElement.addEventListener('focus', () => {
+            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
+        });
+    }
+    checkBoxClickHandler() {
+        let ch = document.getElementById(this.parent.element.id + '_protect_check');
+        if (ch.checked === false) {
+            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').disabled = true;
+        }
+        else {
+            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').disabled = false;
+            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
+        }
+    }
+    dialogOpen() {
+        this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
+    }
+    selectOption() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let selectedItems = this.optionList.getSelectedItems();
+        this.parent.getActiveSheet().isProtected = true;
+        let protectSettings = { selectCells: selectedItems.text.indexOf(l10n.getConstant('SelectCells')) > -1,
+            formatCells: selectedItems.text.indexOf(l10n.getConstant('FormatCells')) > -1,
+            formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,
+            formatColumns: selectedItems.text.indexOf(l10n.getConstant('FormatColumns')) > -1,
+            insertLink: selectedItems.text.indexOf(l10n.getConstant('InsertLinks')) > -1 };
+        this.parent.protectSheet(protectSettings);
+        this.parent.notify(protectSelection, null);
+        this.dialog.hide();
+    }
+    protectSheetHandler(args) {
+        let sheet = this.parent.getActiveSheet();
+        let id = this.parent.element.id;
+        let disableHomeBtnId = [id + '_undo', id + '_redo', id + '_cut', id + '_copy', id + '_paste', id + '_number_format',
+            id + '_font_name', id + '_font_size', id + '_bold', id + '_italic', id + '_line-through', id + '_underline',
+            id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_text_align',
+            id + '_vertical_align', id + '_wrap', id + '_sorting'];
+        let enableHomeBtnId = [id + '_cut', id + '_copy', id + '_number_format', id + '_font_name', id + '_font_size',
+            id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
+            id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting'];
+        let enableFrmlaBtnId = [id + '_insert_function'];
+        let enableInsertBtnId = [id + '_hyperlink'];
+        let findBtnId = [id + '_find'];
+        let dataValidationBtnId = [id + '_datavalidation'];
+        let sheetElement = document.getElementById(this.parent.element.id + '_sheet_panel');
+        if (sheetElement) {
+            if ((sheet.isProtected && sheet.protectSettings.selectCells)) {
+                {
+                    sheetElement.classList.remove('e-protected');
+                }
+            }
+            else {
+                sheetElement.classList.add('e-protected');
+            }
+            if (!sheet.isProtected) {
+                sheetElement.classList.remove('e-protected');
+            }
+        }
+        this.parent.dataBind();
+        this.parent.notify(protectCellFormat, { disableHomeBtnId: disableHomeBtnId,
+            enableHomeBtnId: enableHomeBtnId, enableFrmlaBtnId: enableFrmlaBtnId, enableInsertBtnId: enableInsertBtnId,
+            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId });
+        this.parent.notify(enableFormulaInput, null);
+        this.parent.notify(updateToggleItem, { props: 'Protect' });
+    }
+    editProtectedAlert() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        this.dialog = this.parent.serviceLocator.getService('dialog');
+        if (!this.dialog.dialogInstance) {
+            this.dialog.show({
+                content: l10n.getConstant('EditAlert'),
+                isModal: true,
+                closeOnEscape: true,
+                showCloseIcon: true,
+                width: '400px',
+                beforeOpen: () => this.parent.element.focus(),
+                close: () => this.parent.element.focus()
+            });
+        }
+    }
+    /**
+     * Get the module name.
+     * @returns string
+     *
+     * @private
+     */
+    getModuleName() {
+        return 'protectSheet';
+    }
+}
+
+/**
+ * `FindAndReplace` module is used to handle the search action in Spreadsheet.
+ */
+class FindAndReplace {
+    /**
+     * Constructor for FindAndReplace module.
+     */
+    constructor(parent) {
+        this.shortValue = '';
+        this.parent = parent;
+        this.addEventListener();
+    }
+    addEventListener() {
+        this.parent.on(findDlg, this.renderFindDlg, this);
+        this.parent.on(gotoDlg, this.renderGotoDlg, this);
+        this.parent.on(goto, this.gotoHandler, this);
+        this.parent.on(findHandler, this.findHandler, this);
+        this.parent.on(replace, this.replaceHandler, this);
+        this.parent.on(showDialog, this.showDialog, this);
+        this.parent.on(replaceAllDialog, this.replaceAllDialog, this);
+        this.parent.on(findUndoRedo, this.findUndoRedo, this);
+        this.parent.on(findKeyUp, this.findKeyUp, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(findDlg, this.renderFindDlg);
+            this.parent.off(gotoDlg, this.renderGotoDlg);
+            this.parent.off(goto, this.gotoHandler);
+            this.parent.off(findHandler, this.findHandler);
+            this.parent.off(replace, this.replaceHandler);
+            this.parent.off(showDialog, this.showDialog);
+            this.parent.off(replaceAllDialog, this.replaceAllDialog);
+            this.parent.off(findUndoRedo, this.findUndoRedo);
+            this.parent.off(findKeyUp, this.findKeyUp);
+        }
+    }
+    findUndoRedo(options) {
+        let eventArgs = { address: options.address, compareVal: options.compareVal, cancel: false };
+        if (options.undoRedoOpt === 'before') {
+            this.parent.notify(beginAction, { action: 'beforeReplace', eventArgs: eventArgs });
+        }
+        else if (options.undoRedoOpt === 'after') {
+            if (!eventArgs.cancel) {
+                let eventArgs = { address: options.address, compareVal: options.compareVal };
+                this.parent.notify(completeAction, { action: 'replace', eventArgs: eventArgs });
+            }
+        }
+        else if (options.undoRedoOpt === 'beforeReplaceAll') {
+            if (!eventArgs.cancel) {
+                let eventArgs = { replace: options.replace, replaceFor: options.replaceFor };
+                this.parent.notify(beginAction, { action: 'beforeReplaceAll', eventArgs });
+            }
+        }
+        else if (options.undoRedoOpt === 'afterReplaceAll') {
+            if (!eventArgs.cancel) {
+                let eventArgs = { replace: options.replace, replaceFor: options.replaceFor };
+                this.parent.notify(completeAction, { action: 'undoRedo', eventArgs });
+            }
+        }
+    }
+    renderFindDlg() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let findOpt;
+        let dialogInst = this.parent.serviceLocator.getService(dialog);
+        let cancelBtn = false;
+        let dlg = {
+            isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
+            header: l10n.getConstant('FindAndReplace'), closeOnEscape: true,
+            beforeOpen: () => {
+                dialogInst.dialogInstance.content = this.findandreplaceContent();
+                dialogInst.dialogInstance.dataBind();
+                this.parent.element.focus();
+            },
+            buttons: [{
+                    buttonModel: {
+                        content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious', disabled: true
+                    },
+                    click: () => {
+                        findOpt = 'prev';
+                        this.findDlgClick(findOpt);
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('FindNextBtn'), isPrimary: true, cssClass: 'e-btn-findNext', disabled: true
+                    },
+                    click: () => {
+                        findOpt = 'next';
+                        this.findDlgClick(findOpt);
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('ReplaceBtn'), isPrimary: true, cssClass: 'e-btn-replace', disabled: true
+                    },
+                    click: () => {
+                        let replace = 'replace';
+                        this.findDlgClick(replace);
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('ReplaceAllBtn'), isPrimary: true, cssClass: 'e-btn-replaceAll', disabled: true
+                    },
+                    click: () => {
+                        let replace = 'replaceAll';
+                        this.findDlgClick(replace);
+                    }
+                }], open: () => {
+                let findInput = this.parent.element.querySelector('.e-text-findNext').value;
+                if (findInput) {
+                    let prevButton = this.parent.element.querySelector('.e-btn-findPrevious');
+                    let prevButtonObj = getComponent(prevButton, 'btn');
+                    prevButtonObj.disabled = false;
+                    getComponent(this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = false;
+                }
+            },
+        };
+        dialogInst.show(dlg, cancelBtn);
+    }
+    renderGotoDlg() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let dialogInst = this.parent.serviceLocator.getService(dialog);
+        let cancelBtn = false;
+        let dlg = {
+            width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
+            header: l10n.getConstant('GotoHeader'),
+            beforeOpen: () => {
+                dialogInst.dialogInstance.content = this.GotoContent();
+                dialogInst.dialogInstance.dataBind();
+                this.parent.element.focus();
+            },
+            buttons: [{
+                    buttonModel: {
+                        content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+                    },
+                    click: () => {
+                        this.gotoHandler();
+                    }
+                }]
+        };
+        dialogInst.show(dlg, cancelBtn);
+    }
+    findDlgClick(findDlgArgs) {
+        if (findDlgArgs === 'prev') {
+            this.findHandler({ findOption: findDlgArgs });
+        }
+        else if (findDlgArgs === 'next') {
+            this.findHandler({ findOption: findDlgArgs });
+        }
+        else {
+            this.replaceHandler({ findDlgArgs: findDlgArgs });
+        }
+    }
+    findHandler(findOpt) {
+        let findInput = this.parent.element.querySelector('.e-text-findNext');
+        if (!findInput) {
+            findInput = document.querySelector('.e-text-findNext-short');
+            if (!findInput) {
+                this.gotoAlert();
+            }
+        }
+        let value = findInput.value;
+        if (findInput.value !== '') {
+            let sheetIndex = this.parent.activeSheetTab;
+            let checkCase = this.parent.element.querySelector('.e-findnreplace-checkcase');
+            let isCSen;
+            if (!checkCase) {
+                isCSen = false;
+            }
+            else {
+                let caseCheckbox = getComponent(checkCase, 'checkbox');
+                isCSen = caseCheckbox.checked;
+            }
+            let checkmatch = this.parent.element.querySelector('.e-findnreplace-checkmatch');
+            let isEMatch;
+            if (!checkmatch) {
+                isEMatch = false;
+            }
+            else {
+                let entireMatchCheckbox = getComponent(checkmatch, 'checkbox');
+                isEMatch = entireMatchCheckbox.checked;
+            }
+            let searchitem = this.parent.element.querySelector('.e-findnreplace-searchby');
+            let searchBy;
+            if (!searchitem) {
+                searchBy = 'By Row';
+            }
+            else {
+                let searchDDL = getComponent(searchitem, 'dropdownlist');
+                searchBy = searchDDL.value.toString();
+            }
+            let modeitem = this.parent.element.querySelector('.e-findnreplace-searchwithin');
+            let mode;
+            if (!modeitem) {
+                mode = 'Sheet';
+            }
+            else {
+                let modeDDL = getComponent(modeitem, 'dropdownlist');
+                mode = modeDDL.value.toString();
+            }
+            let args = {
+                value: value, sheetIndex: sheetIndex, findOpt: findOpt.findOption, mode: mode, isCSen: isCSen,
+                isEMatch: isEMatch, searchBy: searchBy
+            };
+            if (findOpt.findOption === 'next' || findOpt.findOption === 'prev') {
+                this.parent.find(args);
+            }
+            else if (findOpt.countArgs.countOpt === 'count') {
+                this.parent.notify(count, args);
+                findOpt.countArgs.findCount = args.findCount;
+            }
+        }
+    }
+    replaceHandler(replace) {
+        let sheetIndex = this.parent.activeSheetTab;
+        let findInput = this.parent.element.querySelector('.e-text-findNext');
+        let replaceWith = this.parent.element.querySelector('.e-text-replaceInp');
+        let checkCase = this.parent.element.querySelector('.e-findnreplace-checkcase');
+        let caseCheckbox = getComponent(checkCase, 'checkbox');
+        let checkmatch = this.parent.element.querySelector('.e-findnreplace-checkmatch');
+        let eMatchCheckbox = getComponent(checkmatch, 'checkbox');
+        let searchitem = this.parent.element.querySelector('.e-findnreplace-searchby');
+        let searchDDL = getComponent(searchitem, 'dropdownlist');
+        let modeitem = this.parent.element.querySelector('.e-findnreplace-searchwithin');
+        let modeDDL = getComponent(modeitem, 'dropdownlist');
+        let findOption = 'next';
+        let args = {
+            value: findInput.value, mode: modeDDL.value.toString(), isCSen: caseCheckbox.checked,
+            isEMatch: eMatchCheckbox.checked, searchBy: searchDDL.value.toString(), findOpt: findOption, replaceValue: replaceWith.value,
+            replaceBy: replace.findDlgArgs ? replace.findDlgArgs : replace.replaceMode, sheetIndex: sheetIndex
+        };
+        this.parent.replace(args);
+    }
+    gotoHandler(address) {
+        if (address) {
+            this.parent.goTo(address.address);
+        }
+        else {
+            let item = this.parent.element.querySelector('.e-text-goto');
+            let gotoaddress = item.value;
+            let splitAddress = gotoaddress.split('');
+            if ((gotoaddress === '') || isNaN(parseInt(splitAddress[1], 10))) {
+                this.gotoAlert();
+                return;
+            }
+            else {
+                let address = gotoaddress.toString().toUpperCase();
+                this.parent.goTo(address);
+            }
+        }
+    }
+    gotoAlert() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let dialogInst = this.parent.serviceLocator.getService(dialog);
+        let dlg = {
+            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-goto-alert-dlg',
+            beforeOpen: () => {
+                dialogInst.dialogInstance.content = l10n.getConstant('InsertingEmptyValue');
+                dialogInst.dialogInstance.dataBind();
+                this.parent.element.focus();
+            }
+        };
+        dialogInst.show(dlg);
+    }
+    showDialog() {
+        this.parent.serviceLocator.getService(dialog).show({
+            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-find-alert-dlg',
+            content: this.parent.serviceLocator.getService(locale).getConstant('NoElements')
+        });
+    }
+    replaceAllDialog(options) {
+        let l10n = (this.parent.serviceLocator.getService(locale));
+        this.parent.serviceLocator.getService(dialog).show({
+            height: 160, width: 300, isModal: true, showCloseIcon: true,
+            content: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
+        });
+    }
+    findKeyUp(e) {
+        {
+            let findValue = document.querySelector('.e-text-findNext').value;
+            if (!isNullOrUndefined(findValue) && findValue !== '') {
+                let prevButton = this.parent.element.querySelector('.e-btn-findPrevious');
+                let prevButtonObj = getComponent(prevButton, 'btn');
+                prevButtonObj.disabled = false;
+                getComponent(this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = false;
+            }
+            else {
+                getComponent(this.parent.element.querySelector('.e-btn-findPrevious'), 'btn').disabled = true;
+                getComponent(this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = true;
+            }
+        }
+        let findValue = document.querySelector('.e-text-findNext').value;
+        let replaceValue = document.querySelector('.e-text-replaceInp').value;
+        if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
+            getComponent(this.parent.element.querySelector('.e-btn-replace'), 'btn').disabled = false;
+            getComponent(this.parent.element.querySelector('.e-btn-replaceAll'), 'btn').disabled = false;
+        }
+        else {
+            getComponent(this.parent.element.querySelector('.e-btn-replace'), 'btn').disabled = true;
+            getComponent(this.parent.element.querySelector('.e-btn-replaceAll'), 'btn').disabled = true;
+        }
+    }
+    findandreplaceContent() {
+        if (document.querySelector('.e-text-findNext-short')) {
+            this.shortValue = document.querySelector('.e-text-findNext-short').value;
+        }
+        let dialogElem = this.parent.createElement('div', { className: 'e-link-dialog' });
+        let findElem = this.parent.createElement('div', { className: 'e-find' });
+        let findCheck = this.parent.createElement('div', { className: 'e-findCheck' });
+        let l10n = this.parent.serviceLocator.getService(locale);
+        dialogElem.appendChild(findElem);
+        let findTextE = this.parent.createElement('div', { className: 'e-cont' });
+        let findTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('FindWhat') });
+        let findTextIp = this.parent.createElement('input', {
+            className: 'e-input e-text-findNext', attrs: {
+                'type': 'Text', 'placeholder': l10n.getConstant('FindValue'),
+                'value': this.shortValue
+            }
+        });
+        findTextE.appendChild(findTextIp);
+        findTextE.insertBefore(findTextH, findTextIp);
+        findElem.appendChild(findTextE);
+        let findTextBox = new TextBox({ width: '70%' });
+        findTextBox.createElement = this.parent.createElement;
+        findTextBox.appendTo(findTextIp);
+        let replaceTextE = this.parent.createElement('div', { className: 'e-cont' });
+        let replaceTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('ReplaceWith') });
+        let replaceTextIp = this.parent.createElement('input', {
+            className: 'e-input e-text-replaceInp', attrs: { 'type': 'Text', 'placeholder': l10n.getConstant('ReplaceValue') }
+        });
+        replaceTextE.appendChild(replaceTextIp);
+        replaceTextE.insertBefore(replaceTextH, replaceTextIp);
+        findElem.appendChild(replaceTextE);
+        let replaceTextBox = new TextBox({ width: '70%' });
+        replaceTextBox.createElement = this.parent.createElement;
+        replaceTextBox.appendTo(replaceTextIp);
+        let withinData = [
+            { Id: 'Sheet', Within: l10n.getConstant('Sheet') },
+            { Id: 'Workbook', Within: l10n.getConstant('Workbook') }
+        ];
+        let withInDDL = new DropDownList({
+            dataSource: withinData,
+            cssClass: 'e-searchby',
+            fields: { value: 'Id', text: 'Within' }, width: '50%', index: 0
+        });
+        let withIn = this.parent.createElement('input', {
+            className: 'e-findnreplace-searchwithin', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
+        });
+        let withinTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchWithin') });
+        findElem.appendChild(withinTextH);
+        findElem.appendChild(withIn);
+        withInDDL.createElement = this.parent.createElement;
+        withInDDL.appendTo(withIn);
+        let searchData = [
+            { Id: 'By Row', Search: l10n.getConstant('ByRow') },
+            { Id: 'By Column', Search: l10n.getConstant('ByColumn') }
+        ];
+        let searchDDL = new DropDownList({
+            dataSource: searchData,
+            cssClass: 'e-searchby',
+            fields: { value: 'Id', text: 'Search' }, width: '50%', index: 0
+        });
+        let searchIn = this.parent.createElement('input', {
+            className: 'e-findnreplace-searchby', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
+        });
+        let searchTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchBy') });
+        findElem.appendChild(searchTextH);
+        findElem.appendChild(searchIn);
+        searchDDL.createElement = this.parent.createElement;
+        searchDDL.appendTo(searchIn);
+        let isCSen = new CheckBox({
+            label: l10n.getConstant('MatchCase'), checked: false,
+            cssClass: 'e-findnreplace-casecheckbox'
+        });
+        let caaseCheckbox = this.parent.createElement('input', {
+            className: 'e-findnreplace-checkcase', attrs: { type: 'checkbox' }
+        });
+        findCheck.appendChild(caaseCheckbox);
+        isCSen.createElement = this.parent.createElement;
+        isCSen.appendTo(caaseCheckbox);
+        let isEMatch = new CheckBox({
+            label: l10n.getConstant('MatchExactCellElements'), checked: false,
+            cssClass: 'e-findnreplace-exactmatchcheckbox',
+        });
+        let entirematchCheckbox = this.parent.createElement('input', {
+            className: 'e-findnreplace-checkmatch', attrs: { type: 'checkbox' }
+        });
+        findCheck.appendChild(entirematchCheckbox);
+        isEMatch.createElement = this.parent.createElement;
+        isEMatch.appendTo(entirematchCheckbox);
+        findElem.appendChild(findCheck);
+        return dialogElem;
+    }
+    GotoContent() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let dialogElem = this.parent.createElement('div', { className: 'e-link-dialog' });
+        let gotoElem = this.parent.createElement('div', { className: 'e-goto' });
+        dialogElem.appendChild(gotoElem);
+        let gotoTextE = this.parent.createElement('div', { className: 'e-cont' });
+        let gotoTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('Reference') });
+        let gotoTextBox = new TextBox({
+            placeholder: l10n.getConstant('EntercellAddress')
+        });
+        let gotoTextIp = this.parent.createElement('input', { className: 'e-text-goto', attrs: { 'type': 'Text' } });
+        gotoTextE.appendChild(gotoTextIp);
+        gotoTextE.insertBefore(gotoTextH, gotoTextIp);
+        gotoElem.appendChild(gotoTextE);
+        gotoTextBox.createElement = this.parent.createElement;
+        gotoTextBox.appendTo(gotoTextIp);
+        return dialogElem;
+    }
+    /**
+     * To destroy the find-and-replace module.
+     * @return {void}
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    getModuleName() {
+        return 'findAndReplace';
     }
 }
 
@@ -14918,7 +19827,7 @@ let Ribbon$1 = class Ribbon extends Component {
                 this.trigger('beforeOpen', args);
             },
             select: (args) => {
-                this.trigger('fileItemSelect', args);
+                this.trigger('fileMenuItemSelect', args);
             },
             beforeClose: (args) => {
                 if (args.event.type === 'mouseover' && !closest(args.event.target, '.e-menu-popup')) {
@@ -14931,7 +19840,7 @@ let Ribbon$1 = class Ribbon extends Component {
                 }
             },
             beforeItemRender: (args) => {
-                this.trigger('beforeFileItemRender', args);
+                this.trigger('beforeFileMenuItemRender', args);
             }
         });
         menuObj.createElement = this.createElement;
@@ -15343,10 +20252,10 @@ __decorate$7([
 ], Ribbon$1.prototype, "selecting", void 0);
 __decorate$7([
     Event$1()
-], Ribbon$1.prototype, "fileItemSelect", void 0);
+], Ribbon$1.prototype, "fileMenuItemSelect", void 0);
 __decorate$7([
     Event$1()
-], Ribbon$1.prototype, "beforeFileItemRender", void 0);
+], Ribbon$1.prototype, "beforeFileMenuItemRender", void 0);
 __decorate$7([
     Event$1()
 ], Ribbon$1.prototype, "beforeOpen", void 0);
@@ -15385,61 +20294,61 @@ class ColorPicker$1 {
     render() {
         let id = this.parent.element.id;
         let input = this.parent.createElement('input', { attrs: { 'type': 'color' } });
-        let fontColorPicker = new ColorPicker({
+        this.fontColorPicker = new ColorPicker({
             value: '#000000ff',
             mode: 'Palette',
             showButtons: false,
             presetColors: fontColor,
             enableOpacity: false,
-            beforeClose: (args) => this.beforeCloseHandler(fontColorPicker),
+            beforeClose: (args) => this.beforeCloseHandler(this.fontColorPicker),
             open: this.openHandler.bind(this),
-            beforeModeSwitch: (args) => this.beforeModeSwitch(fontColorPicker, args),
+            beforeModeSwitch: (args) => this.beforeModeSwitch(this.fontColorPicker, args),
             change: (args) => {
-                let color = fontColorPicker.getValue(args.currentValue.rgba);
+                let color = this.fontColorPicker.getValue(args.currentValue.rgba);
                 let eventArgs = { style: { color: color }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
-                    fontColorPicker.setProperties({ 'value': fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                    this.fontColorPicker.setProperties({ 'value': this.fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 }
                 else {
-                    this.updateSelectedColor(eventArgs.style.color, fontColorPicker.element);
+                    this.updateSelectedColor(eventArgs.style.color, this.fontColorPicker.element);
                 }
                 this.parent.element.focus();
             },
-            created: () => this.wireFocusEvent(fontColorPicker.element, '#000000')
+            created: () => this.wireFocusEvent(this.fontColorPicker.element, '#000000')
         });
-        fontColorPicker.createElement = this.parent.createElement;
+        this.fontColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
-        fontColorPicker.appendTo(input);
+        this.fontColorPicker.appendTo(input);
         input.parentElement.id = `${id}_font_color_picker`;
         addClass([input.nextElementSibling.getElementsByClassName('e-selected-color')[0]], ['e-icons', 'e-font-color']);
         input = this.parent.createElement('input', { attrs: { 'type': 'color' } });
-        let filColorPicker = new ColorPicker({
+        this.filColorPicker = new ColorPicker({
             value: '#ffff00ff',
             mode: 'Palette',
             presetColors: fillColor,
             showButtons: false,
             enableOpacity: false,
             open: this.openHandler.bind(this),
-            beforeClose: (args) => this.beforeCloseHandler(filColorPicker),
-            beforeModeSwitch: (args) => this.beforeModeSwitch(filColorPicker, args),
+            beforeClose: (args) => this.beforeCloseHandler(this.filColorPicker),
+            beforeModeSwitch: (args) => this.beforeModeSwitch(this.filColorPicker, args),
             change: (args) => {
-                let color = filColorPicker.getValue(args.currentValue.rgba);
+                let color = this.filColorPicker.getValue(args.currentValue.rgba);
                 let eventArgs = { style: { backgroundColor: color }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
-                    filColorPicker.setProperties({ 'value': filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                    this.filColorPicker.setProperties({ 'value': this.filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 }
                 else {
-                    this.updateSelectedColor(eventArgs.style.backgroundColor, filColorPicker.element);
+                    this.updateSelectedColor(eventArgs.style.backgroundColor, this.filColorPicker.element);
                 }
                 this.parent.element.focus();
             },
-            created: () => this.wireFocusEvent(filColorPicker.element, '#ffff00')
+            created: () => this.wireFocusEvent(this.filColorPicker.element, '#ffff00')
         });
-        filColorPicker.createElement = this.parent.createElement;
+        this.filColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
-        filColorPicker.appendTo(input);
+        this.filColorPicker.appendTo(input);
         input.parentElement.id = `${id}_fill_color_picker`;
         addClass([input.nextElementSibling.getElementsByClassName('e-selected-color')[0]], ['e-icons', 'e-fill-color']);
     }
@@ -15481,27 +20390,24 @@ class ColorPicker$1 {
         }
     }
     destroy() {
-        this.removeEventListener();
-        let id = this.parent.element.id;
-        this.destroyColorPicker(`${id}_font_color_picker`);
-        this.destroyColorPicker(`${id}_fill_color_picker`);
-        this.parent = null;
-    }
-    destroyColorPicker(id) {
-        let ele = document.getElementById(id);
-        if (ele) {
-            destroyComponent(ele.firstElementChild, ColorPicker);
+        if (this.parent) {
+            this.removeEventListener();
+            this.fontColorPicker.destroy();
+            this.fontColorPicker = null;
+            this.filColorPicker.destroy();
+            this.filColorPicker = null;
+            this.parent = null;
         }
     }
     addEventListener() {
         this.parent.on(beforeRibbonCreate, this.render, this);
+        this.parent.on('destroyRibbonComponents', this.destroy, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
     removeEventListener() {
-        if (!this.parent.isDestroyed) {
-            this.parent.off(beforeRibbonCreate, this.render);
-            this.parent.off(spreadsheetDestroyed, this.destroy);
-        }
+        this.parent.off(beforeRibbonCreate, this.render);
+        this.parent.off('destroyRibbonComponents', this.destroy);
+        this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
 }
 
@@ -15510,6 +20416,7 @@ class ColorPicker$1 {
  */
 class Ribbon$$1 {
     constructor(parent) {
+        this.border = '1px solid #000000';
         this.fontNameIndex = 5;
         this.numPopupWidth = 0;
         this.parent = parent;
@@ -15564,8 +20471,10 @@ class Ribbon$$1 {
                     { type: 'Separator', id: id + '_separator_1' },
                     { prefixIcon: 'e-cut-icon', tooltipText: `${l10n.getConstant('Cut')} (Ctrl+X)`, id: id + '_cut' },
                     { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`, id: id + '_copy' },
-                    { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id), id: id + '_paste',
-                        disabled: true }, { type: 'Separator', id: id + '_separator_2' },
+                    {
+                        tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id), id: id + '_paste',
+                        disabled: true
+                    }, { type: 'Separator', id: id + '_separator_2' },
                     { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
                     { type: 'Separator', id: id + '_separator_3' },
                     { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font'), id: id + '_font_name' },
@@ -15574,44 +20483,77 @@ class Ribbon$$1 {
                     { type: 'Separator', id: id + '_separator_5' },
                     { template: this.getBtn(id, 'bold'), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)`, id: id + '_bold' },
                     { template: this.getBtn(id, 'italic'), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)`, id: id + '_italic' },
-                    { template: this.getBtn(id, 'line-through'), tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)`,
-                        id: id + '_line-through' },
-                    { template: this.getBtn(id, 'underline'), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)`,
-                        id: id + '_underline' },
-                    { template: document.getElementById(`${id}_font_color_picker`), tooltipText: l10n.getConstant('TextColor'),
-                        id: id + '_font_color_picker' }, { type: 'Separator', id: id + '_separator_6' },
-                    { template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor'),
-                        id: id + '_fill_color_picker' }, { type: 'Separator', id: id + '_separator_7' },
-                    { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align' }, { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' }
+                    {
+                        template: this.getBtn(id, 'line-through'), tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)`,
+                        id: id + '_line-through'
+                    },
+                    {
+                        template: this.getBtn(id, 'underline'), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)`,
+                        id: id + '_underline'
+                    },
+                    {
+                        template: document.getElementById(`${id}_font_color_picker`), tooltipText: l10n.getConstant('TextColor'),
+                        id: id + '_font_color_picker'
+                    }, { type: 'Separator', id: id + '_separator_6' },
+                    {
+                        template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor'),
+                        id: id + '_fill_color_picker'
+                    }, {
+                        template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders'
+                    }, { type: 'Separator', id: id + '_separator_7' },
+                    {
+                        template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align'
+                    }, {
+                        template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align'
+                    }, {
+                        template: this.getBtn(id, 'wrap', false),
+                        tooltipText: `${l10n.getConstant('WrapText')}`, id: id + '_wrap'
+                    }
                 ]
             },
             {
                 header: { text: l10n.getConstant('Insert') },
-                content: [{ prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
-                        id: id + '_hyperlink', click: () => { this.getHyperlinkDlg(); } }]
+                content: [{
+                        prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
+                        id: id + '_hyperlink', click: () => { this.getHyperlinkDlg(); }
+                    }]
             },
             {
                 header: { text: l10n.getConstant('Formulas') },
                 content: [{ prefixIcon: 'e-insert-function', text: l10n.getConstant('InsertFunction'), id: id + '_insert_function' }]
             },
             {
+                header: { text: l10n.getConstant('Data') },
+                content: [
+                    { prefixIcon: 'e-protect-icon', text: l10n.getConstant('ProtectSheet'), id: id + '_protect' },
+                    { type: 'Separator', id: id + '_separator_8' },
+                    { template: this.datavalidationDDB(id), tooltipText: l10n.getConstant('DataValidation'), id: id + '_datavalidation' }
+                ]
+            },
+            {
                 header: { text: l10n.getConstant('View') },
                 content: [
                     { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' },
-                    { type: 'Separator', id: id + '_separator_8' },
+                    { type: 'Separator', id: id + '_separator_9' },
                     { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines' }
                 ]
             }
         ];
         if (this.parent.allowSorting || this.parent.allowFiltering) {
-            items.find((x) => x.header && x.header.text === l10n.getConstant('Home')).content.push({ type: 'Separator', id: id + '_separator_9' }, { template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
+            items.find((x) => x.header && x.header.text === l10n.getConstant('Home')).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
+        }
+        if (this.parent.allowFindAndReplace) {
+            items.find((x) => x.header && x.header.text === l10n.getConstant('Home')).content.push({
+                template: this.getFindDDb(id), prefixIcon: 'e-tbar-search-icon tb-icons',
+                tooltipText: l10n.getConstant('FindReplaceTooltip'), id: id + '_find'
+            });
         }
         return items;
     }
     getPasteBtn(id) {
         let btn = this.parent.element.appendChild(this.parent.createElement('button', { id: id + '_paste' }));
         let l10n = this.parent.serviceLocator.getService(locale);
-        let pasteSplitBtn = new SplitButton({
+        this.pasteSplitBtn = new SplitButton({
             iconCss: 'e-icons e-paste-icon',
             items: [
                 { text: l10n.getConstant('All'), id: 'All' },
@@ -15626,8 +20568,8 @@ class Ribbon$$1 {
             },
             close: () => { this.parent.element.focus(); }
         });
-        pasteSplitBtn.createElement = this.parent.createElement;
-        pasteSplitBtn.appendTo(btn);
+        this.pasteSplitBtn.createElement = this.parent.createElement;
+        this.pasteSplitBtn.appendTo(btn);
         return btn.parentElement;
     }
     getHyperlinkDlg() {
@@ -15665,20 +20607,38 @@ class Ribbon$$1 {
         }
         return text;
     }
+    getLocaleProtectText(str, setClass) {
+        let text;
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected) {
+            if (setClass) {
+                this.parent.getMainContent().classList.remove('e-hide-' + str.toLowerCase());
+            }
+            text = l10n.getConstant('Unprotect' + str);
+        }
+        else {
+            if (setClass) {
+                this.parent.getMainContent().classList.add('e-hide-' + str.toLowerCase());
+            }
+            text = l10n.getConstant('Protect' + str);
+        }
+        return text;
+    }
     createRibbon(args) {
         let ribbonElement = this.parent.createElement('div', { id: `${this.parent.element.id}_ribbon` });
         this.ribbon = new Ribbon$1({
             selectedTab: 0,
             menuItems: this.getRibbonMenuItems(),
             items: this.getRibbonItems(),
-            fileItemSelect: this.fileItemSelect.bind(this),
+            fileMenuItemSelect: this.fileMenuItemSelect.bind(this),
             beforeOpen: this.fileMenuBeforeOpen.bind(this),
             beforeClose: this.fileMenuBeforeClose.bind(this),
             clicked: this.toolbarClicked.bind(this),
             created: this.ribbonCreated.bind(this),
             selecting: this.tabSelecting.bind(this),
             expandCollapse: this.expandCollapseHandler.bind(this),
-            beforeFileItemRender: this.beforeRenderHandler.bind(this)
+            beforeFileMenuItemRender: this.beforeRenderHandler.bind(this)
         });
         this.ribbon.createElement = this.parent.createElement;
         if (args && args.uiUpdate) {
@@ -15717,7 +20677,7 @@ class Ribbon$$1 {
             beforeItemRender: (args) => this.previewNumFormat(args),
             close: () => this.parent.element.focus(),
             cssClass: 'e-flat e-numformat-ddb',
-            beforeOpen: this.tBarDdbBeforeOpen.bind(this)
+            beforeOpen: (args) => this.tBarDdbBeforeOpen(args.element, args.items)
         });
         this.numFormatDDB.createElement = this.parent.createElement;
         this.numFormatDDB.appendTo(numFormatBtn);
@@ -15731,7 +20691,7 @@ class Ribbon$$1 {
                 { text: '18' }, { text: '20' }, { text: '22' }, { text: '24' }, { text: '26' }, { text: '28' }, { text: '36' },
                 { text: '48' }, { text: '72' }],
             beforeOpen: (args) => {
-                this.tBarDdbBeforeOpen(args);
+                this.tBarDdbBeforeOpen(args.element, args.items);
                 this.refreshSelected(this.fontSizeDdb, args.element, 'content', 'text');
             },
             select: (args) => {
@@ -15748,6 +20708,164 @@ class Ribbon$$1 {
         this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
         return this.fontSizeDdb.element;
     }
+    getBordersDBB(id) {
+        let cPickerWrapper;
+        let l10n = this.parent.serviceLocator.getService(locale);
+        this.bordersMenu = new Menu({
+            cssClass: 'e-borders-menu',
+            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders') }, { iconCss: 'e-icons e-left-borders',
+                    text: l10n.getConstant('LeftBorders') }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders') }, {
+                    iconCss: 'e-icons e-bottom-borders', text: l10n.getConstant('BottomBorders')
+                }, { iconCss: 'e-icons e-all-borders', text: l10n.getConstant('AllBorders') }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders') }, {
+                    iconCss: 'e-icons e-vertical-borders', text: l10n.getConstant('VerticalBorders')
+                }, { iconCss: 'e-icons e-outside-borders',
+                    text: l10n.getConstant('OutsideBorders') }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders') },
+                { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders') }, { separator: true }, { text: l10n.getConstant('BorderColor'), items: [{ id: `${id}_border_colors` }] }, { text: l10n.getConstant('BorderStyle'), items: [
+                        { iconCss: 'e-icons e-selected-icon', id: `${id}_1px` }, { id: `${id}_2px` }, { id: `${id}_3px` }, { id: `${id}_dashed` },
+                        { id: `${id}_dotted` }, { id: `${id}_double` }
+                    ] }],
+            orientation: 'Vertical',
+            beforeOpen: (args) => {
+                if (args.parentItem.text === 'Border Color') {
+                    this.colorPicker.refresh();
+                    cPickerWrapper = this.colorPicker.element.parentElement;
+                    args.element.firstElementChild.appendChild(cPickerWrapper);
+                    cPickerWrapper.style.display = 'inline-block';
+                    args.element.parentElement.classList.add('e-border-color');
+                }
+                else {
+                    args.element.classList.add('e-border-style');
+                }
+            },
+            beforeClose: (args) => {
+                if (args.parentItem.text === 'Border Color') {
+                    if (!closest(args.event.target, '.e-border-colorpicker') ||
+                        closest(args.event.target, '.e-apply') || closest(args.event.target, '.e-cancel')) {
+                        this.colorPicker = getComponent(cPickerEle, 'colorpicker');
+                        if (this.colorPicker.mode === 'Picker') {
+                            this.colorPicker.mode = 'Palette';
+                            this.colorPicker.dataBind();
+                        }
+                        cPickerWrapper.style.display = '';
+                        this.parent.element.appendChild(cPickerWrapper);
+                    }
+                    else {
+                        args.cancel = true;
+                    }
+                }
+            },
+            onOpen: (args) => {
+                if (args.parentItem.text === 'Border Color') {
+                    args.element.parentElement.style.overflow = 'visible';
+                }
+            },
+            select: this.borderSelected.bind(this)
+        });
+        this.bordersMenu.createElement = this.parent.createElement;
+        let ul = this.parent.element.appendChild(this.parent.createElement('ul', {
+            id: id + '_borders_menu', styles: 'display: none;'
+        }));
+        this.bordersMenu.appendTo(ul);
+        ul.classList.add('e-ul');
+        let cPickerEle = this.parent.createElement('input', { id: `${id}_cell_border_color`, attrs: { 'type': 'color' } });
+        this.parent.element.appendChild(cPickerEle);
+        this.colorPicker = new ColorPicker({
+            cssClass: 'e-border-colorpicker',
+            mode: 'Palette',
+            inline: true,
+            change: (args) => {
+                let border = this.border.split(' ');
+                border[2] = args.currentValue.hex;
+                this.border = border.join(' ');
+            },
+            created: () => { cPickerWrapper = this.colorPicker.element.parentElement; }
+        });
+        this.colorPicker.createElement = this.parent.createElement;
+        this.colorPicker.appendTo(cPickerEle);
+        this.bordersDdb = new DropDownButton({
+            iconCss: 'e-icons e-bottom-borders',
+            cssClass: 'e-borders-ddb',
+            target: this.bordersMenu.element.parentElement,
+            created: () => { this.bordersMenu.element.style.display = ''; },
+            beforeOpen: (args) => this.tBarDdbBeforeOpen(args.element.firstElementChild, this.bordersMenu.items, 1),
+            beforeClose: (args) => {
+                if (args.event && closest(args.event.target, '.e-borders-menu')) {
+                    args.cancel = true;
+                }
+            },
+            close: () => this.parent.element.focus()
+        });
+        this.bordersDdb.createElement = this.parent.createElement;
+        this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
+        return this.bordersDdb.element;
+    }
+    borderSelected(args) {
+        if (args.item.items.length || args.item.id === `${this.parent.element.id}_border_colors`) {
+            return;
+        }
+        if (!args.item.text) {
+            let id = this.parent.element.id;
+            let border = this.border.split(' ');
+            let prevStyleId = border[1] === 'solid' ? `${id}_${border[0]}` : `${id}_${border[1]}`;
+            if (prevStyleId === args.item.id) {
+                return;
+            }
+            if (args.item.id === `${id}_1px` || args.item.id === `${id}_2px` || args.item.id === `${id}_3px`) {
+                border[0] = args.item.id.split(`${id}_`)[1];
+                border[1] = 'solid';
+            }
+            else {
+                border[1] = args.item.id.split(`${id}_`)[1];
+                border[0] = border[1] === 'double' ? '3px' : '1px';
+            }
+            this.border = border.join(' ');
+            this.bordersMenu.items[12].items.forEach((item) => {
+                if (item.id === prevStyleId) {
+                    item.iconCss = null;
+                }
+                if (item.id === args.item.id) {
+                    item.iconCss = 'e-icons e-selected-icon';
+                }
+            });
+            this.bordersMenu.setProperties({ 'items': this.bordersMenu.items }, true);
+            return;
+        }
+        this.bordersDdb.toggle();
+        this.parent.showSpinner();
+        switch (args.item.text) {
+            case 'Top Borders':
+                this.parent.notify(setCellFormat, { style: { borderTop: this.border }, onActionUpdate: true });
+                break;
+            case 'Left Borders':
+                this.parent.notify(setCellFormat, { style: { borderLeft: this.border }, onActionUpdate: true });
+                break;
+            case 'Right Borders':
+                this.parent.notify(setCellFormat, { style: { borderRight: this.border }, onActionUpdate: true });
+                break;
+            case 'Bottom Borders':
+                this.parent.notify(setCellFormat, { style: { borderBottom: this.border }, onActionUpdate: true });
+                break;
+            case 'All Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true });
+                break;
+            case 'Horizontal Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Horizontal' });
+                break;
+            case 'Vertical Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Vertical' });
+                break;
+            case 'Outside Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Outer' });
+                break;
+            case 'Inside Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Inner' });
+                break;
+            case 'No Borders':
+                this.parent.notify(setCellFormat, { style: { border: '' }, onActionUpdate: true });
+                break;
+        }
+        this.parent.hideSpinner();
+    }
     getFontNameDDB(id) {
         let fontNameBtn = this.parent.createElement('button', { id: id + '_font_name' });
         fontNameBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Calibri' }));
@@ -15762,18 +20880,56 @@ class Ribbon$$1 {
                 }
             },
             close: () => this.parent.element.focus(),
-            beforeOpen: this.tBarDdbBeforeOpen.bind(this)
+            beforeOpen: (args) => this.tBarDdbBeforeOpen(args.element, args.items)
         });
         this.fontNameDdb.createElement = this.parent.createElement;
         this.fontNameDdb.appendTo(fontNameBtn);
         return fontNameBtn;
     }
-    getBtn(id, name) {
+    getBtn(id, name, bindEvent = true) {
         let btnObj = new Button({ iconCss: `e-icons e-${name}-icon`, isToggle: true });
         btnObj.createElement = this.parent.createElement;
         btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}` }));
-        btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
+        if (bindEvent) {
+            btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
+        }
         return btnObj.element;
+    }
+    datavalidationDDB(id) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        this.datavalidationDdb = new DropDownButton({
+            cssClass: 'e-datavalidation-ddb',
+            iconCss: 'e-datavalidation-icon e-icons',
+            items: [
+                { text: l10n.getConstant('DataValidation') },
+                { text: l10n.getConstant('HighlightInvalidData') },
+                { text: l10n.getConstant('ClearHighlight') }
+            ],
+            beforeOpen: (args) => {
+                this.refreshSelected(this.datavalidationDdb, args.element, 'iconCss');
+            },
+            select: (args) => {
+                switch (args.item.text) {
+                    case l10n.getConstant('DataValidation'):
+                        this.parent.notify(initiateDataValidation, null);
+                        break;
+                    case l10n.getConstant('HighlightInvalidData'):
+                        this.parent.notify(invalidData, { isRemoveHighlight: false });
+                        break;
+                    case l10n.getConstant('ClearHighlight'):
+                        this.parent.notify(invalidData, { isRemoveHighlight: true });
+                        break;
+                    default:
+                        let direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
+                        this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } } });
+                        break;
+                }
+            },
+            close: () => this.parent.element.focus()
+        });
+        this.datavalidationDdb.createElement = this.parent.createElement;
+        this.datavalidationDdb.appendTo(this.parent.createElement('button', { id: id + '_datavalidation' }));
+        return this.datavalidationDdb.element;
     }
     getTextAlignDDB(id) {
         this.textAlignDdb = new DropDownButton({
@@ -15879,6 +21035,156 @@ class Ribbon$$1 {
         this.sortingDdb.createElement = this.parent.createElement;
         this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting' }));
         return this.sortingDdb.element;
+    }
+    getFindDDb(id) {
+        let findToolbtn = this.parent.createElement('button', { id: id + '_findbtn' });
+        this.findDdb = new Button({
+            cssClass: 'e-spreadsheet-find-ddb e-caret-hide',
+            iconCss: 'e-icons e-search-icon'
+        });
+        this.findDdb.createElement = this.parent.createElement;
+        this.findDdb.appendTo(findToolbtn);
+        findToolbtn.onclick = () => {
+            this.findToolDlg();
+        };
+        return this.findDdb.element;
+    }
+    findToolDlg() {
+        if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
+            let toolbarObj;
+            let findTextElement = this.parent.createElement('div');
+            let findTextInput = this.parent.createElement('input', {
+                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' }
+            });
+            findTextInput.onkeyup = () => {
+                let countArgs = { countOpt: 'count', findCount: '' };
+                this.parent.notify(findHandler, { countArgs: countArgs });
+                let element = document.querySelector('.e-text-findNext-short');
+                let value = element.value;
+                let nextElement = document.querySelector('.e-findRib-next');
+                let prevElement = document.querySelector('.e-findRib-prev');
+                if (isNullOrUndefined(value) || (value === '')) {
+                    toolbarObj.enableItems(nextElement, false);
+                    toolbarObj.enableItems(prevElement, false);
+                }
+                else if (!isNullOrUndefined(value)) {
+                    toolbarObj.enableItems(nextElement, true);
+                    toolbarObj.enableItems(prevElement, true);
+                }
+            };
+            findTextInput.onkeydown = (e) => {
+                this.findOnKeyDown(e);
+            };
+            findTextElement.appendChild(findTextInput);
+            let toolItemModel = [
+                { type: 'Input', template: findTextElement },
+                {
+                    prefixIcon: 'e-icons e-prev-icon', tooltipText: 'Find Previous', type: 'Button', cssClass: 'e-findRib-prev',
+                    disabled: true
+                },
+                { prefixIcon: 'e-icons e-next-icon', tooltipText: 'Find Next', type: 'Button', cssClass: 'e-findRib-next', disabled: true },
+                { type: 'Separator' },
+                { prefixIcon: 'e-icons e-option-icon', tooltipText: 'More Options', type: 'Button', cssClass: 'e-findRib-more' },
+                { prefixIcon: 'e-icons e-close', tooltipText: 'Close', type: 'Button', cssClass: 'e-findRib-close' }
+            ];
+            toolbarObj = new Toolbar({
+                clicked: (args) => {
+                    if (args.item.cssClass === 'e-findRib-next') {
+                        let findOption = 'next';
+                        let buttonArg = { findOption: findOption };
+                        this.parent.notify(findHandler, buttonArg);
+                    }
+                    else if (args.item.cssClass === 'e-findRib-prev') {
+                        let findOption = 'prev';
+                        let buttonArg = { findOption: findOption };
+                        this.parent.notify(findHandler, buttonArg);
+                    }
+                    else if (args.item.cssClass === 'e-findRib-more') {
+                        this.parent.notify(findDlg, null);
+                        this.findDialog.hide();
+                    }
+                }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
+            });
+            let l10n = this.parent.serviceLocator.getService(locale);
+            let toolbarElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
+            let dialogDiv = this.parent.createElement('div', { className: 'e-dlg-div' });
+            this.findDialog = new Dialog({
+                isModal: false, showCloseIcon: false, cssClass: 'e-findtool-dlg', content: toolbarElement, visible: false,
+                allowDragging: true, target: this.parent.element.querySelector('.e-main-panel'),
+                beforeOpen: () => {
+                    EventHandler.add(document, 'click', this.closeDialog, this);
+                    let findTextBox = new TextBox({ placeholder: l10n.getConstant('FindValue') });
+                    findTextBox.createElement = this.parent.createElement;
+                    findTextBox.appendTo(findTextInput);
+                },
+                open: () => {
+                    this.textFocus(toolbarObj.element);
+                },
+                beforeClose: () => {
+                    toolbarObj.destroy();
+                    let element = document.querySelector('.e-find-toolbar');
+                    EventHandler.remove(element, 'focus', this.textFocus);
+                    this.parent.element.querySelector('.e-findtool-dlg').remove();
+                    this.findDialog.destroy();
+                    this.findDialog = null;
+                    EventHandler.remove(document, 'click', this.closeDialog);
+                    this.parent.element.focus();
+                },
+                created: () => {
+                    toolbarObj.createElement = this.parent.createElement;
+                    toolbarObj.appendTo(toolbarElement);
+                    this.findDialog.width = getComputedStyle(document.querySelector('.e-findtool-dlg')).width;
+                    let calculate = this.parent.element.querySelector('.e-main-panel').getBoundingClientRect();
+                    let dialogWidth = this.findDialog.width;
+                    let rightValue = calculate.width - parseInt(dialogWidth.toString(), 10) - 14; /** 14- width of scroll bar */
+                    /** 31- height of sheetHeader */
+                    let topValue = this.parent.sheets[this.parent.activeSheetTab - 1].showHeaders ? 31 : 0;
+                    this.findDialog.position = { X: rightValue, Y: topValue };
+                    this.findDialog.dataBind();
+                    this.findDialog.show();
+                },
+            });
+            this.findDialog.createElement = this.parent.createElement;
+            this.findDialog.appendTo(dialogDiv);
+        }
+        else {
+            if (!isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
+                this.parent.element.querySelector('.e-findtool-dlg').remove();
+                this.findDialog.destroy();
+                this.findDialog = null;
+                this.parent.element.focus();
+            }
+        }
+    }
+    findOnKeyDown(e) {
+        if (document.querySelector('.e-text-findNext-short').value) {
+            if (e.shiftKey) {
+                if (e.keyCode === 13) {
+                    let findOpt = 'prev';
+                    let buttonArgs = { findOption: findOpt };
+                    this.parent.notify(findHandler, buttonArgs);
+                }
+            }
+            else if (e.keyCode === 13) {
+                let findOption = 'next';
+                let buttonArg = { findOption: findOption };
+                this.parent.notify(findHandler, buttonArg);
+            }
+        }
+    }
+    closeDialog(e) {
+        if ((closest(e.target, '.e-findRib-close')) || (!closest(e.target, '.e-spreadsheet'))) {
+            if (!isNullOrUndefined(this.findDialog)) {
+                this.findDialog.hide();
+            }
+        }
+    }
+    textFocus(element) {
+        element = document.querySelector('.e-find-toolbar');
+        element.addEventListener('focus', () => {
+            let elements = document.querySelector('.e-text-findNext-short');
+            elements.focus();
+        });
     }
     ribbonCreated() {
         this.ribbon.element.querySelector('.e-drop-icon').title
@@ -16012,13 +21318,23 @@ class Ribbon$$1 {
         this.refreshNumFormatSelection(args.item.text);
         this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
     }
-    tBarDdbBeforeOpen(args) {
+    tBarDdbBeforeOpen(element, items, separatorCount = 0) {
         let viewportHeight = this.parent.viewport.height;
-        let actualHeight = (parseInt(getComputedStyle(args.element.firstElementChild).height, 10) * args.items.length) +
-            (parseInt(getComputedStyle(args.element).paddingTop, 10) * 2);
+        let actualHeight = (parseInt(getComputedStyle(element.firstElementChild).height, 10) * (items.length - separatorCount)) +
+            (parseInt(getComputedStyle(element).paddingTop, 10) * 2);
+        if (separatorCount) {
+            let separatorStyle = getComputedStyle(element.querySelector('.e-separator'));
+            actualHeight += (separatorCount * (parseInt(separatorStyle.borderBottomWidth, 10) + (parseInt(separatorStyle.marginTop, 10) * 2)));
+        }
         if (actualHeight > viewportHeight) {
-            args.element.style.height = `${viewportHeight}px`;
-            args.element.style.overflowY = 'auto';
+            element.style.height = `${viewportHeight}px`;
+            element.style.overflowY = 'auto';
+        }
+        else {
+            if (element.style.height) {
+                element.style.height = '';
+                element.style.overflowY = '';
+            }
         }
     }
     numDDBOpen(args) {
@@ -16059,19 +21375,26 @@ class Ribbon$$1 {
         args.element.appendChild(numElem);
     }
     refreshRibbonContent(activeTab) {
+        if (!this.ribbon) {
+            return;
+        }
         if (isNullOrUndefined(activeTab)) {
             activeTab = this.ribbon.selectedTab;
         }
         let l10n = this.parent.serviceLocator.getService(locale);
+        let sheet = this.parent.getActiveSheet();
         switch (this.ribbon.items[activeTab].header.text) {
             case l10n.getConstant('Home'):
-                this.refreshHomeTabContent(getCellIndexes(this.parent.getActiveSheet().activeCell));
+                this.refreshHomeTabContent(getCellIndexes(sheet.activeCell));
                 break;
             case l10n.getConstant('Insert'):
                 // Second tab functionality comes here
                 break;
             case l10n.getConstant('Formulas'):
                 // Third tab functionality comes here
+                break;
+            case l10n.getConstant('Data'):
+                this.refreshDataTabContent(activeTab);
                 break;
             case l10n.getConstant('View'):
                 this.refreshViewTabContent(activeTab);
@@ -16082,50 +21405,93 @@ class Ribbon$$1 {
         if (!isNullOrUndefined(document.getElementById(this.parent.element.id + '_number_format'))) {
             this.numFormatDDB = getComponent(document.getElementById(this.parent.element.id + '_number_format'), DropDownButton);
         }
+        let sheet = this.parent.getActiveSheet();
         let actCell = getCellIndexes(this.parent.getActiveSheet().activeCell);
         let l10n = this.parent.serviceLocator.getService(locale);
-        let cell = getCell(actCell[0], actCell[1], this.parent.getActiveSheet(), true);
-        cell = cell ? cell : {};
+        let cell = getCell(actCell[0], actCell[1], this.parent.getActiveSheet()) || {};
         let type = getTypeFromFormat(cell.format ? cell.format : 'General');
         if (this.numFormatDDB) {
-            this.refreshNumFormatSelection(l10n.getConstant(type));
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                type = 'General';
+                this.refreshNumFormatSelection(type);
+            }
+            else {
+                this.refreshNumFormatSelection(l10n.getConstant(type));
+            }
         }
         if (this.fontNameDdb) {
-            this.refreshFontNameSelection(this.getCellStyleValue('fontFamily', indexes));
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.refreshFontNameSelection('Calibri');
+            }
+            else {
+                this.refreshFontNameSelection(this.getCellStyleValue('fontFamily', indexes));
+            }
         }
         if (this.fontSizeDdb) {
-            let value = this.getCellStyleValue('fontSize', indexes).split('pt')[0];
-            if (value !== this.fontSizeDdb.content) {
-                this.fontSizeDdb.content = value;
-                this.fontSizeDdb.dataBind();
+            let value = this.getCellStyleValue('fontSize', indexes);
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.fontSizeDdb.content = '11';
+            }
+            else {
+                value = value.includes('pt') ? value.split('pt')[0] : '11';
+                if (value !== this.fontSizeDdb.content) {
+                    this.fontSizeDdb.content = value;
+                    this.fontSizeDdb.dataBind();
+                }
             }
         }
         if (this.textAlignDdb) {
-            let value = `e-icons e-${this.getCellStyleValue('textAlign', indexes).toLowerCase()}-icon`;
-            if (value !== this.textAlignDdb.iconCss) {
-                this.textAlignDdb.iconCss = value;
-                this.textAlignDdb.dataBind();
+            let style = this.getCellStyleValue('textAlign', indexes);
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.textAlignDdb.iconCss = 'e-icons e-left-icon';
+            }
+            else {
+                if (cell.value !== undefined && style === 'left' && (type === 'Accounting' || isNumber(cell.value))) {
+                    style = 'right';
+                }
+                let value = `e-icons e-${style.toLowerCase()}-icon`;
+                if (value !== this.textAlignDdb.iconCss) {
+                    this.textAlignDdb.iconCss = value;
+                    this.textAlignDdb.dataBind();
+                }
             }
         }
         if (this.verticalAlignDdb) {
             let value = `e-icons e-${this.getCellStyleValue('verticalAlign', indexes).toLowerCase()}-icon`;
-            if (value !== this.verticalAlignDdb.iconCss) {
-                this.verticalAlignDdb.iconCss = value;
-                this.verticalAlignDdb.dataBind();
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.verticalAlignDdb.iconCss = 'e-icons e-bottom-icon';
+            }
+            else {
+                if (value !== this.verticalAlignDdb.iconCss) {
+                    this.verticalAlignDdb.iconCss = value;
+                    this.verticalAlignDdb.dataBind();
+                }
             }
         }
         this.refreshToggleBtn(indexes);
     }
     refreshToggleBtn(indexes) {
+        let sheet = this.parent.getActiveSheet();
         let btn;
         let id = this.parent.element.id;
         let value;
+        let isActive;
+        let cell = getCell(indexes[0], indexes[1], sheet);
         let fontProps = ['fontWeight', 'fontStyle', 'textDecoration', 'textDecoration'];
-        ['bold', 'italic', 'line-through', 'underline'].forEach((name, index) => {
+        ['bold', 'italic', 'line-through', 'underline', 'wrap'].forEach((name, index) => {
             btn = document.getElementById(`${id}_${name}`);
             if (btn) {
-                value = this.getCellStyleValue(fontProps[index], indexes).toLowerCase();
-                if (value.indexOf(name) > -1) {
+                if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                    btn.classList.remove('e-active');
+                }
+                else if (name === 'wrap') {
+                    isActive = cell && cell.wrap;
+                }
+                else {
+                    value = this.getCellStyleValue(fontProps[index], indexes).toLowerCase();
+                    isActive = value.indexOf(name) > -1;
+                }
+                if (isActive) {
                     btn.classList.add('e-active');
                 }
                 else {
@@ -16163,9 +21529,9 @@ class Ribbon$$1 {
         this.numFormatDDB.element.firstElementChild.textContent = type;
         this.numFormatDDB.setProperties({ 'items': this.numFormatDDB.items }, true);
     }
-    fileItemSelect(args) {
+    fileMenuItemSelect(args) {
         let selectArgs = extend({ cancel: false }, args);
-        this.parent.trigger('fileItemSelect', selectArgs);
+        this.parent.trigger('fileMenuItemSelect', selectArgs);
         let id = this.parent.element.id;
         if (!selectArgs.cancel) {
             switch (args.item.id) {
@@ -16192,7 +21558,6 @@ class Ribbon$$1 {
                                     this.parent.createSheet();
                                     dialogInst.hide();
                                     this.parent.activeSheetTab = this.parent.sheets.length;
-                                    this.parent.setProperties({ 'activeSheetTab': this.parent.sheets.length }, true);
                                     this.parent.notify(refreshSheetTabs, {});
                                     this.parent.notify(sheetsDestroyed, {});
                                     this.parent.renderModule.refreshSheet();
@@ -16204,72 +21569,108 @@ class Ribbon$$1 {
         }
     }
     toolbarClicked(args) {
-        let parentId = this.parent.element.id;
-        let sheet = this.parent.getActiveSheet();
-        switch (args.item.id) {
-            case parentId + '_headers':
-                let evtHArgs = {
-                    isShow: !sheet.showHeaders,
-                    sheetIdx: this.parent.activeSheetTab,
-                    cancel: false
-                };
-                this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
-                if (evtHArgs.cancel) {
-                    return;
-                }
-                sheet.showHeaders = !sheet.showHeaders;
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-                this.parent.serviceLocator.getService('sheet').showHideHeaders();
-                this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
-                this.parent.element.focus();
-                break;
-            case parentId + '_gridlines':
-                let evtglArgs = {
-                    isShow: !sheet.showGridLines,
-                    sheetIdx: this.parent.activeSheetTab,
-                    cancel: false
-                };
-                this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
-                if (evtglArgs.cancel) {
-                    return;
-                }
-                sheet.showGridLines = !sheet.showGridLines;
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-                this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
-                this.parent.element.focus();
-                break;
-            case parentId + '_undo':
-                this.parent.notify(performUndoRedo, { isUndo: true });
-                break;
-            case parentId + '_redo':
-                this.parent.notify(performUndoRedo, { isUndo: false });
-                break;
+        if (!(args.item.id === 'spreadsheet_find')) {
+            let parentId = this.parent.element.id;
+            let sheet = this.parent.getActiveSheet();
+            switch (args.item.id) {
+                case parentId + '_headers':
+                    let evtHArgs = {
+                        isShow: !sheet.showHeaders,
+                        sheetIdx: this.parent.activeSheetTab,
+                        cancel: false
+                    };
+                    this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
+                    if (evtHArgs.cancel) {
+                        return;
+                    }
+                    sheet.showHeaders = !sheet.showHeaders;
+                    this.parent.serviceLocator.getService('sheet').showHideHeaders();
+                    this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
+                    this.parent.element.focus();
+                    break;
+                case parentId + '_gridlines':
+                    let evtglArgs = {
+                        isShow: !sheet.showGridLines,
+                        sheetIdx: this.parent.activeSheetTab,
+                        cancel: false
+                    };
+                    this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
+                    if (evtglArgs.cancel) {
+                        return;
+                    }
+                    sheet.showGridLines = !sheet.showGridLines;
+                    this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
+                    this.parent.element.focus();
+                    break;
+                case parentId + '_protect':
+                    sheet.isProtected = !sheet.isProtected;
+                    this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+                    let isActive = false;
+                    sheet.isProtected ? isActive = false : isActive = true;
+                    this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
+                    break;
+                case parentId + '_undo':
+                    this.parent.notify(performUndoRedo, { isUndo: true });
+                    break;
+                case parentId + '_redo':
+                    this.parent.notify(performUndoRedo, { isUndo: false });
+                    break;
+            }
+            this.parent.notify(ribbonClick, args);
         }
-        this.parent.notify(ribbonClick, args);
     }
     toggleRibbonItems(args) {
-        let tabHeader = this.parent.serviceLocator.getService(locale).getConstant('View');
-        if (isNullOrUndefined(args.activeTab)) {
-            for (let i = 0; i < this.ribbon.items.length; i++) {
-                if (this.ribbon.items[i].header.text === tabHeader) {
-                    args.activeTab = i;
-                    break;
+        let viewtabHeader = this.parent.serviceLocator.getService(locale).getConstant('View');
+        let datatabHeader = this.parent.serviceLocator.getService(locale).getConstant('Data');
+        if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader) {
+            if (isNullOrUndefined(args.activeTab)) {
+                for (let i = 0, len = this.ribbon.items.length; i < len; i++) {
+                    if (this.ribbon.items[i].header.text === viewtabHeader) {
+                        args.activeTab = i;
+                        break;
+                    }
                 }
             }
-        }
-        let text = this.getLocaleText(args.props, true);
-        let id = `${this.parent.element.id}_${args.props.toLowerCase()}`;
-        for (let i; i < this.ribbon.items[args.activeTab].content.length; i++) {
-            if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
-                continue;
+            let text = this.getLocaleText(args.props, true);
+            let id = `${this.parent.element.id}_${args.props.toLowerCase()}`;
+            let len = this.ribbon.items[args.activeTab].content.length;
+            for (let i; i < len; i++) {
+                if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
+                    continue;
+                }
+                if (this.ribbon.items[args.activeTab].content[i].id === id) {
+                    this.ribbon.items[args.activeTab].content[i].text = text;
+                    this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+                }
             }
-            if (this.ribbon.items[args.activeTab].content[i].id === id) {
-                this.ribbon.items[args.activeTab].content[i].text = text;
-                this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+            if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader) {
+                this.updateToggleText(args.props.toLowerCase(), text);
             }
         }
-        if (this.ribbon.items[this.ribbon.selectedTab].header.text === tabHeader) {
-            this.updateToggleText(args.props.toLowerCase(), text);
+        if (this.ribbon.items[this.ribbon.selectedTab].header.text === datatabHeader) {
+            if (isNullOrUndefined(args.activeTab)) {
+                for (let i = 0, len = this.ribbon.items.length; i < len; i++) {
+                    if (this.ribbon.items[i].header.text === datatabHeader) {
+                        args.activeTab = i;
+                        break;
+                    }
+                }
+            }
+            let text = this.getLocaleProtectText('Sheet', true);
+            let id = `${this.parent.element.id}_${args.props.toLowerCase()}`;
+            let len = this.ribbon.items[args.activeTab].content.length;
+            for (let i; i < len; i++) {
+                if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
+                    continue;
+                }
+                if (this.ribbon.items[args.activeTab].content[i].id === id) {
+                    this.ribbon.items[args.activeTab].content[i].text = text;
+                    this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+                }
+            }
+            if (this.ribbon.items[this.ribbon.selectedTab].header.text === datatabHeader) {
+                this.updateToggleText(args.props.toLowerCase(), text);
+            }
         }
     }
     enableFileMenuItems(args) {
@@ -16334,6 +21735,42 @@ class Ribbon$$1 {
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText(item.toLowerCase(), text);
     }
+    refreshDataTabContent(activeTab) {
+        let id = this.parent.element.id;
+        let updated;
+        for (let j = 0; j < this.ribbon.items[activeTab].content.length; j++) {
+            if (this.ribbon.items[activeTab].content[j].type === 'Separator') {
+                continue;
+            }
+            if (this.ribbon.items[activeTab].content[j].id === `${id}_protect`) {
+                this.updateDataTabContent(activeTab, 'Sheet', j);
+                if (updated) {
+                    break;
+                }
+                updated = true;
+            }
+        }
+    }
+    updateDataTabContent(activeTab, item, idx) {
+        let sheet = this.parent.getActiveSheet();
+        let l10n = this.parent.serviceLocator.getService(locale);
+        if (sheet.isProtected) {
+            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Protect' + item)) {
+                this.ribbon.items[activeTab].content[idx].cssClass = 'e-active';
+                this.updateProtectBtn('Unprotect', item, idx, activeTab);
+            }
+        }
+        else {
+            this.updateProtectBtn('Protect', item, idx, activeTab);
+        }
+    }
+    updateProtectBtn(protectText, item, idx, activeTab) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let text = l10n.getConstant(protectText + item);
+        this.ribbon.items[activeTab].content[idx].text = text;
+        this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+        this.updateToggleText('protect', text);
+    }
     addToolbarItems(args) {
         this.ribbon.addToolbarItems(args.tab, args.items, args.index);
     }
@@ -16366,7 +21803,7 @@ class Ribbon$$1 {
                     enableRtl: true,
                     showItemOnClick: true,
                     items: this.getRibbonMenuItems(),
-                    select: this.fileItemSelect.bind(this),
+                    select: this.fileMenuItemSelect.bind(this),
                     beforeOpen: (args) => {
                         args.element.parentElement.classList.remove('e-rtl');
                         this.fileMenuBeforeOpen(args);
@@ -16467,6 +21904,37 @@ class Ribbon$$1 {
     hideToolbarItems(args) {
         this.ribbon.hideToolbarItems(args.tab, args.indexes, args.hide);
     }
+    protectSheetHandler(args) {
+        let sheet = this.parent.getActiveSheet();
+        let l10n = this.parent.serviceLocator.getService(locale);
+        if ((sheet.isProtected && sheet.protectSettings.formatCells) || !sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId, enable: true }]);
+            this.parent.notify(setUndoRedo, null);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.disableHomeBtnId, enable: false }]);
+        }
+        if ((sheet.isProtected && sheet.protectSettings.insertLink) || !sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: true }]);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: false }]);
+        }
+        if ((sheet.isProtected && sheet.protectSettings.selectCells) || !sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: true }]);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: false }]);
+        }
+        if (sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
+        }
+    }
     addEventListener() {
         this.parent.on(ribbon, this.initRibbon, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
@@ -16480,21 +21948,38 @@ class Ribbon$$1 {
         this.parent.on(addFileMenuItems, this.addFileMenuItems, this);
         this.parent.on(hideToolbarItems, this.hideToolbarItems, this);
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
+        this.parent.on(protectCellFormat, this.protectSheetHandler, this);
     }
     destroy() {
         let parentElem = this.parent.element;
         let ribbonEle = this.ribbon.element;
         let id = parentElem.id;
-        destroyComponent(parentElem.querySelector('#' + id + '_paste'), SplitButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_number_format'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_font_size'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_font_name'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_text_align'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_vertical_align'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_sorting'), DropDownButton);
         ['bold', 'italic', 'line-through', 'underline'].forEach((name) => {
             destroyComponent(parentElem.querySelector('#' + `${id}_${name}`), Button);
         });
+        this.pasteSplitBtn.destroy();
+        this.pasteSplitBtn = null;
+        this.numFormatDDB.destroy();
+        this.numFormatDDB = null;
+        this.fontSizeDdb.destroy();
+        this.fontSizeDdb = null;
+        this.fontNameDdb.destroy();
+        this.fontNameDdb = null;
+        this.textAlignDdb.destroy();
+        this.textAlignDdb = null;
+        this.verticalAlignDdb.destroy();
+        this.verticalAlignDdb = null;
+        this.sortingDdb.destroy();
+        this.sortingDdb = null;
+        this.colorPicker.destroy();
+        this.colorPicker = null;
+        this.bordersMenu.destroy();
+        this.bordersMenu = null;
+        this.bordersDdb.destroy();
+        this.bordersDdb = null;
+        this.findDdb.destroy();
+        this.findDdb = null;
+        this.parent.notify('destroyRibbonComponents', null);
         this.ribbon.destroy();
         if (ribbonEle) {
             detach(ribbonEle);
@@ -16516,6 +22001,7 @@ class Ribbon$$1 {
             this.parent.off(addFileMenuItems, this.addFileMenuItems);
             this.parent.off(hideToolbarItems, this.hideToolbarItems);
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
+            this.parent.off(protectCellFormat, this.protectSheetHandler);
         }
     }
 }
@@ -16603,7 +22089,7 @@ class FormulaBar {
     }
     keyDownHandler(e) {
         let trgtElem = e.target;
-        if (this.parent.isEdit) {
+        if (this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
             if (trgtElem.classList.contains('e-formula-bar')) {
                 this.parent.notify(editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
             }
@@ -16738,17 +22224,29 @@ class FormulaBar {
             this.comboBoxInstance.dataBind();
         }
     }
-    clickHandler(e) {
+    disabletextarea() {
+        let el = document.getElementById(this.parent.element.id + '_formula_input');
+        if (this.parent.getActiveSheet().isProtected) {
+            el.disabled = true;
+        }
+        else {
+            el.disabled = false;
+        }
+    }
+    formulaBarClickHandler(e) {
         let target = e.target;
         if (target.classList.contains('e-drop-icon') && closest(target, '.e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
         }
         else if (target.classList.contains('e-formula-bar')) {
-            if (!this.parent.isEdit) {
+            if (!this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
                 this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
             }
+            else if (this.parent.getActiveSheet().isProtected) {
+                this.parent.notify(editAlert, null);
+            }
         }
-        else if (target.parentElement.classList.contains('e-name-box')) {
+        else if (target.parentElement && target.parentElement.classList.contains('e-name-box')) {
             if (target.classList.contains('e-ddl-icon')) {
                 let eventArgs = { action: 'getNames', names: [] };
                 this.parent.notify(formulaOperation, eventArgs);
@@ -16760,9 +22258,14 @@ class FormulaBar {
             }
         }
         if (!isNullOrUndefined(target.offsetParent) && ((target.offsetParent.classList.contains('e-insert-function')) ||
-            (target.classList.contains('e-insert-function')) || (this.parent.element.id + '_insert_function' === target.offsetParent.id) ||
-            (this.parent.element.id + '_insert_function' === target.id) || target.parentElement.classList.contains('e-insert-function') ||
-            (this.parent.element.id + '_insert_function' === target.parentElement.id))) {
+            (target.classList.contains('e-insert-function')) || (this.parent.element.id + '_insert_function' === target.offsetParent.id)
+            || (this.parent.element.id + '_insert_function' === target.id) ||
+            target.parentElement.classList.contains('e-insert-function')
+            || (this.parent.element.id + '_insert_function' === target.parentElement.id))) {
+            if (this.parent.getActiveSheet().isProtected) {
+                this.parent.notify(editAlert, null);
+                return;
+            }
             let isOpen = !this.parent.isEdit;
             let args = { action: 'getCurrentEditValue', editedValue: '' };
             if (!isOpen) {
@@ -16817,7 +22320,8 @@ class FormulaBar {
                     close: this.dialogClose.bind(this),
                     buttons: [
                         {
-                            click: (this.selectFormula.bind(this, this.dialog, this)), buttonModel: { content: 'OK', isPrimary: true }
+                            click: (this.selectFormula.bind(this, this.dialog, this)),
+                            buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true }
                         }
                     ]
                 });
@@ -16945,12 +22449,13 @@ class FormulaBar {
     }
     addEventListener() {
         this.parent.on(formulaBar, this.createFormulaBar, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.formulaBarClickHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(selectionComplete, this.formulaBarUpdateHandler, this);
         this.parent.on(mouseUpAfterSelection, this.UpdateValueAfterMouseUp, this);
         this.parent.on(formulaBarOperation, this.editOperationHandler, this);
+        this.parent.on(enableFormulaInput, this.disabletextarea, this);
     }
     destroy() {
         this.removeEventListener();
@@ -16966,19 +22471,20 @@ class FormulaBar {
     removeEventListener() {
         if (!this.parent.isDestroyed) {
             this.parent.off(formulaBar, this.createFormulaBar);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.formulaBarClickHandler);
             this.parent.off(keyDown, this.keyDownHandler);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(selectionComplete, this.formulaBarUpdateHandler);
             this.parent.off(mouseUpAfterSelection, this.UpdateValueAfterMouseUp);
             this.parent.off(formulaBarOperation, this.editOperationHandler);
+            this.parent.off(enableFormulaInput, this.disabletextarea);
         }
     }
     editOperationHandler(args) {
         let action = args.action;
         switch (action) {
             case 'refreshFormulabar':
-                this.getFormulaBar().value = args.value;
+                this.getFormulaBar().value = isUndefined(args.value) ? '' : args.value;
                 break;
             case 'getPosition':
                 args.position = this.getFormulaBar().getBoundingClientRect();
@@ -17048,7 +22554,7 @@ class Formula {
         this.parent.on(formulaOperation, this.performFormulaOperation, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.formulaClick, this);
         this.parent.on(refreshFormulaDatasource, this.refreshFormulaDatasource, this);
     }
     removeEventListener() {
@@ -17056,7 +22562,7 @@ class Formula {
             this.parent.off(formulaOperation, this.performFormulaOperation);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(keyDown, this.keyDownHandler);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.formulaClick);
             this.parent.off(refreshFormulaDatasource, this.refreshFormulaDatasource);
         }
     }
@@ -17070,7 +22576,7 @@ class Formula {
                 this.endEdit();
                 break;
             case 'addDefinedName':
-                this.addDefinedName(args.definedName);
+                args.isAdded = this.addDefinedName(args.definedName);
                 break;
             case 'getNames':
                 if (!args.sheetName) {
@@ -17224,7 +22730,7 @@ class Formula {
             }
         }
     }
-    clickHandler(e) {
+    formulaClick(e) {
         if (this.parent.isEdit) {
             let trgtElem = e.target;
             this.isFormulaBar = trgtElem.classList.contains('e-formula-bar');
@@ -17354,6 +22860,8 @@ class Formula {
         return name && name[0];
     }
     addDefinedName(definedName) {
+        let name = definedName.name;
+        let isAdded = false;
         if (!definedName.refersTo) {
             let sheet = getSheet(this.parent, this.parent.activeSheetTab - 1);
             let sheetName = getSheetName(this.parent);
@@ -17380,17 +22888,26 @@ class Formula {
             definedName.refersTo = sheetName + '!' + selectRange$$1;
             definedName.scope = 'Workbook';
         }
-        let eventArgs = {
-            action: 'addDefinedName', definedName: definedName, isAdded: false
-        };
-        this.parent.notify(workbookFormulaOperation, eventArgs);
-        if (!eventArgs.isAdded) {
+        if (name.length > 0 && (/^([a-zA-Z_0-9.]){0,255}$/.test(name))) {
+            let eventArgs = {
+                action: 'addDefinedName', definedName: definedName, isAdded: false
+            };
+            this.parent.notify(workbookFormulaOperation, eventArgs);
+            isAdded = eventArgs.isAdded;
+            if (!eventArgs.isAdded) {
+                this.parent.serviceLocator.getService(dialog).show({
+                    content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameExists'),
+                    width: '300'
+                });
+            }
+        }
+        else {
             this.parent.serviceLocator.getService(dialog).show({
-                content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameExists'),
+                content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameInValid'),
                 width: '300'
             });
         }
-        return true;
+        return isAdded;
     }
 }
 
@@ -17416,12 +22933,16 @@ class SheetTabs {
             className: 'e-sheet-tab-panel', id: this.parent.element.id + '_sheet_tab_panel'
         });
         let addBtn = this.parent.createElement('button', {
-            className: 'e-add-sheet-tab e-btn e-css e-flat e-icon-btn', attrs: { 'title': l10n.getConstant('AddSheet') }
+            className: 'e-add-sheet-tab e-btn e-css e-flat e-icon-btn' + (this.parent.allowInsert ? '' : ' e-disabled'),
+            attrs: { 'title': l10n.getConstant('AddSheet') }
         });
         addBtn.appendChild(this.parent.createElement('span', { className: 'e-btn-icon e-icons e-add-icon' }));
         addBtn.addEventListener('click', this.addSheetTab.bind(this));
+        addBtn.disabled = !this.parent.allowInsert;
         panel.appendChild(addBtn);
-        this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' });
+        if (this.parent.allowInsert) {
+            this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' });
+        }
         let ddb = this.parent.createElement('button', { attrs: { 'title': l10n.getConstant('ListAllSheets') } });
         panel.appendChild(ddb);
         this.parent.element.appendChild(panel);
@@ -17481,6 +23002,8 @@ class SheetTabs {
             let arg = { action: 'addSheet', sheetName: 'Sheet' + (i + 1), index: i + 1, visibleName: sheetName };
             this.parent.notify(workbookFormulaOperation, arg);
         }
+        this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
+        this.parent.notify(protectSheet, null);
     }
     updateDropDownItems(curIdx, prevIdx) {
         if (prevIdx > -1) {
@@ -17533,39 +23056,20 @@ class SheetTabs {
         this.tabInstance.selectedItem = this.parent.activeSheetTab - 1;
         this.tabInstance.dataBind();
     }
-    addSheetTab(args) {
-        if (args.count && (args.count === this.parent.sheets.length)) {
-            return;
-        }
-        let idx = args.previousIndex ? args.previousIndex : args.text && args.text === 'Insert' ?
-            this.parent.activeSheetTab - 1 : this.parent.activeSheetTab;
-        this.parent.createSheet(idx);
-        let sheetName = this.parent.sheets[idx].name;
-        this.dropDownInstance.items.splice(idx, 0, { text: sheetName });
-        this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        this.tabInstance.addTab([{ header: { text: sheetName }, content: '' }], idx);
-        if (idx === this.parent.activeSheetTab - 1) {
-            this.parent.renderModule.refreshSheet();
-            this.updateDropDownItems(idx, idx + 1);
-        }
-        else {
-            if (!args.isAction) {
-                this.updateSheetTab({ idx: idx });
-            }
-        }
+    addSheetTab() {
+        this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetTab, end: this.parent.activeSheetTab, modelType: 'Sheet', isAction: true, activeSheetTab: this.parent.activeSheetTab + 1 });
         this.parent.element.focus();
-        let index = this.parent.getActiveSheet().id;
-        let arg = { action: 'addSheet', visibleName: sheetName, sheetName: 'Sheet' + index, index: index };
-        this.parent.notify(workbookFormulaOperation, arg);
-        if (!args.isAction) {
-            let eventArgs = {
-                index: this.parent.getActiveSheet().id,
-                text: args.text,
-                sheetCount: this.parent.sheets.length,
-                previousIndex: idx
-            };
-            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addSheet' });
+    }
+    insertSheetTab(args) {
+        this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
+        for (let i = args.startIdx; i <= args.endIdx; i++) {
+            let sheetName = this.parent.sheets[i].name;
+            this.dropDownInstance.items.splice(i, 0, { text: sheetName });
+            this.tabInstance.addTab([{ header: { text: sheetName }, content: '' }], i);
         }
+        this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
+        this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
+        this.updateSheetTab({ idx: args.startIdx });
     }
     updateSheetTab(args) {
         if (args.name === 'activeSheetChanged') {
@@ -17574,7 +23078,6 @@ class SheetTabs {
         else {
             if (this.parent.sheets[args.idx].state === 'Hidden') {
                 this.parent.sheets[args.idx].state = 'Visible';
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.tabInstance.items[args.idx].cssClass = '';
                 this.tabInstance.items = this.tabInstance.items;
                 this.tabInstance.dataBind();
@@ -17582,6 +23085,7 @@ class SheetTabs {
         }
         this.tabInstance.selectedItem = args.idx;
         this.tabInstance.dataBind();
+        this.parent.notify(protectSheet, null);
     }
     switchSheetTab(args) {
         let target = closest(args.event.target, '.e-toolbar-item');
@@ -17597,9 +23101,17 @@ class SheetTabs {
                 break;
             }
         }
-        if (args.element.classList.contains('e-contextmenu') && args.items[3] &&
-            args.items[3].id === `${this.parent.element.id}_cmenu_sheet_hide` && this.skipHiddenSheets() === 1) {
-            args.element.children[3].classList.add('e-disabled');
+        if (args.element.classList.contains('e-contextmenu') && args.items[0] &&
+            args.items[0].id === `${this.parent.element.id}_cmenu_insert_sheet`) {
+            if (this.skipHiddenSheets() === 1) {
+                //let id: string = `${this.parent.element.id}_cmenu`;
+                //this.parent.enableFileMenuItems([`${id}_hide_sheet`, `${id}_delete_sheet`], false, true);
+                args.element.children[1].classList.add('e-disabled');
+                args.element.children[3].classList.add('e-disabled');
+            }
+            if (!this.parent.allowInsert) {
+                args.element.children[0].classList.add('e-disabled');
+            }
         }
     }
     skipHiddenSheets() {
@@ -17670,7 +23182,6 @@ class SheetTabs {
                 let items = this.removeRenameInput(target);
                 if (this.tabInstance.items[idx].header.text !== value) {
                     this.parent.sheets[idx].name = value;
-                    this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
                 if (e.type === 'keydown' || (closest(e.target, '.e-spreadsheet'))) {
@@ -17708,7 +23219,6 @@ class SheetTabs {
     }
     hideSheet() {
         this.parent.getActiveSheet().state = 'Hidden';
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         this.tabInstance.items[this.parent.activeSheetTab - 1].cssClass = 'e-hide';
         this.tabInstance.items = this.tabInstance.items;
         this.tabInstance.dataBind();
@@ -17763,7 +23273,7 @@ class SheetTabs {
                 }
                 else {
                     dialogInst.show({
-                        height: 180, width: 400, isModal: true, showCloseIcon: true,
+                        height: 200, width: 400, isModal: true, showCloseIcon: true,
                         content: l10n.getConstant('DeleteSheetAlert'),
                         beforeOpen: () => this.parent.element.focus(),
                         buttons: [{
@@ -17820,7 +23330,7 @@ class SheetTabs {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
         let activeIndex = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
-        this.parent.setProperties({ 'activeSheetTab': activeIndex + 1 }, true);
+        this.parent.activeSheetTab = activeIndex + 1;
         this.parent.renderModule.refreshSheet();
         this.tabInstance.selectedItem = activeIndex;
         this.tabInstance.dataBind();
@@ -17890,7 +23400,7 @@ class SheetTabs {
     addEventListener() {
         this.parent.on(sheetTabs, this.createSheetTabs, this);
         this.parent.on(refreshSheetTabs, this.refreshSheetTab, this);
-        this.parent.on(addSheetTab, this.addSheetTab, this);
+        this.parent.on(insertSheetTab, this.insertSheetTab, this);
         this.parent.on(removeSheetTab, this.removeSheetTab, this);
         this.parent.on(renameSheetTab, this.renameSheetTab, this);
         this.parent.on(cMenuBeforeOpen, this.switchSheetTab, this);
@@ -17923,7 +23433,7 @@ class SheetTabs {
         if (!this.parent.isDestroyed) {
             this.parent.off(sheetTabs, this.createSheetTabs);
             this.parent.off(refreshSheetTabs, this.refreshSheetTab);
-            this.parent.off(addSheetTab, this.addSheetTab);
+            this.parent.off(insertSheetTab, this.insertSheetTab);
             this.parent.off(removeSheetTab, this.removeSheetTab);
             this.parent.off(renameSheetTab, this.renameSheetTab);
             this.parent.off(cMenuBeforeOpen, this.switchSheetTab);
@@ -18132,13 +23642,14 @@ class ContextMenu$1 {
     /**
      * Select event handler.
      */
+    // tslint:disable-next-line
     selectHandler(args) {
         let selectArgs = extend({ cancel: false }, args);
         this.parent.trigger('contextMenuItemSelect', selectArgs);
+        let id = this.parent.element.id + '_cmenu';
         if (!selectArgs.cancel) {
             let l10n = this.parent.serviceLocator.getService(locale);
             let indexes;
-            let id = this.parent.element.id + '_cmenu';
             switch (args.item.id) {
                 case id + '_cut':
                     this.parent.notify(cut, { isAction: true, promise: Promise });
@@ -18158,13 +23669,14 @@ class ContextMenu$1 {
                 case id + '_rename':
                     this.parent.notify(renameSheetTab, {});
                     break;
-                case id + '_delete':
+                case id + '_delete_sheet':
                     this.parent.notify(removeSheetTab, {});
                     break;
-                case id + '_insert':
-                    this.parent.notify(addSheetTab, { text: 'Insert' });
+                case id + '_insert_sheet':
+                    this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetTab - 1,
+                        end: this.parent.activeSheetTab - 1, modelType: 'Sheet', isAction: true });
                     break;
-                case id + '_sheet_hide':
+                case id + '_hide_sheet':
                     this.parent.notify(hideSheet, null);
                     break;
                 case id + '_ascending':
@@ -18186,13 +23698,39 @@ class ContextMenu$1 {
                 case id + '_reapplyfilter':
                     this.parent.notify(reapplyFilter, null);
                     break;
-                case id + '_hiderow':
+                case id + '_hide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-                    this.parent.showHideRow(true, indexes[0], indexes[2]);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[0], endIndex: indexes[2], hide: true, isCol: false, actionUpdate: true
+                    });
                     break;
-                case id + '_unhiderow':
+                case id + '_unhide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-                    this.parent.showHideRow(false, indexes[0], indexes[2]);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[0], endIndex: indexes[2], hide: false, isCol: false, actionUpdate: true
+                    });
+                    break;
+                case id + '_hide_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[1], endIndex: indexes[3], hide: true, isCol: true, actionUpdate: true
+                    });
+                    break;
+                case id + '_unhide_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[1], endIndex: indexes[3], hide: false, isCol: true, actionUpdate: true
+                    });
+                    break;
+                case id + '_insert_row':
+                case id + '_delete_row':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, { model: this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true });
+                    break;
+                case id + '_insert_column':
+                case id + '_delete_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, { model: this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true });
                     break;
                 case id + '_hyperlink':
                     this.parent.notify(initiateHyperlink, null);
@@ -18206,10 +23744,27 @@ class ContextMenu$1 {
                 case id + '_removeHyperlink':
                     this.parent.removeHyperlink(this.parent.getActiveSheet().selectedRange);
                     break;
-                default:
-                // Rename functionality goes here
+                case id + '_protect':
+                    let sheet = this.parent.getActiveSheet();
+                    sheet.isProtected = !sheet.isProtected;
+                    let isActive;
+                    sheet.isProtected ? isActive = false : isActive = true;
+                    this.parent.notify(applyProtect, { isActive: isActive });
+                    break;
             }
         }
+    }
+    getInsertModel(startIndex, endIndex) {
+        let model = [];
+        for (let i = startIndex; i <= endIndex; i++) {
+            if (i === startIndex) {
+                model.push({ index: i });
+            }
+            else {
+                model.push({});
+            }
+        }
+        return model;
     }
     /**
      * Before open event handler.
@@ -18269,10 +23824,15 @@ class ContextMenu$1 {
         }
         else if (target === 'RowHeader') {
             this.setClipboardData(items, l10n, id);
-            //this.setHideShowItems(items, l10n, 'Row', id);
+            let indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
+            this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
         }
         else if (target === 'ColumnHeader') {
             this.setClipboardData(items, l10n, id);
+            let indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
+            this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
         }
         else if (target === 'SelectAll') {
             this.setClipboardData(items, l10n, id);
@@ -18281,19 +23841,33 @@ class ContextMenu$1 {
         }
         else if (target === 'Footer') {
             items.push({
-                text: l10n.getConstant('Insert'), id: id + '_insert'
+                text: l10n.getConstant('Insert'), id: id + '_insert_sheet'
             });
             items.push({
-                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete'
+                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete_sheet'
             });
             items.push({
                 text: l10n.getConstant('Rename'), id: id + '_rename'
             });
             items.push({
-                text: l10n.getConstant('Hide'), id: id + '_sheet_hide'
+                text: l10n.getConstant('Hide'), id: id + '_hide_sheet'
             });
+            this.setProtectSheetItems(items, id);
         }
         return items;
+    }
+    setProtectSheetItems(items, id) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        if (this.parent.getActiveSheet().isProtected) {
+            items.push({
+                text: l10n.getConstant('UnprotectSheet'), id: id + '_protect', iconCss: 'e-icons e-protect-icon',
+            });
+        }
+        else {
+            items.push({
+                text: l10n.getConstant('ProtectSheet'), id: id + '_protect', iconCss: 'e-icons e-protect-icon',
+            });
+        }
     }
     /**
      * Sets sorting related items to the context menu.
@@ -18333,10 +23907,11 @@ class ContextMenu$1 {
         }
     }
     setHyperLink(items, id) {
+        let sheet = this.parent.getActiveSheet();
         if (this.parent.allowHyperlink) {
             let l10n = this.parent.serviceLocator.getService(locale);
-            if (!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
-                !document.activeElement.classList.contains('e-hyperlink')) {
+            if ((!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
+                !document.activeElement.classList.contains('e-hyperlink')) || (sheet.isProtected && !sheet.protectSettings.insertLink)) {
                 items.push({
                     text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
                 });
@@ -18369,17 +23944,26 @@ class ContextMenu$1 {
             });
         }
     }
-    setHideShowItems(items, l10n, layout, id) {
+    setInsertDeleteItems(items, l10n, layout, id, indexes) {
         items.push({ separator: true });
-        let indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-        if (indexes[0] === indexes[2] || indexes[1] === indexes[3]) {
-            items.push({ text: l10n.getConstant('Hide' + layout), id: id + '_hide' + layout.toLowerCase() });
+        ['Insert', 'Delete'].forEach((action) => {
+            if (indexes[0] === indexes[1]) {
+                items.push({ text: l10n.getConstant(`${action}${layout}`), id: id + `_${action.toLowerCase()}_${layout.toLowerCase()}` });
+            }
+            else {
+                items.push({ text: l10n.getConstant(`${action}${layout}s`), id: id + `_${action.toLowerCase()}_${layout.toLowerCase()}` });
+            }
+        });
+    }
+    setHideShowItems(items, l10n, layout, id, indexes) {
+        if (indexes[0] === indexes[1]) {
+            items.push({ text: l10n.getConstant(`Hide${layout}`), id: id + `_hide_${layout.toLowerCase()}` });
         }
         else {
-            items.push({ text: l10n.getConstant('Hide' + layout + 's'), id: id + '_hide' + layout.toLowerCase() });
+            items.push({ text: l10n.getConstant(`Hide${layout}s`), id: id + `_hide_${layout.toLowerCase()}` });
         }
-        if (this.parent.hiddenRowsCount(indexes[0], indexes[2])) {
-            items.push({ text: l10n.getConstant('UnHide' + layout + 's'), id: id + '_unhide' + layout.toLowerCase() });
+        if (this.parent.hiddenCount(indexes[0], indexes[1], `${layout.toLowerCase()}s`)) {
+            items.push({ text: l10n.getConstant(`UnHide${layout}s`), id: id + `_unhide_${layout.toLowerCase()}` });
         }
     }
     /**
@@ -18533,7 +24117,7 @@ class Sort {
     isValidSortRange() {
         let sheet = this.parent.getActiveSheet();
         let range = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+        if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             return false;
         }
         return true;
@@ -18620,15 +24204,15 @@ class Sort {
         });
         let errorField = '';
         if (hasDuplicate) {
-            let count = 0;
+            let count$$1 = 0;
             Array.prototype.some.call(dialogElem.getElementsByClassName('e-sort-field'), (dropDown) => {
                 let dropDownList = getComponent(dropDown, 'dropdownlist');
                 if (dropDownList.value === duplicateField) {
                     dropDown.parentElement.classList.add('e-error');
                     errorField = dropDownList.text;
-                    count++;
+                    count$$1++;
                 }
-                return count === 2; //breaks the loop when 2 errors added.
+                return count$$1 === 2; //breaks the loop when 2 errors added.
             });
             errorElem.innerHTML = '<strong>' + errorField + '</strong>' + l10n.getConstant('SortDuplicateFieldError');
             return true;
@@ -18910,7 +24494,7 @@ class Sort {
             if (eventArgs.hasFilter && eventArgs.filterRange) {
                 range[0] = eventArgs.filterRange[0];
                 range[1] = 0;
-                range[2] = sheet.usedRange.rowIndex - 1;
+                range[2] = sheet.usedRange.rowIndex;
                 range[3] = sheet.usedRange.colIndex;
                 beforeArgs.sortOptions.containsHeader = true;
             }
@@ -19010,7 +24594,7 @@ class Filter {
      */
     isInValidFilterRange(sheet) {
         let selectedRange = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-        return selectedRange[0] > sheet.usedRange.rowIndex - 1 || selectedRange[1] > sheet.usedRange.colIndex;
+        return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex;
     }
     /**
      * Shows the range error alert dialog.
@@ -19066,7 +24650,7 @@ class Filter {
         if (predicates) {
             let range = this.filterRange.get(sheetIdx).slice();
             range[0] = range[0] + 1; // to skip first row.
-            range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+            range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData) => {
                 this.filterSuccessHandler(new DataManager(jsonData), { action: 'filtering', filterCollection: predicates, field: predicates[0].field });
                 predicates.forEach((predicate) => {
@@ -19086,7 +24670,7 @@ class Filter {
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
-            range[2] = sheet.usedRange.rowIndex - 1;
+            range[2] = sheet.usedRange.rowIndex;
             range[3] = sheet.usedRange.colIndex;
         }
         this.filterRange.set(sheetIdx, range);
@@ -19124,7 +24708,7 @@ class Filter {
         }
         let range = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         let field = getColumnHeaderText(cell[1] + 1);
         let type = this.getColumnType(sheet, cell[1] + 1, range);
         let predicates = [{
@@ -19306,7 +24890,7 @@ class Filter {
         let filterCell = getCell(range[0], colIndex - 1, sheet);
         let displayName = this.parent.getDisplayText(filterCell);
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData) => {
             //to avoid undefined array data
             let checkBoxData;
@@ -19357,7 +24941,7 @@ class Filter {
         let sheet = this.parent.getActiveSheet();
         let range = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: sortOrder } }, range: getRangeAddress(range) });
         let cell = getIndexesFromAddress(sheet.activeCell);
         let field = getColumnHeaderText(cell[1] + 1);
@@ -19406,7 +24990,7 @@ class Filter {
             datasource: dataSource,
             predicates: this.getPredicates(sheetIdx),
         };
-        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex - 1; //extend the range if filtered
+        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex; //extend the range if filtered
         this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)));
     }
     /**
@@ -19448,7 +25032,7 @@ class Filter {
         let str = 0;
         let date = 0;
         let time = 0;
-        for (let i = range[0]; i <= sheet.usedRange.rowIndex - 1; i++) {
+        for (let i = range[0]; i <= sheet.usedRange.rowIndex; i++) {
             let cell = getCell(i, colIndex - 1, sheet);
             if (cell) {
                 if (cell.format) {
@@ -19583,7 +25167,7 @@ class BasicModule {
      * @private
      */
     constructor() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace);
     }
     /**
      * For internal use only - Get the module name.
@@ -19611,7 +25195,7 @@ class AllModule {
      * @private
      */
     constructor() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace);
     }
     /**
      * For internal use only - Get the module name.
@@ -19658,6 +25242,8 @@ __decorate$8([
 /** @hidden */
 const DISABLED = 'e-disabled';
 /** @hidden */
+const WRAPTEXT = 'e-wraptext';
+/** @hidden */
 const locale = 'spreadsheetLocale';
 /** @hidden */
 const dialog = 'dialog';
@@ -19690,6 +25276,32 @@ const fillColor = {
  * @hidden
  */
 let defaultLocale = {
+    FindValue: 'Find value',
+    ReplaceValue: 'Replace value',
+    FindReplaceTooltip: 'Find & Replace',
+    InsertingEmptyValue: 'Reference value is not valid.',
+    ReplaceAllEnd: ' matches replaced with ',
+    ByRow: 'By Rows',
+    ByColumn: 'By Columns',
+    MatchCase: 'Match case   ',
+    MatchExactCellElements: 'Match exact cell contents',
+    Replace: 'Replace...',
+    Find: 'Find and Replace...',
+    Goto: 'Goto...',
+    EntercellAddress: 'Enter cell address',
+    GotoSpecial: 'GotoSpecial...',
+    FindAndReplace: 'Find and Replace',
+    FindNextBtn: 'Find Next',
+    FindPreviousBtn: 'Find Previous',
+    ReplaceBtn: 'Replace',
+    ReplaceAllBtn: 'Replace All',
+    GotoHeader: 'Go To',
+    GotoSpecialHeader: 'Go To Special',
+    Sheet: 'Sheet',
+    Workbook: 'Workbook',
+    NoElements: 'We couldn\'t find what you were looking for.',
+    FindWhat: 'Find what',
+    ReplaceWith: 'Replace with',
     Cut: 'Cut',
     Copy: 'Copy',
     Paste: 'Paste',
@@ -19721,6 +25333,20 @@ let defaultLocale = {
     AlignTop: 'Align Top',
     AlignMiddle: 'Align Middle',
     AlignBottom: 'Align Bottom',
+    WrapText: 'Wrap Text',
+    Borders: 'Borders',
+    TopBorders: 'Top Borders',
+    LeftBorders: 'Left Borders',
+    RightBorders: 'Right Borders',
+    BottomBorders: 'Bottom Borders',
+    AllBorders: 'All Borders',
+    HorizontalBorders: 'Horizontal Borders',
+    VerticalBorders: 'Vertical Borders',
+    OutsideBorders: 'Outside Borders',
+    InsideBorders: 'Inside Borders',
+    NoBorders: 'No Borders',
+    BorderColor: 'Border Color',
+    BorderStyle: 'Border Style',
     InsertFunction: 'Insert Function',
     Insert: 'Insert',
     Delete: 'Delete',
@@ -19777,6 +25403,14 @@ let defaultLocale = {
     HideColumn: 'Hide Column',
     HideColumns: 'Hide Columns',
     UnHideColumns: 'UnHide Columns',
+    InsertRow: 'Insert Row',
+    InsertRows: 'Insert Rows',
+    InsertColumn: 'Insert Column',
+    InsertColumns: 'Insert Columns',
+    DeleteRow: 'Delete Row',
+    DeleteRows: 'Delete Rows',
+    DeleteColumn: 'Delete Column',
+    DeleteColumns: 'Delete Columns',
     Ok: 'Ok',
     Close: 'Close',
     Cancel: 'Cancel',
@@ -19843,8 +25477,11 @@ let defaultLocale = {
     SUBTOTAL: 'Returns subtotal for a range using the given function number.',
     RADIANS: 'Converts degrees into radians.',
     MATCH: 'Returns the relative position of a specified value in given range.',
-    LN: 'Returns the natural logarithm of a number',
+    LN: 'Returns the natural logarithm of a number.',
+    INTERCEPT: 'Calculates the point of the Y-intercept line via linear regression.',
+    SLOPE: 'Returns the slope of the line from linear regression of the data points.',
     DefineNameExists: 'This name already exists, try different name.',
+    DefineNameInValid: 'The name that you entered is not valid.',
     CircularReference: 'When a formula refers to one or more circular references, this may result in an incorrect calculation.',
     ShowRowsWhere: 'Show rows where:',
     OR: 'OR',
@@ -19853,7 +25490,6 @@ let defaultLocale = {
     CustomFilterPlaceHolder: 'Enter the value',
     CustomFilter: 'Custom Filter',
     Between: 'Between',
-    MatchCase: 'Match Case',
     DateTimeFilter: 'DateTime Filters',
     Undo: 'Undo',
     Redo: 'Redo',
@@ -19879,7 +25515,52 @@ let defaultLocale = {
     FilterButton: 'Filter',
     CancelButton: 'Cancel',
     OKButton: 'OK',
-    Search: 'Search'
+    Search: 'Search',
+    ProtectSheet: 'Protect Sheet',
+    UnprotectSheet: 'Unprotect Sheet',
+    LockCells: 'Lock Cells',
+    SelectCells: 'Select cells',
+    FormatCells: 'Format cells',
+    FormatRows: 'Format rows',
+    FormatColumns: 'Format columns',
+    InsertLinks: 'Insert links',
+    ProtectContent: 'Protect the contents of locked cells',
+    ProtectAllowUser: ' Allow all users of this worksheet to:',
+    EditAlert: 'The cell you\'re trying to change is protected. To make change, unprotect the sheet.',
+    SearchWithin: 'Search within',
+    SearchBy: 'Search by',
+    Reference: 'Reference',
+    DataValidation: 'Data Validation',
+    CLEARALL: 'CLEAR ALL',
+    APPLY: 'APPLY',
+    CellRange: 'Cell Range',
+    Allow: 'Allow',
+    Data: 'Data',
+    Minimum: 'Minimum',
+    Maximum: 'Maximum',
+    IgnoreBlank: 'Ignore blank',
+    WholeNumber: 'Whole Number',
+    Decimal: 'Decimal',
+    Date: 'Date',
+    TextLength: 'Text Length',
+    List: 'List',
+    NotBetween: 'Not between',
+    EqualTo: 'Equal to',
+    NotEqualTo: 'Not equal to',
+    Greaterthan: 'Greater than',
+    Lessthan: 'Less than',
+    GreaterThanOrEqualTo: 'Greater than or equal to',
+    LessThanOrEqualTo: 'Less than or equal to',
+    InCellDropDown: 'In-cell-dropdown',
+    Sources: 'Sources',
+    Value: 'Value',
+    Retry: 'Retry',
+    EnterValue: 'Enter value',
+    DialogError: 'The list source must be a reference to single row or column.',
+    ValidationError: 'This value doesn' + '\'' + 't match the data validation restrictions defined for the cell.',
+    EmptyError: 'You must enter a value',
+    ClearHighlight: 'Clear Highlight',
+    HighlightInvalidData: 'Highlight Invalid Data'
 };
 
 /**
@@ -19898,6 +25579,7 @@ class SheetRender {
         this.col = parent.createElement('col');
         this.rowRenderer = parent.serviceLocator.getService('row');
         this.cellRenderer = parent.serviceLocator.getService('cell');
+        this.addEventListener();
     }
     refreshSelectALLContent() {
         let cell;
@@ -19999,11 +25681,12 @@ class SheetRender {
         table.appendChild(this.parent.createElement(tagName));
     }
     /**
-     * It is used to refresh the select all, row header, column header and content table contents.
+     * It is used to refresh the select all, row header, column header and content of the spreadsheet.
      */
-    renderTable(cells, rowIdx, colIdx, lastIdx, top, left) {
+    renderTable(args) {
         let indexes;
         let row;
+        let hRow;
         let sheet = this.parent.getActiveSheet();
         let frag = document.createDocumentFragment();
         this.createTable();
@@ -20022,48 +25705,51 @@ class SheetRender {
             cHdrTHead.appendChild(cHdrRow);
         }
         frag.appendChild(this.contentPanel);
-        this.parent.notify(beforeContentLoaded, { startColIdx: colIdx });
+        this.parent.notify(beforeContentLoaded, { startColIdx: args.indexes[1] });
         let colCount = sheet.colCount.toString();
         let rowCount = sheet.colCount.toString();
+        let layout = args.top && args.left ? 'RowColumn' : (args.top ? 'Row' : (args.left ? 'Column' : ''));
         if (sheet.showHeaders) {
             this.parent.getColHeaderTable().setAttribute('aria-colcount', colCount);
             this.parent.getRowHeaderTable().setAttribute('aria-rowcount', rowCount);
         }
         attributes(this.parent.getContentTable(), { 'aria-rowcount': rowCount, 'aria-colcount': colCount });
-        cells.forEach((value, key) => {
+        args.cells.forEach((value, key) => {
             indexes = getRangeIndexes(key);
-            if (indexes[0] === rowIdx) {
-                this.updateCol(indexes[1], colGrp, sheet);
+            if (indexes[1] === args.indexes[1]) {
                 if (sheet.showHeaders) {
-                    cHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
-                }
-            }
-            if (indexes[1] === colIdx) {
-                if (sheet.showHeaders) {
-                    row = this.rowRenderer.render(indexes[0], true);
-                    rHdrTBody.appendChild(row);
-                    row.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
+                    hRow = this.rowRenderer.render(indexes[0], true);
+                    rHdrTBody.appendChild(hRow);
+                    hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
                 }
                 row = this.rowRenderer.render(indexes[0]);
                 cTBody.appendChild(row);
             }
             row.appendChild(this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[0], cell: value,
-                address: key, lastCell: indexes[1] === lastIdx, isHeightCheckNeeded: true }));
+                address: key, lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: true, row: row, hRow: hRow,
+                pRow: row.previousSibling, pHRow: sheet.showHeaders ? hRow.previousSibling : null,
+                first: layout ? (layout.includes('Row') ? (indexes[0] === args.indexes[0] ? 'Row' : (layout.includes('Column') ? (indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' }));
+            if (indexes[0] === args.indexes[0]) {
+                this.updateCol(sheet, indexes[1], colGrp);
+                if (sheet.showHeaders) {
+                    cHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
+                }
+            }
         });
         this.getContentTable().insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf(() => {
             let content = this.parent.getMainContent();
             document.getElementById(this.parent.element.id + '_sheet').appendChild(frag);
-            if (top) {
-                content.scrollTop = top;
+            if (args.top) {
+                content.scrollTop = args.top;
                 if (sheet.showHeaders) {
-                    this.parent.getRowHeaderContent().scrollTop = top;
+                    this.parent.getRowHeaderContent().scrollTop = args.top;
                 }
             }
-            if (left) {
-                content.scrollLeft = left;
+            if (args.left) {
+                content.scrollLeft = args.left;
                 if (sheet.showHeaders) {
-                    this.parent.getColumnHeaderContent().scrollLeft = left;
+                    this.parent.getColumnHeaderContent().scrollLeft = args.left;
                 }
             }
             this.parent.notify(contentLoaded, null);
@@ -20073,9 +25759,35 @@ class SheetRender {
             }
             setAriaOptions(this.parent.getMainContent(), { busy: false });
             this.parent.trigger(dataBound, {});
+            if (args.initLoad) {
+                let triggerEvent = true;
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    for (let i = 0; i < sheet.rangeSettings.length; i++) {
+                        if (sheet.rangeSettings[i].info.count - 1 > this.parent.viewport.bottomIndex) {
+                            triggerEvent = false;
+                            break;
+                        }
+                    }
+                }
+                if (triggerEvent) {
+                    this.triggerCreatedEvent();
+                }
+            }
         });
     }
-    refreshColumnContent(cells, rowIndex, colIndex, lastIdx) {
+    triggerCreatedEvent() {
+        if (this.parent.createdHandler) {
+            if (this.parent.createdHandler.observers) {
+                this.parent[created].observers = this.parent.createdHandler.observers;
+            }
+            else {
+                this.parent.setProperties({ created: this.parent.createdHandler }, true);
+            }
+            this.parent.createdHandler = undefined;
+            this.parent.trigger(created, null);
+        }
+    }
+    refreshColumnContent(args) {
         let indexes;
         let row;
         let table;
@@ -20096,26 +25808,29 @@ class SheetRender {
             hRow = tHead.querySelector('tr');
             hRow.innerHTML = '';
         }
-        cells.forEach((value, key) => {
+        args.cells.forEach((value, key) => {
             indexes = getRangeIndexes(key);
-            if (indexes[0] === rowIndex) {
-                this.updateCol(indexes[1], colGrp, sheet);
+            if (indexes[0] === args.indexes[0]) {
+                this.updateCol(sheet, indexes[1], colGrp);
                 if (sheet.showHeaders) {
                     hRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
                 }
             }
-            if (indexes[1] === colIndex) {
+            if (indexes[1] === args.indexes[1]) {
                 row = tBody.children[count];
                 if (row) {
-                    count++;
                     row.innerHTML = '';
+                    count++;
                 }
                 else {
                     return;
                 }
             }
             row.appendChild(this.cellRenderer.render({
-                colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key
+                colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
+                first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : (this.parent.scrollSettings.
+                    enableVirtualization && indexes[0] === args.indexes[0] && this.parent.viewport.topIndex !== skipHiddenIdx(sheet, 0, true)
+                    ? 'Row' : '')
             }));
         });
         frag.insertBefore(colGrp.cloneNode(true), tBody);
@@ -20135,10 +25850,10 @@ class SheetRender {
             setAriaOptions(this.parent.getMainContent(), { busy: false });
         });
     }
-    refreshRowContent(cells, startIndex, lastIdx) {
+    refreshRowContent(args) {
         let indexes;
         let row;
-        let hRow;
+        let hdrRow;
         let colGroupWidth = this.colGroupWidth;
         let sheet = this.parent.getActiveSheet();
         let hFrag;
@@ -20151,47 +25866,45 @@ class SheetRender {
             hFrag.appendChild(hTBody);
         }
         frag.appendChild(tBody);
-        cells.forEach((value, key) => {
+        args.cells.forEach((value, key) => {
             indexes = getRangeIndexes(key);
-            if (indexes[1] === startIndex) {
+            if (indexes[1] === args.indexes[1]) {
                 if (sheet.showHeaders) {
-                    hRow = this.rowRenderer.render(indexes[0], true);
-                    hTBody.appendChild(hRow);
-                    hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
+                    hdrRow = this.rowRenderer.render(indexes[0], true);
+                    hTBody.appendChild(hdrRow);
+                    hdrRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                 }
                 row = this.rowRenderer.render(indexes[0]);
                 tBody.appendChild(row);
             }
             row.appendChild(this.cellRenderer.render({ rowIdx: indexes[0], colIdx: indexes[1], cell: value, address: key,
-                lastCell: indexes[1] === lastIdx, row: row, hRow: hRow, isHeightCheckNeeded: true }));
+                lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling, pHRow: sheet.showHeaders ?
+                    hdrRow.previousSibling : null, isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
+                    'Row' : (this.parent.scrollSettings.enableVirtualization && indexes[1] === args.indexes[1] && this.parent.viewport.leftIndex
+                    !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : '') }));
         });
-        getUpdateUsingRaf(() => {
-            if (this.parent.isDestroyed) {
-                return;
-            }
-            if (this.colGroupWidth !== colGroupWidth) {
-                this.updateLeftColGroup(colGroupWidth);
-            }
-            if (sheet.showHeaders) {
-                detach(this.contentPanel.querySelector('.e-row-header tbody'));
-                this.getRowHeaderTable().appendChild(hFrag);
-            }
-            detach(this.contentPanel.querySelector('.e-main-content tbody'));
-            this.getContentTable().appendChild(frag);
-            this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
-            if (!this.parent.isOpen) {
-                this.parent.hideSpinner();
-            }
-            setAriaOptions(this.parent.getMainContent(), { busy: false });
-        });
+        if (this.colGroupWidth !== colGroupWidth) {
+            this.updateLeftColGroup(colGroupWidth);
+        }
+        if (sheet.showHeaders) {
+            detach(this.contentPanel.querySelector('.e-row-header tbody'));
+            this.getRowHeaderTable().appendChild(hFrag);
+        }
+        detach(this.contentPanel.querySelector('.e-main-content tbody'));
+        this.getContentTable().appendChild(frag);
+        this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
+        if (!this.parent.isOpen) {
+            this.parent.hideSpinner();
+        }
+        setAriaOptions(this.parent.getMainContent(), { busy: false });
     }
-    updateCol(idx, appendTo, sheet) {
+    updateCol(sheet, idx, appendTo) {
         let col = this.col.cloneNode();
         col.style.width = formatUnit(getColumnWidth(sheet, idx));
-        appendTo.appendChild(col);
+        return appendTo ? appendTo.appendChild(col) : col;
     }
-    updateColContent(cells, rowIdx, colIdx, lastIdx, direction) {
+    updateColContent(args) {
         getUpdateUsingRaf(() => {
             let indexes;
             let row;
@@ -20209,17 +25922,15 @@ class SheetRender {
             }
             let colGrp = this.parent.element.querySelector('.e-main-content colgroup');
             let colRefChild = colGrp.firstElementChild;
+            let skipRender;
             let tBody = this.parent.element.querySelector('.e-main-content tbody');
-            cells.forEach((value, key) => {
+            args.cells.forEach((value, key) => {
+                if (skipRender) {
+                    return;
+                }
                 indexes = getRangeIndexes(key);
-                if (indexes[0] === rowIdx) {
-                    if (direction === 'first') {
-                        this.updateCol(indexes[1], colGrp, sheet);
-                        if (sheet.showHeaders) {
-                            hRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
-                        }
-                    }
-                    else {
+                if (indexes[0] === args.indexes[0]) {
+                    if (args.direction === 'last') {
                         col = this.col.cloneNode();
                         col.style.width = formatUnit(getColumnWidth(sheet, indexes[1]));
                         colGrp.insertBefore(col, colRefChild);
@@ -20227,31 +25938,43 @@ class SheetRender {
                             hRow.insertBefore(this.cellRenderer.renderColHeader(indexes[1]), hRefChild);
                         }
                     }
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        // tslint:disable
-                        detach(colGrp[direction + 'ElementChild']);
+                    else {
+                        this.updateCol(sheet, indexes[1], colGrp);
                         if (sheet.showHeaders) {
-                            detach(hRow[direction + 'ElementChild']);
+                            hRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
+                        }
+                    }
+                    if (this.parent.scrollSettings.enableVirtualization && args.direction) {
+                        // tslint:disable
+                        detach(colGrp[args.direction + 'ElementChild']);
+                        if (sheet.showHeaders) {
+                            detach(hRow[args.direction + 'ElementChild']);
                         }
                         // tslint:enable
                     }
                 }
-                if (indexes[1] === colIdx) {
+                if (indexes[1] === args.indexes[1]) {
                     row = tBody.children[rowCount];
                     rowCount++;
+                    if (!row) {
+                        skipRender = true;
+                        return;
+                    }
                     refChild = row.firstElementChild;
                 }
                 cell = this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key,
-                    lastCell: indexes[1] === lastIdx, isHeightCheckNeeded: direction === 'first' });
-                if (direction === 'first') {
-                    row.appendChild(cell);
-                }
-                else {
+                    lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: args.direction === 'first',
+                    first: args.direction === 'last' && !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : '',
+                    checkNextBorder: args.direction === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', });
+                if (args.direction === 'last') {
                     row.insertBefore(cell, refChild);
                 }
-                if (this.parent.scrollSettings.enableVirtualization) {
+                else {
+                    row.appendChild(cell);
+                }
+                if (this.parent.scrollSettings.enableVirtualization && args.direction) {
                     // tslint:disable-next-line:no-any
-                    detach(row[direction + 'ElementChild']);
+                    detach(row[args.direction + 'ElementChild']);
                 }
             });
             if (sheet.showHeaders) {
@@ -20268,7 +25991,7 @@ class SheetRender {
             setAriaOptions(this.parent.getMainContent(), { busy: false });
         });
     }
-    updateRowContent(cells, startIndex, lastIdx, direction) {
+    updateRowContent(args) {
         let colGroupWidth = this.colGroupWidth;
         let row;
         let hRow;
@@ -20283,54 +26006,54 @@ class SheetRender {
         let indexes;
         let frag = document.createDocumentFragment();
         this.parent.showSpinner();
-        cells.forEach((value, cKey) => {
+        args.cells.forEach((value, cKey) => {
             indexes = getRangeIndexes(cKey);
-            if (indexes[1] === startIndex) {
+            if (indexes[1] === args.indexes[1]) {
                 if (sheet.showHeaders) {
                     hRow = this.rowRenderer.render(indexes[0], true);
                     rFrag.appendChild(hRow);
                     hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
-                    if (this.parent.scrollSettings.enableVirtualization && direction) {
+                    if (this.parent.scrollSettings.enableVirtualization && args.direction) {
                         // tslint:disable-next-line:no-any
-                        detach(rTBody[direction + 'ElementChild']);
+                        detach(rTBody[args.direction + 'ElementChild']);
                     }
                 }
                 row = this.rowRenderer.render(indexes[0]);
                 frag.appendChild(row);
-                if (this.parent.scrollSettings.enableVirtualization && direction) {
+                if (this.parent.scrollSettings.enableVirtualization && args.direction) {
                     // tslint:disable-next-line:no-any
-                    detach(tBody[direction + 'ElementChild']);
+                    detach(tBody[args.direction + 'ElementChild']);
                 }
             }
-            row.appendChild(this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: cKey,
-                lastCell: indexes[1] === lastIdx, row: row, hRow: hRow, isHeightCheckNeeded: direction === 'first' || direction === '' }));
+            row.appendChild(this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address: cKey,
+                lastCell: indexes[1] === args.indexes[3], row: row, pHRow: sheet.showHeaders ? hRow.previousSibling : null,
+                checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,
+                isHeightCheckNeeded: args.direction === 'first' || args.direction === '', hRow: hRow, first: args.direction === 'last' &&
+                    !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '' }));
         });
-        let appendFn = () => {
-            if (this.colGroupWidth !== colGroupWidth) {
-                this.updateLeftColGroup(colGroupWidth);
+        if (this.colGroupWidth !== colGroupWidth) {
+            this.updateLeftColGroup(colGroupWidth);
+        }
+        if (args.direction === 'last') {
+            if (sheet.showHeaders) {
+                rTBody.insertBefore(rFrag, rTBody.firstElementChild);
             }
-            if (direction === 'last') {
-                if (sheet.showHeaders) {
-                    rTBody.insertBefore(rFrag, rTBody.firstElementChild);
-                }
-                tBody.insertBefore(frag, tBody.firstElementChild);
+            tBody.insertBefore(frag, tBody.firstElementChild);
+        }
+        else {
+            if (sheet.showHeaders) {
+                rTBody.appendChild(rFrag);
             }
-            else {
-                if (sheet.showHeaders) {
-                    rTBody.appendChild(rFrag);
-                }
-                tBody.appendChild(frag);
-            }
-            if (this.parent.scrollSettings.enableVirtualization) {
-                this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
-            }
-            if (!this.parent.isOpen) {
-                this.parent.hideSpinner();
-            }
-            setAriaOptions(this.parent.getMainContent(), { busy: false });
-        };
-        direction ? getUpdateUsingRaf(appendFn) : appendFn();
+            tBody.appendChild(frag);
+        }
+        if (this.parent.scrollSettings.enableVirtualization) {
+            this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
+        }
+        if (!this.parent.isOpen) {
+            this.parent.hideSpinner();
+        }
+        setAriaOptions(this.parent.getMainContent(), { busy: false });
     }
     /**
      * Used to toggle row and column headers.
@@ -20456,6 +26179,18 @@ class SheetRender {
     getContentPanel() {
         return this.contentPanel.getElementsByClassName('e-main-content')[0];
     }
+    addEventListener() {
+        this.parent.on(created, this.triggerCreatedEvent, this);
+        this.parent.on(spreadsheetDestroyed, this.destroy, this);
+    }
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    removeEventListener() {
+        this.parent.off(created, this.triggerCreatedEvent);
+        this.parent.off(spreadsheetDestroyed, this.destroy);
+    }
 }
 
 /**
@@ -20488,20 +26223,22 @@ class RowRenderer {
         }
         return row;
     }
-    refresh(index, hRow) {
+    refresh(index, pRow, hRow, header) {
         let row;
         let sheet = this.parent.getActiveSheet();
-        if (hRow) {
+        if (header) {
+            row = this.render(index, true, true);
+            row.appendChild(this.cellRenderer.renderRowHeader(index));
+        }
+        else {
             row = this.render(index);
             let len = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
             for (let i = this.parent.viewport.leftIndex; i <= len; i++) {
                 row.appendChild(this.cellRenderer.render({ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet),
-                    address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true }));
+                    address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow,
+                    first: index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ?
+                        'Row' : '' }));
             }
-        }
-        else {
-            row = this.render(index, true, true);
-            row.appendChild(this.cellRenderer.renderRowHeader(index));
         }
         return row;
     }
@@ -20522,6 +26259,13 @@ class CellRenderer {
         let headerCell = this.th.cloneNode();
         attributes(headerCell, { 'role': 'columnheader', 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
         headerCell.innerHTML = getColumnHeaderText(index + 1);
+        let sheet = this.parent.getActiveSheet();
+        if (isHiddenCol(sheet, index + 1)) {
+            headerCell.classList.add('e-hide-start');
+        }
+        if (index !== 0 && isHiddenCol(sheet, index - 1)) {
+            headerCell.classList.add('e-hide-end');
+        }
         return headerCell;
     }
     renderRowHeader(index) {
@@ -20532,17 +26276,16 @@ class CellRenderer {
         return headerCell;
     }
     render(args) {
-        let td = this.element.cloneNode();
-        td.className = 'e-cell';
-        attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
-        td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
-        this.updateCell(args.rowIdx, args.colIdx, td, args.cell, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
+        args.td = this.element.cloneNode();
+        args.td.className = 'e-cell';
+        attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        args.td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        args.isRefresh = false;
+        this.update(args);
         if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
-            this.parent.notify(renderFilterCell, { td: td, rowIndex: args.rowIdx, colIndex: args.colIdx });
+            this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
-        let evtArgs = {
-            cell: args.cell, element: td, address: args.address
-        };
+        let evtArgs = { cell: args.cell, element: args.td, address: args.address };
         this.parent.trigger('beforeCellRender', evtArgs);
         this.updateRowHeight({
             rowIdx: args.rowIdx,
@@ -20554,28 +26297,30 @@ class CellRenderer {
         });
         return evtArgs.element;
     }
-    updateCell(rowIdx, colIdx, td, cell, lastCell, row, hRow, isHeightCheckNeeded, isRefresh) {
-        if (cell && cell.formula && !cell.value) {
-            let isFormula = checkIsFormula(cell.formula);
+    update(args) {
+        if (args.cell && args.cell.formula && !args.cell.value) {
+            let isFormula = checkIsFormula(args.cell.formula);
             let eventArgs = {
                 action: 'refreshCalculate',
-                value: cell.formula,
-                rowIndex: rowIdx,
-                colIndex: colIdx,
+                value: args.cell.formula,
+                rowIndex: args.rowIdx,
+                colIndex: args.colIdx,
                 isFormula: isFormula
             };
             this.parent.notify(workbookFormulaOperation, eventArgs);
+            args.cell.value = getCell(args.rowIdx, args.colIdx, this.parent.getActiveSheet()).value;
         }
         let formatArgs = {
-            type: cell && getTypeFromFormat(cell.format),
-            value: cell && cell.value, format: cell && cell.format ? cell.format : 'General',
-            formattedText: cell && cell.value, onLoad: true, isRightAlign: false, cell: cell
+            type: args.cell && getTypeFromFormat(args.cell.format),
+            value: args.cell && args.cell.value, format: args.cell && args.cell.format ? args.cell.format : 'General',
+            formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell,
+            rowIdx: args.rowIdx.toString(), colIdx: args.colIdx.toString()
         };
-        if (cell) {
+        if (args.cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        if (!isNullOrUndefined(td)) {
-            this.parent.refreshNode(td, {
+        if (!isNullOrUndefined(args.td)) {
+            this.parent.refreshNode(args.td, {
                 type: formatArgs.type,
                 result: formatArgs.formattedText,
                 curSymbol: getNumberDependable(this.parent.locale, 'USD'),
@@ -20584,48 +26329,62 @@ class CellRenderer {
             });
         }
         let style = {};
-        if (cell && cell.style) {
-            if (cell.style.properties) {
-                style = skipDefaultValue(cell.style, true);
+        if (args.cell) {
+            if (args.cell.style) {
+                if (args.cell.style.properties) {
+                    style = skipDefaultValue(args.cell.style, true);
+                }
+                else {
+                    style = args.cell.style;
+                }
             }
-            else {
-                style = cell.style;
+            if (args.cell.hyperlink) {
+                this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
             }
-        }
-        if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || lastCell) {
-            if (isRefresh) {
-                this.removeStyle(td);
-                this.parent.notify(setCellFormat, { style: style, range: getCellAddress(rowIdx, colIdx) });
-            }
-            else {
-                this.parent.notify(applyCellFormat, {
-                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: td,
-                    lastCell: lastCell, row: row, hRow: hRow,
-                    isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
+            if (args.cell.wrap) {
+                this.parent.notify(wrapEvent, {
+                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet: this.parent.getActiveSheet(), initial: true, td: args.td, row: args.row, hRow: args.hRow
                 });
             }
         }
-        else {
-            if (isRefresh) {
-                this.removeStyle(td);
+        if (args.isRefresh) {
+            this.removeStyle(args.td, args.rowIdx, args.colIdx);
+        }
+        if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
+            this.parent.notify(applyCellFormat, {
+                style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
+                first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded: args.isHeightCheckNeeded, manualUpdate: args.manualUpdate
+            });
+        }
+        if (args.checkNextBorder === 'Row') {
+            let borderTop = this.parent.getCellStyleValue(['borderTop'], [Number(this.parent.getContentTable().rows[0].getAttribute('aria-rowindex')) - 1, args.colIdx]).borderTop;
+            if (borderTop !== '' && (!args.cell || !args.cell.style || !args.cell.style.bottomPriority)) {
+                this.parent.notify(applyCellFormat, { style: { borderBottom: borderTop }, rowIdx: args.rowIdx,
+                    colIdx: args.colIdx, cell: args.td });
             }
         }
-        if (cell && cell.hyperlink && !hasTemplate(this.parent, rowIdx, colIdx, this.parent.activeSheetTab - 1)) {
+        if (args.checkNextBorder === 'Column') {
+            let borderLeft = this.parent.getCellStyleValue(['borderLeft'], [args.rowIdx, args.colIdx + 1]).borderLeft;
+            if (borderLeft !== '' && (!args.cell || !args.cell.style || (!args.cell.style.borderRight && !args.cell.style.border))) {
+                this.parent.notify(applyCellFormat, { style: { borderRight: borderLeft }, rowIdx: args.rowIdx, colIdx: args.colIdx,
+                    cell: args.td });
+            }
+        }
+        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
             let address;
-            if (typeof (cell.hyperlink) === 'string') {
-                address = cell.hyperlink;
+            if (typeof (args.cell.hyperlink) === 'string') {
+                address = args.cell.hyperlink;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             }
             else {
-                address = cell.hyperlink.address;
+                address = args.cell.hyperlink.address;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             }
-            let hArgs = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
-            this.parent.notify(createHyperlinkElement, hArgs);
+            this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
         }
     }
     processTemplates(cell, rowIdx, colIdx) {
@@ -20690,9 +26449,23 @@ class CellRenderer {
         this.parent.element.removeChild(tTable);
         return height < 20 ? 20 : height;
     }
-    removeStyle(element) {
+    removeStyle(element, rowIdx, colIdx) {
         if (element.style.length) {
             element.removeAttribute('style');
+        }
+        let prevRowCell = this.parent.getCell(rowIdx - 1, colIdx);
+        if (prevRowCell && prevRowCell.style.borderBottom) {
+            rowIdx = Number(prevRowCell.parentElement.getAttribute('aria-rowindex')) - 1;
+            if (!this.parent.getCellStyleValue(['borderBottom'], [rowIdx, colIdx]).borderBottom) {
+                prevRowCell.style.borderBottom = '';
+            }
+        }
+        let prevColCell = element.previousElementSibling;
+        if (prevColCell && prevColCell.style.borderRight) {
+            colIdx = Number(prevColCell.getAttribute('aria-colindex')) - 1;
+            if (!this.parent.getCellStyleValue(['borderRight'], [rowIdx, colIdx]).borderRight) {
+                prevColCell.style.borderRight = '';
+            }
         }
     }
     /** @hidden */
@@ -20707,7 +26480,7 @@ class CellRenderer {
                 for (let j = cRange[1]; j <= cRange[3]; j++) {
                     let cell = this.parent.getCell(i, j);
                     if (cell) {
-                        this.updateCell(i, j, cell, getCell(i, j, sheet), false, null, null, true, cell ? true : false);
+                        this.update({ rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), lastCell: j === cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' });
                         this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
                     }
                 }
@@ -20730,7 +26503,7 @@ class Render {
         this.addEventListener();
     }
     render() {
-        this.parent.setProperties({ 'activeSheetTab': this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1 }, true);
+        this.parent.activeSheetTab = this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1;
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
             this.parent.notify(formulaBar, null);
@@ -20742,19 +26515,27 @@ class Render {
             sheetPanel.classList.add('e-rtl');
         }
         this.parent.element.appendChild(sheetPanel);
-        this.parent.notify(sheetTabs, null);
+        if (this.parent.showSheetTabs) {
+            this.parent.notify(sheetTabs, null);
+        }
+        else { // for formula calculation
+            let sheetName = getSheetName(this.parent, 1);
+            let arg = { action: 'addSheet', sheetName: 'Sheet1', index: 1, visibleName: sheetName };
+            this.parent.notify(workbookFormulaOperation, arg);
+            this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
+        }
         if (this.parent.isMobileView()) {
             this.parent.notify(formulaBar, null);
             this.parent.notify(ribbon, null);
         }
         this.setSheetPanelSize();
         this.renderSheet(sheetPanel);
-        this.checkTopLeftCell();
+        this.checkTopLeftCell(true);
     }
-    checkTopLeftCell() {
+    checkTopLeftCell(initLoad) {
         let sheet = this.parent.getActiveSheet();
         if (!this.parent.scrollSettings.enableVirtualization || sheet.topLeftCell === 'A1') {
-            this.refreshUI();
+            this.refreshUI({ rowIndex: 0, colIndex: 0, refresh: 'All' }, null, initLoad);
         }
         else {
             let indexes = getCellIndexes(sheet.topLeftCell);
@@ -20772,37 +26553,48 @@ class Render {
         panel.appendChild(this.parent.createElement('div', { className: 'e-sheet', id: this.parent.element.id + '_sheet' }));
         this.parent.serviceLocator.getService('sheet').renderPanel();
     }
-    refreshUI(args = { rowIndex: 0, colIndex: 0, refresh: 'All' }, address) {
+    refreshUI(args, address, initLoad) {
         let sheetModule = this.parent.serviceLocator.getService('sheet');
         let sheet = this.parent.getActiveSheet();
         let sheetName = getSheetName(this.parent);
         this.parent.showSpinner();
         if (!address) {
             if (this.parent.scrollSettings.enableVirtualization) {
-                let lastRowIdx = args.rowIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2);
+                let lastRow = args.rowIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2);
                 let count = sheet.rowCount - 1;
-                if (this.parent.scrollSettings.isFinite && lastRowIdx > count) {
-                    lastRowIdx = count;
+                if (this.parent.scrollSettings.isFinite && lastRow > count) {
+                    lastRow = count;
                 }
-                let lastColIdx = args.colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
+                let lastCol = args.colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
                 count = sheet.colCount - 1;
-                if (this.parent.scrollSettings.isFinite && lastColIdx > count) {
-                    lastColIdx = count;
+                if (this.parent.scrollSettings.isFinite && lastCol > count) {
+                    lastCol = count;
                 }
-                let indexes = this.parent.skipHiddenRows(args.rowIndex, lastRowIdx);
+                let indexes = this.parent.skipHidden(args.rowIndex, lastRow);
                 let startRow = args.rowIndex;
                 if (args.rowIndex !== indexes[0]) {
                     let topLeftCell = getCellIndexes(sheet.topLeftCell);
                     if (topLeftCell[0] === args.rowIndex) {
                         sheet.topLeftCell = getCellAddress(indexes[0], topLeftCell[1]);
-                        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                     }
                     args.rowIndex = indexes[0];
                 }
-                lastRowIdx = indexes[1];
+                lastRow = indexes[1];
+                indexes = this.parent.skipHidden(args.colIndex, lastCol, 'columns');
+                let startCol = args.colIndex;
+                if (args.colIndex !== indexes[0]) {
+                    let topLeftCell = getCellIndexes(sheet.topLeftCell);
+                    if (topLeftCell[1] === args.colIndex) {
+                        sheet.topLeftCell = getCellAddress(topLeftCell[0], indexes[0]);
+                    }
+                    args.colIndex = indexes[0];
+                }
+                lastCol = indexes[1];
                 this.parent.viewport.topIndex = args.rowIndex;
-                this.parent.viewport.bottomIndex = lastRowIdx;
-                address = `${getCellAddress(startRow, args.colIndex)}:${getCellAddress(lastRowIdx, lastColIdx)}`;
+                this.parent.viewport.bottomIndex = lastRow;
+                this.parent.viewport.leftIndex = args.colIndex;
+                this.parent.viewport.rightIndex = lastCol;
+                address = `${getCellAddress(startRow, startCol)}:${getCellAddress(lastRow, lastCol)}`;
             }
             else {
                 address = `A1:${getCellAddress(sheet.rowCount - 1, sheet.colCount - 1)}`;
@@ -20813,22 +26605,26 @@ class Render {
         }
         setAriaOptions(this.parent.getMainContent(), { busy: true });
         this.parent.getData(`${sheetName}!${address}`).then((values) => {
-            let lastCellIdx = getCellIndexes(address.split(':')[1])[1];
+            let indexes = [args.rowIndex, args.colIndex, ...getCellIndexes(address.split(':')[1])];
             switch (args.refresh) {
                 case 'All':
-                    sheetModule.renderTable(values, args.rowIndex, args.colIndex, lastCellIdx, args.top, args.left);
+                    sheetModule.renderTable({ cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad });
                     break;
                 case 'Row':
-                    sheetModule.refreshRowContent(values, args.colIndex, lastCellIdx);
+                    sheetModule.refreshRowContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });
                     break;
                 case 'Column':
-                    sheetModule.refreshColumnContent(values, args.rowIndex, args.colIndex, lastCellIdx);
+                    sheetModule.refreshColumnContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });
                     break;
                 case 'RowPart':
-                    sheetModule.updateRowContent(values, args.colIndex, lastCellIdx, args.direction);
+                    sheetModule.updateRowContent({
+                        cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst
+                    });
                     break;
                 case 'ColumnPart':
-                    sheetModule.updateColContent(values, args.rowIndex, args.colIndex, lastCellIdx, args.direction);
+                    sheetModule.updateColContent({
+                        cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst
+                    });
                     break;
             }
         });
@@ -20860,10 +26656,10 @@ class Render {
         else {
             height = offset.height - getSiblingsHeight(panel);
             panel.style.height = `${height}px`;
-            height -= 30;
+            height -= 32;
         }
         this.parent.viewport.height = height;
-        this.parent.viewport.width = offset.width;
+        this.parent.viewport.width = offset.width - 32;
         this.parent.viewport.rowCount = this.roundValue(height, 20);
         this.parent.viewport.colCount = this.roundValue(offset.width, 64);
     }
@@ -20914,8 +26710,9 @@ class Dialog$1 {
     /**
      * To show dialog.
      */
-    show(dialogModel) {
+    show(dialogModel, cancelBtn) {
         let btnContent;
+        cancelBtn = isNullOrUndefined(cancelBtn) ? true : false;
         let closeHandler = dialogModel.close || null;
         let model = {
             header: 'Spreadsheet',
@@ -20932,22 +26729,27 @@ class Dialog$1 {
             }
         };
         extend(model, dialogModel);
-        btnContent = this.parent.serviceLocator.getService(locale).getConstant(model.buttons.length ? 'Cancel' : 'Ok');
-        model.buttons.push({
-            buttonModel: { content: btnContent, isPrimary: model.buttons.length === 0 },
-            click: this.hide.bind(this),
-        });
+        if (cancelBtn) {
+            btnContent = this.parent.serviceLocator.getService(locale).getConstant(model.buttons.length ? 'Cancel' : 'Ok');
+            model.buttons.push({
+                buttonModel: { content: btnContent, isPrimary: model.buttons.length === 0 },
+                click: this.hide.bind(this),
+            });
+        }
         let div = this.parent.createElement('div');
         document.body.appendChild(div);
         this.dialogInstance = new Dialog(model);
         this.dialogInstance.createElement = this.parent.createElement;
         this.dialogInstance.appendTo(div);
+        this.dialogInstance.refreshPosition();
     }
     /**
      * To hide dialog.
      */
     hide() {
-        this.dialogInstance.hide();
+        if (this.dialogInstance) {
+            this.dialogInstance.hide();
+        }
     }
     /**
      * To clear private variables.
@@ -21012,7 +26814,8 @@ class ActionEvents {
     }
     actionBeginHandler(args) {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
-        if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave') {
+        if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
+            || args.action === 'beforeWrap' || args.action === 'beforeReplace') {
             this.parent.notify(setActionData, { args: args });
         }
     }
@@ -21067,10 +26870,10 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         /** @hidden */
         this.viewport = {
             rowCount: 0, colCount: 0, height: 0, topIndex: 0, leftIndex: 0, width: 0,
-            bottomIndex: 0
+            bottomIndex: 0, rightIndex: 0
         };
         this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace);
         if (element) {
             this.appendTo(element);
         }
@@ -21080,11 +26883,11 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @returns HTMLElement
      * @hidden
      */
-    getCell(rowIndex, colIndex) {
-        if (this.scrollSettings.enableVirtualization) {
-            colIndex = colIndex - this.viewport.leftIndex;
+    getCell(rowIndex, colIndex, row) {
+        colIndex = this.getViewportIndex(colIndex, true);
+        if (!row) {
+            row = this.getRow(rowIndex);
         }
-        let row = this.getRow(rowIndex);
         return row ? row.cells[colIndex] : row;
     }
     /**
@@ -21093,23 +26896,41 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @hidden
      */
     getRow(index, table) {
-        if (this.scrollSettings.enableVirtualization) {
-            index -= this.hiddenRowsCount(this.viewport.topIndex, index);
-            index -= this.viewport.topIndex;
-        }
+        index = this.getViewportIndex(index);
         table = table || this.getContentTable();
         return table ? table.rows[index] : null;
     }
-    /** @hidden */
-    hiddenRowsCount(startIndex, endIndex) {
+    /**
+     * To get hidden row/column count between two specified index.
+     * Set `layout` as `columns` if you want to get column hidden count.
+     * @hidden
+     */
+    hiddenCount(startIndex, endIndex, layout = 'rows') {
         let sheet = this.getActiveSheet();
         let count = 0;
         for (let i = startIndex; i <= endIndex; i++) {
-            if (isHiddenRow(sheet, i)) {
+            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
                 count++;
             }
         }
         return count;
+    }
+    /**
+     * To get row/column viewport index.
+     * @hidden
+     */
+    getViewportIndex(index, isCol) {
+        if (this.scrollSettings.enableVirtualization) {
+            if (isCol) {
+                index -= this.hiddenCount(this.viewport.leftIndex, index, 'columns');
+                index -= this.viewport.leftIndex;
+            }
+            else {
+                index -= this.hiddenCount(this.viewport.topIndex, index);
+                index -= this.viewport.topIndex;
+            }
+        }
+        return index;
     }
     /**
      * To initialize the services;
@@ -21139,6 +26960,18 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         this.notify(initialLoad, null);
         this.renderSpreadsheet();
         this.wireEvents();
+        if (this.created) {
+            if (this[created].observers) {
+                if (this[created].observers.length > 0) {
+                    this.createdHandler = { observers: this[created].observers };
+                    this[created].observers = [];
+                }
+            }
+            else {
+                this.createdHandler = this.created;
+                this.setProperties({ created: undefined }, true);
+            }
+        }
     }
     renderSpreadsheet() {
         if (this.cssClass) {
@@ -21174,14 +27007,83 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     hideSpinner() {
         hideSpinner(this.element);
     }
+    protectSheet(protectSettings) {
+        this.getActiveSheet().isProtected = true;
+        super.protectSheet(protectSettings);
+    }
     /**
-     * Selection will navigates to the specified cell address in active sheet.
-     * @param {string} address - Specifies the cell address which needs to navigate.
+     * To find the specified cell value.
+     * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
+     * @param {string} args.value - Specifies the value to be find.
+     * @param {FindModeType} args.mode - Specifies the value to be find within sheet or workbook.
+     * @param {string} args.searchBy - Specifies the value to be find by row or column.
+     * @param {boolean} args.isCSen - Specifies the find match with case sensitive or not.
+     * @param {boolean} args.isEMatch - Specifies the find match with entire match or not.
+     * @param {string} args.findOpt - Specifies the next or previous find match.
+     * @param {number} args.sheetIndex - Specifies the current sheet to find.
+     * @default { mode: 'Sheet', searchBy: 'By Row', isCSen: 'false', isEMatch:'false' }
+     * @return {void}
+     */
+    find(args) {
+        super.findHandler(args);
+    }
+    /**
+     * To replace the specified cell value.
+     * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
+     * @param {string} args.replaceValue - Specifies the value to be replaced.
+     * @param {string} args.replaceBy - Specifies the value to be replaced for one or all.
+     * @return {void}
+     */
+    replace(args) {
+        super.replaceHandler(args);
+    }
+    /**
+     * Used to navigate to cell address within workbook.
+     * @param {string} address - Specifies the cell address you need to navigate.
+     * You can specify the address in two formats,
+     * `{sheet name}!{cell address}` - Switch to specified sheet and navigate to specified cell address.
+     * `{cell address}` - Navigate to specified cell address with in the active sheet.
+     * @return {void}
      */
     goTo(address) {
+        if (address.includes('!')) {
+            let addrArr = address.split('!');
+            let idx = getSheetIndex(this, addrArr[0]);
+            if (idx === undefined) {
+                return;
+            }
+            if (idx + 1 !== this.activeSheetTab) {
+                let activeCell = addrArr[1].split(':')[0];
+                this.sheets[idx].activeCell = activeCell;
+                this.sheets[idx].selectedRange = addrArr[1];
+                let cellIndex = getCellIndexes(activeCell);
+                if (cellIndex[0] < this.viewport.rowCount) {
+                    cellIndex[0] = 0;
+                }
+                if (cellIndex[1] < this.viewport.colCount) {
+                    cellIndex[1] = 0;
+                }
+                this.sheets[idx].topLeftCell = getCellAddress(cellIndex[0], cellIndex[1]);
+                this.activeSheetTab = idx + 1;
+                this.dataBind();
+                return;
+            }
+        }
         let indexes = getRangeIndexes(address);
-        let content = this.getMainContent();
         let sheet = this.getActiveSheet();
+        let insideDomCount = indexes[0] >= this.viewport.topIndex && indexes[0] < this.viewport.bottomIndex && indexes[1] >=
+            this.viewport.leftIndex && indexes[1] < this.viewport.rightIndex;
+        if (insideDomCount) {
+            this.selectRange(address);
+            let viewportIndexes = getCellIndexes(sheet.topLeftCell);
+            viewportIndexes[2] = viewportIndexes[0] + this.viewport.rowCount;
+            viewportIndexes[3] = viewportIndexes[1] + this.viewport.colCount;
+            if (indexes[0] >= viewportIndexes[0] && indexes[0] < viewportIndexes[2] && indexes[1] >= viewportIndexes[1] &&
+                indexes[1] < viewportIndexes[3]) {
+                return;
+            }
+        }
+        let content = this.getMainContent();
         let vTrack;
         let cVTrack;
         let rVTrack;
@@ -21190,7 +27092,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         let vHeight;
         let scrollableSize;
         if (indexes[0] === 0) {
-            content.scrollTop = 0;
+            offset = getRowsHeight(sheet, 0);
         }
         else {
             offset = getRowsHeight(sheet, 0, indexes[0] - 1);
@@ -21213,10 +27115,10 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                     });
                 }
             }
-            content.scrollTop = offset;
         }
+        content.scrollTop = offset;
         if (indexes[1] === 0) {
-            content.scrollLeft = 0;
+            offset = getColumnsWidth(sheet, 0);
         }
         else {
             offset = getColumnsWidth(sheet, 0, indexes[1] - 1);
@@ -21239,11 +27141,14 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                     });
                 }
             }
-            content.scrollLeft = offset;
+        }
+        content.scrollLeft = offset;
+        if (!insideDomCount) {
+            this.selectRange(address);
         }
     }
     /**
-     * This method is used to resize the Spreadsheet component.
+     * Used to resize the Spreadsheet.
      */
     resize() {
         this.renderModule.setSheetPanelSize();
@@ -21355,7 +27260,6 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             }
             getColumn(sheet, mIndex).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
             sheet.columns[mIndex].customWidth = true;
-            this.setProperties({ sheets: this.sheets }, true);
         }
     }
     /**
@@ -21402,7 +27306,6 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             }
             setRowHeight(sheet, mIndex, parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0);
             sheet.rows[mIndex].customHeight = true;
-            this.setProperties({ sheets: this.sheets }, true);
         }
     }
     /**
@@ -21583,10 +27486,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                     value = hyperlink.address;
                 }
                 let mCell = sheet.rows[cellIdx[0]].cells[cellIdx[1]];
-                if (displayText !== '') {
-                    mCell.value = displayText;
-                }
-                else if (isNullOrUndefined(mCell.value) || mCell.value === '') {
+                if (isNullOrUndefined(mCell.value) || mCell.value === '') {
                     
                 }
                 if (!isMethod) {
@@ -21597,6 +27497,35 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                 }
             }
         }
+    }
+    /**
+     * This method is used to add data validation.
+     * @param {ValidationModel} rules - specifies the validation rules.
+     * @param {string} range - range that needs to be add validation.
+     */
+    addDataValidation(rules, range) {
+        super.addDataValidation(rules, range);
+    }
+    /**
+     * This method is used for remove validation.
+     * @param {string} range - range that needs to be remove validation.
+     */
+    removeDataValidation(range) {
+        super.removeDataValidation(range);
+    }
+    /**
+     * This method is used to highlight the invalid data.
+     * @param {string} range - range that needs to be highlight the invalid data.
+     */
+    addInvalidHighlight(range) {
+        super.addInvalidHighlight(range);
+    }
+    /**
+     * This method is used for remove highlight from invalid data.
+     * @param {string} range - range that needs to be remove invalid highlight.
+     */
+    removeInvalidHighlight(range) {
+        super.removeInvalidHighlight(range);
     }
     /** @hidden */
     setPanelSize() {
@@ -21617,8 +27546,22 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         }
     }
     /** @hidden */
-    showHideRow(hide, startRow, endRow = startRow) {
-        this.notify(hideShowRow, { startRow: startRow, endRow: endRow, hide: hide });
+    hideRow(startIndex, endIndex = startIndex, hide = true) {
+        if (this.renderModule) {
+            this.notify(hideShow, { startIndex: startIndex, endIndex: endIndex, hide: hide });
+        }
+        else {
+            super.hideRow(startIndex, endIndex, hide);
+        }
+    }
+    /** @hidden */
+    hideColumn(startIndex, endIndex = startIndex, hide = true) {
+        if (this.renderModule) {
+            this.notify(hideShow, { startIndex: startIndex, endIndex: endIndex, hide: hide, isCol: true });
+        }
+        else {
+            super.hideColumn(startIndex, endIndex, hide);
+        }
     }
     /**
      * Gets the row header div of the Spreadsheet.
@@ -21738,7 +27681,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /** @hidden */
     refreshNode(td, args) {
         let value;
-        let spanElem = td.querySelector('.e-' + this.element.id + '_currency');
+        let spanElem = td.querySelector('#' + this.element.id + '_currency');
         let alignClass = 'e-right-align';
         if (args) {
             args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
@@ -21746,12 +27689,20 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                 detach(spanElem);
             }
             if (args.type === 'Accounting' && isNumber(args.value)) {
-                td.textContent = args.result.split(args.curSymbol).join('');
+                if (td.querySelector('a')) {
+                    td.querySelector('a').textContent = args.result.split(args.curSymbol).join('');
+                }
+                else {
+                    td.innerHTML = '';
+                }
                 td.appendChild(this.createElement('span', {
-                    className: 'e-' + this.element.id + '_currency',
-                    innerHTML: ` ${args.curSymbol}`,
+                    id: this.element.id + '_currency',
+                    innerHTML: `${args.curSymbol}`,
                     styles: 'float: left'
                 }));
+                if (!td.querySelector('a')) {
+                    td.innerHTML += args.result.split(args.curSymbol).join('');
+                }
                 td.classList.add(alignClass);
                 return;
             }
@@ -21780,14 +27731,29 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         }
     }
     /** @hidden */
-    skipHiddenRows(startIdx, endIdx) {
+    calculateHeight(style, lines = 1, borderWidth = 1) {
+        let fontSize = (style && style.fontSize) || this.cellStyle.fontSize;
+        let threshold = style.fontFamily === 'Arial Black' ? 1.44 : 1.24;
+        return ((fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10)) * threshold * lines) +
+            (borderWidth * threshold);
+    }
+    /** @hidden */
+    skipHidden(startIdx, endIdx, layout = 'rows') {
         let sheet = this.getActiveSheet();
+        let totalCount;
+        if (this.scrollSettings.isFinite) {
+            totalCount = (layout === 'rows' ? sheet.rowCount : sheet.colCount) - 1;
+        }
         for (let i = startIdx; i <= endIdx; i++) {
-            if (isHiddenRow(sheet, i)) {
+            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
                 if (startIdx === i) {
                     startIdx++;
                 }
                 endIdx++;
+                if (totalCount && endIdx > totalCount) {
+                    endIdx = totalCount;
+                    break;
+                }
             }
         }
         return [startIdx, endIdx];
@@ -21797,7 +27763,9 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         let indicator = select(`${selector} .e-tab-header .e-indicator`, this.element);
         indicator.style.display = 'none';
         setStyleAttribute(indicator, { 'left': '', 'right': '' });
-        setStyleAttribute(indicator, { 'left': nextTab.offsetLeft + 'px', 'right': nextTab.parentElement.offsetWidth - (nextTab.offsetLeft + nextTab.offsetWidth) + 'px' });
+        setStyleAttribute(indicator, {
+            'left': nextTab.offsetLeft + 'px', 'right': nextTab.parentElement.offsetWidth - (nextTab.offsetLeft + nextTab.offsetWidth) + 'px'
+        });
         indicator.style.display = '';
     }
     /** @hidden */
@@ -21816,7 +27784,6 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         }
         if (hiddenCount === this.sheets.length) {
             this.sheets[0].state = 'Visible';
-            this.setProperties({ 'sheets': this.sheets }, true);
             return 0;
         }
         return index;
@@ -21846,7 +27813,13 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @return {boolean} - Return the added status of the defined name.
      */
     addDefinedName(definedName) {
-        return super.addDefinedName(definedName);
+        let eventArgs = {
+            action: 'addDefinedName',
+            isAdded: false,
+            definedName: definedName
+        };
+        this.notify(formulaOperation, eventArgs);
+        return eventArgs.isAdded;
     }
     /**
      * Removes the defined name from the Spreadsheet.
@@ -21864,10 +27837,17 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         this.notify(mouseDown, e);
     }
     keyUpHandler(e) {
-        this.notify(keyUp, e);
+        if (closest(e.target, '.e-find-dlg')) {
+            this.notify(findKeyUp, e);
+        }
+        else {
+            this.notify(keyUp, e);
+        }
     }
     keyDownHandler(e) {
-        this.notify(keyDown, e);
+        if (!closest(e.target, '.e-findtool-dlg')) {
+            this.notify(keyDown, e);
+        }
     }
     /**
      * Binding events to the element while component creation.
@@ -22100,28 +28080,35 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                     this.renderModule.refreshSheet();
                     break;
                 case 'sheets':
-                    Object.keys(newProp.sheets).forEach((sheetIdx) => {
-                        if (this.activeSheetTab - 1 === Number(sheetIdx)) {
-                            if (newProp.sheets[sheetIdx].showGridLines !== undefined) {
-                                this.notify(updateToggleItem, { props: 'GridLines', pos: 2 });
-                            }
-                            if (newProp.sheets[sheetIdx].showHeaders !== undefined) {
-                                this.sheetModule.showHideHeaders();
-                                this.notify(updateToggleItem, { props: 'Headers', pos: 0 });
-                            }
-                        }
-                        if (newProp.sheets[sheetIdx].name !== undefined) {
+                    // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
+                    // if (this.activeSheetTab - 1 === Number(sheetIdx)) {
+                    //     if (newProp.sheets[sheetIdx].showGridLines !== undefined) {
+                    //         this.notify(updateToggleItem, { props: 'GridLines', pos: 2 });
+                    //     }
+                    //     if (newProp.sheets[sheetIdx].showHeaders !== undefined) {
+                    //         this.sheetModule.showHideHeaders();
+                    //         this.notify(updateToggleItem, { props: 'Headers', pos: 0 });
+                    //     }
+                    // }
+                    // if (newProp.sheets[sheetIdx].name !== undefined) {
+                    //     this.notify(sheetNameUpdate, {
+                    //         items: this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
+                    //         value: newProp.sheets[sheetIdx].name,
+                    //         idx: sheetIdx
+                    //     });
+                    // }
+                    // if (newProp.sheets[sheetIdx].rangeSettings) {
+                    //     this.sheets[sheetIdx].rangeSettings = newProp.sheets[sheetIdx].rangeSettings;
+                    this.renderModule.refreshSheet();
+                    if (this.showSheetTabs) {
+                        Object.keys(newProp.sheets).forEach((sheetIdx) => {
                             this.notify(sheetNameUpdate, {
                                 items: this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
                                 value: newProp.sheets[sheetIdx].name,
                                 idx: sheetIdx
                             });
-                        }
-                        if (newProp.sheets[sheetIdx].rangeSettings) {
-                            this.sheets[sheetIdx].rangeSettings = newProp.sheets[sheetIdx].rangeSettings;
-                            this.renderModule.refreshSheet();
-                        }
-                    });
+                        });
+                    }
                     break;
                 case 'locale':
                     this.refresh();
@@ -22206,6 +28193,9 @@ __decorate$9([
     Property(true)
 ], Spreadsheet.prototype, "allowUndoRedo", void 0);
 __decorate$9([
+    Property(true)
+], Spreadsheet.prototype, "allowWrap", void 0);
+__decorate$9([
     Complex({}, SelectionSettings)
 ], Spreadsheet.prototype, "selectionSettings", void 0);
 __decorate$9([
@@ -22237,7 +28227,7 @@ __decorate$9([
 ], Spreadsheet.prototype, "contextMenuItemSelect", void 0);
 __decorate$9([
     Event$1()
-], Spreadsheet.prototype, "fileItemSelect", void 0);
+], Spreadsheet.prototype, "fileMenuItemSelect", void 0);
 __decorate$9([
     Event$1()
 ], Spreadsheet.prototype, "beforeDataBound", void 0);
@@ -22253,6 +28243,9 @@ __decorate$9([
 __decorate$9([
     Event$1()
 ], Spreadsheet.prototype, "cellSave", void 0);
+__decorate$9([
+    Event$1()
+], Spreadsheet.prototype, "beforeCellSave", void 0);
 __decorate$9([
     Event$1()
 ], Spreadsheet.prototype, "created", void 0);
@@ -22299,5 +28292,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, Hyperlink, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, onSave, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShowRow, hideShowCol, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, workBookeditAlert, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

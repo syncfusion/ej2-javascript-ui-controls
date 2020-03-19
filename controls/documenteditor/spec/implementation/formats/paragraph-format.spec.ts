@@ -132,6 +132,20 @@ describe("Pargarph format in baseOn style", function () {
         //Defined in based on style list's pargraph format.
         expect(paragraphFormat.firstLineIndent).toBe(-21.600000381469727);
     });
+    it("Remove Paragraph formats", () => {
+        editor.openBlank();
+        editor.open(getStyleDocument());
+        let paragraphFormat: WParagraphFormat = editor.selection.start.paragraph.paragraphFormat;
+        editor.editor.applyStyle('Heading 2', true);
+         //Defined in baseStyle.
+        expect(paragraphFormat.afterSpacing).toBe(6);
+        //Defined in basestyle.
+        expect(paragraphFormat.beforeSpacing).toBe(16);
+        //Defined in based on style list format.
+        expect(paragraphFormat.leftIndent).toBe(28.799999237060547);
+        //Defined in based on style list's pargraph format.
+        expect(paragraphFormat.firstLineIndent).toBe(-28.799999237060547);
+    });
 });
 
 describe('Default Paragraph Format API Validation', () => {

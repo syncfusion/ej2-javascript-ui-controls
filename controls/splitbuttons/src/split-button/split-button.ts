@@ -347,6 +347,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
 
     public destroy(): void {
+        if (!(isBlazor() && this.isServerRendered)) {
         let classList: string[] = [RTL];
         let element: Element = document.getElementById(this.element.id);
         if (this.cssClass) {
@@ -374,6 +375,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         if (!this.element.getAttribute('class')) {
             this.element.removeAttribute('class');
         }
+    } else {
+        EventHandler.remove(this.element, 'click', this.primaryBtnClickHandler);
+    }
     }
 
     protected wireEvents(): void {

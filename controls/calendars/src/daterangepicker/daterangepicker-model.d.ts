@@ -1,4 +1,4 @@
-import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend, isBlazor } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
+import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend, isBlazor } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase} from '@syncfusion/ej2-lists';
 import {DateRange,RangeEventArgs,RangeFormatObject} from "./daterangepicker";
 import {CalendarBaseModel} from "../calendar/calendar-model";
 
@@ -396,7 +396,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     floatLabelType?: FloatLabelType | string;

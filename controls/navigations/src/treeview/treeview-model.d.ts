@@ -199,6 +199,13 @@ export interface TreeViewModel extends ComponentModel{
     cssClass?: string;
 
     /**
+     * Specifies a value that indicates whether the TreeView component is disabled or not. 
+     * When set to true, user interaction will not be occurred in TreeView. 
+     * @default false
+     */
+    disabled?: boolean;
+
+    /**
      * Defines whether to allow the cross-scripting site or not.
      * @default false
      */
@@ -300,6 +307,12 @@ export interface TreeViewModel extends ComponentModel{
      * @default true
      */
     autoCheck?: boolean;
+
+    /**
+     * If this property is set to true, then the entire TreeView node will be navigate-able instead of text element.
+     * @default false
+     */
+    fullRowNavigable?: boolean;
 
     /**
      * Triggers when any TreeView action failed to fetch the desired results. 

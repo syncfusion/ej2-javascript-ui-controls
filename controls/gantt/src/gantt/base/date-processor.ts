@@ -268,7 +268,7 @@ export class DateProcessor {
         let totalHours: number = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
         let holidaysCount: number = isAutoSchedule ? this.getHolidaysCount(sDate, eDate) : 0;
         let totWorkDays: number = (totalHours - (weekendCount * 86400) - (holidaysCount * 86400)) / 86400; // working days between two dates
-        let nonWorkHours: number = this.getNonWorkingSecondsOnDate(sDate, eDate);
+        let nonWorkHours: number = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule);
         let totalNonWorkTime: number = (totWorkDays * (86400 - this.parent.secondsPerDay)) +
             (weekendCount * 86400) + (holidaysCount * 86400) + nonWorkHours;
         return totalNonWorkTime;
@@ -415,17 +415,20 @@ export class DateProcessor {
      * @private
      * @param ganttProp 
      */
-    public getValidStartDate(ganttProp: ITaskData): Date {
+    public getValidStartDate(ganttProp: ITaskData, isAuto?: boolean): Date {
         let sDate: Date = null;
-        if (isNullOrUndefined(ganttProp.startDate)) {
-            if (!isNullOrUndefined(ganttProp.endDate)) {
-                sDate = new Date(ganttProp.endDate.getTime());
+        let startDate: Date = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        let endDate: Date = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        let duration: number = !ganttProp.isAutoSchedule && ganttProp.autoDuration ? ganttProp.autoDuration : ganttProp.duration;
+        if (isNullOrUndefined(startDate)) {
+            if (!isNullOrUndefined(endDate)) {
+                sDate = new Date(endDate.getTime());
                 this.setTime(this.parent.defaultStartTime, sDate);
-            } else if (!isNullOrUndefined(ganttProp.duration)) {
+            } else if (!isNullOrUndefined(duration)) {
                 sDate = this.getProjectStartDate(ganttProp);
             }
         } else {
-            sDate = new Date(ganttProp.startDate.getTime());
+            sDate = new Date(startDate.getTime());
         }
         return sDate;
     }
@@ -434,24 +437,27 @@ export class DateProcessor {
      * @param ganttProp 
      * @private
      */
-    public getValidEndDate(ganttProp: ITaskData): Date {
+    public getValidEndDate(ganttProp: ITaskData, isAuto?: boolean): Date {
         let eDate: Date = null;
-        if (isNullOrUndefined(ganttProp.endDate)) {
-            if (!isNullOrUndefined(ganttProp.startDate)) {
+        let startDate: Date = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        let endDate: Date = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        let duration: number = isAuto ? ganttProp.autoDuration : ganttProp.duration;
+        if (isNullOrUndefined(endDate)) {
+            if (!isNullOrUndefined(startDate)) {
                 if (ganttProp.isMilestone) {
-                    eDate = this.checkStartDate(ganttProp.startDate);
+                    eDate = this.checkStartDate(startDate);
                 } else {
-                    eDate = new Date(ganttProp.startDate.getTime());
+                    eDate = new Date(startDate.getTime());
                     this.setTime(this.parent.defaultEndTime, eDate);
                 }
-            } else if (!isNullOrUndefined(ganttProp.duration)) {
+            } else if (!isNullOrUndefined(duration)) {
                 let sDate: Date = this.getValidStartDate(ganttProp);
                 if (sDate) {
-                    eDate = this.getEndDate(sDate, ganttProp.duration, ganttProp.durationUnit, ganttProp, false);
+                    eDate = this.getEndDate(sDate, duration, ganttProp.durationUnit, ganttProp, false);
                 }
             }
         } else {
-            eDate = new Date(ganttProp.endDate.getTime());
+            eDate = new Date(endDate.getTime());
         }
         return eDate;
     }
@@ -684,14 +690,14 @@ export class DateProcessor {
      * @param startDate 
      * @param endDate 
      */
-    protected getNonWorkingSecondsOnDate(startDate: Date, endDate: Date): number {
+    protected getNonWorkingSecondsOnDate(startDate: Date, endDate: Date, isAutoSchedule: boolean): number {
         let sHour: number = this.getSecondsInDecimal(startDate);
         let eHour: number = this.getSecondsInDecimal(endDate);
         let startRangeIndex: number = -1;
         let endRangeIndex: number = -1;
         let totNonWrkSecs: number = 0;
-        let startOnHoliday: boolean = this.isOnHolidayOrWeekEnd(startDate, null);
-        let endOnHoliday: boolean = this.isOnHolidayOrWeekEnd(endDate, null);
+        let startOnHoliday: boolean = isAutoSchedule ? this.isOnHolidayOrWeekEnd(startDate, null) : false;
+        let endOnHoliday: boolean = isAutoSchedule ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
 
         for (let i: number = 0; i < this.parent.nonWorkingTimeRanges.length; i++) {
             let val: IWorkingTimeRange = this.parent.nonWorkingTimeRanges[i];
@@ -904,6 +910,30 @@ export class DateProcessor {
                 } else if (durationUnit === 'hour') {
                     value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
                 } else if (durationUnit === 'minute') {
+                    value += plural ? this.parent.localeObj.getConstant('minutes') :
+                        this.parent.localeObj.getConstant('minute');
+                }
+            }
+        }
+        return value;
+    }
+    /**
+     * Method to get work with value and unit.
+     * @param work
+     * @param workUnit
+     * @private
+     */
+    public getWorkString(work: number | string, workUnit: string): string {
+        let value: string = '';
+        if (!isNullOrUndefined(work)) {
+            value += parseFloat(work as string).toFixed(2) + ' ';
+            if (!isNullOrUndefined(workUnit)) {
+                let plural: boolean = work !== 1;
+                if (workUnit === 'day') {
+                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
+                } else if (workUnit === 'hour') {
+                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+                } else if (workUnit === 'minute') {
                     value += plural ? this.parent.localeObj.getConstant('minutes') :
                         this.parent.localeObj.getConstant('minute');
                 }

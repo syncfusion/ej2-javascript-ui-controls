@@ -117,8 +117,8 @@ export abstract class Base<ElementType extends HTMLElement> {
         newChanges = newChanges ? newChanges : {};
         extend(this.bulkChanges, {}, newChanges, true);
         if (this.allowServerDataBinding) {
-            let ejsInterop: string = 'ejsInterop';
-            (window as any)[ejsInterop].updateModel(this);
+            let sfBlazor: string = 'sfBlazor';
+            (window as any)[sfBlazor].updateModel(this);
             this.bulkChanges = {};
         }
     }

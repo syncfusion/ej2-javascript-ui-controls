@@ -634,8 +634,10 @@ export class FreeTextAnnotation {
             }
             this.isNewFreeTextAnnot = false;
             if (this.inputBoxElement.parentElement) {
-                if (pageDiv) {
+                if (pageDiv && (pageDiv.id === this.inputBoxElement.parentElement.id)) {
                     pageDiv.removeChild(this.inputBoxElement);
+                } else {
+                    this.inputBoxElement.parentElement.removeChild(this.inputBoxElement);
                 }
             }
             let canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
@@ -664,26 +666,41 @@ export class FreeTextAnnotation {
             if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight
                 // tslint:disable-next-line:radix
                 && parseInt(inuptEleObj.inputBoxElement.style.height) < inuptEleObj.inputBoxElement.scrollHeight) {
-                inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
-                let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
-                let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
-                inputEleHeight = ((inputEleHeight - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
-                inputEleWidth = ((inputEleWidth - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
-                if (this.selectedAnnotation) {
-                    let heightDiff: number = (inputEleHeight - inuptEleObj.selectedAnnotation.bounds.height);
-                    if (heightDiff > 0) {
-                        let y: number = inuptEleObj.selectedAnnotation.wrapper.offsetY + (heightDiff / 2);
-                        inuptEleObj.selectedAnnotation.bounds.width = inputEleWidth;
-                        inuptEleObj.selectedAnnotation.bounds.height = inputEleHeight;
-                        // tslint:disable-next-line
-                        inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y } });
-                        inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex,  this.selectedAnnotation.annotationSelectorSettings);
-                    }
-                }
+                inuptEleObj.updateFreeTextAnnotationSize(true);
+            } else {
+                inuptEleObj.updateFreeTextAnnotationSize(false);
             }
             // tslint:disable-next-line
         }, 0);
     }
+
+    private updateFreeTextAnnotationSize(isSize : boolean): void {
+        let inuptEleObj: FreeTextAnnotation = this;
+        if (!isSize) {
+            inuptEleObj.inputBoxElement.style.height = 'auto';
+        }
+        inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
+        let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
+        let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
+        inputEleHeight = ((inputEleHeight - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
+        inputEleWidth = ((inputEleWidth - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
+        if (this.selectedAnnotation) {
+            let heightDiff: number = (inputEleHeight - inuptEleObj.selectedAnnotation.bounds.height);
+            let y: number = 0;
+            if (heightDiff > 0) {
+                y = inuptEleObj.selectedAnnotation.wrapper.offsetY + (heightDiff / 2);
+            } else {
+                heightDiff = Math.abs(heightDiff);
+                y = inuptEleObj.selectedAnnotation.wrapper.offsetY - (heightDiff / 2);
+            }
+            inuptEleObj.selectedAnnotation.bounds.width = inputEleWidth;
+            inuptEleObj.selectedAnnotation.bounds.height = inputEleHeight;
+            // tslint:disable-next-line
+            inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y } });
+            inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex,  this.selectedAnnotation.annotationSelectorSettings);
+        }
+    }
+
     /**
      * @private
      */

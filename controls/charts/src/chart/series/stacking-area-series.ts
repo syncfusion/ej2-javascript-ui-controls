@@ -74,9 +74,15 @@ export class StackingAreaSeries extends LineBase {
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
             let connectPoints: { first: Points, last: Points} = this.getFirstLastVisiblePoint(series.points);
+            let chart: Chart = this.chart;
             point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             lineDirection += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+            if (this.chart.visible === 1 && (xAxis.isInversed || yAxis.isInversed)) {
+                this.chart.enableAnimation = false;
+                lineDirection = (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, lineDirection) :
+                chart.radarSeriesModule.getRadarIsInversedPath(xAxis, lineDirection));
+            }
         }
         if (!isPolar || (isPolar && series.index !== this.getFirstSeriesIndex(series.chart.visibleSeries) )) {
             for (let j: number = pointsLength - 1; j >= startPoint; j--) {
@@ -107,7 +113,7 @@ export class StackingAreaSeries extends LineBase {
         this.doLinearAnimation(series, option);
     }
     /**
-     * To destroy the stacking area. 
+     * To destroy the stacking area.
      * @return {void}
      * @private
      */
@@ -139,7 +145,7 @@ export class StackingAreaSeries extends LineBase {
     }
     /**
      * To find the first visible series index
-     * @param seriesCollection 
+     * @param seriesCollection
      */
     private getFirstSeriesIndex(seriesCollection: Series[]): number {
         for (let series of seriesCollection) {

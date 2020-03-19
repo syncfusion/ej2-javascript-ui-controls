@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndexByName, getSheetIndex } from './sheet';import { Sheet } from './sheet';import { Event, ModuleDeclaration, merge, L10n } from '@syncfusion/ej2-base';import { DefineNameModel, HyperlinkModel } from '../common/class-model';import { getWorkbookRequiredModules } from '../common/module';import { getData, clearRange } from './index';import { SheetModel } from './sheet-model';import { CellModel } from './cell-model';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale } from '../common/index';import * as events from '../common/event';import { CellStyleModel } from '../common/index';import { setCellFormat, sheetCreated } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/interface';import { getCell, skipDefaultValue, setCell } from './cell';import { DataBind, setRow } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel } from '../common/event';import { beginAction } from '../../spreadsheet/common/event';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex } from './sheet';import { Event, ModuleDeclaration, merge, L10n } from '@syncfusion/ej2-base';import { getWorkbookRequiredModules } from '../common/module';import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';import * as events from '../common/event';import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SetCellFormatArgs } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs } from '../common/index';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/index';import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';import { DataBind, setRow, setColumn } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';import { WorkbookDataValidation } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel } from '../common/event';import { beginAction, completeAction } from '../../spreadsheet/common/event';import { WorkbookFindAndReplace } from '../actions/find-and-replace';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -62,6 +62,12 @@ export interface WorkbookModel extends ComponentModel{
      * @default '100%'
      */
     height?: string | number;
+
+    /**
+     * It allows to enable/disable find & replace with its functionalities.
+     * @default true
+     */
+    allowFindAndReplace?: boolean;
 
     /**
      * Defines the width of the Spreadsheet. It accepts width as pixels, number, and percentage.
@@ -144,6 +150,24 @@ export interface WorkbookModel extends ComponentModel{
      * @default true
      */
     allowHyperlink?: boolean;
+
+    /**
+     * It allows you to insert rows, columns and sheets in to the spreadsheet.
+     * @default true
+     */
+    allowInsert?: boolean;
+
+    /**
+     * It allows you to delete rows, columns and sheets from spreadsheet.
+     * @default true
+     */
+    allowDelete?: boolean;
+
+    /**
+     * It allows you to apply validation to the spreadsheet cells. 
+     * @default true
+     */
+    allowDataValidation?: boolean;
 
     /**
      * Specifies the cell style options.
@@ -271,5 +295,21 @@ export interface WorkbookModel extends ComponentModel{
      * @event
      */
     beforeCellFormat?: EmitType<BeforeCellFormatArgs>;
+
+    /**
+     * Triggered every time a request is made to access cell information.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *      queryCellInfo: (args: CellInfoEventArgs) => {
+     *      }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    queryCellInfo?: EmitType<CellInfoEventArgs>;
 
 }

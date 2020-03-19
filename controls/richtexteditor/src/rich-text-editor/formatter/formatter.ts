@@ -145,9 +145,6 @@ export class Formatter {
             this.enableUndo(self);
             self.notify(CONSTANT.execCommandCallBack, events);
         }
-        if (isBlazor()) {
-            delete (events as IHtmlFormatterCallBack).elements;
-        }
         self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
             self.setPlaceHolder();
             if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {

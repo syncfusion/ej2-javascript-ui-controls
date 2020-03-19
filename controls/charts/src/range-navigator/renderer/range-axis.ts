@@ -137,14 +137,14 @@ export class RangeNavigatorAxis extends DateTime {
      */
     private findAxisLabels(axis: Axis): void {
         axis.visibleLabels = [];
-        let offset: number = this.rangeNavigator.isGMT ? (new Date().getTimezoneOffset() * 60 * 1000) : 0;
-        let start: Date = new Date(axis.visibleRange.min + offset );
+        let start: Date = new Date(axis.visibleRange.min);
         let nextInterval: number;
         let text: string;
         let interval: number = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
+
         switch (axis.actualIntervalType as RangeIntervalType) {
             case 'Years':
-                start = new Date(start.getFullYear().toString());
+                start = new Date(start.getFullYear(), 0, 1);
                 break;
             case 'Quarter':
                 if (start.getMonth() <= 2) {
@@ -179,11 +179,12 @@ export class RangeNavigatorAxis extends DateTime {
                 );
                 break;
         }
-        nextInterval = start.getTime() + offset;
+        nextInterval = start.getTime();
+
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
             format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
         });
-        while (nextInterval < axis.visibleRange.max) {
+        while (nextInterval <= axis.visibleRange.max) {
             text = this.dateFormats(this.rangeNavigator.format(new Date(nextInterval)), axis, axis.visibleLabels.length);
             axis.visibleLabels.push(
                 new VisibleLabels(

@@ -868,7 +868,11 @@ export class StickyNotesAnnotation {
                 if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
                     this.modifyTextProperty(args.value, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
                 } else {
-                    this.modifyTextProperty(args.value);
+                    try {
+                        this.modifyTextProperty(args.value, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
+                    } catch (error) {
+                        this.modifyTextProperty(args.value);
+                    }
                 }
                 this.updateModifiedDate(titleContainer);
             }
@@ -1930,8 +1934,21 @@ export class StickyNotesAnnotation {
         let currentAnnotation: any;
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
             currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+        }
+        if (currentAnnotation) {
+            if (currentAnnotation.annotName !== annotationName) {
+                currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
+            }
         } else {
             currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
+        }
+        if (annotationName && (currentAnnotation.annotName !== annotationName)) {
+            for (let i: number = 0; i < this.pdfViewer.annotations.length; i++) {
+                if (annotationName === this.pdfViewer.annotations[i].annotName) {
+                    currentAnnotation = this.pdfViewer.annotations[i];
+                    break;
+                }
+            }
         }
         if (currentAnnotation) {
             // tslint:disable-next-line

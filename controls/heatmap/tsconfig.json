@@ -16,6 +16,7 @@
     "noFallthroughCasesInSwitch": true,
     "allowJs": false,
     "forceConsistentCasingInFileNames": true,
+    "suppressImplicitAnyIndexErrors": true,
     "moduleResolution": "node",
     "lib": ["es5", "es2015.promise", "dom"],
     "types": ["jasmine","jasmine-ajax","requirejs","chai"]

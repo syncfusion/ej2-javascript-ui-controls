@@ -1,4 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Workbook, SheetModel, getSheetIndex, getSheetNameFromAddress } from '../base/index';
 
 /**
  * To get range indexes.
@@ -6,6 +7,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 export function getRangeIndexes(range: string): number[] {
     let cellindexes: number[];
     let indexes: number[] = [];
+    range = range.indexOf('!') > -1 ? range.split('!')[1] : range;
     range = range.indexOf(':') === -1 ? range + ':' + range : range;
     range.split(':').forEach((address: string) => {
         cellindexes = getCellIndexes(address);
@@ -75,6 +77,27 @@ export function getIndexesFromAddress(address: string): number[] {
  */
 export function getRangeFromAddress(address: string): string {
     return address.split('!')[1] || address;
+}
+
+/**
+ * Get complete address for selected range
+ * @hidden
+ */
+export function getAddressFromSelectedRange(sheet: SheetModel): string {
+    return sheet.name + '!' + sheet.selectedRange;
+}
+
+/**
+ * @hidden
+ */
+export function getAddressInfo(context: Workbook, address: string): { sheetIndex: number, indices: number[] } {
+    let sIdx: number;
+    if (address.indexOf('!') > -1) {
+        sIdx = getSheetIndex(context, getSheetNameFromAddress(address));
+    } else {
+        sIdx = context.activeSheetTab - 1;
+    }
+    return { sheetIndex: sIdx, indices: getIndexesFromAddress(address) };
 }
 
 /**

@@ -11,16 +11,18 @@ import { Timeline } from '../renderer/timeline';
 import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
-import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs, CellEditArgs } from './interface';
+import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';
+import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';
 import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';
-import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs } from './interface';
+import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';
+import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
 import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';
 import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';
 import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';
-import { SearchSettingsModel, SearchSettings } from '../models/models';
+import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';
 import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DateProcessor } from './date-processor';
 import { ChartRows } from '../renderer/chart-rows';
@@ -46,7 +48,8 @@ import { Splitter } from './splitter';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
-import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';
+import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection } from './enum';
+import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';
 import { Selection } from '../actions/selection';
 import { ExcelExport } from '../actions/excel-export';
 import { DayMarkers } from '../actions/day-markers';
@@ -55,6 +58,8 @@ import { RowSelectingEventArgs } from './interface';
 import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
 import { ColumnMenu } from '../actions/column-menu';
 import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';
+import { PdfExport } from '../actions/pdf-export';
+import { WorkUnit, TaskType } from './enum';
 
 /**
  *
@@ -114,6 +119,8 @@ export class Gantt extends Component<HTMLElement>
     public currentViewData: IGanttData[];
     /** @hidden */
     public ids: string[];
+    /** resource-task Ids */
+    private taskIds: string[];
     /** @hidden */
     public previousRecords: object = {};
     /** @hidden */
@@ -152,6 +159,8 @@ export class Gantt extends Component<HTMLElement>
     public predecessorsCollection?: IGanttData[];
     /** @hidden */
     public isInPredecessorValidation?: boolean;
+    /** @hidden */
+    public isSameResourceAdd?: boolean;
     /** @hidden */
     public isValidationEnabled?: boolean;
     /** @hidden */
@@ -240,6 +249,10 @@ export class Gantt extends Component<HTMLElement>
      * The `columnMenuModule` is used to manipulate column menu items in Gantt.
      */
     public columnMenuModule: ColumnMenu;
+    /**
+     * The `pdfExportModule` is used to exporting Gantt data in PDF format.
+     */
+    public pdfExportModule: PdfExport;
     /** @hidden */
     public staticSelectedRowIndex: number = -1;
     protected needsID: boolean = true;
@@ -565,7 +578,29 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(-1)
     public selectedRowIndex: number;
-
+    /**
+     * `workUnit` Specifies the work unit for each tasks whether day or hour or minute.
+     * * `day`: Sets the work unit as day.
+     * * `hour`: Sets the work unit as hour.
+     * * `minute`: Sets the work unit as minute.
+     * @default hour
+     */
+    @Property('hour')
+    public workUnit: WorkUnit;
+    /**
+     * `taskType` Specifies the task type for task whether fixedUnit or fixedWork or fixedDuration.
+     * * `fixedUnit`: Sets the task type as fixedUnit.
+     * * `fixedWork`: Sets the task type as fixedWork.
+     * * `fixedDuration`: Sets the task type as fixedDuration.
+     * @default fixedUnit
+     */
+    @Property('FixedUnit')
+    public taskType: TaskType;
+    /**
+     * Defines the view type of the Gantt.
+     */
+    @Property('ProjectView')
+    public viewType: ViewType;
     /**
      * Defines customized working time of project.
      * {% codeBlock src='gantt/dayWorkingTime/index.md' %}{% endcodeBlock %} 
@@ -592,6 +627,11 @@ export class Gantt extends Component<HTMLElement>
      */
     @Complex<TaskFieldsModel>({}, TaskFields)
     public taskFields: TaskFieldsModel;
+    /**
+     * Defines mapping properties to find resource values such as id, name, unit and group from resource collection.
+     */
+    @Complex<ResourceFieldsModel>({}, ResourceFields)
+    public resourceFields: ResourceFieldsModel;
 
     /**
      * Configures timeline settings of Gantt.
@@ -686,6 +726,27 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property()
     public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[];
+    /**
+     * If `allowPdfExport` set to true, then it will allow the user to export Gantt to PDF file.
+     * @default false
+     */
+    @Property(false)
+    public allowPdfExport: boolean;
+    /**
+     * If `validateManualTasksOnLinking` is set to true, 
+     * it enables date validation while connecting manually scheduled tasks with predecessor
+     * @default false
+     */
+
+    @Property(false)
+    public validateManualTasksOnLinking: boolean;
+
+    /**
+     * Specifies task schedule mode for a project.
+     */
+    @Property('Auto')
+    public taskMode: ScheduleMode;
+
     /**
      * Configures the filter settings for Gantt.
      * {% codeBlock src='gantt/filterSettings/index.md' %}{% endcodeBlock %}
@@ -1138,6 +1199,48 @@ export class Gantt extends Component<HTMLElement>
     public onMouseMove: EmitType<IMouseMoveEventArgs>;
 
     /**
+     * Triggers before Gantt data is exported to PDF document.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public beforePdfExport: EmitType<Object>;
+    /**
+     * Triggers after TreeGrid data is exported to PDF document.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public pdfExportComplete: EmitType<Object>;
+    /**
+     * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
+    /**
+     * Triggers before exporting each taskbar to PDF document. You can also customize the taskbar.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public pdfQueryTaskbarInfo: EmitType<Object>;
+    /**
+     * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public pdfQueryTimelineCellInfo: EmitType<PdfQueryTimelineCellInfoEventArgs>;
+    /** 
+     * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public pdfColumnHeaderQueryCellInfo: EmitType<PdfColumnHeaderQueryCellInfoEventArgs>;
+    /**
      * To get the module name
      * @private
      */
@@ -1262,10 +1365,10 @@ export class Gantt extends Component<HTMLElement>
                 if (this.selectionModule) {
                     if (this.selectionSettings.mode !== 'Cell' &&
                         !isNullOrUndefined(this.currentViewData[this.selectedRowIndex])) {
-                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.taskId;
+                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.rowUniqueID;
                     } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
                         let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
-                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.taskId;
+                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.rowUniqueID;
                     }
                 }
                 if (selectedId) {
@@ -1429,6 +1532,23 @@ export class Gantt extends Component<HTMLElement>
             focusSearch: 'ctrl+shift+70' //F Key
         };
         this.zoomingLevels = this.getZoomingLevels();
+        this.resourceFieldsMapping();
+        if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
+            this.resourceFields.unit = 'unit';
+        }
+        if (!isNullOrUndefined(this.taskFields.work)) {
+            this.taskType = 'FixedWork';
+        }
+        this.taskIds = [];
+    }
+    /**
+     * Method to map resource fields.
+     * 
+     */
+    private resourceFieldsMapping(): void {
+        let resourceSettings: ResourceFieldsModel = this.resourceFields;
+        resourceSettings.id = !isNullOrUndefined(resourceSettings.id) ? resourceSettings.id : this.resourceIDMapping;
+        resourceSettings.name = !isNullOrUndefined(resourceSettings.name) ? resourceSettings.name : this.resourceNameMapping;
     }
     /**
      * To validate height and width
@@ -1513,7 +1633,7 @@ export class Gantt extends Component<HTMLElement>
         this.timelineModule.processTimelineUnit();
         this.timelineModule.calculateZoomingLevelsPerDayWidth(); // To calculate the perDaywidth
         // predecessor calculation
-        if (this.taskFields.dependency) {
+        if (this.predecessorModule && this.taskFields.dependency) {
             this.predecessorModule.updatePredecessors();
             if (this.isInPredecessorValidation) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
@@ -1825,6 +1945,15 @@ export class Gantt extends Component<HTMLElement>
         return value;
     }
     /**
+     * Get work value as string combined with work and unit values.
+     * @param {number} work - Defines the work value.
+     * @param {string} workUnit - Defines the work unit.
+     */
+    public getWorkString(work: number, workUnit: string): string {
+        let value: string = this.dateValidationModule.getWorkString(work, workUnit);
+        return value;
+    }
+    /**
      * 
      * @param args 
      * @private
@@ -1854,7 +1983,7 @@ export class Gantt extends Component<HTMLElement>
             setValue('isGanttCreated', true, args);
             this.renderComplete();
         }
-        if (this.taskFields.dependency) {
+        if (this.predecessorModule && this.taskFields.dependency) {
             this.connectorLineIds = [];
             this.updatedConnectorLineCollection = [];
             this.predecessorModule.createConnectorLinesCollection(this.currentViewData);
@@ -2057,6 +2186,9 @@ export class Gantt extends Component<HTMLElement>
                 case 'enableRtl':
                     isRefresh = true;
                     break;
+                case 'validateManualTasksOnLinking':
+                    this.validateManualTasksOnLinking = newProp.validateManualTasksOnLinking;
+                    break;
             }
         }
         if (isRefresh) {
@@ -2189,6 +2321,12 @@ export class Gantt extends Component<HTMLElement>
         if (this.showColumnMenu) {
             modules.push({
                 member: 'columnMenu',
+                args: [this]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'pdfExport',
                 args: [this]
             });
         }
@@ -2344,6 +2482,7 @@ export class Gantt extends Component<HTMLElement>
      * @return {void} 
      * @hidden
      */
+    /* tslint:disable-next-line:max-func-body-length */
     public getDefaultLocale(): Object {
         let ganttLocale: Object = {
             emptyRecord: 'No records to display',
@@ -2357,6 +2496,14 @@ export class Gantt extends Component<HTMLElement>
             notes: 'Notes',
             baselineStartDate: 'Baseline Start Date',
             baselineEndDate: 'Baseline End Date',
+            taskMode: 'Task Mode',
+            changeScheduleMode: 'Change Schedule Mode',
+            subTasksStartDate: 'SubTasks Start Date',
+            subTasksEndDate: 'SubTasks End Date',
+            scheduleStartDate: 'Schedule Start Date',
+            scheduleEndDate: 'Schedule End Date',
+            auto: 'Auto',
+            manual: 'Manual',
             type: 'Type',
             offset: 'Offset',
             resourceName: 'Resources',
@@ -2385,6 +2532,7 @@ export class Gantt extends Component<HTMLElement>
             zoomToFit: 'Zoom to fit',
             excelExport: 'Excel export',
             csvExport: 'CSV export',
+            pdfExport: 'Pdf export',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',
@@ -2430,7 +2578,12 @@ export class Gantt extends Component<HTMLElement>
             leftTaskLabel: 'Left task label',
             rightTaskLabel: 'Right task label',
             timelineCell: 'Timeline cell',
-            confirmPredecessorDelete: 'Are you sure you want to remove dependency link?'
+            confirmPredecessorDelete: 'Are you sure you want to remove dependency link?',
+            unit: 'Unit',
+            work: 'Work',
+            taskType: 'Task Type',
+            unassignedTask: 'Unassigned Task',
+            group: 'Group'
         };
         return ganttLocale;
     }
@@ -2559,8 +2712,20 @@ export class Gantt extends Component<HTMLElement>
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
         return this.excelExportModule ? this.treeGrid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
     }
-
-    /** 
+    /**
+     * Export Gantt data to PDF document.
+     * @param  {pdfExportProperties} PdfExportProperties - Defines the export properties of the Gantt.
+     * @param  {isMultipleExport} isMultipleExport - Define to enable multiple export.
+     * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
+     * @return {Promise<any>}
+     * @blazorType void
+     */
+    /* tslint:disable-next-line */
+    public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object): Promise<Object> {
+        return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc)
+            : null;
+    }
+    /**
      * Clears all the filtered columns in Gantt.
      * @return {void} 
      */
@@ -2582,7 +2747,8 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public renderWorkingDayCell(args: RenderDayCellEventArgs): void {
-        let nonWorkingDays: number[] = !this.includeWeekend ? this.nonWorkingDayIndex : [];
+        let includeWeekend: boolean = this.taskMode !== 'Auto' ? true : this.includeWeekend ? true : false;
+        let nonWorkingDays: number[] = !includeWeekend ? this.nonWorkingDayIndex : [];
         let holidays: number[] = this.totalHolidayDates;
         if (nonWorkingDays.length > 0 && nonWorkingDays.indexOf(args.date.getDay()) !== -1) {
             args.isDisabled = true;
@@ -2677,7 +2843,7 @@ export class Gantt extends Component<HTMLElement>
     public setRecordValue(field: string, value: any, record: IGanttData | ITaskData, isTaskData?: boolean): void {
         if (this.isOnEdit || this.isOnDelete) {
             this.makeCloneData(field, record, isTaskData);
-            let id: string = isTaskData ? (record as ITaskData).taskId : (record as IGanttData).ganttProperties.taskId;
+            let id: string = isTaskData ? (record as ITaskData).rowUniqueID : (record as IGanttData).ganttProperties.rowUniqueID;
             let task: IGanttData = this.getRecordByID(id);
             if (task && this.editedRecords.indexOf(task) === -1) {
                 this.editedRecords.push(task);
@@ -3031,6 +3197,19 @@ export class Gantt extends Component<HTMLElement>
             return '';
         }
     }
+    /**
+     * Method to get class name for unscheduled tasks
+     * @param ganttProp 
+     * @private
+     */
+    public isUnscheduledTask(ganttProp: ITaskData): boolean {
+        if (isNullOrUndefined(ganttProp.startDate) || isNullOrUndefined(ganttProp.endDate) ||
+            isNullOrUndefined(ganttProp.duration)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     private createGanttPopUpElement(): void {
         let popup: Element = this.createElement('div', { className: 'e-ganttpopup', styles: 'display:none;' });
         let content: Element = this.createElement('div', { className: 'e-content', attrs: { tabIndex: '-1' } });
@@ -3334,6 +3513,40 @@ export class Gantt extends Component<HTMLElement>
                     this.updateRecordByID(data);
                 }
             }
+        }
+    }
+    /**
+     * To change the mode of a record.
+     * @return {void}
+     */
+    public changeTaskMode(data: Object): void {
+        let tasks: TaskFieldsModel = this.taskFields;
+        let ganttData: IGanttData = this.getRecordByID(data[tasks.id]);
+        let ganttProp: ITaskData = ganttData.ganttProperties;
+        this.isOnEdit = true;
+        this.setRecordValue('isAutoSchedule', !ganttProp.isAutoSchedule, ganttProp, true);
+        this.setRecordValue('taskData.' + tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        this.setRecordValue(tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        this.editModule.updateTaskScheduleModes(ganttData);
+        let args: ITaskbarEditedEventArgs = {
+            data: ganttData
+        };
+        this.editModule.initiateUpdateAction(args);
+    }
+    /**
+     * @private 
+     */
+    public getTaskIds(): string[] {
+        return this.taskIds;
+    }
+    /**
+     * @private 
+     */
+    public setTaskIds(data: IGanttData): void {
+        if (this.viewType !== 'ProjectView') {
+            let id: string = data.ganttProperties.taskId;
+            id = data.level === 0 ? 'R' + id : 'T' + id;
+            this.taskIds.push(id);
         }
     }
 }

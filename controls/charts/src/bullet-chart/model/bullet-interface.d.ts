@@ -2,6 +2,7 @@ import { Size } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../bullet-chart';
 import { ScaleGroup } from '../renderer/scale-render';
 import { RangeModel } from '../model/bullet-base-model';
+import { LegendShape, ChartTheme } from '../../chart';
 /**
  * Interface for Bullet chart Theme Style
  */
@@ -13,6 +14,7 @@ export interface IBulletStyle {
     categoryFontColor: string;
     labelFontFamily: string;
     tooltipFill: string;
+    legendLabel: string;
     tooltipBoldLabel: string;
     featuredMeasureColor: string;
     comparativeMeasureColor: string;
@@ -44,21 +46,6 @@ export interface IBulletResizeEventArgs {
     currentSize: Size;
     /** Defines the bullet chart instance */
     chart: BulletChart;
-}
-/**
- * interface for bar render event
- */
-export interface IBarRenderEventArgs {
-    /** name of the event */
-    name: string;
-    /** bulletChart */
-    bulletChart: BulletChart;
-    /** Defines the actual value of the feature bar */
-    value: string | number;
-    /** Defines the target value of the comparative bar */
-    target: string | number[] | number;
-    /** Defines the category values */
-    category: string | number;
 }
 /**
  * Interface for Bullet chart scale calculations
@@ -127,6 +114,8 @@ export interface IBulletLoadedEventArgs {
     name: string;
     /** bulletChart */
     bulletChart: BulletChart;
+    /** theme */
+    theme?: ChartTheme;
 }
 /**
  * Tooltip Event arguments
@@ -153,4 +142,34 @@ export interface IBulletTemplate {
     target: string;
     /** Defines the category values */
     category: string;
+}
+export interface IBarProperties {
+    /** Defines class values */
+    end: number;
+    /** Defines the index value of the range */
+    opacity: number;
+    /** Defines the qualitative ranges */
+    color: string;
+    /** Defines the end values of the ranges */
+    name: string;
+    /** Defines the end values of the ranges */
+    index: number;
+    /** Defines the end values of the ranges */
+    shape: LegendShape;
+}
+export interface IBulletMouseEventArgs extends IBulletChartEventArgs {
+    /** Defines current mouse event target id */
+    target: string;
+    /** Defines current mouse x location */
+    x: number;
+    /** Defines current mouse y location */
+    y: number;
+}
+export interface IBulletLegendRenderEventArgs extends IBulletChartEventArgs {
+    /** Defines the current legend text */
+    text: string;
+    /** Defines the current legend fill color */
+    fill: string;
+    /** Defines the current legend shape */
+    shape: LegendShape;
 }

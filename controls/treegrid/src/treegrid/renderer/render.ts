@@ -58,9 +58,6 @@ export class Render {
         //addClass([args.row], 'e-gridrowindex' + index + 'level' + (<ITreeData>args.data).level);
         let summaryRow: boolean = getObject('isSummaryRow', args.data);
         if (summaryRow) {
-            if (args.row.querySelector('.e-gridchkbox')) {
-                args.row.querySelector('.e-gridchkbox').innerHTML = '';
-            }
             addClass([args.row], 'e-summaryrow');
         }
         if (args.row.querySelector('.e-treegridexpand')) {

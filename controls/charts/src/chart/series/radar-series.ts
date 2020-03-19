@@ -1,6 +1,6 @@
 import { Chart } from '../chart';
 import { Series } from './chart-series';
-import { firstToLowerCase } from '../../common/utils/helper';
+import { firstToLowerCase, ChartLocation, CoefficientToVector, valueToPolarCoefficient } from '../../common/utils/helper';
 import { PolarSeries } from '../series/polar-series';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Axis } from '../axis/axis';
@@ -29,6 +29,30 @@ export class RadarSeries extends PolarSeries {
             this.columnDrawTypeRender(series, xAxis, yAxis);
         }
     }
+
+    // path calculation for isInversed polar area series
+
+    public getRadarIsInversedPath(xAxis: Axis, endPoint: string): string {
+        let chart: Chart = this.chart;
+        let x1: number;
+        let y1: number;
+        let vector: ChartLocation;
+        let radius: number = chart.radius;
+        let length: number = xAxis.visibleLabels.length;
+        let direction: string = endPoint;
+        vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
+        y1 = this.centerY + radius * vector.y;
+        x1 = this.centerX + radius * vector.x;
+        direction += ' L ' + x1 + ' ' + y1 + ' ';
+        for (let i: number = length - 1; i >= 0; i--) {
+            vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[i].value, xAxis), this.startAngle);
+            y1 = this.centerY + radius * vector.y;
+            x1 = this.centerX + radius * vector.x;
+            direction += 'L ' + x1 + ' ' + y1 + ' ';
+        }
+        return direction;
+    }
+
     /**
      * Get module name.
      */

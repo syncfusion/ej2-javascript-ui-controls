@@ -1,8 +1,8 @@
 import { detach, EventHandler, Browser, extend, L10n } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange } from '../../workbook/index';
-import { CellStyleModel, getRangeAddress } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, wrapEvent } from '../../workbook/index';
+import { CellStyleModel, getRangeAddress, workbookEditOperation } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
 import { ExtendedSheet, Cell } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs, hasTemplate } from '../common/index';
@@ -81,10 +81,19 @@ export class Clipboard {
     }
 
     private cMenuBeforeOpenHandler(e: { target: string }): void {
-        if (e.target === 'Content' || e.target === 'Header') {
-            let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems(
-                [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], this.copiedInfo ? true : false);
+                [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !sheet.isProtected) ? true : false);
+            this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!sheet.isProtected) ? true : false);
+        }
+        if ((e.target === 'Content') && sheet.isProtected) {
+            this.parent.enableContextMenuItems (
+                [l10n.getConstant('Cut'), l10n.getConstant('Filter'), l10n.getConstant('Sort')], false);
+        }
+        if ((e.target === 'Content') && (sheet.isProtected && !sheet.protectSettings.insertLink)) {
+            this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
         }
     }
 
@@ -191,7 +200,7 @@ export class Clipboard {
                         }
                     }
                     if (!isExternal && this.copiedInfo.isCut) {
-                        this.setCell(i, j, prevSheet, getCell(i, j, prevSheet), false, true);
+                        this.setCell(i, j, prevSheet, null, false, true);
                     }
                 }
                 rowIdx++;
@@ -238,11 +247,24 @@ export class Clipboard {
                 colIndex: cIdx, sheetIndex: this.parent.activeSheetTab, isFormula: true
             });
         }
-        if (isCut && cell && cell.style) {
-            this.parent.notify(applyCellFormat, {
-                style: extend({}, this.getEmptyStyle(cell.style), this.parent.commonCellStyle), rowIdx: rIdx, colIdx: cIdx, cell: null,
-                lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
-            });
+        if (cell && !cell.formula) {
+            this.parent.notify(
+                workbookEditOperation,
+                {
+                    action: 'updateCellValue', address: [rIdx, cIdx, rIdx,
+                        cIdx], value: cell.value
+                });
+        }
+        if (isCut && cell) {
+            if (cell.style) {
+                this.parent.notify(applyCellFormat, {
+                    style: extend({}, this.getEmptyStyle(cell.style), this.parent.commonCellStyle), rowIdx: rIdx, colIdx: cIdx, cell: null,
+                    lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
+                });
+            }
+            if (cell.wrap) {
+                this.parent.notify(wrapEvent, { range: [rIdx, cIdx, rIdx, cIdx], wrap: false, sheet: sheet });
+            }
         }
     }
 
@@ -323,7 +345,7 @@ export class Clipboard {
 
     private initCopyIndicator(): void {
         if (this.copiedInfo && this.parent.getActiveSheet().id === this.copiedInfo.sId) {
-            let copyIndicator: Element = this.parent.createElement('div', { className: 'e-copy-indicator' });
+            let copyIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-copy-indicator' });
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-top' }));
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-left' }));
@@ -343,6 +365,9 @@ export class Clipboard {
     }
 
     private hidePaste(isShow?: boolean): void {
+        if (this.parent.getActiveSheet().isProtected) {
+            isShow = false;
+        }
         this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_paste'], enable: isShow || false }]);
     }
 

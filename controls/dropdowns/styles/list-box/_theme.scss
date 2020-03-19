@@ -24,7 +24,7 @@
         color: $listview-text-color;
       }
 
-      & .e-list-item:hover:not(.e-disabled),
+      & .e-list-item:hover:not(.e-selected):not(.e-disabled),
       & .e-list-item:hover.e-selected.e-checklist:not(.e-disabled) {
         background-color: $listview-item-hover-bg;
         border-color: $listview-hover-border-color;

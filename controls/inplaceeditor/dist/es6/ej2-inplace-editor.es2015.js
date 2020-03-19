@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, getValue, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, ODataV4Adaptor, Predicate, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
@@ -287,7 +287,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     appendValueElement() {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: VALUE_WRAPPER });
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
+        if (!isBlazor()) {
             this.element.innerHTML = '';
         }
         this.valueEle = this.createElement('span', { className: VALUE });
@@ -544,7 +544,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         else {
             classProp = ELEMENTS;
         }
-        extend(this.model, this.model, { cssClass: classProp });
+        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl });
         if (!isNullOrUndefined(this.value)) {
             this.updateModelValue();
         }
@@ -719,9 +719,8 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         this.isExtModule ? this.notify(setFocus, {}) : this.componentObj.element.focus();
     }
-    removeEditor() {
-        let blazorContain = Object.keys(window);
-        if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate) {
+    removeEditor(isBlazorDestroy) {
+        if (isBlazor() && !this.isStringTemplate) {
             resetBlazorTemplate(this.element.id + 'template', 'Template');
         }
         let tipEle;
@@ -747,7 +746,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         this.containerEle = undefined;
         removeClass([this.valueWrap], [OPEN, HIDE]);
-        this.setProperties({ enableEditMode: false }, true);
+        if (!isBlazorDestroy) {
+            this.setProperties({ enableEditMode: false }, true);
+        }
         if (this.editableOn !== 'EditIconClick') {
             let titleConstant = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
             this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
@@ -838,13 +839,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     templateCompile(trgEle, tempStr) {
         let tempEle;
-        let blazorContain = Object.keys(window);
         if (typeof tempStr === 'string') {
             tempStr = tempStr.trim();
         }
         let compiler = compile(tempStr);
         if (!isNullOrUndefined(compiler)) {
-            let isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+            let isString = (isBlazor() &&
                 !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
             tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
@@ -853,7 +853,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             [].slice.call(tempEle).forEach((el) => {
                 trgEle.appendChild(el);
             });
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
+            if (isBlazor() && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
                 updateBlazorTemplate(this.element.id + 'template', 'Template', this);
             }
         }
@@ -908,7 +908,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     enableEditor(val) {
         (val) ? this.renderEditor() : this.cancelHandler();
     }
-    checkValidation() {
+    checkValidation(isValidate) {
         let args;
         if (this.validationRules) {
             this.formValidate = new FormValidator(this.formEle, {
@@ -926,6 +926,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                         else {
                             this.toggleErrorClass(false);
                         }
+                        this.afterValidation(isValidate);
                     });
                 },
                 customPlacement: (inputElement, errorElement) => {
@@ -947,7 +948,17 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 else {
                     this.toggleErrorClass(false);
                 }
+                this.afterValidation(isValidate);
             });
+        }
+    }
+    afterValidation(isValidate) {
+        if (!this.formEle.classList.contains(ERROR) && isValidate) {
+            this.loadSpinner('validate');
+            if (this.mode === 'Popup') {
+                this.updateArrow();
+            }
+            this.sendValue();
         }
     }
     toggleErrorClass(value) {
@@ -1093,22 +1104,19 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.sliderModule.refresh();
             this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
-        let eventArgs = { mode: this.mode, cancelFocus: false };
-        this.trigger('beginEdit', eventArgs, (args) => {
-            if (!this.beginEditArgs.cancelFocus) {
-                if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
-                    && this.model.dataSource instanceof DataManager) {
-                    this.showDropDownPopup();
-                }
-                else {
-                    this.setFocus();
-                }
+        if (!this.beginEditArgs.cancelFocus) {
+            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                && this.model.dataSource instanceof DataManager) {
+                this.showDropDownPopup();
             }
-            if (this.afterOpenEvent) {
-                this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
-                this.tipObj.trigger('afterOpen', e);
+            else {
+                this.setFocus();
             }
-        });
+        }
+        if (this.afterOpenEvent) {
+            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+            this.tipObj.trigger('afterOpen', e);
+        }
     }
     popMouseDown(e) {
         let trgClass = e.target.classList;
@@ -1219,7 +1227,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
      * @returns void
      */
     validate() {
-        this.checkValidation();
+        this.checkValidation(false);
     }
     /**
      * Submit the edited input value to the server.
@@ -1241,21 +1249,14 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         if (!this.isTemplate) {
             this.setValue();
         }
-        this.checkValidation();
-        if (!this.formEle.classList.contains(ERROR)) {
-            this.loadSpinner('validate');
-            if (this.mode === 'Popup') {
-                this.updateArrow();
-            }
-            this.sendValue();
-        }
+        this.checkValidation(true);
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
      * @returns void
      */
     destroy() {
-        this.removeEditor();
+        this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(destroy, {});
         }

@@ -135,7 +135,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected isCustomFilter: boolean;
     private isSecondClick: boolean;
     private serverPopupEle: HTMLElement;
-    private isServerBlazor: boolean;
+    protected isServerBlazor: boolean;
     private isServerIncrementalSearch: boolean;
 
     /**
@@ -295,7 +295,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -303,6 +303,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Specifies whether to show or hide the clear button. 
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
      * @default false
+     * @blazorOverrideType virtual
      */
     @Property(false)
     public showClearButton: boolean;
@@ -374,7 +375,8 @@ export class DropDownList extends DropDownBase implements IInput {
      * @private
      */
     protected preRender(): void {
-        this.isServerBlazor =  (isBlazor() && this.isServerRendered && this.getModuleName() === 'dropdownlist') ? true : false;
+        let checkBlazor: boolean = isBlazor() && this.isServerRendered;
+        this.isServerBlazor =  (checkBlazor) ? true : false;
         if (this.isServerBlazor) {
             this.initializeData();
         } else {
@@ -440,7 +442,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.wireListEvents();
         } else {
             // tslint:disable-next-line
-            (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', this.beforePopupOpen);
+            (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', this.beforePopupOpen, false);
         }
     }
 
@@ -508,7 +510,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.resetFocusElement();
             }
         }
-        this.hiddenElement.innerHTML = '';
+        if (!this.isServerBlazor) { this.hiddenElement.innerHTML = ''; }
         this.inputElement.value = '';
         this.value = null;
         this.itemData = null;
@@ -823,7 +825,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 } else {
                     this.isServerIncrementalSearch = true;
                     // tslint:disable-next-line
-					(this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', true);
+					(this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', true, false);
                 }
             }
             this.searchKeyEvent = e;
@@ -870,10 +872,12 @@ export class DropDownList extends DropDownBase implements IInput {
         this.removeHover();
     };
 
-    private removeHover(): void {
-        let hoveredItem: Element[] = <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownBaseClasses.hover);
-        if (hoveredItem && hoveredItem.length) {
-            removeClass(hoveredItem, dropDownBaseClasses.hover);
+    protected removeHover(): void {
+        if (this.list) {
+            let hoveredItem: Element[] = <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownBaseClasses.hover);
+            if (hoveredItem && hoveredItem.length) {
+                removeClass(hoveredItem, dropDownBaseClasses.hover);
+            }
         }
     };
 
@@ -939,7 +943,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.searchKeyEvent = e;
                 this.renderList();
             }
-            if (isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
+            if (!(this.isServerBlazor && e.action === 'open') && isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
                 isNavigation && this.liCollections.length === 0) || this.isRequested) {
                 return;
             }
@@ -1291,7 +1295,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (this.isPopupOpen) {
             attributes(this.targetElement(), { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
-            if (this.isFilterLayout()) {
+            if (this.isFilterLayout() && this.filterInput) {
                 attributes(this.filterInput, { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
             }
         }
@@ -1327,10 +1331,12 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected removeSelection(): void {
-        let selectedItems: Element[] = <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownBaseClasses.selected);
-        if (selectedItems.length) {
-            removeClass(selectedItems, dropDownBaseClasses.selected);
-            selectedItems[0].removeAttribute('aria-selected');
+        if (this.list) {
+            let selectedItems: Element[] = <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownBaseClasses.selected);
+            if (selectedItems.length) {
+                removeClass(selectedItems, dropDownBaseClasses.selected);
+                selectedItems[0].removeAttribute('aria-selected');
+            }
         }
     };
 
@@ -1436,7 +1442,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 let selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
                 selectedElement.setAttribute('value', this.value.toString());
             }
-        } else {
+        } else if (!this.isServerBlazor) {
             this.hiddenElement.innerHTML = '';
         }
     }
@@ -1468,7 +1474,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.preventAutoFill = true;
                         this.searchLists(e);
                     } else if (this.typedString === '') {
-                        this.resetFocusElement();
+                        if (this.list) { this.resetFocusElement(); }
                         this.activeIndex = null;
                         if (this.getModuleName() === 'autocomplete') {
                             this.hidePopup();
@@ -1547,8 +1553,15 @@ export class DropDownList extends DropDownBase implements IInput {
         this.isDataFetched = false;
         if (this.isFiltering()) {
             if (this.isServerBlazor) {
-                // tslint:disable-next-line
-                (this as any).interopAdaptor.invokeMethodAsync('OnServerFilter', this.filterInput.value);
+                this.beforePopupOpen = (this.getModuleName() === 'combobox' && this.isFiltering() && !this.beforePopupOpen)
+                ? !this.beforePopupOpen : this.beforePopupOpen;
+                if (this.filterInput.value === '' && this.getModuleName() !== 'dropdownlist') {
+                    // tslint:disable-next-line
+                    (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', this.beforePopupOpen, false);
+                } else {
+                    // tslint:disable-next-line
+                    (this as any).interopAdaptor.invokeMethodAsync('OnServerFilter', this.filterInput.value);
+                }
             } else {
                 let eventArgs: FilteringEventArgs = {
                     preventDefaultAction: false,
@@ -1913,11 +1926,24 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
     private serverBlazorUpdateSelection(): void {
-        if (this.isServerBlazor && (this.value !== null || this.index !== null || this.text !== null)) {
-            this.removeSelection();
-            this.removeFocus();
-            this.removeHover();
-            this.updateValues();
+        if (this.isServerBlazor && (this.value !== null || this.index !== null || this.text !== null) ||
+            (this.getModuleName() !== 'dropdownlist' && !this.isTyped)) {
+            if (this.getModuleName() === 'dropdownlist') {
+                this.removeSelection();
+                this.removeFocus();
+                this.removeHover();
+                this.updateValues();
+            }
+            if (this.getModuleName() === 'combobox' && this.ulElement &&
+                this.findListElement(this.ulElement, 'li', 'data-value', this.value) && !this.isTyped) {
+                this.updateValues();
+            }
+            if (this.isServerBlazor && this.getModuleName() !== 'dropdownlist' &&
+                (this.text === '' || this.text === null ) && this.ulElement) {
+                if (!this.ulElement.querySelector('li').classList.contains(dropDownBaseClasses.hover)) {
+                    addClass([this.ulElement.querySelector('li')], dropDownBaseClasses.hover);
+                }
+            }
         }
     }
     private bindServerScrollEvent(): void {
@@ -2197,7 +2223,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.fixedHeaderElement = null;
             }
             if (!eventArgs.cancel) {
-                if (this.getModuleName() === 'autocomplete') {
+                if (this.getModuleName() === 'autocomplete' && !this.isServerBlazor) {
                     this.rippleFun();
                 }
                 if (this.isPopupOpen) {
@@ -2242,6 +2268,9 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.showClearButton) {
                 this.inputWrapper.clearButton = this.inputWrapper.container.querySelector('.e-clear-icon');
                 Input.wireClearBtnEvents(this.element as HTMLInputElement, this.inputWrapper.clearButton, this.inputWrapper.container);
+            }
+            if (this.floatLabelType === 'Auto') {
+                Input.wireFloatingEvents(this.element as HTMLInputElement);
             }
             Input.bindInitialEvent({
                 element: this.element as HTMLInputElement,
@@ -2610,7 +2639,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.isServerBlazor) {
             this.invokeRenderPopup();
         }
-        if (this.isServerBlazor && !isNullOrUndefined(this.list)) {
+        if (this.isServerBlazor && !isNullOrUndefined(this.list) && (this.getModuleName() === 'dropdownlist' || !this.isFiltering())) {
             this.invokeRenderPopup();
         }
     }
@@ -2635,9 +2664,15 @@ export class DropDownList extends DropDownBase implements IInput {
             this.list = popupEle.querySelector('.e-dropdownbase.e-content') ?
                 popupEle.querySelector('.e-dropdownbase.e-content') : this.list;
             this.ulElement = this.list.querySelector('ul');
+            if (isNullOrUndefined(this.ulElement) && !this.list.classList.contains(dropDownBaseClasses.noData)) {
+                addClass([this.list], [dropDownBaseClasses.noData]);
+            }
             this.liCollections = this.ulElement ?
                 <NodeListOf<Element> & HTMLElement[]>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [];
             this.listData = data;
+            if (this.getModuleName() === 'autocomplete' && this.liCollections.length > 0 ) {
+                this.renderHightSearch();
+            }
             this.initRemoteRender = false;
             this.serverBlazorUpdateSelection();
             this.wireListEvents();
@@ -2649,10 +2684,17 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.beforePopupOpen) {
                 this.invokeRenderPopup();
             }
+            if (this.getModuleName() !== 'dropdownlist') {
+                this.onActionComplete(this.ulElement, this.listData as { [key: string]: Object }[]);
+            }
         } else if (data != null && this.listData !== data) {
             this.listData = data;
             this.initRemoteRender = false;
         }
+    }
+
+    protected renderHightSearch(): void {
+        // update high light search 
     }
     private updateclientItemData(data: { [key: string]: Object }[] | string[] | boolean[] | number[]): void {
         this.listData = data;
@@ -2737,7 +2779,9 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public destroy(): void {
         this.isActive = false;
-        this.hidePopup();
+        if (!this.isServerBlazor || (this.popupObj && document.body.contains(this.popupObj.element))) {
+            this.hidePopup();
+        }
         this.unWireEvent();
         if (this.list) {
             this.unWireListEvents();
@@ -2782,6 +2826,16 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         return this.ulElement ? super.getItems() : [];
     }
+    /**
+     * Gets the data Object that matches the given value. 
+     * @param { string | number } value - Specifies the value of the list item.
+     * @returns Object.
+     * @blazorType object
+     */
+    public getDataByValue(value: string | number | boolean)
+        : { [key: string]: Object } | string | number | boolean {
+            return super.getDataByValue(value);
+        }
     /**
      * Allows you to clear the selected values from the component.
      * @returns void.

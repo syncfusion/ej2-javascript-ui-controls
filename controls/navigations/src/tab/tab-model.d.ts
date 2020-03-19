@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { isBlazor, getRandomId, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';import { ToolbarModel } from '../toolbar';
+﻿import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { isBlazor, getRandomId, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';import { ToolbarModel } from '../toolbar';
 import {HeaderPosition,HeightStyles,ContentLoad,AddEventArgs,SelectingEventArgs,SelectEventArgs,RemoveEventArgs} from "./tab";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -214,6 +214,7 @@ export interface TabModel extends ComponentModel{
      * The possible modes are:
      * `Dynamic` Load Tab content dynamically at the time of switching it's header.
      * `Init` Load all tab contents at initial load.
+     * `Demand` Load Tab content when required but keep content once it is rendered.
      * @default 'Dynamic'
      */
     loadOn?: ContentLoad;

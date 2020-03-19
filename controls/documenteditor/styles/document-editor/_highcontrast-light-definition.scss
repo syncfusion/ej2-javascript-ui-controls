@@ -746,6 +746,7 @@ $de-cmt-post-btn-wt-big: 40px !default;
 $de-cmt-post-btn-ht-big: 40px !default;
 $de-cmt-separator: $border-fg !default;
 $de-reply-footer-margin-top: 8px !default;
+$de-tooltip-color: #000 !default;
 
 @include export-module('documenteditor-icons') {
   .e-documenteditor {
@@ -1795,6 +1796,7 @@ $de-reply-footer-margin-top: 8px !default;
   .e-de-tooltip {
     background-color: $de-tooltip-bg-clr;
     box-shadow: $de-tooltip-shadow;
+    color: $de-tooltip-color;
     cursor: text;
     max-width: 200px;
     padding: 5px;

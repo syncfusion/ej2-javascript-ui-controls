@@ -383,12 +383,6 @@ export class RowDD {
             spanContent.className = 'errorValue';
             spanContent.style.paddingLeft = '16px';
             spanContent.innerHTML = content;
-            if (!isNullOrUndefined(spanContent.children) && spanContent.children.length >= 1
-            && spanContent.children[0].classList.contains('e-treecolumn-container')) {
-                (<HTMLElement>spanContent.children[0]).style.display = 'inline-block';
-                (<HTMLElement>spanContent.children[0]).style.verticalAlign = 'middle';
-                (<HTMLElement>ele).style.display = 'inline-block';
-            }
             dragelem.querySelector('.e-rowcell').appendChild(ele);
             dragelem.querySelector('.e-rowcell').appendChild(spanContent);
         }
@@ -827,22 +821,16 @@ export class RowDD {
                 if (deletedRow.hasChildRecords && deletedRow.childRecords.length > 0) {
                     this.removeChildItem(deletedRow);
                 }
-                let idx: number; let idz: number;
+                let idx: number;
                 let treeGridData: ITreeData[] = dataSource as ITreeData[];
                 for (let i: number = 0; i < treeGridData.length; i++) {
                     if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
                     }
                 }
-                for (let i: number = 0; i < this.treeGridData.length; i++) {
-                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
-                        idz = i;
-                        break;
-                    }
-                }
-                if (idx !== -1 || idz !== -1) {
+                if (idx !== -1) {
                     (dataSource as ITreeData[]).splice(idx, 1);
-                    this.treeGridData.splice(idz, 1);
+                    this.treeGridData.splice(idx, 1);
                 }
             }
             let recordIndex: number = this.treeGridData.indexOf(deletedRow);

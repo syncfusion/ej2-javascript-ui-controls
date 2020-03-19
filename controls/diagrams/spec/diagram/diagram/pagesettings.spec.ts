@@ -139,28 +139,28 @@ describe('PageSettings', () => {
                 sourceID: 'node0',
                 targetID: 'node1',
                 shape: {
-                  type: 'Bpmn',
-                  flow: 'Sequence',
-                  sequence: 'Default'
+                    type: 'Bpmn',
+                    flow: 'Sequence',
+                    sequence: 'Default'
                 },
                 style: {
-                  strokeColor: '#888888',
-                  fill: '#555555',
-                  strokeWidth: 1
+                    strokeColor: '#888888',
+                    fill: '#555555',
+                    strokeWidth: 1
                 },
                 targetDecorator: {
-                  style: {
-                      fill: '#555555',
-                      strokeColor: '#888888'
-                  }
+                    style: {
+                        fill: '#555555',
+                        strokeColor: '#888888'
+                    }
                 },
                 type: 'Orthogonal',
                 cornerRadius: 10
-              },
-              {
+            },
+            {
                 id: 'Connector3',
-                sourcePoint: { x: 600, y:100},
-                targetPoint: { x: 700, y:200},
+                sourcePoint: { x: 600, y: 100 },
+                targetPoint: { x: 700, y: 200 },
                 shape: {
                     type: 'Bpmn',
                     flow: 'Sequence',
@@ -180,116 +180,116 @@ describe('PageSettings', () => {
                 type: 'Orthogonal',
                 cornerRadius: 10
             },
-        ];
+            ];
             let nodes: NodeModel[] = [
                 {
-                  id: 'node0',
-                  offsetX: 100,
-                  offsetY: 100,
-                  width: 30,
-                  height: 30,
-                  annotations: [{
-                    content: 'Start',
-                    margin: { bottom: -30 }
-                  }],
-                  shape: {
-                    type: 'Bpmn',
-                    shape: 'Event',
-                    event: {
-                      event: 'Start',
-                      trigger: 'None'
-                    }
-                  },
-                  style: {
-                    strokeColor: '#62A716',
-                    strokeWidth: 1
-                  }
-                },
-                {
-                  id: 'node1',
-                  offsetX: 250,
-                  offsetY: 250,
-                  width: 90,
-                  height: 60,
-                  annotations: [
-                    {
-                      content: 'Activity 1'
-                    }
-                  ],
-                  /*borderColor: '#78BE83',*/
-                  borderWidth: 4,
-                  shape: {
-                    type: 'Bpmn',
-                    shape: 'Activity',
-                    activity: {
-                      activity: 'Task',
-                      task: {
-                        type: 'Service'
-                      }
-                    }
-                  },
-                  style: {
-                    fill: '#d8ecdc',
-                    strokeColor: '#78BE83',
-                    strokeWidth: 3,
-                    gradient: {
-                      // Start point of linear gradient
-                      x1: 0,
-                      y1: 0,
-                      // End point of linear gradient
-                      x2: 1,
-                      y2: 1,
-                      // Sets an array of stop objects
-                      stops: [
-                        {
-                            color: 'white',
-                            offset: 30,
-                            opacity: 0.1
-                        },
-                        {
-                            color: '#d8ecdc',
-                            offset: 100,
-                            opacity: 0.1
+                    id: 'node0',
+                    offsetX: 100,
+                    offsetY: 100,
+                    width: 30,
+                    height: 30,
+                    annotations: [{
+                        content: 'Start',
+                        margin: { bottom: -30 }
+                    }],
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Event',
+                        event: {
+                            event: 'Start',
+                            trigger: 'None'
                         }
-                      ],
-                      type: 'Linear'
+                    },
+                    style: {
+                        strokeColor: '#62A716',
+                        strokeWidth: 1
                     }
-                  }
                 },
                 {
-                  id: 'node2',
-                  offsetX: 250,
-                  offsetY: 400,
-                  width: 90,
-                  height: 60,
-                  /*borderColor: '#78BE83',*/
-                  borderWidth: 4,
-                  shape: {
-                    type: 'Flow',
-                    shape: 'Annotation',
-                  },
-                  annotations: [
-                    {
-                      content: `Sample Text`,
-                      style: {
-                        textOverflow: 'Clip',
-                        textWrapping: 'WrapWithOverflow',
-                        textAlign: 'Left'
-                      },
-                      height: 50,
-                      width: 80,
-                      margin: { left: 0, top: 0, right: 0, bottom: 0 }
+                    id: 'node1',
+                    offsetX: 250,
+                    offsetY: 250,
+                    width: 90,
+                    height: 60,
+                    annotations: [
+                        {
+                            content: 'Activity 1'
+                        }
+                    ],
+                    /*borderColor: '#78BE83',*/
+                    borderWidth: 4,
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Activity',
+                        activity: {
+                            activity: 'Task',
+                            task: {
+                                type: 'Service'
+                            }
+                        }
+                    },
+                    style: {
+                        fill: '#d8ecdc',
+                        strokeColor: '#78BE83',
+                        strokeWidth: 3,
+                        gradient: {
+                            // Start point of linear gradient
+                            x1: 0,
+                            y1: 0,
+                            // End point of linear gradient
+                            x2: 1,
+                            y2: 1,
+                            // Sets an array of stop objects
+                            stops: [
+                                {
+                                    color: 'white',
+                                    offset: 30,
+                                    opacity: 0.1
+                                },
+                                {
+                                    color: '#d8ecdc',
+                                    offset: 100,
+                                    opacity: 0.1
+                                }
+                            ],
+                            type: 'Linear'
+                        }
                     }
-                  ],
-                  style: {
-                    strokeColor: '#778899',
-                    strokeWidth: 3
-                  }
+                },
+                {
+                    id: 'node2',
+                    offsetX: 250,
+                    offsetY: 400,
+                    width: 90,
+                    height: 60,
+                    /*borderColor: '#78BE83',*/
+                    borderWidth: 4,
+                    shape: {
+                        type: 'Flow',
+                        shape: 'Annotation',
+                    },
+                    annotations: [
+                        {
+                            content: `Sample Text`,
+                            style: {
+                                textOverflow: 'Clip',
+                                textWrapping: 'WrapWithOverflow',
+                                textAlign: 'Left'
+                            },
+                            height: 50,
+                            width: 80,
+                            margin: { left: 0, top: 0, right: 0, bottom: 0 }
+                        }
+                    ],
+                    style: {
+                        strokeColor: '#778899',
+                        strokeWidth: 3
+                    }
                 },
                 {
                     id: 'node3', height: 100, width: 100, offsetX: 500, offsetY: 100
                 },
-              ];
+            ];
             diagram = new Diagram({
                 width: '1000px', height: '1000px', nodes: nodes,
                 connectors: connector
@@ -319,7 +319,7 @@ describe('PageSettings', () => {
             let pathElement: HTMLElement = document.getElementById('Connector1_Default');
             console.log(pathElement.getAttribute('transform'));
             expect(pathElement.getAttribute('transform') === "rotate(45,731.71,141.71)translate(723.2249841308594,133.22499938964845)" ||
-            pathElement.getAttribute('transform') === 'rotate(45,741.71,136.71)translate(733.2249841308594,128.22499938964845)').toBe(true);
+                pathElement.getAttribute('transform') === 'rotate(45,741.71,136.71)translate(733.2249841308594,128.22499938964845)').toBe(true);
             done();
         });
         it('BPMN Sequence connector Dragging with node move', (done: Function) => {
@@ -543,7 +543,7 @@ describe('PageSettings boundary constraints', () => {
     describe('Boundary Constraints rotate angle issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-    
+
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -564,12 +564,12 @@ describe('PageSettings boundary constraints', () => {
                     type: 'Native',
                     content: '<svg width="22" height="70" xmlns="http://www.w3.org/2000/svg"><ellipse fill="none" stroke-width="1.5" cx="11.00001" cy="27.206965" id="svg_3" rx="10.187688" ry="10.187688" stroke="#0f0f00"/><ellipse fill="none" stroke-width="1.5" cx="11.00001" cy="40.902413" id="svg_1" rx="10.187688" ry="10.187688" stroke="#0f0f00"/><line stroke="#0f0f00" fill="none" stroke-width="1.5" fill-opacity="null" x1="11.15" y1="0" x2="11.15" y2="16.764379" id="svg_10" stroke-linejoin="null" stroke-linecap="null"/><line stroke="#0f0f00" fill="none" stroke-width="1.5" fill-opacity="null" x1="11.15" y1="51" x2="11.15" y2="70" id="svg_6" stroke-linejoin="null" stroke-linecap="null"/></svg>'
                 },
-    
+
                 constraints: NodeConstraints.Default | NodeConstraints.AspectRatio
             };
             diagram = new Diagram({
                 width: '900', height: '900', nodes: [node], //connectors: connectors,
-    
+
                 pageSettings: {
                     background: {
                         color: "gray",
@@ -578,19 +578,19 @@ describe('PageSettings boundary constraints', () => {
                     height: 900,
                     // Sets the BoundaryConstraints to page
                     boundaryConstraints: 'Diagram',
-    
+
                 }
             });
             diagram.appendTo('#diagram');
         });
-    
+
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
         });
-    
+
         it('Boundary Constraints rotate angle issue', (done: Function) => {
-    
+
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let mouseEvents: MouseEvents = new MouseEvents();
             mouseEvents.clickEvent(diagramCanvas, 875, 100);
@@ -602,15 +602,15 @@ describe('PageSettings boundary constraints', () => {
             diagram.dataBind();
             expect(node.rotateAngle === 0).toBe(true)
             done()
-    
+
         });
-    
+
     });
-    
+
     describe('Diagram Get Custom Cursor - Blazor Support', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-    
+
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -635,12 +635,12 @@ describe('PageSettings boundary constraints', () => {
             });
             diagram.appendTo('#diagram');
         });
-    
+
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
         });
-    
+
         it('Checking Diagram Cursor', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let mouseEvents: MouseEvents = new MouseEvents();
@@ -648,7 +648,52 @@ describe('PageSettings boundary constraints', () => {
             expect(diagramCanvas.style.cursor === 'crosshair').toBe(true);
             done();
         });
-    
+
+    });
+
+    describe('Diagram - Zoom pan enabled', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350, annotations: [{ content: 'Node3' }]
+            };
+            diagram = new Diagram({
+                width: '900', height: '900', nodes: [node, node2, node3],
+                tool: DiagramTools.ZoomPan
+
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Diagram Selected Items', (done: Function) => {
+            let mouseevents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseevents.keyDownEvent(diagramCanvas, 'A', true);
+            expect(diagram.selectedItems.nodes.length === 0).toBe(true);
+            done();
+        });
+
     });
 
 });

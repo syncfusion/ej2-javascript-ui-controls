@@ -4,8 +4,7 @@ import { formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
 import {
-    scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit,
-    infiniteScrollHandler
+    scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit, infiniteScrollHandler
 } from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
@@ -156,7 +155,7 @@ export class Scroll implements IAction {
                 return;
             }
 
-            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.infiniteScrollSettings.enableScroll) {
+            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
                 this.parent.notify(infiniteScrollHandler, e);
             }
             this.parent.notify(virtualScrollEdit, {});

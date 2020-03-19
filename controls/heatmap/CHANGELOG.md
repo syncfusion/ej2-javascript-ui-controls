@@ -2,13 +2,22 @@
 
 ## [Unreleased]
 
+## 18.1.36-beta (2020-03-19)
+
+### HeatMap
+
+#### New Features
+
+- `#259129` - Provided the support to display the exceeding X-Axis label using the `labelIntersectAction` property value as `MultipleRows`.
+- Now the lengthier Y-Axis label can trimmed with ellipses using the `maxLabelLength` property.
+
 ## 17.4.39 (2019-12-17)
 
 ### HeatMap
 
 #### New Features
 
-- `#234060`, `#246529` - Provided the cell color customization support for heatmap by using the `cellRender` event .
+- `#234060`, `#246529` - Provided the cell color customization support for heatmap by using the `cellRender` event.
 - Provided the legend title support to customize the legend title in heatmap.
 - Provided the support for a cell color range to customize a cell color based on the range value.
 

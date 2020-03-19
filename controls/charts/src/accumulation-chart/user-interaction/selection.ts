@@ -1,7 +1,7 @@
 /**
  * AccumulationChart Selection src file
  */
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined  } from '@syncfusion/ej2-base';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { indexFinder } from '../../common/utils/helper';
 import { AccumulationSelectionMode } from '../model/enum';
@@ -102,8 +102,20 @@ export class AccumulationSelection extends BaseSelection {
         if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
             this.removeStyles(selectedElements, index);
             this.addOrRemoveIndex(this.selectedDataIndexes, index);
+            if (accumulation.enableBorderOnMouseMove) {
+                let borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                if (!isNullOrUndefined(borderElement)) {
+                    this.removeSvgClass(borderElement, borderElement.getAttribute('class'));
+                }
+            }
         } else {
             this.applyStyles(selectedElements, index);
+            if (accumulation.enableBorderOnMouseMove) {
+                let borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                if (!isNullOrUndefined(borderElement)) {
+                    this.addSvgClass(borderElement, selectedElements[0].getAttribute('class'));
+                }
+            }
             this.addOrRemoveIndex(this.selectedDataIndexes, index, true);
         }
     }

@@ -4182,17 +4182,16 @@ var EventBase = /** @__PURE__ @class */ (function () {
         return this.sortByTime(filter);
     };
     EventBase.prototype.filterEventsByRange = function (eventCollection, startDate, endDate) {
+        var _this = this;
         var filteredEvents = [];
         if (startDate && endDate) {
             filteredEvents = this.filterEvents(startDate, endDate, eventCollection);
         }
         else if (startDate && !endDate) {
-            var predicate = new Predicate(this.parent.eventFields.startTime, 'greaterthanorequal', startDate);
-            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+            filteredEvents = eventCollection.filter(function (e) { return e[_this.parent.eventFields.startTime] >= startDate; });
         }
         else if (!startDate && endDate) {
-            var predicate = new Predicate(this.parent.eventFields.endTime, 'lessthanorequal', endDate);
-            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+            filteredEvents = eventCollection.filter(function (e) { return e[_this.parent.eventFields.endTime] <= endDate; });
         }
         else {
             filteredEvents = eventCollection;
@@ -4695,12 +4694,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
     };
     EventBase.prototype.getEventByGuid = function (guid) {
-        return new DataManager({ json: this.parent.eventsProcessed }).executeLocal(new Query().where('Guid', 'equal', guid))[0];
+        return this.parent.eventsProcessed.filter(function (data) { return data.Guid === guid; })[0];
     };
     EventBase.prototype.getEventById = function (id) {
-        var eventFields = this.parent.eventFields;
-        return new DataManager({ json: this.parent.eventsData }).executeLocal(new Query()
-            .where(eventFields.id, 'equal', id))[0];
+        var _this = this;
+        return this.parent.eventsData.filter(function (data) {
+            return data[_this.parent.eventFields.id] === id;
+        })[0];
     };
     EventBase.prototype.generateGuid = function () {
         return 'xyxxxxyx-xxxy-yxxx-xyxx-xxyxxxxyyxxx'.replace(/[xy]/g, function (c) {
@@ -4852,8 +4852,9 @@ var EventBase = /** @__PURE__ @class */ (function () {
         else {
             fieldValue = (parentObj[fields.recurrenceID] || parentObj[fields.followingID]);
         }
-        var filterQuery = new Query().where(isReverse ? fields.followingID : fields.id, 'equal', fieldValue);
-        var parentApp = new DataManager(this.parent.eventsData).executeLocal(filterQuery);
+        var parentApp = this.parent.eventsData.filter(function (data) {
+            return data[isReverse ? fields.followingID : fields.id] === fieldValue;
+        });
         return parentApp.shift();
     };
     EventBase.prototype.isFollowingEvent = function (parentObj, childObj) {
@@ -4867,9 +4868,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
         if (isFollowing === void 0) { isFollowing = false; }
         var idField = isGuid ? 'Guid' : (isFollowing) ? this.parent.eventFields.followingID : this.parent.eventFields.recurrenceID;
         var fieldKey = isGuid ? 'Guid' : this.parent.eventFields.id;
-        var filterQuery = new Query().where(idField, 'equal', eventObj[fieldKey]);
         var dataSource = isGuid ? this.parent.eventsProcessed : this.parent.eventsData;
-        return new DataManager(dataSource).executeLocal(filterQuery);
+        return dataSource.filter(function (data) { return data[idField] === eventObj[fieldKey]; });
     };
     EventBase.prototype.getOccurrencesByID = function (id) {
         var fields = this.parent.eventFields;
@@ -7401,7 +7401,7 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
             '<td><div class="' + INPUTWARAPPER + ' ' + WEEKPOSITION + '" >' +
             '<input type="text" tabindex="0" class="' + MONTHPOS + '"title="' + this.localeObj.getConstant('monthPosition') + '" />' +
             '</div></td>' +
-            '<td><div class="' + INPUTWARAPPER + '" >' +
+            '<td><div class="' + INPUTWARAPPER + '" style="min-width: 120px;">' +
             '<input type="text" tabindex="0" class="' + MONTHWEEK + '"title="' + this.localeObj.getConstant('monthWeek') + '" />' +
             '</div></td></tr></table>' +
             '</div></div>' +
@@ -8247,13 +8247,18 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             if (resourceCollection[i].field === fieldName && i < resourceCollection.length - 1) {
                 var resObject = this.createInstance(i);
                 var datasource = [];
-                for (var j = 0; j < args.value.length; j++) {
-                    var resourceData = resourceCollection[i + 1].dataSource;
-                    var query = new Query().where(resourceCollection[i + 1].groupIDField, 'equal', args.value[j]);
-                    var filter = new DataManager({ json: resourceData }).executeLocal(query)[0];
+                var _loop_1 = function (j) {
+                    var resourceModel = resourceCollection[i + 1];
+                    var filter = resourceModel.dataSource.filter(function (data) {
+                        return data[resourceModel.groupIDField] === args.value[j];
+                    })[0];
                     var groupId = filter[resourceCollection[i + 1].idField];
-                    var filterRes = this.filterDatasource(i, groupId);
+                    var filterRes = this_1.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
+                };
+                var this_1 = this;
+                for (var j = 0; j < args.value.length; j++) {
+                    _loop_1(j);
                 }
                 resObject.dataSource = datasource;
                 resObject.dataBind();
@@ -8286,8 +8291,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     };
     EventWindow.prototype.filterDatasource = function (index, groupId) {
         var resourceData = this.parent.resourceBase.resourceCollection[index + 1];
-        var query = new Query().where(resourceData.groupIDField, 'equal', groupId);
-        var filter = new DataManager({ json: resourceData.dataSource }).executeLocal(query);
+        var filter = resourceData.dataSource.filter(function (data) {
+            return data[resourceData.groupIDField] === groupId;
+        });
         return filter;
     };
     EventWindow.prototype.onTimezoneChange = function (args) {
@@ -8903,6 +8909,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         return false;
     };
     EventWindow.prototype.processCrudActions = function (eventObj) {
+        var _this = this;
         this.parent.uiStateValues.isBlock = false;
         var resourceData = this.getResourceData(eventObj);
         var isResourceEventExpand = (this.parent.activeViewOptions.group.resources.length > 0 ||
@@ -8910,9 +8917,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             && !isNullOrUndefined(resourceData);
         var eventId = this.getEventIdFromForm();
         if (!isNullOrUndefined(eventId)) {
-            var eveId = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
-            var editedData = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
-                where(this.fields.id, 'equal', eveId))[0];
+            var eveId_1 = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
+            var editedData = this.parent.eventsData.filter(function (data) {
+                return data[_this.fields.id] === eveId_1;
+            })[0];
             eventObj = extend({}, editedData, eventObj);
             if (eventObj[this.fields.isReadonly]) {
                 return false;
@@ -8927,10 +8935,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                         eventObj.Guid = this.parent.activeEventData.event.Guid;
                     }
                     else {
-                        eveId = eventObj[this.fields.recurrenceID];
+                        eveId_1 = eventObj[this.fields.recurrenceID];
                         currentAction = null;
                     }
-                    if (this.parent.enableRecurrenceValidation && this.editOccurrenceValidation(eveId, eventObj)) {
+                    if (this.parent.enableRecurrenceValidation && this.editOccurrenceValidation(eveId_1, eventObj)) {
                         this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                         return true;
                     }
@@ -9088,12 +9096,14 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.editOccurrenceValidation = function (eventId, currentData, editData) {
+        var _this = this;
         if (editData === void 0) {
             editData = this.eventData;
         }
         var recurColl = this.parent.getOccurrencesByID(eventId);
-        var excludedDatas = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
-            where(this.fields.recurrenceID, 'equal', eventId));
+        var excludedDatas = this.parent.eventsData.filter(function (data) {
+            return data[_this.fields.recurrenceID] === eventId;
+        });
         excludedDatas.map(function (data) { return recurColl.push(extend({}, data)); });
         currentData = extend({}, currentData);
         this.trimAllDay(currentData);
@@ -9136,9 +9146,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         resourceData = (resourceData instanceof Array) ? resourceData : [resourceData];
         var lastlevel = this.parent.resourceBase.lastResourceLevel;
         var eventList = [];
-        var _loop_1 = function (i) {
+        var _loop_2 = function (i) {
             var events = extend({}, eventObj, null, true);
-            events[this_1.fields.id] = this_1.parent.eventBase.getEventMaxID();
+            events[this_2.fields.id] = this_2.parent.eventBase.getEventMaxID();
             var temp = [];
             var addValues = function () {
                 if (action === 'Save' && i === resourceData.length - 1) {
@@ -9168,7 +9178,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                     }
                 }
             };
-            if (this_1.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
+            if (this_2.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
                 var lastResource = lastResouceData.dataSource;
                 var index = findIndexInData(lastResource, lastResouceData.idField, resourceData[i]);
                 if (index < 0) {
@@ -9178,15 +9188,15 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 var filter = lastlevel.filter(function (obj) { return obj.resourceData[lastResouceData.idField] === resourceData[i]; }).
                     filter(function (obj) { return obj.resourceData[lastResouceData.groupIDField] === groupId_1; })[0];
                 var groupOrder = filter.groupOrder;
-                for (var index_1 = 0; index_1 < this_1.parent.resourceBase.resourceCollection.length; index_1++) {
-                    var field = this_1.parent.resourceBase.resourceCollection[index_1].field;
+                for (var index_1 = 0; index_1 < this_2.parent.resourceBase.resourceCollection.length; index_1++) {
+                    var field = this_2.parent.resourceBase.resourceCollection[index_1].field;
                     events[field] = (groupOrder[index_1] instanceof Array) ? groupOrder[index_1][0] : groupOrder[index_1];
                 }
                 addValues();
             }
             else {
-                for (var index = 0; index < this_1.parent.resourceBase.resourceCollection.length - 1; index++) {
-                    var field = this_1.parent.resourceBase.resourceCollection[index].field;
+                for (var index = 0; index < this_2.parent.resourceBase.resourceCollection.length - 1; index++) {
+                    var field = this_2.parent.resourceBase.resourceCollection[index].field;
                     if (events[field] instanceof Array && events[field].length > 1) {
                         for (var k = 0; k < events[field].length; k++) {
                             var event_3 = extend({}, events, null, true);
@@ -9213,9 +9223,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 addValues();
             }
         };
-        var this_1 = this;
+        var this_2 = this;
         for (var i = 0; i < resourceData.length; i++) {
-            var state_1 = _loop_1(i);
+            var state_1 = _loop_2(i);
             if (typeof state_1 === "object")
                 return state_1.value;
         }
@@ -10484,11 +10494,13 @@ var Crud = /** @__PURE__ @class */ (function () {
             endDate = new Date(+followEvent);
         }
         else {
-            endDate = followEvent[fields.startTime];
+            endDate = new Date(+followEvent[fields.startTime]);
             var startDate = parentEvent[fields.startTime];
             var ruleException = (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] : null;
             var dateCollection = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             var untilDate = new Date(dateCollection.slice(-1)[0]);
+            untilDate.setHours(endDate.getHours(), endDate.getMinutes(), endDate.getSeconds());
+            endDate.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds());
             followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
         }
         parentEvent[fields.recurrenceRule] =
@@ -11531,8 +11543,8 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             if (resource) {
                 var data = void 0;
                 if (prevResourceData && _this.parent.activeViewOptions.group.byGroupID) {
-                    var id = prevResourceData[prevResource.idField];
-                    data = new DataManager(resource.dataSource).executeLocal(new Query().where(resource.groupIDField, 'equal', id));
+                    var id_1 = prevResourceData[prevResource.idField];
+                    data = resource.dataSource.filter(function (e) { return e[resource.groupIDField] === id_1; });
                 }
                 else {
                     data = resource.dataSource;
@@ -11717,7 +11729,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             return undefined;
         }
         var id = isNullOrUndefined(groupOrder) ? eventObj[resource.field] : groupOrder[colorFieldIndex];
-        var data = this.filterData(resource.dataSource, resource.idField, 'equal', id);
+        var data = this.filterData(resource.dataSource, resource.idField, id);
         if (data.length > 0) {
             return data[0][resource.colorField];
         }
@@ -11728,14 +11740,14 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         if (this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        var data = this.filterData(resource.dataSource, resource.idField, 'equal', eventObj[resource.field]);
+        var data = this.filterData(resource.dataSource, resource.idField, eventObj[resource.field]);
         if (data.length > 0) {
             return data[0][resource.cssClassField];
         }
         return undefined;
     };
-    ResourceBase.prototype.filterData = function (dataSource, field, operator, value) {
-        return new DataManager(dataSource).executeLocal(new Query().where(field, operator, value));
+    ResourceBase.prototype.filterData = function (dataSource, field, value) {
+        return dataSource.filter(function (data) { return data[field] === value; });
     };
     ResourceBase.prototype.dataManagerFailure = function (e) {
         var _this = this;
@@ -12679,7 +12691,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     Schedule.prototype.getContentTable = function () {
-        return this.element.querySelector('.' + CONTENT_TABLE_CLASS + ' tbody');
+        return this.activeView.element.querySelector('.' + CONTENT_TABLE_CLASS + ' tbody');
     };
     /** @hidden */
     Schedule.prototype.getTableRows = function () {
@@ -12713,7 +12725,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             var dateInMS = parseInt(dateString, 10);
             var date = new Date(dateInMS);
             if (this.isServerRenderer()) {
-                return new Date(+date + (date.getTimezoneOffset() * 60000));
+                var localDate = new Date(+date + (date.getTimezoneOffset() * 60000));
+                return new Date(localDate.getTime() + (localDate.getTimezoneOffset() - date.getTimezoneOffset()) * 60000);
             }
             return date;
         }
@@ -14301,8 +14314,11 @@ var ActionBase = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (this.actionObj.scroll.enable && isNullOrUndefined(this.actionObj.scrollInterval)) {
             this.actionObj.scrollInterval = window.setInterval(function () {
-                if (_this.autoScrollValidation(e) && !_this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS) &&
-                    _this.actionObj.groupIndex !== 0) {
+                if (_this.autoScrollValidation(e) && !_this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
+                    if (_this.parent.activeView.isTimelineView() && _this.parent.activeViewOptions.group.resources.length > 0
+                        && _this.actionObj.groupIndex === 0) {
+                        return;
+                    }
                     _this.autoScroll();
                     if (_this.actionObj.action === 'drag') {
                         _this.parent.dragAndDropModule.updateDraggingDateTime(e);
@@ -16352,7 +16368,6 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
     VerticalEvent.prototype.getOverlapIndex = function (record, day, isAllDay, resource) {
         var _this = this;
         var fieldMapping = this.parent.eventFields;
-        var predicate;
         var eventsList = [];
         var appIndex = -1;
         this.overlapEvents = [];
@@ -16371,18 +16386,19 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         else {
             var appointmentList_1 = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
             var appointment_1 = [];
-            predicate = new Predicate(fieldMapping.endTime, 'greaterthan', record[fieldMapping.startTime]).
-                and(new Predicate(fieldMapping.startTime, 'lessthan', record[fieldMapping.endTime])).
-                or(new Predicate(fieldMapping.startTime, 'greaterthanorequal', record[fieldMapping.endTime]).
-                and(new Predicate(fieldMapping.endTime, 'lessthanorequal', record[fieldMapping.startTime])));
-            this.overlapList = new DataManager({ json: appointmentList_1 }).executeLocal(new Query().where(predicate));
+            var recordStart_1 = record[fieldMapping.startTime];
+            var recordEnd_1 = record[fieldMapping.endTime];
+            this.overlapList = appointmentList_1.filter(function (data) {
+                return (data[fieldMapping.endTime] > recordStart_1 && data[fieldMapping.startTime] < recordEnd_1) ||
+                    (data[fieldMapping.startTime] >= recordEnd_1 && data[fieldMapping.endTime] <= recordStart_1);
+            });
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
             }
             this.overlapList.forEach(function (obj) {
-                predicate = new Predicate(fieldMapping.endTime, 'greaterthanorequal', obj[fieldMapping.startTime]).
-                    and(new Predicate(fieldMapping.startTime, 'lessthanorequal', obj[fieldMapping.endTime]));
-                var filterList = new DataManager({ json: appointmentList_1 }).executeLocal(new Query().where(predicate));
+                var filterList = appointmentList_1.filter(function (data) {
+                    return data[fieldMapping.endTime] >= obj[fieldMapping.startTime] && data[fieldMapping.startTime] <= obj[fieldMapping.endTime];
+                });
                 if (_this.parent.activeViewOptions.group.resources.length > 0) {
                     filterList = _this.filterEventsByResource(_this.resources[resource], filterList);
                 }
@@ -16964,9 +16980,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
-            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint +
-                this.actionObj.cellHeight + window.pageYOffset :
-                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight + window.pageYOffset) +
+            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint + this.actionObj.cellHeight :
+                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight) +
                     (this.actionObj.clone.offsetHeight - this.heightUptoCursorPoint);
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
@@ -19605,8 +19620,7 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                 tContentCollection = tContentCollection.concat(tContent[w]);
             }
             level = (parentCollection.length > 0) ? 'parentColumnLevel_' + parentCollection.length : 'resourceColumn';
-            var rowSpanCollection = new DataManager({ json: tContentCollection }).executeLocal(new Query()
-                .where('type', 'equal', level));
+            var rowSpanCollection = tContentCollection.filter(function (data) { return data.type === level; });
             for (var x = 0; x < rowSpanCollection.length; x++) {
                 rowSpan = rowSpan + rowSpanCollection[x].rowSpan;
             }
@@ -20919,7 +20933,7 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
         var workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
         this.cellWidth = workCell.offsetWidth;
         this.cellHeight = workCell.offsetHeight;
-        this.cellHeader = workCell.querySelector('.' + DATE_HEADER_CLASS).offsetHeight;
+        this.cellHeader = getOuterHeight(workCell.querySelector('.' + DATE_HEADER_CLASS));
         var eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
         this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
         var wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
@@ -21760,8 +21774,7 @@ var ICalendarExport = /** @__PURE__ @class */ (function () {
         }
     };
     ICalendarExport.prototype.filterEvents = function (data, field, value) {
-        var queryManager = new Query().where(field, 'equal', value);
-        return new DataManager({ json: data }).executeLocal(queryManager);
+        return data.filter(function (e) { return e[field] === value; });
     };
     /**
      * Get module name.
@@ -21892,7 +21905,9 @@ var ICalendarImport = /** @__PURE__ @class */ (function () {
                 parentObj = eventObj;
                 id = eventObj[fields.id];
             }
-            var data = (new DataManager({ json: app }).executeLocal(new Query().where('UID', 'equal', eventObj[uId])));
+            var data = app.filter(function (data) {
+                return data.UID === eventObj[uId];
+            });
             if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
                 for (var i = 0; i < data.length; i++) {
                     if (data[i].hasOwnProperty(fields.recurrenceID)) {

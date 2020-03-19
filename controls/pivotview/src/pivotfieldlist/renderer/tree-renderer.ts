@@ -3,13 +3,18 @@ import { MouseEventArgs, TouchEventArgs, closest } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { IAction, FieldDropEventArgs } from '../../common/base/interface';
-import { TreeView, NodeCheckEventArgs, DragAndDropEventArgs, DrawNodeEventArgs, NodeExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { IFieldOptions, IField, IDataOptions } from '../../base/engine';
+import { IAction, FieldDropEventArgs, FieldRemoveEventArgs, FieldDragStartEventArgs } from '../../common/base/interface';
+import {
+    TreeView, NodeCheckEventArgs, DragAndDropEventArgs, DrawNodeEventArgs,
+    NodeExpandEventArgs, NodeSelectEventArgs
+} from '@syncfusion/ej2-navigations';
+import { IFieldOptions, IField, IDataOptions, FieldItemInfo } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
 import { IOlapField } from '../../base/olap/engine';
+import { PivotView } from '../../pivotview';
+import { Deferred } from '@syncfusion/ej2-data';
 
 /**
  * Module to render Field List
@@ -75,14 +80,16 @@ export class TreeViewRenderer implements IAction {
         }
     }
     private updateSortElements(headerWrapper: Element): void {
-        let options: string[] = ['None', 'Ascend', 'Descend'];
-        for (let option of options) {
+        let options: { [key: string]: string } = { 'None': 'sortNone', 'Ascend': 'sortAscending', 'Descend': 'sortDescending' };
+        let keys: string[] = Object.keys(options);
+        for (let option of keys) {
             let spanElement: Element = createElement('span', {
                 attrs: {
                     'tabindex': '0',
                     'aria-disabled': 'false',
                     'aria-label': 'Sort ' + option,
-                    'data-sort': option
+                    'data-sort': option,
+                    'title': this.parent.localeObj.getConstant(options[option])
                 },
                 className: cls.ICON + ' ' + 'e-sort-' + option.toLowerCase() + ' ' +
                     (this.fieldListSort === option ? 'e-selected' : '')
@@ -102,13 +109,17 @@ export class TreeViewRenderer implements IAction {
             allowDragAndDrop: true,
             sortOrder: 'None',
             autoCheck: false,
-            loadOnDemand: false,
+            loadOnDemand: this.parent.dataType === 'olap' ? false : true,
             enableRtl: this.parent.enableRtl,
             nodeDragStart: this.dragStart.bind(this),
             nodeDragStop: this.dragStop.bind(this),
             drawNode: this.updateTreeNode.bind(this),
             nodeExpanding: this.updateNodeIcon.bind(this),
             nodeCollapsed: this.updateNodeIcon.bind(this),
+            nodeSelected: (args: NodeSelectEventArgs) => {
+                removeClass([args.node], 'e-active');
+                args.cancel = true;
+            }
         });
         this.treeViewElement.innerHTML = '';
         this.fieldTable.isStringTemplate = true;
@@ -131,7 +142,6 @@ export class TreeViewRenderer implements IAction {
     }
     private updateTreeNode(args: DrawNodeEventArgs): void {
         let allowDrag: boolean = false;
-        let dragVisibility: boolean = true;
         if (this.parent.dataType === 'olap') {
             allowDrag = this.updateOlapTreeNode(args);
         } else {
@@ -143,15 +153,19 @@ export class TreeViewRenderer implements IAction {
             liTextElement.insertBefore(liIconElement, args.node.querySelector('.e-list-text'));
         }
         if (allowDrag && !this.parent.isAdaptive) {
+            /* tslint:disable */
+            let field: FieldItemInfo = PivotUtil.getFieldInfo((args.nodeData as any).id, this.parent);
+            /* tslint:enable */
             allowDrag = false;
             let dragElement: Element = createElement('span', {
                 attrs: {
                     'tabindex': '-1',
-                    title: this.parent.localeObj.getConstant('drag'),
+                    title: (field.fieldItem ? field.fieldItem.allowDragAndDrop ?
+                        this.parent.localeObj.getConstant('drag') : '' : this.parent.localeObj.getConstant('drag')),
                     'aria-disabled': 'false'
                 },
-                styles: 'visibility:' + (dragVisibility ? 'visible;' : 'hidden;'),
-                className: cls.ICON + ' ' + cls.DRAG_CLASS
+                className: cls.ICON + ' ' + cls.DRAG_CLASS + ' ' +
+                    (field.fieldItem ? field.fieldItem.allowDragAndDrop ? '' : cls.DRAG_DISABLE_CLASS : '')
             });
             if (args.node.querySelector('.e-checkbox-wrapper') &&
                 !args.node.querySelector('.cls.DRAG_CLASS') && liTextElement) {
@@ -222,7 +236,7 @@ export class TreeViewRenderer implements IAction {
                     isPrimary: true
                 }
             }],
-            closeOnEscape: true,
+            closeOnEscape: false,
             target: this.parentElement.parentElement,
             close: this.dialogClose.bind(this)
         });
@@ -274,13 +288,17 @@ export class TreeViewRenderer implements IAction {
             fields: { dataSource: treeData, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
             showCheckBox: true,
             autoCheck: false,
-            loadOnDemand: false,
+            loadOnDemand: this.parent.dataType === 'olap' ? false : true,
             sortOrder: this.parent.dataType === 'olap' ? 'None' : 'Ascending',
             enableRtl: this.parent.enableRtl,
             nodeChecked: this.addNode.bind(this),
             drawNode: this.updateTreeNode.bind(this),
             nodeExpanding: this.updateNodeIcon.bind(this),
             nodeCollapsed: this.updateNodeIcon.bind(this),
+            nodeSelected: (args: NodeSelectEventArgs) => {
+                removeClass([args.node], 'e-active');
+                args.cancel = true;
+            }
         });
         this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(treeViewContainer);
@@ -301,30 +319,73 @@ export class TreeViewRenderer implements IAction {
     }
 
     private dragStart(args: DragAndDropEventArgs): void {
-        if ((args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS)) {
-            this.parent.isDragging = true;
-            addClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
-            let data: IField;
-            if (this.parent.dataType === 'olap') {
-                data = this.parent.olapEngineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
-            } else {
-                data = this.parent.engineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
-            }
-            let axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
-            if (data && data.aggregateType === 'CalculatedField') {
-                for (let axisContent of axis) {
-                    addClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
+        if ((args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS) &&
+            !(args.event.target as HTMLElement).classList.contains(cls.DRAG_DISABLE_CLASS)) {
+            let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(args.draggedNode.getAttribute('data-uid'), this.parent);
+            let dragEventArgs: FieldDragStartEventArgs = {
+                fieldName: fieldInfo.fieldName, fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis,
+                dataSourceSettings: this.parent.dataSourceSettings, cancel: false
+            };
+            let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+            control.trigger(events.fieldDragStart, dragEventArgs, (observedArgs: FieldDragStartEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.parent.isDragging = true;
+                    addClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
+                    let data: IField;
+                    if (this.parent.dataType === 'olap') {
+                        data = this.parent.olapEngineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
+                    } else {
+                        data = this.parent.engineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
+                    }
+                    let axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
+                    if (data && data.aggregateType === 'CalculatedField') {
+                        for (let axisContent of axis) {
+                            addClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
+                        }
+                    }
+                    let dragItem: HTMLElement = args.clonedNode;
+                    if (dragItem && (this.parent.getModuleName() === 'pivotfieldlist' &&
+                        this.parent.renderMode) === 'Popup') {
+                        dragItem.style.zIndex = (this.parent.dialogRenderer.fieldListDialog.zIndex + 1).toString();
+                    }
+                } else {
+                    this.parent.isDragging = false;
+                    args.cancel = true;
                 }
-            }
-            let dragItem: HTMLElement = args.clonedNode;
-            if (dragItem && (this.parent.getModuleName() === 'pivotfieldlist' &&
-                this.parent.renderMode) === 'Popup') {
-                dragItem.style.zIndex = (this.parent.dialogRenderer.fieldListDialog.zIndex + 1).toString();
-            }
+            });
         } else {
+            this.parent.isDragging = false;
             args.cancel = true;
         }
     }
+
+    // private getFieldDragArgs(args: DragAndDropEventArgs): FieldDragStartEventArgs {
+    //     let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(args.draggedNode.getAttribute('data-uid'), this.parent);
+    //     let dragEventArgs: any = {
+    //         fieldName: fieldInfo.fieldName, fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis,
+    //         dataSourceSettings: this.parent.dataSourceSettings, cancel: false
+    //     }
+    //     let treeModule: TreeViewRenderer = this;
+    //     if (isBlazor()) {
+    //         dragEventArgs = this.getFieldDragEventArgs(dragEventArgs);
+    //         dragEventArgs.then((e: any) => {
+    //             return e;
+    //         });
+    //     }
+    //     let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+    //     control.trigger(events.fieldDragStart, dragEventArgs);
+    //     return dragEventArgs;
+    // }
+
+    // private getFieldDragEventArgs(dragEventArgs: FieldDragStartEventArgs): FieldDragStartEventArgs | Deferred {
+    //     let callbackPromise: Deferred = new Deferred();
+    //     let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+    //     control.trigger(events.fieldDragStart, dragEventArgs, (observedArgs: FieldDragStartEventArgs) => {
+    //         callbackPromise.resolve(observedArgs);
+    //     });
+    //     return callbackPromise;
+    // }
+
     private dragStop(args: DragAndDropEventArgs): void {
         args.cancel = true;
         this.parent.isDragging = false;
@@ -408,71 +469,118 @@ export class TreeViewRenderer implements IAction {
             }
             let list: { [key: string]: Object } = this.parent.pivotFieldList;
             let selectedNode: { [key: string]: Object } = list[id] as { [key: string]: Object };
-            let eventdrop: FieldDropEventArgs = {
-                'droppedField': selectedNode, 'dataSourceSettings': this.parent.dataSourceSettings,
-                'droppedAxis': 'rows', 'draggedAxis': 'fieldlist', 'cancel': false
-            };
-            this.parent.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
-                if (!observedArgs.cancel) {
-                    if (args.action === 'check') {
+            let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
+            let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+            if (args.action === 'check') {
+                let eventdrop: FieldDropEventArgs = {
+                    fieldName: id, dropField: fieldInfo.fieldItem,
+                    dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                    dropAxis: (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
+                        selectedNode.formula && (selectedNode.formula as string).indexOf('Measure') > -1 &&
+                        this.parent.dataType === 'olap')) ? 'values' : 'rows',
+                    dropPosition: fieldInfo.position, draggedAxis: 'fieldlist', cancel: false
+                };
+                control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
+                    if (!observedArgs.cancel) {
                         addClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                         this.updateSelectedNodes(li, args.action);
-                        let addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id);
-                        if (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
-                            selectedNode.formula && (selectedNode.formula as string).indexOf('Measure') > -1 &&
-                            this.parent.dataType === 'olap')) {
-                            this.parent.dataSourceSettings.values.push(addNode);
-                            if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
-                             !(this.parent.olapEngineModule).isMeasureAvail) {
-                                let measureField: IFieldOptions = {
-                                    name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined,
-                                };
-                                let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                                    this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                                fieldAxis.push(measureField);
-                            }
-                        } else {
-                            this.parent.dataSourceSettings.rows.push(addNode);
-                        }
+                        let addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
+                        this.updateReportSettings(addNode, observedArgs);
+                        this.updateNodeStateChange(id, args, selectedNode);
                     } else {
+                        this.updateCheckState(selectedNode);
+                    }
+                });
+            } else {
+                let removeFieldArgs: FieldRemoveEventArgs = {
+                    cancel: false, fieldName: id,
+                    dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                    fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis
+                };
+                control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
+                    if (!observedArgs.cancel) {
                         removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                         this.updateSelectedNodes(li, args.action);
                         this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
                         if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
                             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
                         }
-                    }
-                    if (!this.parent.allowDeferLayoutUpdate) {
-                        this.parent.updateDataSource(true);
+                        this.updateNodeStateChange(id, args, selectedNode);
                     } else {
-                        selectedNode.isSelected = args.action === 'check';
-                        if (this.parent.dataType === 'olap') {
-                            this.parent.olapEngineModule.updateFieldlistData(id, args.action === 'check');
-                        }
-                        this.updateDataSource();
+                        this.updateCheckState(selectedNode);
                     }
-                    let parent: PivotFieldList = this.parent;
-                    setTimeout(() => {
-                        parent.axisFieldModule.render();
-                    });
-                } else {
-                    let chkState: NodeListOf<Element> = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-checkbox-wrapper');
-                    let innerText: NodeListOf<Element>  = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-list-text');
-                    let checkClass: NodeListOf<Element>  = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-frame');
-                    for (let i : number = 0; i < chkState.length; i++) {
-                        if (observedArgs.droppedField.caption === innerText[i].textContent) {
-                            if (chkState[i].getAttribute('aria-checked') === 'false') {
-                                chkState[i].setAttribute('aria-checked', 'false');
-                                checkClass[i].classList.add(cls.NODE_CHECK_CLASS);
-                            } else {
-                                chkState[i].setAttribute('aria-checked', 'true');
-                                checkClass[i].classList.remove(cls.NODE_CHECK_CLASS);
-                            }
-                        }
-                    }
-                }
-            });
+                });
+            }
         }
+    }
+
+    private updateReportSettings(newField: IFieldOptions, dropArgs: FieldDropEventArgs): void {
+        let dropPosition: number = dropArgs.dropPosition;
+        let dropClass: string = dropArgs.dropAxis;
+        switch (dropClass) {
+            case 'filters':
+                dropPosition !== -1 ?
+                    this.parent.dataSourceSettings.filters.splice(dropPosition, 0, newField) :
+                    this.parent.dataSourceSettings.filters.push(newField);
+                break;
+            case 'rows':
+                dropPosition !== -1 ?
+                    this.parent.dataSourceSettings.rows.splice(dropPosition, 0, newField) :
+                    this.parent.dataSourceSettings.rows.push(newField);
+                break;
+            case 'columns':
+                dropPosition !== -1 ?
+                    this.parent.dataSourceSettings.columns.splice(dropPosition, 0, newField) :
+                    this.parent.dataSourceSettings.columns.push(newField);
+                break;
+            case 'values':
+                dropPosition !== -1 ?
+                    this.parent.dataSourceSettings.values.splice(dropPosition, 0, newField) :
+                    this.parent.dataSourceSettings.values.push(newField);
+                if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
+                    !(this.parent.olapEngineModule).isMeasureAvail) {
+                    let measureField: IFieldOptions = {
+                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined,
+                    };
+                    let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                        this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                    fieldAxis.push(measureField);
+                }
+                break;
+        }
+    }
+
+    private updateCheckState(selectedNode: { [key: string]: Object }): void {
+        let chkState: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-checkbox-wrapper');
+        let innerText: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-list-text');
+        let checkClass: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-frame');
+        for (let i: number = 0; i < chkState.length; i++) {
+            if (selectedNode.caption === innerText[i].textContent) {
+                if (chkState[i].getAttribute('aria-checked') === 'false') {
+                    chkState[i].setAttribute('aria-checked', 'false');
+                    checkClass[i].classList.add(cls.NODE_CHECK_CLASS);
+                } else {
+                    chkState[i].setAttribute('aria-checked', 'true');
+                    checkClass[i].classList.remove(cls.NODE_CHECK_CLASS);
+                }
+            }
+        }
+    }
+
+    private updateNodeStateChange(id: string, args: NodeCheckEventArgs, selectedNode: { [key: string]: Object }): void {
+        if (!this.parent.allowDeferLayoutUpdate) {
+            this.parent.updateDataSource(true);
+        } else {
+            selectedNode.isSelected = args.action === 'check';
+            if (this.parent.dataType === 'olap') {
+                this.parent.olapEngineModule.updateFieldlistData(id, args.action === 'check');
+            }
+            this.updateDataSource();
+        }
+        let parent: PivotFieldList = this.parent;
+        setTimeout(() => {
+            parent.axisFieldModule.render();
+        });
     }
 
     private updateSelectedNodes(li: HTMLElement, state: string): void {
@@ -505,16 +613,40 @@ export class TreeViewRenderer implements IAction {
     private addNode(args: NodeCheckEventArgs): void {
         let fieldList: { [key: string]: Object } = this.parent.pivotFieldList;
         let selectedNode: { [key: string]: Object } = fieldList[args.data[0].id.toString()] as { [key: string]: Object };
+        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(selectedNode.id.toString(), this.parent);
+        let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
         if (args.action === 'check') {
-            this.selectedNodes.push(selectedNode.id.toString());
-        } else {
-            let count: number = this.selectedNodes.length;
-            while (count--) {
-                if (this.selectedNodes[count] === selectedNode.id.toString()) {
-                    this.selectedNodes.splice(count, 1);
-                    break;
+            let eventdrop: FieldDropEventArgs = {
+                fieldName: fieldInfo.fieldName, dropField: fieldInfo.fieldItem,
+                dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                dropAxis: 'rows', draggedAxis: 'fieldlist', cancel: false
+            };
+            control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.selectedNodes.push(selectedNode.id.toString());
+                } else {
+                    this.updateCheckState(selectedNode);
                 }
-            }
+            });
+        } else {
+            let removeFieldArgs: FieldRemoveEventArgs = {
+                cancel: false, fieldName: fieldInfo.fieldName,
+                dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis
+            };
+            control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
+                if (!observedArgs.cancel) {
+                    let count: number = this.selectedNodes.length;
+                    while (count--) {
+                        if (this.selectedNodes[count] === selectedNode.id.toString()) {
+                            this.selectedNodes.splice(count, 1);
+                            break;
+                        }
+                    }
+                } else {
+                    this.updateCheckState(selectedNode);
+                }
+            });
         }
     }
 
@@ -539,7 +671,7 @@ export class TreeViewRenderer implements IAction {
         if (this.parent.dataType === 'olap') {
             data = this.getOlapTreeData(axis);
         } else {
-            let keys: string[] = Object.keys(this.parent.pivotFieldList);
+            let keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
             let fieldList: { [key: string]: { id?: string; caption?: string; isSelected?: boolean; } } = {};
             for (let key of keys) {
                 let member: IField = this.parent.pivotFieldList[key];
@@ -569,7 +701,8 @@ export class TreeViewRenderer implements IAction {
     }
     private getOlapTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
-        let fieldListData: IOlapField[] = this.parent.olapEngineModule.fieldListData;
+        let fieldListData: IOlapField[] =
+            this.parent.olapEngineModule.fieldListData ? this.parent.olapEngineModule.fieldListData : [];
         if (this.parent.isAdaptive) {
             /* tslint:disable-next-line:max-line-length */
             let fields: IFieldOptions[][] = [

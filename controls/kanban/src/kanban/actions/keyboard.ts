@@ -9,6 +9,7 @@ import * as cls from '../base/css-constant';
 export class Keyboard {
     private parent: Kanban;
     private keyboardModule: KeyboardEvents;
+    private prevAction: string;
     private keyConfigs: { [key: string]: string } = {
         firstCardSelection: '36',
         lastCardSelection: '35',
@@ -42,6 +43,7 @@ export class Keyboard {
             keyConfigs: this.keyConfigs,
             eventName: 'keydown'
         });
+        this.prevAction = '';
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
@@ -89,6 +91,7 @@ export class Keyboard {
     private processCardSelection(action: string, selectedCard: Element): void {
         if (selectedCard) {
             removeClass([selectedCard], cls.CARD_SELECTION_CLASS);
+            this.parent.layoutModule.disableAttributeSelection(selectedCard);
             let selection: string[] = this.parent.actionModule.selectionArray;
             selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
         }
@@ -164,25 +167,22 @@ export class Keyboard {
             className = `.${cls.CONTENT_ROW_CLASS}.${cls.SWIMLANE_ROW_CLASS}`;
         }
         let element: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
-        let collapseCount: number = this.parent.element.querySelectorAll(className + '.' + cls.COLLAPSED_CLASS).length;
-        if ((action === 'swimlaneCollapseAll' && element.length - collapseCount === 0) ||
-            (action === 'swimlaneExpandAll' && element.length - collapseCount === element.length)) {
+        if (this.prevAction === action) {
             return;
         }
+        this.prevAction = action;
         element.forEach((ele: Element) => {
             if (ele.classList.contains(cls.CARD_CLASS)) {
                 ele = closest(ele, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling;
-                if ((!ele.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedSwimlaneExpand') ||
-                (ele.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedSwimlaneCollapse')) {
-                     return;
-                }
             }
             if (ele.classList.contains(cls.COLLAPSED_CLASS)) {
                 removeClass([ele, ele.nextElementSibling], cls.COLLAPSED_CLASS);
                 classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
+                ele.querySelector('.' + cls.ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Expand');
             } else if (!ele.classList.contains(cls.COLLAPSED_CLASS)) {
                 addClass([ele, ele.nextElementSibling], cls.COLLAPSED_CLASS);
                 classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_COLLAPSE_CLASS], [cls.SWIMLANE_ROW_EXPAND_CLASS]);
+                ele.querySelector('.' + cls.ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Collapse');
             }
         });
     }
@@ -199,9 +199,6 @@ export class Keyboard {
             let nextCellCards: HTMLElement[] = [].slice.call(nextCell.querySelectorAll('.' + cls.CARD_CLASS));
             if (nextCellCards.length > 0) {
                 this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                if (row.classList.contains(cls.COLLAPSED_CLASS)) {
-                    this.processSwimlaneExpandCollapse('selectedSwimlaneExpand');
-                }
                 break;
             }
         }
@@ -236,7 +233,7 @@ export class Keyboard {
             this.parent.actionModule.rowExpandCollapse(e);
         }
         if (selectedCard) {
-            this.parent.actionModule.cardSelection(selectedCard, false, false);
+            this.parent.actionModule.cardClick(e as KeyboardEvent, selectedCard as HTMLElement);
         }
     }
 
@@ -248,6 +245,7 @@ export class Keyboard {
                 (tabTarget.querySelector(`.${cls.SWIMLANE_ROW_COLLAPSE_CLASS},.${cls.SWIMLANE_ROW_EXPAND_CLASS}`) as HTMLElement).focus();
             }
             removeClass([selectedCard], cls.CARD_SELECTION_CLASS);
+            this.parent.layoutModule.disableAttributeSelection(selectedCard);
         }
     }
 

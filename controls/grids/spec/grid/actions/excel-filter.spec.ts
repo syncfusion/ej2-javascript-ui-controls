@@ -860,42 +860,4 @@ describe('Excel Filter =>', () => {
                 actionComplete = null;
             });
         });
-        describe('EJ2-37174 => default match case is not working with Excel filter => ', () => {
-            let gridObj: Grid;
-            let dataBound: (args: any) => void;
-            let actionComplete: () => void;
-            beforeAll((done: Function) => {
-                gridObj = createGrid(
-                    {
-                        dataSource: filterData,
-                        allowFiltering: true,
-                        allowPaging: true,
-                        allowGrouping: true,
-                        pageSettings: { currentPage: 1 },
-                        filterSettings: {
-                            type: 'Excel', columns: [
-                                { field: 'ShipCountry', operator: 'startswith', value: 'ger' }]
-                        },
-                        columns: [
-                            { field: 'OrderID', type: 'number', visible: true },
-                            { field: 'EmployeeID', type: 'number' },
-                            { field: 'Freight', format: 'C2', type: 'number' },
-                            { field: 'ShipCountry' },
-                            { field: 'OrderDate', format: 'yMd', type: 'date' }],
-                    }, done);
-            });
-            // test initial filtering scenario
-            it('testing initial filter', (done: Function) => {
-                actionComplete = (args?: Object): void => {
-                expect(gridObj.currentViewData.length).not.toBe(0);
-                done();
-                }
-                gridObj.actionComplete = actionComplete;
-            });
-
-            afterAll(() => {
-                destroy(gridObj);
-                gridObj = actionComplete = null;
-            });
-        });
     });

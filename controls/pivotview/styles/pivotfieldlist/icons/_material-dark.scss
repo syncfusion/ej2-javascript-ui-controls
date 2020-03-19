@@ -44,7 +44,7 @@
     }
 
     .e-list-item .e-text-content .e-edit.e-icons::before {
-      content: '\e944';
+      content: '\e891';
     }
 
     .e-list-item .e-text-content .e-format.e-icons::before {
@@ -313,5 +313,25 @@
         content: '\e665' !important;
     }
     // sass-lint:enable-all
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edited.e-icons::before {
+      content: '\e7a3';
+    }
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-edit.e-icons::before {
+      content: '\e891';
+    }
+
+    .e-pivot-button .e-edit::before {
+      content: '\e891';
+    }
+
+    .e-sort-ascend-icon::before {
+      content: '\e734';
+    }
+
+    .e-sort-descend-icon::before {
+      content: '\e733';
+    }
   }
 }

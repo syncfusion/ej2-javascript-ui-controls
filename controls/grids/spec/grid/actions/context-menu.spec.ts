@@ -799,9 +799,9 @@ describe('context menu module', () => {
             }, done);
         });
 
-        it('EJ2-7730===>empty record and disabling delete', () => {
-            expect((gridObj.contextMenuModule as any).ensureDisabledStatus('Delete')).toBe(true);
-        });
+        // it('EJ2-7730===>empty record and disabling delete', () => {
+           // expect((gridObj.contextMenuModule as any).ensureDisabledStatus('Delete')).toBe(true);
+        // });
 
         afterAll(() => {
             destroy(gridObj);

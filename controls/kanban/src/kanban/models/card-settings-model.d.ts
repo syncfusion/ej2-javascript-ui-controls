@@ -26,6 +26,7 @@ export interface CardSettingsModel {
     /**
      * Defines the card template
      * @default null
+     * @deprecated
      */
     template?: string;
 

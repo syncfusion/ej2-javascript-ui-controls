@@ -1,6 +1,8 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
-import { Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isBlazor, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
+import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { FormValidator, Input, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
@@ -21,7 +23,7 @@ const cardDoubleClick = 'cardDoubleClick';
 /** @hidden */
 const cardRendered = 'cardRendered';
 /** @hidden */
-const columnRendered = 'columnRendered';
+const queryCellInfo = 'queryCellInfo';
 /** @hidden */
 const dataBinding = 'dataBinding';
 /** @hidden */
@@ -34,6 +36,10 @@ const drag = 'drag';
 const dragStop = 'dragStop';
 /** @hidden */
 const documentClick = 'document-click';
+/** @hidden */
+const dialogOpen = 'dialogOpen';
+/** @hidden */
+const dialogClose = 'dialogClose';
 // Constants for internal events
 /** @hidden */
 const contentReady = 'content-ready';
@@ -194,36 +200,54 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
+ * Holds the configuration of editor settings.
+ */
+class DialogSettings extends ChildProperty {
+}
+__decorate$3([
+    Property()
+], DialogSettings.prototype, "template", void 0);
+__decorate$3([
+    Property([])
+], DialogSettings.prototype, "fields", void 0);
+
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
  * Holds the configuration of columns in kanban board.
  */
 class Columns extends ChildProperty {
 }
-__decorate$3([
+__decorate$4([
     Property()
 ], Columns.prototype, "keyField", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Columns.prototype, "headerText", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Columns.prototype, "template", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], Columns.prototype, "allowToggle", void 0);
-__decorate$3([
+__decorate$4([
     Property(true)
 ], Columns.prototype, "isExpanded", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Columns.prototype, "minCount", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Columns.prototype, "maxCount", void 0);
-__decorate$3([
-    Property(false)
+__decorate$4([
+    Property(true)
 ], Columns.prototype, "showItemCount", void 0);
 
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -234,10 +258,10 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class StackedHeaders extends ChildProperty {
 }
-__decorate$4([
+__decorate$5([
     Property()
 ], StackedHeaders.prototype, "text", void 0);
-__decorate$4([
+__decorate$5([
     Property()
 ], StackedHeaders.prototype, "keyFields", void 0);
 
@@ -319,17 +343,17 @@ const COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
 /** @hidden */
 const COLLAPSED_CLASS = 'e-collapsed';
 /** @hidden */
-
+const DIALOG_CLASS = 'e-kanban-dialog';
 /** @hidden */
 
 /** @hidden */
-
+const FORM_CLASS = 'e-kanban-form';
 /** @hidden */
-
+const FORM_WRAPPER_CLASS = 'e-kanban-form-wrapper';
 /** @hidden */
-
+const ERROR_VALIDATION_CLASS = 'e-kanban-error';
 /** @hidden */
-
+const FIELD_CLASS = 'e-field';
 /** @hidden */
 const DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
 /** @hidden */
@@ -404,6 +428,8 @@ const POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
 const CLOSE_ICON_CLASS = 'e-close-icon';
 /** @hidden */
 const POPUP_OPEN_CLASS = 'e-popup-open';
+/** @hidden */
+const DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
 
 /**
  * Action module is used to perform card actions.
@@ -448,20 +474,21 @@ class Action {
             this.cardDoubleClick(e);
         }
     }
-    cardClick(e) {
-        let target = closest(e.target, '.' + CARD_CLASS);
+    cardClick(e, selectedCard) {
+        let target = closest((selectedCard) ? selectedCard : e.target, '.' + CARD_CLASS);
         let cardClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardClickObj, element: target };
         let args = { data: cardClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardClick, args, (clickArgs) => {
             if (!clickArgs.cancel) {
-                if (target.classList.contains(CARD_SELECTION_CLASS)) {
+                if (target.classList.contains(CARD_SELECTION_CLASS) && e.type === 'click') {
                     removeClass([target], CARD_SELECTION_CLASS);
+                    this.parent.layoutModule.disableAttributeSelection(target);
                 }
                 else {
                     let isCtrlKey = e.ctrlKey;
                     if (this.parent.isAdaptive && this.parent.touchModule) {
-                        isCtrlKey = this.parent.touchModule.tabHold || e.ctrlKey;
+                        isCtrlKey = (this.parent.touchModule.mobilePopup && this.parent.touchModule.tabHold) || isCtrlKey;
                     }
                     this.cardSelection(target, isCtrlKey, e.shiftKey);
                 }
@@ -476,7 +503,11 @@ class Action {
         let cardDoubleClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
         let args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
-        this.parent.trigger(cardDoubleClick, args);
+        this.parent.trigger(cardDoubleClick, args, (doubleClickArgs) => {
+            if (!doubleClickArgs.cancel && !this.parent.isBlazorRender()) {
+                this.parent.dialogModule.openDialog('Edit', args.data);
+            }
+        });
     }
     rowExpandCollapse(e) {
         let headerTarget = (e instanceof HTMLElement) ? e : e.target;
@@ -484,18 +515,23 @@ class Action {
         this.parent.trigger(actionBegin, args, (actionArgs) => {
             if (!actionArgs.cancel) {
                 let target = closest(headerTarget, '.' + SWIMLANE_ROW_CLASS);
+                let key = target.getAttribute('data-key');
                 let tgtRow = this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + `:nth-child(${target.rowIndex + 2})`);
                 let targetIcon = target.querySelector(`.${SWIMLANE_ROW_EXPAND_CLASS},.${SWIMLANE_ROW_COLLAPSE_CLASS}`);
-                if (target.classList.contains(COLLAPSED_CLASS)) {
+                let isCollapsed = target.classList.contains(COLLAPSED_CLASS) ? true : false;
+                if (isCollapsed) {
                     removeClass([tgtRow, target], COLLAPSED_CLASS);
                     classList(targetIcon, [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
-                    this.parent.swimlaneToggleArray.splice(this.parent.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
+                    this.parent.swimlaneToggleArray.splice(this.parent.swimlaneToggleArray.indexOf(key), 1);
                 }
                 else {
                     addClass([tgtRow, target], COLLAPSED_CLASS);
                     classList(targetIcon, [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
-                    this.parent.swimlaneToggleArray.push(target.getAttribute('data-key'));
+                    this.parent.swimlaneToggleArray.push(key);
                 }
+                targetIcon.setAttribute('aria-label', isCollapsed ? key + ' Expand' : key + ' Collapse');
+                target.setAttribute('aria-expanded', isCollapsed.toString());
+                tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
                 this.parent.notify(contentReady, {});
                 this.parent.trigger(actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -539,9 +575,12 @@ class Action {
                 let targetCol = row.querySelector(`.${CONTENT_CELLS_CLASS}:nth-child(${colIndex + 1})`);
                 removeClass([targetCol, target], COLLAPSED_CLASS);
                 remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT_CLASS));
+                target.setAttribute('aria-expanded', 'true');
+                targetCol.setAttribute('aria-expanded', 'true');
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
             this.parent.columns[colIndex].setProperties({ isExpanded: true }, true);
+            target.querySelector('.e-header-icon').setAttribute('aria-label', target.getAttribute('data-key') + ' Expand');
         }
         else {
             addClass(colGroup, COLLAPSED_CLASS);
@@ -549,8 +588,8 @@ class Action {
                 colGroup.forEach((col) => col.style.width = formatUnit(toggleWidth));
             }
             classList(targetIcon, [COLUMN_COLLAPSE_CLASS], [COLUMN_EXPAND_CLASS]);
+            let key = target.getAttribute('data-key');
             for (let row of targetRow) {
-                let key = target.getAttribute('data-key');
                 let targetCol = row.querySelector(`.${CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 let index = targetCol.cellIndex;
                 targetCol.appendChild(createElement('div', {
@@ -558,9 +597,12 @@ class Action {
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], COLLAPSED_CLASS);
+                target.setAttribute('aria-expanded', 'false');
+                targetCol.setAttribute('aria-expanded', 'false');
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
             this.parent.columns[colIndex].setProperties({ isExpanded: false }, true);
+            target.querySelector('.e-header-icon').setAttribute('aria-label', key + ' Collapse');
         }
     }
     cardSelection(target, isCtrl, isShift) {
@@ -576,6 +618,7 @@ class Action {
             }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
                 removeClass(cards, CARD_SELECTION_CLASS);
+                this.parent.layoutModule.disableAttributeSelection(cards);
                 cards.forEach((el) => {
                     this.selectionArray.splice(this.selectionArray.indexOf(el.getAttribute('data-id')), 1);
                     this.selectedCardsElement.splice(this.selectedCardsElement.indexOf(el), 1);
@@ -601,6 +644,7 @@ class Action {
                 for (i = start; i <= end; i++) {
                     let card = allCards[i];
                     addClass([card], CARD_SELECTION_CLASS);
+                    card.setAttribute('aria-selected', 'true');
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -612,6 +656,7 @@ class Action {
             }
             else {
                 addClass([target], CARD_SELECTION_CLASS);
+                target.setAttribute('aria-selected', 'true');
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));
@@ -723,16 +768,30 @@ class Crud {
                     changedRecords: this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
                 };
                 if (cardData instanceof Array || modifiedData.length > 0) {
-                    promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('AddCards', { Records: cardData }, this.keyField);
+                    }
                 }
                 else {
-                    promise = this.parent.dataModule.dataManager.insert(cardData, this.getTable(), this.getQuery());
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.insert(cardData, this.getTable(), this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('AddCard', { Record: cardData });
+                    }
                 }
-                let crudArgs = {
-                    requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                this.refreshData(crudArgs);
+                if (!this.parent.isBlazorRender()) {
+                    let crudArgs = {
+                        requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    this.refreshData(crudArgs);
+                }
             }
         });
     }
@@ -753,16 +812,30 @@ class Crud {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
                 if (cardData instanceof Array) {
-                    promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('UpdateCards', { Records: cardData }, this.keyField);
+                    }
                 }
                 else {
-                    promise = this.parent.dataModule.dataManager.update(this.keyField, cardData, this.getTable(), this.getQuery());
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.update(this.keyField, cardData, this.getTable(), this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('UpdateCard', this.keyField, { Record: cardData });
+                    }
                 }
-                let crudArgs = {
-                    requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                this.refreshData(crudArgs);
+                if (!this.parent.isBlazorRender()) {
+                    let crudArgs = {
+                        requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    this.refreshData(crudArgs);
+                }
             }
         });
     }
@@ -782,16 +855,30 @@ class Crud {
             if (!deleteArgs.cancel) {
                 let promise = null;
                 if (editParms.deletedRecords.length > 1) {
-                    promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { Records: cardData }, this.keyField);
+                    }
                 }
                 else {
-                    promise = this.parent.dataModule.dataManager.remove(this.keyField, cardData, this.getTable(), this.getQuery());
+                    if (!this.parent.isBlazorRender()) {
+                        promise = this.parent.dataModule.dataManager.remove(this.keyField, cardData, this.getTable(), this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });
+                    }
                 }
-                let crudArgs = {
-                    requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                this.refreshData(crudArgs);
+                if (!this.parent.isBlazorRender()) {
+                    let crudArgs = {
+                        requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    this.refreshData(crudArgs);
+                }
             }
         });
     }
@@ -866,6 +953,7 @@ class DragAndDrop {
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
+        this.isDragging = false;
     }
     wireDragEvents(element) {
         new Draggable(element, {
@@ -925,6 +1013,9 @@ class DragAndDrop {
                 };
                 return;
             }
+            if (this.parent.isBlazorRender()) {
+                e.bindEvents(e.dragElement);
+            }
             if (this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
                 this.dragObj.selectedCards.forEach((element) => { this.draggedClone(element); });
                 if (this.dragObj.selectedCards.length > 1) {
@@ -935,6 +1026,7 @@ class DragAndDrop {
                     });
                     this.dragObj.cloneElement.appendChild(drag$$1);
                     classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [CARD_SELECTION_CLASS]);
+                    this.parent.layoutModule.disableAttributeSelection(this.dragObj.cloneElement);
                     this.dragObj.cloneElement.style.width = '90px';
                 }
             }
@@ -965,13 +1057,12 @@ class DragAndDrop {
             let targetKey = this.getColumnKey(contentCell);
             let keys = targetKey.split(',');
             this.multiCloneRemove();
-            let isDrag = false;
-            if ((targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS)))) {
-                isDrag = true;
-            }
+            let isDrag = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS)))
+                ? true : false;
             if (keys.length === 1 || isDrag) {
                 if (target.classList.contains(CARD_CLASS)) {
-                    let insertClone = isNullOrUndefined(target.previousElementSibling) ? 'beforebegin' : 'afterend';
+                    let insertClone = (isNullOrUndefined(target.previousElementSibling) &&
+                        ((this.dragObj.pageY - target.offsetTop) / 2) < 25) ? 'beforebegin' : 'afterend';
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 }
                 else if (target.classList.contains(CONTENT_CELLS_CLASS) && !closest(target, '.' + SWIMLANE_ROW_CLASS)) {
@@ -1116,6 +1207,10 @@ class DragAndDrop {
             this.removeElement(this.dragObj.cloneElement);
             let dragMultiClone = [].slice.call(this.parent.element.querySelectorAll('.' + DRAGGED_CLONE_CLASS));
             dragMultiClone.forEach((clone) => remove(clone));
+            if (this.parent.isBlazorRender()) {
+                this.dragObj.element.style.removeProperty('width');
+                this.multiCloneRemove();
+            }
             removeClass([this.dragObj.element], DRAGGED_CARD_CLASS);
             clearInterval(this.dragObj.navigationInterval);
             this.dragObj.navigationInterval = null;
@@ -1129,6 +1224,7 @@ class DragAndDrop {
                 this.parent.touchModule.tabHold = false;
             }
             this.dragObj.cardDetails = this.dragObj.modifiedData = [];
+            this.isDragging = false;
         });
     }
     updateDroppedData(element, cardStatus, contentCell) {
@@ -1176,7 +1272,8 @@ class DragAndDrop {
         });
     }
     toggleVisible(target, tColumn) {
-        let lists = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_CELLS_CLASS));
+        let headerCells = '.' + HEADER_CELLS_CLASS + ':not(.' + STACKED_HEADER_CELL_CLASS + ')';
+        let lists = [].slice.call(this.parent.element.querySelectorAll(headerCells));
         lists.forEach((list) => {
             if (this.getColumnKey(list) === this.getColumnKey(tColumn || target)) {
                 this.parent.actionModule.columnToggle(list);
@@ -1208,6 +1305,10 @@ class DragAndDrop {
         let eventArgs = this.getPageCoordinates(e);
         this.dragObj.pageY = eventArgs.pageY;
         this.dragObj.pageX = eventArgs.pageX;
+        this.isDragging = true;
+        if (this.parent.isAdaptive && this.parent.tooltipModule) {
+            this.parent.tooltipModule.tooltipObj.close();
+        }
     }
     getPageCoordinates(e) {
         let eventArgs = e.event;
@@ -1215,7 +1316,7 @@ class DragAndDrop {
             eventArgs || e;
     }
     getColumnKey(target) {
-        if (target) {
+        if (target && target.getAttribute('data-key')) {
             return target.getAttribute('data-key').trim();
         }
         return '';
@@ -1301,6 +1402,386 @@ class DragAndDrop {
 }
 
 /**
+ * Dialog module is used to perform card actions.
+ * @hidden
+ */
+class KanbanDialog {
+    /**
+     * Constructor for dialog module
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+    }
+    openDialog(action, data) {
+        this.action = action;
+        this.parent.activeCardData.data = data;
+        this.renderDialog(data, action);
+        this.dialogObj.show();
+    }
+    closeDialog() {
+        this.dialogObj.hide();
+    }
+    renderDialog(args, action) {
+        this.element = createElement('div', { id: this.parent.element.id + '_dialog_wrapper' });
+        this.parent.element.appendChild(this.element);
+        let dialogModel = {
+            buttons: this.getDialogButtons(action),
+            content: this.getDialogContent(args, action),
+            cssClass: DIALOG_CLASS,
+            enableRtl: this.parent.enableRtl,
+            header: this.parent.localeObj.getConstant(action === 'Add' ? 'addTitle' : action === 'Edit' ? 'editTitle' : 'deleteTitle'),
+            height: this.parent.isAdaptive ? '100%' : 'auto',
+            isModal: true,
+            showCloseIcon: this.parent.isAdaptive ? false : true,
+            target: document.body,
+            width: (action === 'Delete') ? 400 : 350,
+            visible: false,
+            beforeOpen: this.onBeforeDialogOpen.bind(this),
+            beforeClose: this.onBeforeDialogClose.bind(this)
+        };
+        this.dialogObj = new Dialog(dialogModel, this.element);
+        if (action !== 'Delete') {
+            this.applyFormValidation();
+        }
+    }
+    getDialogContent(args, action) {
+        if (action === 'Delete') {
+            return this.parent.localeObj.getConstant('deleteContent');
+        }
+        else {
+            let container = createElement('div', { className: FORM_WRAPPER_CLASS });
+            let form = createElement('form', {
+                id: this.parent.element.id + 'EditForm',
+                className: FORM_CLASS, attrs: { onsubmit: 'return false;' }
+            });
+            if (this.parent.dialogSettings.template) {
+                if (args) {
+                    this.destroyComponents();
+                    [].slice.call(form.childNodes).forEach((node) => remove(node));
+                }
+                append(this.parent.templateParser(this.parent.dialogSettings.template)(args), form);
+            }
+            else {
+                let dialogWrapper = createElement('div', { className: DIALOG_CONTENT_CONTAINER });
+                form.appendChild(dialogWrapper);
+                let table = createElement('table');
+                dialogWrapper.appendChild(table);
+                let dialogFields = this.getDialogFields();
+                for (let field of dialogFields) {
+                    let tr = createElement('tr');
+                    table.appendChild(tr);
+                    tr.appendChild(createElement('td', { className: 'e-label', innerHTML: field.text ? field.text : field.key }));
+                    let td = createElement('td');
+                    tr.appendChild(td);
+                    td.appendChild(this.renderComponents(field));
+                }
+            }
+            container.appendChild(form);
+            return container;
+        }
+    }
+    getDialogFields() {
+        let fields = this.parent.dialogSettings.fields;
+        if (fields.length === 0) {
+            fields = [
+                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'Input' },
+                { key: this.parent.keyField, type: 'DropDown' },
+                { key: 'Estimate', type: 'Numeric' },
+                { key: 'Summary', type: 'TextArea' }
+            ];
+            if (this.parent.cardSettings.priority) {
+                fields.splice(fields.length - 1, 0, { key: this.parent.cardSettings.priority, type: 'Numeric' });
+            }
+            if (this.parent.swimlaneSettings.keyField) {
+                fields.splice(fields.length - 1, 0, { key: 'Assignee', type: 'DropDown' });
+            }
+        }
+        return fields;
+    }
+    getDialogButtons(action) {
+        let primaryButtonClass = action === 'Delete' ? 'e-dialog-yes' : action === 'Add' ? 'e-dialog-add' : 'e-dialog-edit';
+        let flatButtonClass = action === 'Delete' ? 'e-dialog-no' : 'e-dialog-cancel';
+        let dialogButtons = [
+            {
+                buttonModel: {
+                    cssClass: 'e-flat ' + primaryButtonClass, isPrimary: true,
+                    content: this.parent.localeObj.getConstant(action === 'Add' || action === 'Edit' ? 'save' : 'yes')
+                },
+                click: this.dialogButtonClick.bind(this)
+            }, {
+                buttonModel: {
+                    cssClass: 'e-flat ' + flatButtonClass, isPrimary: false,
+                    content: this.parent.localeObj.getConstant(action === 'Add' || action === 'Edit' ? 'cancel' : 'no')
+                },
+                click: this.dialogButtonClick.bind(this)
+            }
+        ];
+        if (action === 'Edit') {
+            let deleteButton = {
+                buttonModel: { cssClass: 'e-flat e-dialog-delete', isPrimary: false, content: this.parent.localeObj.getConstant('delete') },
+                click: this.dialogButtonClick.bind(this)
+            };
+            dialogButtons.splice(0, 0, deleteButton);
+        }
+        return dialogButtons;
+    }
+    renderComponents(field) {
+        let wrapper = createElement('div', { className: field.key + '_wrapper' });
+        let element = createElement('input', { className: FIELD_CLASS, attrs: { 'name': field.key } });
+        wrapper.appendChild(element);
+        let controlObj;
+        let fieldValue = this.parent.activeCardData.data ? this.parent.activeCardData.data[field.key] : null;
+        switch (field.type) {
+            case 'DropDown':
+                let dropDownOptions;
+                if (field.key === this.parent.keyField) {
+                    dropDownOptions = {
+                        dataSource: [].slice.call(this.parent.columns),
+                        fields: { text: 'headerText', value: 'keyField' },
+                        value: fieldValue
+                    };
+                }
+                else if (field.key === this.parent.swimlaneSettings.keyField) {
+                    dropDownOptions = {
+                        dataSource: [].slice.call(this.parent.layoutModule.kanbanRows),
+                        fields: { text: 'textField', value: 'keyField' },
+                        value: fieldValue
+                    };
+                }
+                controlObj = new DropDownList(dropDownOptions);
+                break;
+            case 'Numeric':
+                controlObj = new NumericTextBox({ value: fieldValue });
+                break;
+            case 'TextBox':
+                controlObj = new TextBox({ value: fieldValue });
+                break;
+            case 'Input':
+                if (fieldValue) {
+                    element.value = fieldValue;
+                }
+                if (fieldValue && this.parent.cardSettings.headerField === field.key) {
+                    Input.createInput({ element: element, properties: { enabled: false } });
+                }
+                else {
+                    Input.createInput({ element: element });
+                }
+                break;
+            case 'TextArea':
+                remove(element);
+                let divElement = createElement('div', { className: 'e-float-input' });
+                element = createElement('textarea', {
+                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '2' },
+                    innerHTML: fieldValue
+                });
+                wrapper.appendChild(divElement).appendChild(element);
+                break;
+            default:
+                break;
+        }
+        if (controlObj) {
+            controlObj.appendTo(element);
+        }
+        return wrapper;
+    }
+    onBeforeDialogOpen(args) {
+        let eventProp = {
+            data: this.parent.activeCardData.data,
+            cancel: false, element: this.element,
+            target: this.parent.activeCardData.element,
+            requestType: this.action
+        };
+        this.parent.trigger(dialogOpen, eventProp, (openArgs) => args.cancel = openArgs.cancel);
+    }
+    onBeforeDialogClose(args) {
+        let formInputs = this.getFormElements();
+        let cardObj = {};
+        for (let input of formInputs) {
+            let columnName = input.name || this.getColumnName(input);
+            if (!isNullOrUndefined(columnName) && columnName !== '') {
+                let value = this.getValueFromElement(input);
+                if (columnName === this.parent.cardSettings.headerField) {
+                    value = this.getIDType() === 'string' ? value : parseInt(value, 10);
+                }
+                cardObj[columnName] = value;
+            }
+        }
+        let eventProp = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
+        this.parent.trigger(dialogClose, eventProp, (closeArgs) => {
+            args.cancel = closeArgs.cancel;
+            if (!closeArgs.cancel) {
+                this.cardData = eventProp.data;
+                this.destroy();
+            }
+        });
+    }
+    getIDType() {
+        if (this.parent.kanbanData.length !== 0) {
+            return typeof (this.parent.kanbanData[0][this.parent.cardSettings.headerField]);
+        }
+        return 'string';
+    }
+    applyFormValidation() {
+        let form = this.element.querySelector('.' + FORM_CLASS);
+        let rules = {};
+        for (let field of this.parent.dialogSettings.fields) {
+            rules[field.key] = (field.validationRules && Object.keys(field.validationRules).length > 0) ? field.validationRules : null;
+        }
+        this.formObj = new FormValidator(form, {
+            rules: rules,
+            customPlacement: (inputElement, error) => {
+                let id = error.getAttribute('for');
+                let elem = this.element.querySelector('#' + id + '_Error');
+                if (!elem) {
+                    this.createTooltip(inputElement, error, id, '');
+                }
+            },
+            validationComplete: (args) => {
+                let elem = this.element.querySelector('#' + args.inputName + '_Error');
+                if (elem) {
+                    elem.style.display = (args.status === 'failure') ? '' : 'none';
+                }
+            }
+        });
+    }
+    createTooltip(element, error, name, display) {
+        let dlgContent;
+        let client;
+        let inputClient = element.parentElement.getBoundingClientRect();
+        if (this.element.classList.contains(DIALOG_CLASS)) {
+            dlgContent = this.element;
+            client = this.element.getBoundingClientRect();
+        }
+        else {
+            dlgContent = this.element.querySelector('.e-kanban-dialog .e-dlg-content');
+            client = dlgContent.getBoundingClientRect();
+        }
+        let div = createElement('div', {
+            className: 'e-tooltip-wrap e-popup ' + ERROR_VALIDATION_CLASS,
+            id: name + '_Error',
+            styles: 'display:' + display + ';top:' +
+                (inputClient.bottom - client.top + dlgContent.scrollTop + 9) + 'px;left:' +
+                (inputClient.left - client.left + dlgContent.scrollLeft + inputClient.width / 2) + 'px;'
+        });
+        let content = createElement('div', { className: 'e-tip-content' });
+        content.appendChild(error);
+        let arrow = createElement('div', { className: 'e-arrow-tip e-tip-top' });
+        arrow.appendChild(createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
+        arrow.appendChild(createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
+        div.appendChild(content);
+        div.appendChild(arrow);
+        dlgContent.appendChild(div);
+        div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
+    }
+    destroyToolTip() {
+        if (this.element) {
+            this.element.querySelectorAll('.' + ERROR_VALIDATION_CLASS).forEach((node) => remove(node));
+        }
+        if (this.formObj && this.formObj.element) {
+            this.formObj.reset();
+        }
+    }
+    dialogButtonClick(event) {
+        let target = event.target.cloneNode(true);
+        let id = this.formObj.element.id;
+        if (document.getElementById(id) && this.formObj.validate() &&
+            (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
+            this.dialogObj.hide();
+            if (target.classList.contains('e-dialog-edit')) {
+                this.parent.crudModule.updateCard(this.cardData);
+            }
+            if (target.classList.contains('e-dialog-add')) {
+                this.parent.crudModule.addCard(this.cardData);
+            }
+            this.cardData = null;
+        }
+        if (!target.classList.contains('e-dialog-edit') && !target.classList.contains('e-dialog-add')) {
+            this.dialogObj.hide();
+            if (target.classList.contains('e-dialog-yes')) {
+                this.parent.crudModule.deleteCard(this.parent.activeCardData.data);
+            }
+            else if (target.classList.contains('e-dialog-no')) {
+                this.openDialog('Edit', this.parent.activeCardData.data);
+            }
+            else if (target.classList.contains('e-dialog-delete')) {
+                this.openDialog('Delete', this.parent.activeCardData.data);
+            }
+        }
+    }
+    getFormElements() {
+        let elements = [].slice.call(this.element.querySelectorAll('.' + FIELD_CLASS));
+        let validElements = [];
+        for (let element of elements) {
+            if (element.classList.contains('e-control')) {
+                validElements.push(element);
+            }
+            else if (element.querySelector('.e-control')) {
+                validElements.push(element.querySelector('.e-control'));
+            }
+            else {
+                validElements.push(element);
+            }
+        }
+        return validElements;
+    }
+    getColumnName(element) {
+        let attrName = element.getAttribute('data-name') || '';
+        if (attrName === '') {
+            let isDropDowns = false;
+            let fieldSelector = '';
+            if (element.classList.contains('e-dropdownlist') || element.classList.contains('e-multiselect')) {
+                fieldSelector = element.classList.contains('e-dropdownlist') ? 'e-ddl' : 'e-multiselect';
+                isDropDowns = true;
+            }
+            else if (element.classList.contains('e-numerictextbox')) {
+                fieldSelector = 'e-numeric';
+            }
+            let classSelector = isDropDowns ? `.${fieldSelector}:not(.e-control)` : `.${fieldSelector}`;
+            let control = closest(element, classSelector) || element.querySelector(`.${fieldSelector}`);
+            if (control) {
+                let attrEle = control.querySelector('[name]');
+                if (attrEle) {
+                    attrName = attrEle.name;
+                }
+            }
+        }
+        return attrName;
+    }
+    getValueFromElement(element) {
+        let value;
+        let instance = element.ej2_instances;
+        if (instance && instance.length > 0) {
+            value = instance[0].value ||
+                instance[0].checked;
+        }
+        else {
+            value = element.value;
+        }
+        return value;
+    }
+    destroyComponents() {
+        let formelement = this.getFormElements();
+        for (let element of formelement) {
+            let instance = element.ej2_instances;
+            if (instance && instance.length > 0) {
+                instance.forEach((node) => node.destroy());
+            }
+        }
+    }
+    destroy() {
+        this.destroyToolTip();
+        this.destroyComponents();
+        if (this.dialogObj) {
+            this.dialogObj.destroy();
+            this.dialogObj = null;
+            remove(this.element);
+            this.element = null;
+        }
+    }
+}
+
+/**
  * Drag and Drop module is used to perform card actions.
  * @hidden
  */
@@ -1338,6 +1819,7 @@ class Keyboard {
             keyConfigs: this.keyConfigs,
             eventName: 'keydown'
         });
+        this.prevAction = '';
     }
     keyActionHandler(e) {
         let selectedCard = this.parent.element.querySelectorAll(`.${CARD_CLASS}.${CARD_SELECTION_CLASS}`).item(0);
@@ -1383,6 +1865,7 @@ class Keyboard {
     processCardSelection(action, selectedCard) {
         if (selectedCard) {
             removeClass([selectedCard], CARD_SELECTION_CLASS);
+            this.parent.layoutModule.disableAttributeSelection(selectedCard);
             let selection = this.parent.actionModule.selectionArray;
             selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
         }
@@ -1459,26 +1942,23 @@ class Keyboard {
             className = `.${CONTENT_ROW_CLASS}.${SWIMLANE_ROW_CLASS}`;
         }
         let element = [].slice.call(this.parent.element.querySelectorAll(className));
-        let collapseCount = this.parent.element.querySelectorAll(className + '.' + COLLAPSED_CLASS).length;
-        if ((action === 'swimlaneCollapseAll' && element.length - collapseCount === 0) ||
-            (action === 'swimlaneExpandAll' && element.length - collapseCount === element.length)) {
+        if (this.prevAction === action) {
             return;
         }
+        this.prevAction = action;
         element.forEach((ele) => {
             if (ele.classList.contains(CARD_CLASS)) {
                 ele = closest(ele, '.' + CONTENT_ROW_CLASS).previousElementSibling;
-                if ((!ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneExpand') ||
-                    (ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneCollapse')) {
-                    return;
-                }
             }
             if (ele.classList.contains(COLLAPSED_CLASS)) {
                 removeClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
                 classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
+                ele.querySelector('.' + ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Expand');
             }
             else if (!ele.classList.contains(COLLAPSED_CLASS)) {
                 addClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
                 classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
+                ele.querySelector('.' + ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Collapse');
             }
         });
     }
@@ -1493,9 +1973,6 @@ class Keyboard {
             let nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
             if (nextCellCards.length > 0) {
                 this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                if (row.classList.contains(COLLAPSED_CLASS)) {
-                    this.processSwimlaneExpandCollapse('selectedSwimlaneExpand');
-                }
                 break;
             }
         }
@@ -1527,7 +2004,7 @@ class Keyboard {
             this.parent.actionModule.rowExpandCollapse(e);
         }
         if (selectedCard) {
-            this.parent.actionModule.cardSelection(selectedCard, false, false);
+            this.parent.actionModule.cardClick(e, selectedCard);
         }
     }
     processTab(action, selectedCard) {
@@ -1538,6 +2015,7 @@ class Keyboard {
                 tabTarget.querySelector(`.${SWIMLANE_ROW_COLLAPSE_CLASS},.${SWIMLANE_ROW_EXPAND_CLASS}`).focus();
             }
             removeClass([selectedCard], CARD_SELECTION_CLASS);
+            this.parent.layoutModule.disableAttributeSelection(selectedCard);
         }
     }
     processMoveCards(action, card) {
@@ -1641,6 +2119,10 @@ class KanbanTooltip {
         this.tooltipObj.isStringTemplate = true;
     }
     onBeforeRender(args) {
+        if (this.parent.dragAndDropModule.isDragging) {
+            args.cancel = true;
+            return;
+        }
         let tooltipContent;
         if (this.parent.tooltipTemplate) {
             tooltipContent = createElement('div');
@@ -1873,37 +2355,44 @@ class LayoutRender extends MobileLayout {
         this.parent.on(contentReady, this.scrollUiUpdate, this);
     }
     initRender() {
-        if (this.parent.columns.length === 0) {
-            return;
+        if (!this.parent.isBlazorRender()) {
+            if (this.parent.columns.length === 0) {
+                return;
+            }
+            this.columnData = this.getColumnCards();
+            this.kanbanRows = this.getRows();
+            this.swimlaneData = this.getSwimlaneCards();
         }
-        this.columnData = this.getColumnCards();
-        this.kanbanRows = this.getRows();
-        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             let parent = this.parent.element.querySelector('.' + CONTENT_CLASS);
             if (parent) {
                 this.scrollLeft = parent.scrollLeft;
             }
         }
-        this.destroy();
-        this.parent.on(dataReady, this.initRender, this);
-        this.parent.on(contentReady, this.scrollUiUpdate, this);
-        if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
-            this.renderSwimlaneHeader();
+        if (!this.parent.isBlazorRender()) {
+            this.destroy();
+            this.parent.on(dataReady, this.initRender, this);
+            this.parent.on(contentReady, this.scrollUiUpdate, this);
+            if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
+                this.renderSwimlaneHeader();
+            }
+            let header = createElement('div', { className: HEADER_CLASS });
+            this.parent.element.appendChild(header);
+            this.renderHeader(header);
+            this.renderContent();
+            this.renderCards();
+            this.renderValidation();
         }
-        let header = createElement('div', { className: HEADER_CLASS });
-        this.parent.element.appendChild(header);
-        this.renderHeader(header);
-        this.renderContent();
-        this.renderCards();
-        this.renderValidation();
         this.parent.notify(contentReady, {});
         this.wireEvents();
     }
     renderHeader(header) {
         let headerWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
         header.appendChild(headerWrap);
-        let headerTable = createElement('table', { className: TABLE_CLASS + ' ' + HEADER_TABLE_CLASS });
+        let headerTable = createElement('table', {
+            className: TABLE_CLASS + ' ' + HEADER_TABLE_CLASS,
+            attrs: { 'role': 'presentation' }
+        });
         headerWrap.appendChild(headerTable);
         this.renderColGroup(headerTable);
         let tableHead = createElement('thead');
@@ -1954,16 +2443,19 @@ class LayoutRender extends MobileLayout {
                     }
                 }
                 if (column.allowToggle) {
-                    let name = (column.isExpanded && index === -1) ? COLUMN_EXPAND_CLASS : COLUMN_COLLAPSE_CLASS;
+                    let isExpand = (column.isExpanded && index === -1) ? true : false;
+                    let name = (isExpand) ? COLUMN_EXPAND_CLASS : COLUMN_COLLAPSE_CLASS;
                     let icon = createElement('div', {
                         className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name,
                         attrs: { 'tabindex': '0' }
                     });
+                    icon.setAttribute('aria-label', isExpand ? column.keyField + ' Expand' : column.keyField + ' Collapse');
+                    th.setAttribute('aria-expanded', isExpand.toString());
                     headerWrapper.appendChild(icon);
                 }
-                let dataObj = [{ keyField: column.keyField, textField: column.headerText }];
+                let dataObj = [{ keyField: column.keyField, textField: column.headerText, count: noOfCard }];
                 let args = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
-                this.parent.trigger(columnRendered, args, (columnArgs) => {
+                this.parent.trigger(queryCellInfo, args, (columnArgs) => {
                     if (!columnArgs.cancel) {
                         tr.appendChild(th);
                     }
@@ -1976,7 +2468,10 @@ class LayoutRender extends MobileLayout {
         this.parent.element.appendChild(content);
         let contentWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
         content.appendChild(contentWrap);
-        let contentTable = createElement('table', { className: TABLE_CLASS + ' ' + CONTENT_TABLE_CLASS });
+        let contentTable = createElement('table', {
+            className: TABLE_CLASS + ' ' + CONTENT_TABLE_CLASS,
+            attrs: { 'role': 'presentation' }
+        });
         contentWrap.appendChild(contentTable);
         this.renderColGroup(contentTable);
         let tBody = createElement('tbody');
@@ -1995,7 +2490,7 @@ class LayoutRender extends MobileLayout {
                 isCollaspsed = index !== -1;
             }
             className = isCollaspsed ? CONTENT_ROW_CLASS + ' ' + COLLAPSED_CLASS : CONTENT_ROW_CLASS;
-            let tr = createElement('tr', { className: className });
+            let tr = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
             if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
                 this.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
@@ -2004,16 +2499,18 @@ class LayoutRender extends MobileLayout {
                     let index = this.parent.actionModule.columnToggleArray.indexOf(column.keyField);
                     let className = index === -1 ? CONTENT_CELLS_CLASS : CONTENT_CELLS_CLASS + ' ' + COLLAPSED_CLASS;
                     let td = createElement('td', {
-                        className: className, attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
+                        className: className,
+                        attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true' }
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], COLLAPSED_CLASS);
                         td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
+                        td.setAttribute('aria-expanded', 'false');
                     }
                     tr.appendChild(td);
-                    let dataObj = [{ keyField: row.keyField, textField: row.textField }];
+                    let dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
                     let args = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
-                    this.parent.trigger(columnRendered, args, (columnArgs) => {
+                    this.parent.trigger(queryCellInfo, args, (columnArgs) => {
                         if (!columnArgs.cancel) {
                             tBody.appendChild(tr);
                         }
@@ -2025,7 +2522,12 @@ class LayoutRender extends MobileLayout {
     renderSwimlaneRow(tBody, row, isCollapsed) {
         let name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
         let className = isCollapsed ? ' ' + COLLAPSED_CLASS : '';
-        let tr = createElement('tr', { className: name + className, attrs: { 'data-key': row.keyField } });
+        let tr = createElement('tr', {
+            className: name + className, attrs: {
+                'data-key': row.keyField,
+                'aria-expanded': (!isCollapsed).toString()
+            }
+        });
         let col = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         let td = createElement('td', {
             className: CONTENT_CELLS_CLASS,
@@ -2034,7 +2536,12 @@ class LayoutRender extends MobileLayout {
         let swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
         let iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE_CLASS : SWIMLANE_ROW_EXPAND_CLASS;
-        let iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass, attrs: { 'tabindex': '0' } });
+        let iconDiv = createElement('div', {
+            className: ICON_CLASS + ' ' + iconClass, attrs: {
+                'tabindex': '0',
+                'aria-label': isCollapsed ? row.keyField + ' Collapse' : row.keyField + ' Expand'
+            }
+        });
         swimlaneHeader.appendChild(iconDiv);
         let headerWrap = createElement('div', { className: HEADER_WRAP_CLASS });
         swimlaneHeader.appendChild(headerWrap);
@@ -2059,9 +2566,9 @@ class LayoutRender extends MobileLayout {
             }));
         }
         tr.appendChild(td);
-        let dataObj = [{ keyField: row.keyField, textField: row.textField }];
+        let dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
         let args = { data: dataObj, element: tr, cancel: false, requestType: 'swimlaneRow' };
-        this.parent.trigger(columnRendered, args, (columnArgs) => {
+        this.parent.trigger(queryCellInfo, args, (columnArgs) => {
             if (!columnArgs.cancel) {
                 tBody.appendChild(tr);
             }
@@ -2088,8 +2595,14 @@ class LayoutRender extends MobileLayout {
                         let className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION_CLASS;
                         let cardElement = createElement('div', {
                             className: CARD_CLASS + className,
-                            attrs: { 'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField] }
+                            attrs: {
+                                'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
+                                'aria-selected': 'false'
+                            }
                         });
+                        if (cardIndex !== -1) {
+                            cardElement.setAttribute('aria-selected', 'true');
+                        }
                         if (this.parent.cardSettings.template) {
                             addClass([cardElement], TEMPLATE_CLASS);
                             let cardTemplate = this.parent.templateParser(this.parent.cardSettings.template)(data);
@@ -2175,6 +2688,10 @@ class LayoutRender extends MobileLayout {
             if (this.parent.swimlaneSettings.sortBy === 'Descending') {
                 kanbanRows.reverse();
             }
+            kanbanRows.forEach((row) => {
+                row.count = this.parent.kanbanData.filter((obj) => this.columnKeys.indexOf(obj[this.parent.keyField]) > -1 &&
+                    obj[this.parent.swimlaneSettings.keyField] === row.keyField).length;
+            });
         }
         else {
             kanbanRows.push({ keyField: '', textField: '' });
@@ -2280,7 +2797,7 @@ class LayoutRender extends MobileLayout {
             }));
         }
         if (limits.childElementCount > 0) {
-            if (target.firstElementChild.classList.contains(CARD_WRAPPER_CLASS)) {
+            if (target.querySelector('.' + CARD_WRAPPER_CLASS)) {
                 target.insertBefore(limits, target.firstElementChild);
             }
             else {
@@ -2344,6 +2861,17 @@ class LayoutRender extends MobileLayout {
         }
         let cards = [].slice.call(this.parent.element.querySelectorAll(`.${CARD_CLASS}.${CARD_SELECTION_CLASS}`));
         removeClass(cards, CARD_SELECTION_CLASS);
+        this.disableAttributeSelection(cards);
+    }
+    disableAttributeSelection(cards) {
+        if (cards instanceof Element) {
+            cards.setAttribute('aria-selected', 'false');
+        }
+        else {
+            cards.forEach((card) => {
+                card.setAttribute('aria-selected', 'false');
+            });
+        }
     }
     getColumnCards(data) {
         let columnData = {};
@@ -2477,13 +3005,24 @@ let Kanban = class Kanban extends Component {
             this.swimlaneToggleArray = [];
         }
         this.activeCardData = { data: null, element: null };
-        let defaultLocale = {
-            items: 'items',
-            min: 'Min',
-            max: 'Max',
-            cardsSelected: 'Cards Selected'
-        };
-        this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
+        if (!this.isBlazorRender()) {
+            let defaultLocale = {
+                items: 'items',
+                min: 'Min',
+                max: 'Max',
+                cardsSelected: 'Cards Selected',
+                addTitle: 'Add New Card',
+                editTitle: 'Edit Card Details',
+                deleteTitle: 'Delete Card',
+                deleteContent: 'Are you sure you want to delete this card?',
+                save: 'Save',
+                delete: 'Delete',
+                cancel: 'Cancel',
+                yes: 'Yes',
+                no: 'No'
+            };
+            this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
+        }
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -2513,24 +3052,27 @@ let Kanban = class Kanban extends Component {
      * @private
      */
     render() {
-        let addClasses = [ROOT_CLASS];
-        let removeClasses = [];
-        if (this.enableRtl) {
-            addClasses.push(RTL_CLASS);
+        if (!this.isBlazorRender()) {
+            let addClasses = [];
+            let removeClasses = [];
+            if (this.enableRtl) {
+                addClasses.push(RTL_CLASS);
+            }
+            else {
+                removeClasses.push(RTL_CLASS);
+            }
+            if (this.isAdaptive) {
+                addClasses.push(DEVICE_CLASS);
+            }
+            else {
+                removeClasses.push(DEVICE_CLASS);
+            }
+            if (this.cssClass) {
+                addClasses.push(this.cssClass);
+            }
+            this.element.setAttribute('role', 'main');
+            classList(this.element, addClasses, removeClasses);
         }
-        else {
-            removeClasses.push(RTL_CLASS);
-        }
-        if (this.isAdaptive) {
-            addClasses.push(DEVICE_CLASS);
-        }
-        else {
-            removeClasses.push(DEVICE_CLASS);
-        }
-        if (this.cssClass) {
-            addClasses.push(this.cssClass);
-        }
-        classList(this.element, addClasses, removeClasses);
         this.element.style.width = formatUnit(this.width);
         this.element.style.height = formatUnit(this.height);
         createSpinner({ target: this.element });
@@ -2554,7 +3096,9 @@ let Kanban = class Kanban extends Component {
                     break;
                 case 'enableRtl':
                 case 'locale':
-                    this.refresh();
+                    if (!this.isBlazorRender()) {
+                        this.refresh();
+                    }
                     break;
                 case 'width':
                     this.element.style.width = formatUnit(newProp.width);
@@ -2568,11 +3112,18 @@ let Kanban = class Kanban extends Component {
                     break;
                 case 'dataSource':
                 case 'query':
-                    this.dataModule = new Data(this);
+                    if (!this.isBlazorRender()) {
+                        this.dataModule = new Data(this);
+                    }
                     break;
                 case 'columns':
                 case 'constraintType':
-                    this.notify(dataReady, { processedData: this.kanbanData });
+                    if (!this.isBlazorRender()) {
+                        this.notify(dataReady, { processedData: this.kanbanData });
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
                 case 'swimlaneSettings':
                     this.onSwimlaneSettingsPropertyChanged(newProp.swimlaneSettings, oldProp.swimlaneSettings);
@@ -2595,7 +3146,14 @@ let Kanban = class Kanban extends Component {
                     }
                     if (newProp.enableTooltip) {
                         this.tooltipModule = new KanbanTooltip(this);
-                        this.layoutModule.refreshCards();
+                        if (!this.isBlazorRender()) {
+                            this.layoutModule.refreshCards();
+                        }
+                    }
+                    break;
+                case 'dialogSettings':
+                    if (newProp.dialogSettings) {
+                        this.dialogModule = new KanbanDialog(this);
                     }
                     break;
                 case 'allowKeyboard':
@@ -2608,7 +3166,12 @@ let Kanban = class Kanban extends Component {
                     }
                     break;
                 case 'stackedHeaders':
-                    this.layoutModule.refreshHeaders();
+                    if (!this.isBlazorRender()) {
+                        this.layoutModule.refreshHeaders();
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
                 default:
                     break;
@@ -2624,7 +3187,12 @@ let Kanban = class Kanban extends Component {
                 case 'showItemCount':
                 case 'template':
                 case 'sortBy':
-                    this.notify(dataReady, { processedData: this.kanbanData });
+                    if (!this.isBlazorRender()) {
+                        this.notify(dataReady, { processedData: this.kanbanData });
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
             }
         }
@@ -2636,19 +3204,27 @@ let Kanban = class Kanban extends Component {
                 case 'headerField':
                 case 'contentField':
                 case 'template':
-                    this.layoutModule.refreshCards();
+                    if (!this.isBlazorRender()) {
+                        this.layoutModule.refreshCards();
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
                 case 'selectionType':
                     let cards = this.getSelectedCards();
                     if (cards.length > 0) {
                         removeClass(cards, CARD_SELECTION_CLASS);
+                        this.layoutModule.disableAttributeSelection(cards);
                     }
                     break;
             }
         }
     }
     initializeModules() {
-        this.dataModule = new Data(this);
+        if (!this.isBlazorRender()) {
+            this.dataModule = new Data(this);
+        }
         this.layoutModule = new LayoutRender(this);
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
@@ -2656,12 +3232,43 @@ let Kanban = class Kanban extends Component {
         this.actionModule = new Action(this);
         this.crudModule = new Crud(this);
         this.dragAndDropModule = new DragAndDrop(this);
+        this.dialogModule = new KanbanDialog(this);
         if (this.enableTooltip) {
             this.tooltipModule = new KanbanTooltip(this);
         }
         if (Browser.isDevice || Browser.isTouch) {
             this.touchModule = new KanbanTouch(this);
         }
+    }
+    notifyChange() {
+        // tslint:disable-next-line
+        this.interopAdaptor.invokeMethodAsync('PropertyChanged');
+    }
+    isDevice(ref) {
+        if (Browser.isDevice && this.isBlazorRender() && ref) {
+            // tslint:disable-next-line
+            ref.invokeMethodAsync('IsDevice', true);
+        }
+    }
+    /**
+     * @hidden
+     */
+    isBlazorRender() {
+        return isBlazor() && this.isServerRendered;
+    }
+    /**
+     * @hidden
+     */
+    updateDataSource(data) {
+        this.kanbanData = data.Result;
+    }
+    /**
+     * @hidden
+     */
+    dataReady(data) {
+        this.kanbanData = data.Result;
+        this.hideSpinner();
+        this.notify(dataReady, { processedData: {} });
     }
     destroyModules() {
         if (this.layoutModule) {
@@ -2676,6 +3283,7 @@ let Kanban = class Kanban extends Component {
             this.touchModule.destroy();
             this.touchModule = null;
         }
+        this.dialogModule = null;
         this.actionModule = null;
         this.crudModule = null;
         this.dataModule = null;
@@ -2697,6 +3305,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Returns the card details based on card ID from the board.
+     * @deprecated
      * @method getCardDetails
      * @param {Element} target Accepts the card element to get the details.
      * @returns {{[key: string]: Object}}
@@ -2709,6 +3318,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Returns the column data based on column key input.
+     * @deprecated
      * @method getColumnData
      * @param {string} columnKey Accepts the column key to get the objects.
      * @returns {Object[]}
@@ -2718,6 +3328,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Returns the swimlane column data based on swimlane keyField input.
+     * @deprecated
      * @method getSwimlaneData
      * @param {string} keyField Accepts the swimlane keyField to get the objects.
      * @returns {Object[]}
@@ -2748,6 +3359,27 @@ let Kanban = class Kanban extends Component {
      */
     hideSpinner() {
         hideSpinner(this.element);
+    }
+    /**
+     * To manually open the dialog.
+     * @deprecated
+     * @method openDialog
+     * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
+     *  editing of existing cards or deletion of existing card. The applicable action names are `Add`, `Edit` and `Delete`.
+     * @param {Object} data It can be card data.
+     * @returns {void}
+     */
+    openDialog(action, data) {
+        this.dialogModule.openDialog(action, data);
+    }
+    /**
+     * To manually close the dialog.
+     * @deprecated
+     * @method closeDialog
+     * @returns {void}
+     */
+    closeDialog() {
+        this.dialogModule.closeDialog();
     }
     /**
      * Adds the new card to the data source of Kanban and layout.
@@ -2783,6 +3415,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Add the column to Kanban board dynamically based on the provided column options and index in the argument list.
+     * @deprecated
      * @method addColumn
      * @param {ColumnsModel} columnOptions Defines the properties to new column that are going to be added in the board.
      * @param {number} index Defines the index of column to add the new column.
@@ -2793,6 +3426,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Deletes the column based on the provided index value.
+     * @deprecated
      * @method deleteColumn
      * @param {number} index Defines the index of column to delete the existing column from Kanban board.
      * @returns {void}
@@ -2802,6 +3436,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Shows the column from hidden based on the provided key in the columns.
+     * @deprecated
      * @method showColumn
      * @param {string} key Accepts the hidden column key name to be shown from the hidden state in board.
      * @returns {void}
@@ -2811,6 +3446,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Hides the column from Kanban board based on the provided key in the columns.
+     * @deprecated
      * @method hideColumn
      * @param {string} key Accepts the visible column key name to be hidden from the board.
      * @returns {void}
@@ -2825,13 +3461,17 @@ let Kanban = class Kanban extends Component {
      */
     destroy() {
         this.destroyModules();
-        [].slice.call(this.element.childNodes).forEach((node) => detach(node));
+        if (!this.isBlazorRender()) {
+            [].slice.call(this.element.childNodes).forEach((node) => detach(node));
+        }
         let removeClasses = [ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        super.destroy();
+        if (!this.isBlazorRender()) {
+            super.destroy();
+        }
     }
 };
 __decorate([
@@ -2871,11 +3511,17 @@ __decorate([
     Complex({}, CardSettings)
 ], Kanban.prototype, "cardSettings", void 0);
 __decorate([
+    Complex({}, DialogSettings)
+], Kanban.prototype, "dialogSettings", void 0);
+__decorate([
     Property(true)
 ], Kanban.prototype, "allowDragAndDrop", void 0);
 __decorate([
     Property(false)
 ], Kanban.prototype, "enableTooltip", void 0);
+__decorate([
+    Property(false)
+], Kanban.prototype, "enablePersistence", void 0);
 __decorate([
     Property()
 ], Kanban.prototype, "tooltipTemplate", void 0);
@@ -2905,7 +3551,7 @@ __decorate([
 ], Kanban.prototype, "cardDoubleClick", void 0);
 __decorate([
     Event()
-], Kanban.prototype, "columnRendered", void 0);
+], Kanban.prototype, "queryCellInfo", void 0);
 __decorate([
     Event()
 ], Kanban.prototype, "cardRendered", void 0);
@@ -2918,6 +3564,12 @@ __decorate([
 __decorate([
     Event()
 ], Kanban.prototype, "dragStop", void 0);
+__decorate([
+    Event()
+], Kanban.prototype, "dialogOpen", void 0);
+__decorate([
+    Event()
+], Kanban.prototype, "dialogClose", void 0);
 Kanban = __decorate([
     NotifyPropertyChanges
 ], Kanban);
@@ -2934,5 +3586,5 @@ Kanban = __decorate([
  * Export Kanban component
  */
 
-export { Kanban, actionBegin, actionComplete, actionFailure, cardClick, cardDoubleClick, cardRendered, columnRendered, dataBinding, dataBound, dragStart, drag, dragStop, documentClick, contentReady, dataReady, bottomSpace, cardSpace, toggleWidth };
+export { Kanban, actionBegin, actionComplete, actionFailure, cardClick, cardDoubleClick, cardRendered, queryCellInfo, dataBinding, dataBound, dragStart, drag, dragStop, documentClick, dialogOpen, dialogClose, contentReady, dataReady, bottomSpace, cardSpace, toggleWidth };
 //# sourceMappingURL=ej2-kanban.es2015.js.map

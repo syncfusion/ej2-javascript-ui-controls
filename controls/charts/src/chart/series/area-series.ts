@@ -57,6 +57,13 @@ export class AreaSeries extends MultiColoredSeries {
             }
         });
         if (isPolar && direction !== '') {
+            let endPoint: string = '';
+            let chart: Chart = this.chart;
+            endPoint += this.getAreaPathDirection(0, origin, series, isInverted, getCoordinate, null, 'L');
+            if (xAxis.isInversed || yAxis.isInversed) {
+                direction += (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, endPoint) :
+                chart.radarSeriesModule.getRadarIsInversedPath(xAxis, endPoint));
+            }
             direction = direction.concat(direction + ' ' + 'Z');
         }
         this.appendLinePath(

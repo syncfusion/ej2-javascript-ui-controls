@@ -105,7 +105,7 @@ describe('Zoom feature tesing for map control', () => {
             map.refresh();
         });
 
-        it('Checking annotation with Far alignment in both Orientation', (): void => {
+        it('Checking annotation with Far alignment in both orientation', (): void => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 let element: Element = document.getElementById(map.element.id + '_Annotations_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);

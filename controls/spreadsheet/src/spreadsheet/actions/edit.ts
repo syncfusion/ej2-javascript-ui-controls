@@ -3,15 +3,15 @@ import { EventHandler, KeyboardEventArgs, Browser, closest } from '@syncfusion/e
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp } from '../common/event';
-import { workbookEditOperation, getFormattedBarText, getFormattedCellObject } from '../../workbook/common/event';
+import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getCellPosition, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
-import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate } from '../common/index';
+import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert } from '../common/index';
 import { getSwapRange } from '../../workbook/index';
 
 /**
- * The `Edit` module is used to handle the editing functionalities in Spreadsheet.
+ * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
 export class Edit {
     private parent: Spreadsheet;
@@ -43,7 +43,7 @@ export class Edit {
     };
 
     /**
-     * Constructor for edit module in Spreadsheet.
+     * Constructor for protect-sheet module in Spreadsheet.
      * @private
      */
     constructor(parent: Spreadsheet) {
@@ -96,7 +96,6 @@ export class Edit {
 
     private performEditOperation(args: { [key: string]: Object }): void {
         let action: string = <string>args.action;
-
         switch (action) {
             case 'renderEditor':
                 this.renderEditor();
@@ -152,56 +151,72 @@ export class Edit {
     private keyDownHandler(e: KeyboardEventArgs): void {
         let trgtElem: HTMLElement = <HTMLElement>e.target;
         let keyCode: number = e.keyCode;
-
-        if (this.isEdit) {
-            if (this.isCellEdit) {
-                this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
-            }
-
-            switch (keyCode) {
-                case this.keyCodes.ENTER:
-                    if (Browser.isWindows) {
-                        e.preventDefault();
+        if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')) {
+            if (!this.parent.getActiveSheet().isProtected || closest(e.target as Element, '.e-sheet-rename')) {
+                if (this.isEdit) {
+                    if (this.isCellEdit) {
+                        this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                     }
-                    this.endEdit();
-                    break;
-                case this.keyCodes.TAB:
-                    if (!this.hasFormulaSuggSelected()) {
-                        this.endEdit();
-                    }
-                    break;
-                case this.keyCodes.ESC:
-                    this.cancelEdit();
-                    break;
-            }
-        } else {
-            if (!this.isEdit && (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel'))) {
-                let isAlphabet: boolean = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET);
-                let isNumeric: boolean = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
-                let isNumpadKeys: boolean = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
-                let isSymbolkeys: boolean = (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND);
-                if (!isSymbolkeys) {
-                    isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
-                }
-                let isFirefoxExceptionkeys: boolean = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
-                    (keyCode === this.keyCodes.FIREFOXMINUS);
-                let isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
-                let isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
 
-                if ((!e.ctrlKey && !e.altKey && (
-                    (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
-                    isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
-                )) || isF2Edit || isBackSpace) {
-                    if (isF2Edit) { this.isNewValueEdit = false; }
-                    this.startEdit();
+                    switch (keyCode) {
+                        case this.keyCodes.ENTER:
+                            if (Browser.isWindows) {
+                                e.preventDefault();
+                            }
+                            this.endEdit(false, e);
+                            break;
+                        case this.keyCodes.TAB:
+                            if (!this.hasFormulaSuggSelected()) {
+                                this.endEdit(false, e);
+                            }
+                            break;
+                        case this.keyCodes.ESC:
+                            this.cancelEdit(true, true, e);
+                            break;
+                    }
+                } else {
+                    if (!this.isEdit && (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel'))) {
+                        let isAlphabet: boolean = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET);
+                        let isNumeric: boolean = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
+                        let isNumpadKeys: boolean = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
+                        let isSymbolkeys: boolean = (keyCode >= this.keyCodes.SYMBOLSETONESTART &&
+                            keyCode <= this.keyCodes.SYMBOLSETONEEND);
+                        if (!isSymbolkeys) {
+                            isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
+                        }
+                        let isFirefoxExceptionkeys: boolean = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
+                            (keyCode === this.keyCodes.FIREFOXMINUS);
+                        let isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
+                        let isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
+
+                        if ((!e.ctrlKey && !e.altKey && (
+                            (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
+                            isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
+                        )) || isF2Edit || isBackSpace) {
+                            if (isF2Edit) { this.isNewValueEdit = false; }
+                            this.startEdit();
+                        }
+                        if (keyCode === this.keyCodes.DELETE) {
+                            this.editingHandler('delete');
+                        }
+                    }
                 }
-                if (keyCode === this.keyCodes.DELETE) {
-                    this.editingHandler('delete');
+            } else {
+                if (((keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET) ||
+                (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER)
+                || (keyCode === this.keyCodes.DELETE) || (keyCode === this.keyCodes.BACKSPACE) || (keyCode === this.keyCodes.SPACE)
+                || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
+                (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
+                || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2))
+                && (keyCode !== 67) ) {
+                    if (this.parent.getActiveSheet().protectSettings.insertLink && keyCode === 75) {
+                      return;
+                    }
+                    this.parent.notify(editAlert, null);
+                 }
                 }
-            }
         }
     }
-
     private renderEditor(): void {
         if (!this.editorElem || !this.parent.element.querySelector('#' + this.parent.element.id + '_edit')) {
             let editor: HTMLElement;
@@ -288,32 +303,37 @@ export class Edit {
                 break;
         }
     }
-
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        if (this.isEdit) {
-            let trgtElem: HTMLElement = <HTMLElement>e.target;
-            this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
-            if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
-                trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
-                this.endEdit();
+        if (!closest(e.target as Element, '.e-findtool-dlg')) {
+            if (this.isEdit) {
+                let trgtElem: HTMLElement = <HTMLElement>e.target;
+                this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
+                if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
+                    trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
+                    this.endEdit(false, e);
+                }
             }
         }
     }
-
     private dblClickHandler(e: MouseEvent & TouchEvent): void {
         let trgtElem: HTMLElement = <HTMLElement>e.target;
-
-        if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
-            || closest(trgtElem, '.e-main-content')) {
-            if (this.isEdit) {
-                this.endEdit();
-            } else {
-                this.isNewValueEdit = false;
-                this.startEdit();
+        let target: HTMLInputElement = e.target as HTMLInputElement;
+        if (!this.parent.getActiveSheet().isProtected) {
+            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
+                || closest(trgtElem, '.e-main-content')) {
+                if (this.isEdit) {
+                    this.endEdit();
+                } else {
+                    this.isNewValueEdit = false;
+                    this.startEdit();
+                }
+            }
+        } else {
+            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')) {
+                this.parent.notify(editAlert, null);
             }
         }
     }
-
     private updateEditCellDetail(addr?: string, value?: string): void {
         let sheetIdx: number;
         let sheet: SheetModel;
@@ -386,6 +406,7 @@ export class Edit {
         let tdElem: HTMLElement = this.editCellData.element;
         tdElem.classList.add('e-ss-edited');
 
+        let cell: CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         let left: number = this.editCellData.position.left + 1;
         let top: number = this.editCellData.position.top + 1;
         let minHeight: number = this.editCellData.element.offsetHeight - 3;
@@ -394,7 +415,8 @@ export class Edit {
         let editWidth: number = mainContElement.offsetWidth - left - 28;
         //let editHeight: number = mainContElement.offsetHeight - top - 28;
         let inlineStyles: string = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;height:' + minHeight + 'px;';
+            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'min-height:' : 'height:') +
+            minHeight + 'px;' + ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '');
         inlineStyles += tdElem.style.cssText;
 
         this.editorElem.setAttribute('style', inlineStyles);
@@ -406,23 +428,49 @@ export class Edit {
         }
     }
 
-    private updateEditedValue(tdRefresh: boolean = true): void {
+    private updateEditedValue(tdRefresh: boolean = true): boolean {
         let oldCellValue: string = this.editCellData.oldValue;
         let oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
+        let isValidate: boolean = true;
+        let address: string | number[] = this.editCellData.addr;
+        let cellIndex: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
-        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
-            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
-            let cellIndex: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        if (this.parent.allowDataValidation && cell && cell.validation) {
+            let value: string =
+                (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement).innerText;
+            let isCell: boolean = true;
+            let sheetIdx: number = this.parent.activeSheetTab;
+            let range: number[];
+            if (typeof address === 'string') {
+                range = getRangeIndexes(address);
+            } else {
+                range = address;
+            }
+            this.parent.notify(isValidation, { value, range, sheetIdx, isCell });
+            isValidate = this.parent.allowDataValidation;
+            this.editCellData.value = isValidate ? value : this.editCellData.value;
+            this.parent.allowDataValidation = true;
+        }
+        if ((oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
+            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
+            let sheet: SheetModel = this.parent.getActiveSheet();
+            let cellIndex: number[] = getRangeIndexes(sheet.activeCell);
             this.parent.notify(
                 workbookEditOperation,
                 { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
-            let cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet(), true);
+            let cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
             let eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
             this.editCellData.value = <string>eventArgs.value;
             if (cell.formula) { this.editCellData.formula = cell.formula; }
+            if (cell.wrap) {
+                this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
+            }
             if (tdRefresh) { this.parent.refreshNode(this.editCellData.element, eventArgs); }
         }
+        return isValidate;
     }
 
     private refreshDependentCellValue(rowIdx: number, colIdx: number, sheetIdx: number): void {
@@ -461,18 +509,27 @@ export class Edit {
         return args;
     }
 
-    public endEdit(refreshFormulaBar: boolean = false): void {
+    public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs): void {
         if (refreshFormulaBar) { this.refreshEditor(this.editCellData.oldValue, false, true, false, false); }
-        this.updateEditedValue();
-        this.triggerEvent('cellSave');
-        this.resetEditState();
-        this.focusElement();
+        if (this.triggerEvent('beforeCellSave')) {
+            event.preventDefault();
+            return;
+        }
+        let isValidate: boolean = this.updateEditedValue();
+        if (isValidate) {
+            this.triggerEvent('cellSave', event);
+            this.resetEditState();
+            this.focusElement();
+        } else {
+            event.preventDefault();
+        }
     }
 
-    public cancelEdit(refreshFormulaBar: boolean = true, trigEvent: boolean = true): void {
+    public cancelEdit(refreshFormulaBar: boolean = true, trigEvent: boolean = true, event?: MouseEvent & TouchEvent |
+        KeyboardEventArgs): void {
         this.refreshEditor(this.editCellData.oldValue, refreshFormulaBar, false, false, false);
         if (trigEvent) {
-            this.triggerEvent('cellSave');
+            this.triggerEvent('cellSave', event);
         }
         this.resetEditState();
         this.focusElement();
@@ -483,7 +540,7 @@ export class Edit {
         this.parent.notify(enableToolbarItems, [{ enable: true }]);
     }
 
-    private triggerEvent(eventName: string): boolean {
+    private triggerEvent(eventName: string, event?: MouseEvent & TouchEvent | KeyboardEventArgs): boolean {
         let eventArgs: CellEditEventArgs | CellSaveEventArgs = {
             element: this.editCellData.element,
             value: this.editCellData.value,
@@ -494,6 +551,7 @@ export class Edit {
             if (this.editCellData.formula) {
                 eventArgs.formula = this.editCellData.formula;
             }
+            eventArgs.originalEvent = event;
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
         }
         if (eventName !== 'cellSave') {

@@ -2,19 +2,28 @@
 
 ## [Unreleased]
 
-## 17.4.55 (2020-03-10)
+## 18.1.36-beta (2020-03-19)
 
 ### PDF Viewer
 
 #### New Features
 
-- `#235592` - Provided the support to select the text content from the PDF pages programmatically using bounds value
+- `#235592` - Provided the support for setting the lower zoomfactor value to the PDF Viewer control.
+- `#259521` - Provided the support for importing the form fields data from JSON object.
+- `#261558` - Provided the support for customizing the distance measurement annotation leader length property.
+- `#256687` - Provided the support for setting the custom data for annotation objects.
+- `#252340` - Provided the support for setting the minimum or maximum size and isLock properties at individual annotation level.
+- `#262008` - Exposed the event for notifying annotation mouse over action.
+- `#F149148` - Provided the binding support for the enableFormFields property.
+- `#258769` - Provided the option to suppress the error dialog in PDF Viewer.
+- `#261269` - Provided the support to allow credential for XMLHttpRequest in PDF Viewer.
+- `#262787` - Exposed the event to notify the getPDFDocumentTexts method completed for all the pages.
 
 #### Bug Fixes
 
-- `#266241` – Now, the Hand-written signature is preserved properly in PDF Viewer.
-- `#266547` - Now, the isDocumentEdited property is working properly in PDF Viewer.
-- `#264762` - The EnableAnnotationToolbar property is now working properly in blazor framework.
+- `#262525` – The render PDF pages method triggers properly for the provided PDF document.
+- `#262692` - The text markup resizer position is now updated properly for the provided document.
+- `#262692` - The text content bounds are now rendered properly for the provided document.
 
 ## 17.4.50 (2020-02-18)
 

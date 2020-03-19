@@ -335,11 +335,15 @@ export class EditorHistory {
         selection.owner.isLayoutEnabled = true;
         // // selection.addMultipleSelectionRanges();
 
-        selection.start.updatePhysicalPosition(true);
-        if (selection.isEmpty) {
-            selection.end.setPositionInternal(selection.start);
+        if (this.currentHistoryInfo.action === 'ApplyStyle') {
+            this.owner.editor.getOffsetValue(selection);
         } else {
-            selection.end.updatePhysicalPosition(true);
+            selection.start.updatePhysicalPosition(true);
+            if (selection.isEmpty) {
+                selection.end.setPositionInternal(selection.start);
+            } else {
+                selection.end.updatePhysicalPosition(true);
+            }
         }
         selection.upDownSelectionLength = selection.end.location.x;
         this.documentHelper.isScrollHandler = true;

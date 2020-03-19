@@ -562,7 +562,7 @@ export class Paragraph {
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.applyStyle(args.itemData.StyleName);
+            this.documentEditor.editor.applyStyle(args.itemData.StyleName, true);
         }
     }
     /* tslint:enable:no-any */

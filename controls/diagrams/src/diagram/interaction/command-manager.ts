@@ -89,8 +89,8 @@ export class CommandHandler {
     /** @private */
     public isContainer: boolean = false;
     private state: TransactionState;
-
-    private diagram: Diagram;
+    /** @private */
+    public diagram: Diagram;
 
     private childTable: {} = {};
 
@@ -689,12 +689,12 @@ export class CommandHandler {
         }
     }
     private UpdateBlazorDiagramModelLayers(layer: Layer): void {
-        let ejsInterop: string = 'ejsInterop';
+        let blazorInterop: string = 'sfBlazor';
         let updatedModel: object = cloneBlazorObject(layer);
         let blazor: string = 'Blazor';
         if (window && window[blazor]) {
             let obj: object = { 'methodName': 'UpdateBlazorDiagramModelLayers', 'diagramobj': JSON.stringify(updatedModel) };
-            window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+            window[blazorInterop].updateBlazorProperties(obj, this.diagram);
         }
     }
     /** @private */
@@ -1372,6 +1372,13 @@ export class CommandHandler {
     /**
      * @private
      */
+    public enableServerDataBinding(enable: boolean): void {
+        this.diagram.enableServerDataBinding(enable);
+    }
+
+    /**
+     * @private
+     */
     public addText(obj: Node | Connector, currentPosition: PointModel): void {
         let annotation: DiagramElement = this.diagram.findElementUnderMouse(obj, currentPosition);
         this.diagram.startTextEdit(obj, annotation instanceof TextElement ? (annotation.id).split('_')[1] : undefined);
@@ -1511,11 +1518,11 @@ export class CommandHandler {
             for (let i: number = 0; i < this.diagram.selectedItems.connectors.length; i++) {
                 (diff as SelectorModel).connectors.push(this.diagram.selectedItems.connectors[i].id as ConnectorModel);
             }
-            let ejsInterop: string = 'ejsInterop';
+            let blazorInterop: string = 'sfBlazor';
             let blazor: string = 'Blazor';
             if (window && window[blazor]) {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': { selectedItems: diff } };
-                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         }
     }
@@ -1654,8 +1661,8 @@ export class CommandHandler {
     }
 
     private updateBlazorSelectorModel(oldItemsCollection: (NodeModel | ConnectorModel)[], clearSelection?: boolean): void {
-        let ejsInterop: string = 'ejsInterop';
-        if (window && window[ejsInterop]) {
+        let blazorInterop: string = 'sfBlazor';
+        if (window && window[blazorInterop]) {
             let i: number = 0;
             let nodes: string[] = [];
             let connectors: string[] = [];
@@ -1669,8 +1676,8 @@ export class CommandHandler {
             connectors = this.getObjectCollectionId(false, clearSelection);
             let items: object = { nodes: nodes, connectors: connectors };
             let newItems: object = cloneBlazorObject(items);
-            if (window[ejsInterop].updateDiagramCollection) {
-                window[ejsInterop].updateDiagramCollection.call(this.diagram, 'selectedItems', newItems, oldItems, false, true);
+            if (window[blazorInterop].updateDiagramCollection) {
+                window[blazorInterop].updateDiagramCollection.call(this.diagram, 'selectedItems', newItems, oldItems, false, true);
             }
         }
     }
@@ -2095,17 +2102,17 @@ export class CommandHandler {
 
     /**   @private  */
     public updateBlazorProperties(isObjectInteraction?: boolean): void {
-        let ejsInterop: string = 'ejsInterop';
+        let blazorInterop: string = 'sfBlazor';
         let blazor: string = 'Blazor';
         if (!isObjectInteraction) {
             if (window && window[blazor]) {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         } else {
             if (window && window[blazor]) {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         }
         this.diagram.enableServerDataBinding(true);
@@ -3728,7 +3735,9 @@ export class CommandHandler {
         this.diagram.preventConnectorsUpdate = false;
 
         if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule) {
+            this.diagram.allowServerDataBinding = false;
             this.layoutAnimateModule.expand(this.diagram.layout.enableAnimation, objects, node, this.diagram);
+            this.diagram.allowServerDataBinding = true;
         } else {
             let arg: IExpandStateChangeEventArgs = {
                 element: cloneBlazorObject(clone(node)), state: (node.isExpanded) ? true : false
@@ -3892,12 +3901,12 @@ export class CommandHandler {
             if (isBlazor()) {
                 this.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
                 this.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-                let ejsInterop: string = 'ejsInterop';
+                let blazorInterop: string = 'sfBlazor';
                 let blazor: string = 'Blazor';
                 let diagramObject: Object = { nodes: changeNodes, connectors: changeConnectors };
                 if (window && window[blazor] && (changeConnectors.length + changeNodes.length)) {
                     let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                    window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                    window[blazorInterop].updateBlazorProperties(obj, this.diagram);
                 }
             }
             this.diagram.protectPropertyChange(false);

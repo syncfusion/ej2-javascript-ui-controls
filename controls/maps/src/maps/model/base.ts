@@ -859,6 +859,11 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      */
     @Property(false)
     public shouldZoomInitially: boolean;
+    /**
+     * Zoom map based on marker positions.
+     */
+    @Property(true)
+    public resetToInitial: boolean;
 }
 /**
  * To configure the toggle legend settings in the maps
@@ -1369,6 +1374,17 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
+    /**
+     * Options for customizing the enable Complex property
+     */
+    @Property(null)
+    public latitudeValuePath: string;
+
+    /**
+     * Options for customizing the enable Complex property
+     */
+    @Property(null)
+    public longitudeValuePath: string;
 
 }
 

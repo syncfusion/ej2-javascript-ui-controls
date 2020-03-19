@@ -17,7 +17,7 @@ InPlaceEditor.Inject(AutoComplete, ColorPicker, ComboBox, DateRangePicker, Multi
 
 let modeType: RenderMode = 'Inline';
 let adaptorType: AdaptorType = 'UrlAdaptor';
-let serviceUrl: string = 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData';
+let serviceUrl: string = 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData';
 
 let modeData: string[] = ['Inline', 'Popup'];
 let darkThemes: string[] = ['material-dark', 'fabric-dark', 'bootstrap-dark', 'highcontrast'];

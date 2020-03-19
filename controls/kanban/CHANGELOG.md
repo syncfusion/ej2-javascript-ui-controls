@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 17.4.55 (2020-03-10)
+## 18.1.36-beta (2020-03-19)
 
 ### Kanban
 
 #### New Features
 
-- **Priority Support** - The features enable to render the cards based on the priority value. So, user can easily drag and drop the cards to particular place.
+- **Priority Support**: The features enable to render the cards based on the priority value. So, user can easily drag and drop the cards to particular place.
 
 ## 17.4.46 (2020-01-30)
 

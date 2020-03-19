@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+## 18.1.36-beta (2020-03-19)
+
+- Drag events for pointer drag will be triggered now.
+
 ## 17.4.50 (2020-02-18)
 
 ### LinearGauge

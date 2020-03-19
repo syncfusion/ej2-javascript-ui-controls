@@ -1,6 +1,5 @@
 import { append, createElement, extend, EventHandler, prepend, Animation, formatUnit } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove, removeClass, addClass } from '@syncfusion/ej2-base';
-import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { EventFieldsMapping, ElementData, EventRenderedArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { EventBase } from './event-base';
@@ -514,7 +513,7 @@ export class VerticalEvent extends EventBase {
 
     private getOverlapIndex(record: { [key: string]: Object }, day: number, isAllDay: boolean, resource: number): number {
         let fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        let predicate: Predicate; let eventsList: Object[] = []; let appIndex: number = -1; this.overlapEvents = [];
+        let eventsList: Object[] = []; let appIndex: number = -1; this.overlapEvents = [];
         if (isAllDay) {
             if (!isNullOrUndefined(this.renderedAllDayEvents[resource])) {
                 let date: Date = util.resetTime(new Date(this.dateRender[resource][day].getTime()));
@@ -528,18 +527,17 @@ export class VerticalEvent extends EventBase {
         } else {
             let appointmentList: Object[] = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
             let appointment: Object[] = [];
-            predicate = new Predicate(fieldMapping.endTime, 'greaterthan', <Date>record[fieldMapping.startTime]).
-                and(new Predicate(fieldMapping.startTime, 'lessthan', <Date>record[fieldMapping.endTime])).
-                or(new Predicate(fieldMapping.startTime, 'greaterthanorequal', <Date>record[fieldMapping.endTime]).
-                    and(new Predicate(fieldMapping.endTime, 'lessthanorequal', <Date>record[fieldMapping.startTime])));
-            this.overlapList = new DataManager({ json: appointmentList }).executeLocal(new Query().where(predicate));
+            let recordStart: Date = record[fieldMapping.startTime] as Date;
+            let recordEnd: Date = record[fieldMapping.endTime] as Date;
+            this.overlapList = appointmentList.filter((data: { [key: string]: Object }) =>
+                (data[fieldMapping.endTime] > recordStart && data[fieldMapping.startTime] < recordEnd) ||
+                (data[fieldMapping.startTime] >= recordEnd && data[fieldMapping.endTime] <= recordStart));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
             }
             this.overlapList.forEach((obj: { [key: string]: Object }) => {
-                predicate = new Predicate(fieldMapping.endTime, 'greaterthanorequal', <Date>obj[fieldMapping.startTime]).
-                    and(new Predicate(fieldMapping.startTime, 'lessthanorequal', <Date>obj[fieldMapping.endTime]));
-                let filterList: Object[] = new DataManager({ json: appointmentList }).executeLocal(new Query().where(predicate));
+                let filterList: Object[] = appointmentList.filter((data: { [key: string]: Object }) =>
+                    data[fieldMapping.endTime] >= obj[fieldMapping.startTime] && data[fieldMapping.startTime] <= obj[fieldMapping.endTime]);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     filterList = this.filterEventsByResource(this.resources[resource], filterList);
                 }

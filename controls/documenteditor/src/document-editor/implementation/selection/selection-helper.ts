@@ -1423,7 +1423,11 @@ export class TextPosition {
      * @private
      */
     public moveToParagraphStartInternal(selection: Selection, moveToPreviousParagraph: boolean): void {
-        let startOffset: number = selection.getStartOffset(this.paragraph);
+        let splittedParagraph: ParagraphWidget = this.currentWidget.paragraph;
+        while (splittedParagraph.previousSplitWidget) {
+            splittedParagraph = splittedParagraph.previousSplitWidget as ParagraphWidget;
+        }
+        let startOffset: number = selection.getStartOffset(splittedParagraph);
         if (this.offset === startOffset && moveToPreviousParagraph) {
             let paragraphstart: boolean = this.moveToNextParagraphInTableCheck();
             if (paragraphstart) {
@@ -1433,7 +1437,7 @@ export class TextPosition {
                 this.offset = selection.getStartOffset(this.paragraph);
             }
         } else {
-            this.currentWidget = this.paragraph.firstChild as LineWidget;
+            this.currentWidget = splittedParagraph.firstChild as LineWidget;
             this.offset = selection.getStartLineOffset(this.currentWidget);
         }
         let selectionStartIndex: string = this.owner.selection.start.getHierarchicalIndexInternal();

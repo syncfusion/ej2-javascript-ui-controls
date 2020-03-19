@@ -63,14 +63,16 @@ export class FieldList implements IAction {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             target: this.parent.element.parentElement,
+            aggregateTypes: this.parent.aggregateTypes,
             maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
             aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
-            enginePopulating: this.parent.bindTriggerEvents.bind(this.parent),
-            enginePopulated: this.parent.bindTriggerEvents.bind(this.parent),
-            onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent),
-            fieldDrop: this.parent.bindTriggerEvents.bind(this.parent),
-
+            // enginePopulating: this.parent.bindTriggerEvents.bind(this.parent),
+            // enginePopulated: this.parent.bindTriggerEvents.bind(this.parent),
+            // onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent),
+            // fieldDrop: this.parent.bindTriggerEvents.bind(this.parent),
         });
+        this.parent.pivotFieldListModule.isPopupView = true;
+        this.parent.pivotFieldListModule.pivotGridModule = this.parent;
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     }
 

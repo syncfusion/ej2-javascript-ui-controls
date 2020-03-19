@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Trendline } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields } from '../../chart/utils/enum';import { Anchor, ZIndex, SizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';import { Theme } from '../../common/model/theme';import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../index';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Trendline } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields, ChartTheme } from '../../chart/utils/enum';import { Anchor, ZIndex, SizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';import { Theme } from '../../common/model/theme';import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../index';
 
 /**
  * Interface for a class StockChartFont
@@ -150,7 +150,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    start?: Object | number | Date;
+    start?: number | Date;
 
     /**
      * Color of the strip line.
@@ -163,7 +163,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    end?: Object | number | Date;
+    end?: number | Date;
 
     /**
      * Size of the strip line, when it starts from the origin.
@@ -197,7 +197,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatEvery?: Object | number | Date;
+    repeatEvery?: number | Date;
 
     /**
      * isSegmented value of the strip line
@@ -211,14 +211,14 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatUntil?: Object | number | Date;
+    repeatUntil?: number | Date;
 
     /**
      * segmentStart value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentStart?: Object | number | Date;
+    segmentStart?: number | Date;
 
     /**
      * segmentAxisName of the strip line.
@@ -232,7 +232,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentEnd?: Object | number | Date;
+    segmentEnd?: number | Date;
 
     /**
      * Strip line Opacity

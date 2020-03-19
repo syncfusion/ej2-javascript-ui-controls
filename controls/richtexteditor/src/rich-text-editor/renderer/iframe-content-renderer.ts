@@ -77,6 +77,7 @@ const IFRAMEHEADER: string = `
                 span.e-table-box { background-color: #ffffff; border: 1px solid #BDBDBD; }
                 span.e-table-box.e-rbox-select { background-color: #BDBDBD; border: 1px solid #BDBDBD; }
                 .e-table-rhelper { background-color: #4a90e2;}
+                .e-rtl { direction: rtl; }
             </style>
         </head>`;
 /* tslint:enable */
@@ -115,6 +116,9 @@ export class IframeContentRender extends ContentRender {
         iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });
         iframe.contentDocument.write(iFrameContent);
         iframe.contentDocument.close();
+        if (rteObj.enableRtl) {
+            (this.contentPanel as HTMLIFrameElement).contentDocument.body.setAttribute('class', 'e-rtl');
+        }
     }
     private setThemeColor(content: string, styles: { [key: string]: string }): string {
         let fontColor: string = getComputedStyle(this.parent.element, '.e-richtexteditor').getPropertyValue('color');

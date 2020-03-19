@@ -3,7 +3,7 @@
  */
 import { getValue } from '@syncfusion/ej2-base';
 import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
-import { dialogEditData, resourcesData } from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -52,7 +52,7 @@ let ganttModel: Object = {
         { type: 'Custom' }
     ],
     addDialogFields: [
-        { type: 'General'},
+        { type: 'General' },
         { type: 'Resources' },
         { type: 'Dependency' }
     ],
@@ -71,7 +71,8 @@ let ganttModel: Object = {
         { field: 'Customcol1', editType: 'dropdownedit', headerText: 'Custom Column1', width: 100 },
         { field: 'Customcol2', editType: 'maskededit', headerText: 'Custom Column2', width: 100 },
         { field: 'Customcol3', editType: 'booleanedit', headerText: 'Custom Column3', width: 100 },
-        { field: 'Customcol4', edit: {
+        {
+            field: 'Customcol4', edit: {
                 create: (args: Object) => {
                     dropDownElement = document.createElement('input');
                     return dropDownElement;
@@ -112,7 +113,8 @@ describe('Gantt dialog module', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach(() => {
+        beforeEach((done) => {
+            setTimeout(done, 1000);
             ganttObj.openEditDialog(4);
         });
         it('Schedule validation- duration', () => {
@@ -179,7 +181,7 @@ describe('Gantt dialog module', () => {
             let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
             SD.value = null;
             SD.dataBind();
-            let rowData : IGanttData = getValue('rowData', ganttObj.editModule.dialogModule);
+            let rowData: IGanttData = getValue('rowData', ganttObj.editModule.dialogModule);
             let validEndDate = rowData.ganttProperties.endDate;
             let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
             expect(ED.value).toEqual(validEndDate);
@@ -285,6 +287,43 @@ describe('Gantt dialog module', () => {
             expect(textObj.value).toBe('');
             triggerMouseEvent(cancelRecord, 'click');
         });
+        // it('Duration editing without resource unit and work mapping', () => {
+        //     ganttObj.actionBegin = function (args: any): void {
+        //         if (args.requestType === "beforeOpenEdiaDialog") {
+        //             args.dialogModel.animationSettings = { 'effect': 'none' };
+        //         }
+        //     };
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'save') {
+        //             //Checking work values of task which have resource after duration editing
+        //             expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe("Resource 3,Resource 1");
+        //             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+        //             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
+        //             expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(80);
+        //             expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        //     let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancelRecord, 'click');
+        //     ganttObj.openEditDialog(3);
+        //     //Checking work values of task which have resource before duration editing
+        //     expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe("Resource 3,Resource 1");
+        //     expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+        //     expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
+        //     expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(48);
+        //     expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(3);
+        //     expect(ganttObj.currentViewData[2].ganttProperties.workUnit).toBe('hour');
+        //     expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedUnit');
+        //     let durationField: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
+        //     if (durationField) {
+        //         let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+        //         textObj.value = '5 days';
+        //         textObj.dataBind();
+        //         let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        //         triggerMouseEvent(saveRecord, 'click');
+        //     }
+        // });
         // it('Edit record by toolbar', () => {
         //     ganttObj.dataBind();
         //     let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
@@ -312,6 +351,92 @@ describe('Gantt dialog module', () => {
         //     triggerMouseEvent(cancel2, 'click');
         // });
     });
+    describe('Dialog editing with work mapping - General Tab', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: dialogEditData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    notes: 'Notes',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    resourceInfo: 'Resource',
+                    dependency: 'Predecessor',
+                    work: 'EstimatedWork',
+                    child: 'subtasks'
+                },
+                resourceIDMapping: 'resourceId',
+                resourceNameMapping: 'resourceName',
+                resources: resourcesData,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Dialog'
+                },
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                    { type: 'Custom' }
+                ],
+                addDialogFields: [
+                    { type: 'General' },
+                    { type: 'Resources' },
+                    { type: 'Dependency' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                allowUnscheduledTasks: true
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(3);
+        });
+        it('Work editing', () => {
+            ganttObj.dataBind();
+            let workField: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'EstimatedWork') as HTMLInputElement;
+            if (workField) {
+                let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EstimatedWork')).ej2_instances[0];
+                inputObj.value = 40;
+                let durationFocus: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
+                triggerMouseEvent(durationFocus, 'click');
+                let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+                triggerMouseEvent(cancelRecord, 'click');
+            }
+        });
+        it('Task type editing', () => {
+            ganttObj.dataBind();
+            let taskType: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'taskType') as HTMLInputElement;
+            if (taskType) {
+                let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'taskType')).ej2_instances[0];
+                inputObj.value = 'FixedDuration';
+                inputObj.dataBind();
+                let workInputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EstimatedWork')).ej2_instances[0];
+                workInputObj.value = 40;
+                let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+                expect(duration.value).toBe('1.25 days');
+                let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+                triggerMouseEvent(cancelRecord, 'click');
+            }
+        });
+    });
     describe('Dialog editing - predecessor Tab', () => {
         let ganttObj: Gantt;
 
@@ -323,7 +448,8 @@ describe('Gantt dialog module', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach(() => {
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
             ganttObj.openEditDialog(4);
             let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
             tab.selectedItem = 1;
@@ -334,8 +460,8 @@ describe('Gantt dialog module', () => {
                 if (args.requestType === 'save') {
                     expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe("2FS");
                 }
-            };            
-            let row: HTMLElement = ganttObj.element.querySelector('#'+ ganttObj.element.id + 'DependencyTabContainer_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+            };
+            let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_content_table > tbody > tr > td:nth-child(2)') as HTMLElement;
             if (row) {
                 triggerMouseEvent(row, 'dblclick');
                 let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
@@ -360,8 +486,9 @@ describe('Gantt dialog module', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach(() => {
-            ganttObj.openEditDialog(5);
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(2);
             let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
             tab.selectedItem = 2;
         });
@@ -373,13 +500,169 @@ describe('Gantt dialog module', () => {
             };
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'save') {
-                    expect(ganttObj.currentViewData[4].ganttProperties.resourceNames).toBe("Resource 1");
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 1");
+                    // without unit and work mapping
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+                    //expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
+                    expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
+                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
                 }
             };
             ganttObj.dataBind();
-            let checkbox: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div.e-checkbox-wrapper > input.e-checkselect') as HTMLElement;
+            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+            let checkbox: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
             if (checkbox) {
                 triggerMouseEvent(checkbox, 'click');
+                let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+            }
+        });
+        it('Resource unit editing', () => {
+            //Task which have resource
+            expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 1");
+            expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+            //expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
+            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/04/2019');
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "beforeOpenEdiaDialog") {
+                    args.dialogModel.animationSettings = { 'effect': 'none' };
+                }
+            };
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 1[50%]");
+                    // without unit and work mapping
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(50);
+                    //expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
+                    // expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(6);
+                    // expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/07/2019');
+                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
+                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
+                }
+            };
+            ganttObj.dataBind();
+            let unit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
+            if (unit) {
+                triggerMouseEvent(unit, 'dblclick');
+                let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'ResourcesTabContainer_gridcontrolunit')).ej2_instances[0];
+                input.value = 50;
+                input.dataBind();
+                let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+            }
+        });
+    });
+    describe('Dialog editing - Resource Tab with unit mapping', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: dialogEditData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    notes: 'Notes',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    resourceInfo: 'Resource',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit'
+                },
+                resources: resources,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Dialog'
+                },
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                    { type: 'Custom' }
+                ],
+                addDialogFields: [
+                    { type: 'General' },
+                    { type: 'Resources' },
+                    { type: 'Dependency' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                allowUnscheduledTasks: true
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(2);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 2;
+        });
+        it('Resource unit initial with unit mapping', () => {
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "beforeOpenEdiaDialog") {
+                    args.dialogModel.animationSettings = { 'effect': 'none' };
+                }
+            };
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 2[80%]");
+                    // with unit and without work mapping
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['resourceUnit']).toBe(80);
+                    expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(19.2);
+                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
+                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
+                }
+            };
+            ganttObj.dataBind();
+            let checkbox: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            if (checkbox) {
+                triggerMouseEvent(checkbox, 'click');
+                let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+            }
+        });
+        it('Resource unit editing with unit mapping', () => {
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "beforeOpenEdiaDialog") {
+                    args.dialogModel.animationSettings = { 'effect': 'none' };
+                }
+            };
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 2[50%]");
+                    // without unit and work mapping
+                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['resourceUnit']).toBe(50);
+                    // expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
+                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
+                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
+                }
+            };
+            ganttObj.dataBind();
+            let unit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
+            if (unit) {
+                triggerMouseEvent(unit, 'dblclick');
+                let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'ResourcesTabContainer_gridcontrolresourceUnit')).ej2_instances[0];
+                input.value = 50;
+                input.dataBind();
                 let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
                 triggerMouseEvent(saveRecord, 'click');
             }
@@ -395,10 +678,11 @@ describe('Gantt dialog module', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach(() => {
+        beforeEach((done) => {
+            setTimeout(done, 1000);
             ganttObj.openEditDialog(4);
             let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
-            tab.selectedItem = 3;
+            tab.selectedItem = 4;
         });
         it('Custom Editor for custom column', () => {
             let customColumn: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'Customcol4') as HTMLInputElement;
@@ -472,6 +756,77 @@ describe('Gantt dialog module', () => {
             let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             ganttObj.refresh();
+        });
+    });
+    describe('Schedule mode', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: scheduleModeData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                splitterSettings: {
+                    columnIndex: 8
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            // ganttObj.openEditDialog(3);
+        });
+        it('Changing taskmode of a task to manual', (done: Function) => {
+            expect(ganttObj.currentViewData[1].ganttProperties.isAutoSchedule).toBe(true);
+            ganttObj.openEditDialog(2);
+            let taskMode: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'isManual') as HTMLInputElement;
+            debugger
+            if (taskMode) {
+                let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'isManual')).ej2_instances[0];
+                inputObj.value = true;
+                inputObj.dataBind();
+                let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+                setTimeout(done, 500);
+            }
+            expect(ganttObj.currentViewData[1].ganttProperties.isAutoSchedule).toBe(false);
+        });
+        it('Changing taskmode of a task to auto', (done: Function) => {
+            let startDate: Date = ganttObj.currentViewData[2].ganttProperties.startDate;
+            expect(ganttObj.getFormatedDate(startDate, 'M/d/yyyy')).toBe('2/26/2017');
+            ganttObj.openEditDialog(3);
+            debugger
+            let taskMode: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'isManual') as HTMLInputElement;
+            if (taskMode) {
+                let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'isManual')).ej2_instances[0];
+                inputObj.value = false;
+                inputObj.dataBind();
+                let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+                setTimeout(done, 500);
+            }
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
         });
     });
 });

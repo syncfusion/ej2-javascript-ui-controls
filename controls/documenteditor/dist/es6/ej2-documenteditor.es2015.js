@@ -29629,7 +29629,11 @@ class TextPosition {
      * @private
      */
     moveToParagraphStartInternal(selection, moveToPreviousParagraph) {
-        let startOffset = selection.getStartOffset(this.paragraph);
+        let splittedParagraph = this.currentWidget.paragraph;
+        while (splittedParagraph.previousSplitWidget) {
+            splittedParagraph = splittedParagraph.previousSplitWidget;
+        }
+        let startOffset = selection.getStartOffset(splittedParagraph);
         if (this.offset === startOffset && moveToPreviousParagraph) {
             let paragraphstart = this.moveToNextParagraphInTableCheck();
             if (paragraphstart) {
@@ -29641,7 +29645,7 @@ class TextPosition {
             }
         }
         else {
-            this.currentWidget = this.paragraph.firstChild;
+            this.currentWidget = splittedParagraph.firstChild;
             this.offset = selection.getStartLineOffset(this.currentWidget);
         }
         let selectionStartIndex = this.owner.selection.start.getHierarchicalIndexInternal();
@@ -42406,9 +42410,18 @@ class Editor {
      */
     applyStyle(style, clearDirectFormatting) {
         clearDirectFormatting = isNullOrUndefined(clearDirectFormatting) ? false : clearDirectFormatting;
+        let startPosition = undefined;
+        let endPosition = undefined;
         if (clearDirectFormatting) {
             this.initComplexHistory('ApplyStyle');
+            this.setOffsetValue(this.selection);
+            startPosition = this.startOffset;
+            endPosition = this.endOffset;
+            let isSelectionEmpty = this.selection.isEmpty;
             this.clearFormatting();
+            if (isSelectionEmpty && !this.selection.isEmpty) {
+                this.selection.end.setPositionInternal(this.selection.start);
+            }
         }
         let styleObj = this.documentHelper.styles.findByName(style);
         if (styleObj !== undefined) {
@@ -42420,6 +42433,8 @@ class Editor {
             this.applyStyle(style);
         }
         if (this.editorHistory && this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action === 'ApplyStyle') {
+            this.startOffset = startPosition;
+            this.endOffset = endPosition;
             this.editorHistory.updateComplexHistory();
         }
     }
@@ -46643,8 +46658,10 @@ class Editor {
     reLayout(selection, isSelectionChanged) {
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
-                this.startParagraph = undefined;
-                this.endParagraph = undefined;
+                if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
+                    this.startParagraph = undefined;
+                    this.endParagraph = undefined;
+                }
             }
             this.isHandledComplex = false;
             return;
@@ -57144,12 +57161,17 @@ class EditorHistory {
         selection.owner.isShiftingEnabled = false;
         selection.owner.isLayoutEnabled = true;
         // // selection.addMultipleSelectionRanges();
-        selection.start.updatePhysicalPosition(true);
-        if (selection.isEmpty) {
-            selection.end.setPositionInternal(selection.start);
+        if (this.currentHistoryInfo.action === 'ApplyStyle') {
+            this.owner.editor.getOffsetValue(selection);
         }
         else {
-            selection.end.updatePhysicalPosition(true);
+            selection.start.updatePhysicalPosition(true);
+            if (selection.isEmpty) {
+                selection.end.setPositionInternal(selection.start);
+            }
+            else {
+                selection.end.updatePhysicalPosition(true);
+            }
         }
         selection.upDownSelectionLength = selection.end.location.x;
         this.documentHelper.isScrollHandler = true;
@@ -74847,6 +74869,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                         this.viewer = new WebLayoutViewer(this);
                     }
                     this.editor.layoutWholeDocument();
+                    this.fireViewChange();
                     break;
                 case 'locale':
                     this.localizeDialogs();
@@ -76013,13 +76036,14 @@ class Toolbar$1 {
     }
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number} itemIndex - Index of the toolbar items that need to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the toolbar item should be enabled or disabled.
      * By default, `isEnable` is set to true.
+     * @blazorArgsType itemIndex|int,isEnable|Boolean
      * @returns void.
      */
-    enableItems(items, isEnable) {
-        this.toolbar.enableItems(items, isEnable);
+    enableItems(itemIndex, isEnable) {
+        this.toolbar.enableItems(itemIndex, isEnable);
     }
     /**
      * @private
@@ -77908,7 +77932,7 @@ class Paragraph {
     }
     applyStyleValue(args) {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.applyStyle(args.itemData.StyleName);
+            this.documentEditor.editor.applyStyle(args.itemData.StyleName, true);
         }
     }
     onSelectionChange() {

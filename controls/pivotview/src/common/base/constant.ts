@@ -107,6 +107,21 @@ export const beforePdfExport: string = 'beforePdfExport';
 export const beforeExcelExport: string = 'beforeExcelExport';
 /** @hidden */
 export const memberFiltering: string = 'memberFiltering';
+/** @hidden */
+export const calculatedFieldCreate: string = 'calculatedFieldCreate';
+/** @hidden */
+export const memberEditorOpen: string = 'memberEditorOpen';
+/** @hidden */
+export const fieldRemove: string = 'fieldRemove';
+/** @hidden */
+export const numberFormatting: string = 'numberFormatting';
+/** @hidden */
+export const aggregateMenuOpen: string = 'aggregateMenuOpen';
+/** @hidden */
+export const fieldDragStart: string = 'fieldDragStart';
+/** @hidden */
+export const chartPointClick: string = 'chartPointClick';
+
 /** 
  * Specifies pivot internal events
  */

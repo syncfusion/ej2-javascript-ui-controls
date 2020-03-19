@@ -246,5 +246,4 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
      */
     @Property('OnDemand')
     public displayMode: TooltipDisplayMode;
-
 }

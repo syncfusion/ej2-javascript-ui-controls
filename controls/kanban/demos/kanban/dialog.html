@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Kanban Typescript Component</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/material.css" />
+    <script data-main="dialog" src="../../node_modules/requirejs/require.js"></script>
+    <script src="require.config.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid" style="margin-top:15px;">
+        <div class="row">
+            <div class="col-md-9">
+                <div id="kanban"></div>
+            </div>
+            <div class="col-md-3">
+                <div class="prop-grid">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <input id="predefined" type="radio">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <input id="template" type="radio">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <div><button class="e-btn e-dialog-add" id="addNew">Add New Card</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script id='dialogTemplate' type="text/x-template">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <div class="e-float-input e-control-wrapper">
+                    <input id="Id" name="Id" type="text" class="e-field" value="${Id}" disabled required/>
+                    <span class="e-float-line"></span>
+                    <label class="e-float-text e-label-top" for="Id">Id</label>
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                <input type="text" name="Status" id="Status" class="e-field" value=${Status} required />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <input name="Estimate" id="Estimate" class="e-field" value="${Estimate}" />
+            </div>
+            <div class="form-group col-md-6">
+                <input type="text" name="Assignee" id="Assignee" class="e-field" value=${Assignee} /> 
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <div class="e-float-input e-control-wrapper">
+                    <input id="Tags" name="Tags" type="text" class="e-field" value="${Tags}" required/>
+                    <span class="e-float-line"></span>
+                    <label class="e-float-text e-label-top" for="Tags">Tags</label>
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                <input type="text" name="Priority" id="Priority" class="e-field" value=${Priority} /> 
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                <div class="e-float-input e-control-wrapper">
+                    <textarea type="text" name="Summary" id="Summary" class="e-field" value=${Summary}>${Summary}</textarea>
+                    <span class="e-float-line"></span>
+                    <label class="e-float-text e-label-top" for="Summary">Summary</label>
+                </div>
+            </div>
+        </div>
+    </script>
+</body>
+
+</html>

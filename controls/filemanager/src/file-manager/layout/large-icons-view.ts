@@ -2,7 +2,8 @@ import { ListBase, ListBaseOptions, ItemCreatedArgs } from '@syncfusion/ej2-list
 import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs, isVisible } from '@syncfusion/ej2-base';
 import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { IFileManager, FileOpenEventArgs, FileSelectEventArgs, NotifyArgs, FileLoadEventArgs } from '../base/interface';
+import { IFileManager, FileOpenEventArgs, FileLoadEventArgs } from '../base/interface';
+import { FileSelectEventArgs, NotifyArgs, FileSelectionEventArgs } from '../base/interface';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
@@ -30,6 +31,7 @@ export class LargeIconsView {
     private keyboardModule: KeyboardEvents;
     private keyboardDownModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
+    private isInteraction: boolean = true;
     private itemList: HTMLElement[];
     private items: Object[];
     private clickObj: Touch;
@@ -430,6 +432,7 @@ export class LargeIconsView {
             let lastItem: Element = this.getLastItem();
             let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
             this.doSelection(lastItem, eveArgs);
+            this.isInteraction = true;
             this.isInteracted = true;
         }
     }
@@ -437,6 +440,7 @@ export class LargeIconsView {
     private onClearAllInit(): void {
         if (this.parent.view === 'LargeIcons') {
             this.clearSelection();
+            this.isInteraction = true;
             this.isInteracted = true;
         }
     }
@@ -554,7 +558,7 @@ export class LargeIconsView {
         this.parent.on(events.filterEnd, this.onPathChanged, this);
     }
 
-    private onActionFailure(): void { this.isInteracted = true; }
+    private onActionFailure(): void { this.isInteraction = true; this.isInteracted = true; }
 
     private onMenuItemData(args: { [key: string]: Object; }): void {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -621,6 +625,7 @@ export class LargeIconsView {
                     this.adjustHeight();
                     break;
                 case 'selectedItems':
+                    this.isInteraction = false;
                     this.isInteracted = false;
                     let currentSelected: string[] = isNOU(this.parent.selectedItems) ? [] : this.parent.selectedItems.slice(0);
                     currentSelected = this.parent.allowMultiSelection ? currentSelected :
@@ -630,6 +635,7 @@ export class LargeIconsView {
                     if (currentSelected.length) {
                         this.selectItems(currentSelected);
                     }
+                    this.isInteraction = true;
                     this.isInteracted = true;
                     break;
                 case 'showThumbnail':
@@ -774,43 +780,49 @@ export class LargeIconsView {
             this.updateType(item);
             return;
         } else if (!isNOU(item)) {
-            if ((!this.parent.allowMultiSelection || (!this.multiSelect && (e && !e.ctrlKey)))
-                && !cList.contains(CLS.FRAME)) {
-                this.updateType(item);
-                this.clearSelect();
+            if (this.parent.allowMultiSelection && item.classList.contains(CLS.ACTIVE)
+                && (e.ctrlKey || target.classList.contains(CLS.CHECK))) {
+                action = 'unselect';
             }
-            if (this.parent.allowMultiSelection && e.shiftKey) {
-                if (!(e && e.ctrlKey)) { this.clearSelect(); }
-                if (!this.startItem) {
+            let fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection(action, item);
+            if (fileSelectionArgs.cancel !== true) {
+                if ((!this.parent.allowMultiSelection || (!this.multiSelect && (e && !e.ctrlKey)))
+                    && !cList.contains(CLS.FRAME)) {
+                    this.updateType(item);
+                    this.clearSelect();
+                }
+                if (this.parent.allowMultiSelection && e.shiftKey) {
+                    if (!(e && e.ctrlKey)) { this.clearSelect(); }
+                    if (!this.startItem) {
+                        this.startItem = item;
+                    }
+                    let startIndex: number = this.itemList.indexOf(<HTMLElement>this.startItem);
+                    let endIndex: number = this.itemList.indexOf(<HTMLElement>item);
+                    if (startIndex > endIndex) {
+                        for (let i: number = startIndex; i >= endIndex; i--) {
+                            this.addActive(this.itemList[i]);
+                        }
+                    } else {
+                        for (let i: number = startIndex; i <= endIndex; i++) {
+                            this.addActive(this.itemList[i]);
+                        }
+                    }
+                    this.addFocus(this.itemList[endIndex]);
+                } else {
                     this.startItem = item;
-                }
-                let startIndex: number = this.itemList.indexOf(<HTMLElement>this.startItem);
-                let endIndex: number = this.itemList.indexOf(<HTMLElement>item);
-                if (startIndex > endIndex) {
-                    for (let i: number = startIndex; i >= endIndex; i--) {
-                        this.addActive(this.itemList[i]);
+                    if (this.parent.allowMultiSelection && item.classList.contains(CLS.ACTIVE)) {
+                        this.removeActive(item);
+                    } else {
+                        this.addActive(item);
                     }
-                } else {
-                    for (let i: number = startIndex; i <= endIndex; i++) {
-                        this.addActive(this.itemList[i]);
-                    }
+                    this.addFocus(item);
                 }
-                this.addFocus(this.itemList[endIndex]);
-            } else {
-                this.startItem = item;
-                if (this.parent.allowMultiSelection && item.classList.contains(CLS.ACTIVE)) {
-                    this.removeActive(item);
-                    action = 'unselect';
-                } else {
-                    this.addActive(item);
+                if (this.parent.selectedItems.length === 0) {
+                    this.resetMultiSelect();
                 }
-                this.addFocus(item);
+                this.parent.notify(events.selectionChanged, {});
+                this.triggerSelect(action, item);
             }
-            if (this.parent.selectedItems.length === 0) {
-                this.resetMultiSelect();
-            }
-            this.parent.notify(events.selectionChanged, {});
-            this.triggerSelect(action, item);
         } else {
             this.clearSelection();
         }
@@ -1124,20 +1136,26 @@ export class LargeIconsView {
 
     private setFocus(nextItem: Element): void {
         if (!isNOU(nextItem)) {
-            this.startItem = nextItem;
-            this.clearSelect();
-            this.addActive(nextItem);
-            this.addFocus(nextItem);
-            this.parent.notify(events.selectionChanged, {});
-            this.triggerSelect('select', nextItem);
+            let fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection('select', nextItem);
+            if (fileSelectionArgs.cancel !== true) {
+                this.startItem = nextItem;
+                this.clearSelect();
+                this.addActive(nextItem);
+                this.addFocus(nextItem);
+                this.parent.notify(events.selectionChanged, {});
+                this.triggerSelect('select', nextItem);
+            }
         }
     }
 
     private spaceKey(fItem: Element): void {
         if (!isNOU(fItem) && !fItem.classList.contains(CLS.ACTIVE)) {
-            this.addActive(fItem);
-            this.parent.notify(events.selectionChanged, {});
-            this.triggerSelect('select', fItem);
+            let fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection('select', fItem);
+            if (fileSelectionArgs.cancel !== true) {
+                this.addActive(fItem);
+                this.parent.notify(events.selectionChanged, {});
+                this.triggerSelect('select', fItem);
+            }
         }
     }
 
@@ -1274,10 +1292,16 @@ export class LargeIconsView {
 
     private clearSelect(): void {
         let eles: Element[] = Array.prototype.slice.call(selectAll('.' + CLS.ACTIVE, this.listElements));
-        for (let i: number = 0, len: number = eles.length; i < len; i++) {
-            this.removeActive(eles[i]);
+        let fileSelectionArgs: FileSelectionEventArgs;
+        if (eles.length !== 0) {
+            fileSelectionArgs = this.triggerSelection('unselect', eles[0]);
+            if (fileSelectionArgs.cancel !== true) {
+                for (let i: number = 0, len: number = eles.length; i < len; i++) {
+                    this.removeActive(eles[i]);
+                }
+            }
+            this.triggerSelect('unselect', eles[0]);
         }
-        if (eles.length !== 0) { this.triggerSelect('unselect', eles[0]); }
     }
 
     private resizeHandler(): void {
@@ -1296,6 +1320,15 @@ export class LargeIconsView {
             }
         }
         this.perRow = perRow;
+    }
+    private triggerSelection(action: string, item: Element): FileSelectionEventArgs {
+        let data: Object = this.getItemObject(item);
+        let eventArgs: FileSelectionEventArgs = {
+            action: action, fileDetails: data, isInteracted: this.isInteraction, cancel: false, target: item
+        };
+        this.parent.trigger('fileSelection', eventArgs);
+        this.isInteraction = true;
+        return eventArgs;
     }
 
     private triggerSelect(action: string, item: Element): void {
@@ -1373,17 +1406,21 @@ export class LargeIconsView {
                 this.openFile(getValue('id', args));
                 break;
             case 'renameFile':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 this.renameFile(getValue('id', args), getValue('newName', args));
                 break;
             case 'createFolder':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 break;
             case 'clearSelection':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 this.onClearAllInit();
                 break;
             case 'selectAll':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 this.onSelectAllInit();
                 break;

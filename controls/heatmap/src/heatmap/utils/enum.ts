@@ -14,6 +14,20 @@ export type Alignment =
     /** Define the right alignment. */
     'Far';
 
+/**
+ * Export Type
+ */
+export type ExportType =
+    /** Used to export a image as png format */
+    'PNG' |
+    /** Used to export a image as jpeg format */
+    'JPEG' |
+    /** Used to export a file as svg format */
+    'SVG' |
+    /** Used to export a file as pdf format */
+    'PDF';
+
+
 /** 
  * Defines Theme of the heatmap.
  */
@@ -170,6 +184,7 @@ export type DrawType =
  * None - Shows all the labels with overlap.
  * Trim - Trim the label when it intersect.
  * Rotate45 - Rotate the label to 45 degree when it intersect.
+ * MultipleRows - Shows all the labels in multiple rows when it intersect.
  */
 export type LabelIntersectAction =
     /** Shows all the labels. */
@@ -177,7 +192,9 @@ export type LabelIntersectAction =
     /** Trim the label when it intersect. */
     'Trim' |
     /** Rotate the label to 45 degree when it intersect. */
-    'Rotate45';
+    'Rotate45' |
+    /** Multiple row when intersect. */
+    'MultipleRows';
 
 /**
  * Specifies the type of label display for smart legend.

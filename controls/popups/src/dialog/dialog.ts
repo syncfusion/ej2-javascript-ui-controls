@@ -2,7 +2,7 @@ import { Component, Property, Event, Collection, L10n, Browser, EmitType, Comple
 import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
@@ -484,6 +484,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * 
      * > More information on the draggable behavior can be found on this [documentation](../../dialog/getting-started/#draggable) section.
      * 
+     * {% codeBlock src='dialog/allowDragging/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
@@ -498,6 +500,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * {% codeBlock src="dialog/buttons-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dialog/buttons-api/index.html" %}{% endcodeBlock %}
+     * 
+     * {% codeBlock src='dialog/buttons/index.md' %}{% endcodeBlock %}
+     * 
      * @default [{}]   
      */
     @Collection<ButtonPropsModel>([{}], ButtonProps)
@@ -518,6 +523,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * {% codeBlock src="dialog/animation-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dialog/animation-api/index.html" %}{% endcodeBlock %}
+     * 
+     * {% codeBlock src='dialog/animationSettings/index.md' %}{% endcodeBlock %}
+     * 
      * @default { effect: 'Fade', duration: 400, delay:0 }
      */
     @Complex<AnimationSettingsModel>({}, AnimationSettings)
@@ -527,6 +535,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * The position can be represented with pre-configured positions or specific X and Y values.
      * * `X value`: left, center, right, or offset value.
      * * `Y value`: top, center, bottom, or offset value.
+     * 
+     * {% codeBlock src='dialog/position/index.md' %}{% endcodeBlock %}
+     * 
      * @default {X:'center', Y:'center'}
      */
     @Complex<PositionDataModel>({ X: 'center', Y: 'center' }, PositionData)
@@ -1063,7 +1074,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.contentEle.appendChild(this.innerContentElement);
         } else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
             let blazorContain: string[] = Object.keys(window) as string[];
-            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
+            if (typeof (this.content) === 'string' && !isBlazor()) {
                 this.contentEle.innerHTML = this.sanitizeHelper(this.content);
             } else if (this.content instanceof HTMLElement) {
                 this.contentEle.appendChild(this.content);
@@ -1106,16 +1117,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         let fromElements: HTMLElement[] = [];
         if (!isNullOrUndefined(templateFn)) {
-            let isString: boolean = (blazorContain.indexOf('ejsInterop') !== -1 &&
+            let isString: boolean = (isBlazor() &&
                 !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
             for (let item of templateFn({}, null, null, templateProps, isString)) {
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
-                this.blazorTemplate(templateProps);
-            }
         }
     }
 
@@ -1124,30 +1132,20 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     public sanitizeHelper(value: string): string {
         if (this.enableHtmlSanitizer) {
-            let item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
+            let dialogItem: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
             let beforeEvent: BeforeSanitizeHtmlArgs = {
                 cancel: false,
                 helper: null
             };
-            extend(item, item, beforeEvent);
-            this.trigger('beforeSanitizeHtml', item);
-            if (item.cancel && !isNullOrUndefined(item.helper)) {
-                value = item.helper(value);
-            } else if (!item.cancel) {
-                value = SanitizeHtmlHelper.serializeValue(item, value);
+            extend(dialogItem, dialogItem, beforeEvent);
+            this.trigger('beforeSanitizeHtml', dialogItem);
+            if (dialogItem.cancel && !isNullOrUndefined(dialogItem.helper)) {
+                value = dialogItem.helper(value);
+            } else if (!dialogItem.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(dialogItem, value);
             }
         }
         return value;
-    }
-
-    private blazorTemplate(templateProps: string): void {
-        if (templateProps === this.element.id + 'header') {
-            updateBlazorTemplate(templateProps, 'Header', this);
-        } else if (templateProps === this.element.id + 'footerTemplate') {
-            updateBlazorTemplate(templateProps, 'FooterTemplate', this);
-        } else {
-            updateBlazorTemplate(templateProps, 'Content', this);
-        }
     }
 
     private setMaxHeight(): void {

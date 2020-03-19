@@ -2,10 +2,10 @@ import { Component, EventHandler, addClass, append, Property, Event, KeyboardEve
 import { setStyleAttribute, extend, removeClass, prepend, isNullOrUndefined, detach, getValue, AnimationModel } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, rippleEffect, RippleOptions, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data';
-import { ListBase, SortOrder, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
+import { ListBase, SortOrder } from '@syncfusion/ej2-lists';
 import { DropDownBaseModel, FieldSettingsModel } from './drop-down-base-model';
 import { Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, remove } from '@syncfusion/ej2-base';
 
 export type FilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 
@@ -53,9 +53,9 @@ export const dropDownBaseClasses: DropDownBaseClassList = {
     noData: 'e-nodata',
     fixedHead: 'e-fixed-head',
     focus: 'e-item-focus',
-    li: ListBaseClasses.li,
-    group: ListBaseClasses.group,
-    disabled: ListBaseClasses.disabled,
+    li: 'e-list-item',
+    group: 'e-list-group-item',
+    disabled: 'e-disabled',
     grouping: 'e-dd-group'
 };
 
@@ -117,7 +117,7 @@ export interface BeforeOpenEventArgs {
 export interface ActionBeginEventArgs {
     /**
      * Specify the query to begin the data
-     * @blazorType Syncfusion.EJ2.Blazor.Data.Query
+     * @blazorType Syncfusion.Blazor.Data.Query
      */
     query: Query;
     /**
@@ -163,7 +163,7 @@ export interface ActionCompleteEventArgs {
     count?: number;
     /**
      * Specify the query to complete the data
-     * @blazorType Syncfusion.EJ2.Blazor.Data.Query
+     * @blazorType Syncfusion.Blazor.Data.Query
      */
     query?: Query;
     /**
@@ -588,8 +588,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             } else {
                 this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
             }
-            ele.innerHTML = actionFailure ?
-                this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
+            let content: string = actionFailure ?
+            this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
+            if (isBlazor() && this.getModuleName() === 'listbox' && ele.childNodes[1]) {
+                ele.childNodes[1].nodeValue = content;
+            } else {
+                ele.innerHTML = content;
+            }
         }
     }
 
@@ -862,11 +867,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected findListElement(list: HTMLElement, findNode: string, attribute: string, value: string | boolean | number ): HTMLElement {
         let liElement: HTMLElement = null;
-        let listArr: HTMLElement[] = [].slice.call(list.querySelectorAll(findNode));
-        for (let index: number = 0; index < listArr.length; index++) {
-            if (listArr[index].getAttribute(attribute) === (value + '')) {
-                liElement = listArr[index];
-                break;
+        if (list) {
+            let listArr: HTMLElement[] = [].slice.call(list.querySelectorAll(findNode));
+            for (let index: number = 0; index < listArr.length; index++) {
+                if (listArr[index].getAttribute(attribute) === (value + '')) {
+                    liElement = listArr[index];
+                    break;
+                }
             }
         }
         return liElement;
@@ -928,7 +935,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         list: { [key: string]: Object }[] | boolean[] | string[] | number[],
         e?: Object): void {
         this.listData = list;
-        this.list.innerHTML = '';
+        if (isBlazor() && this.isServerRendered && this.getModuleName() === 'listbox') {
+            remove(this.list.querySelector('.e-list-parent'));
+            remove(this.list.querySelector('.e-hidden-select'));
+        } else  {
+            this.list.innerHTML = '';
+        }
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
         this.list.appendChild(ulElement);
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);

@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Default sample Toolbar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <link href="./theme-files/material.css" rel="stylesheet" />
     <link href="icons.css" rel="stylesheet" />
     <script>
@@ -20,17 +21,66 @@
     <script>
         require.config(window.rsConfig);
     </script>
+    <style type="text/css">
+        .prop-grid .row {
+            padding: 10px 0;
+        }
+    </style>
 </head>
 
-<body class="e-bigger">
-    <tr>
-        <td> <button id="btn_mouse" class="e-btn">Mouse</button> </td>
-    </tr>
-    <tr>
-        <td> <button id="btn_touch" class="e-btn">Touch</button> </td>
-    </tr>
-    <div style="margin-top : 50px">
-        <div id="ej2Toolbar">
+<body>
+    <div class="container-fluid" style="margin-top:15px;">
+        <div class="row">
+            <div class="col-md-9">
+                <span>Default </span>
+                <div style="padding: 20px;">
+                    <div id="ej2Toolbar"> </div>
+                </div>
+                <span>Scrollable </span>
+                <div style="padding: 20px;">
+                    <div id="ej2Toolbar1"> </div>
+                </div>
+                <span>Popup </span>
+                <div style="padding: 20px;">
+                    <div id="ej2Toolbar2"> </div>
+                </div>
+                <span>Extended </span>
+                <div style="padding: 20px;">
+                    <div id="ej2Toolbar3"> </div>
+                </div>
+                <span>MultiRow </span>
+                <div style="padding: 20px;">
+                    <div id="ej2Toolbar4"> </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="prop-grid">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button id="btn_mouse" class="e-btn">Mouse</button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="btn_touch" class="e-btn">Touch</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">Choose Theme</div>
+                        <div class="col-md-6">
+                            <select id="themechange" name="ddl" class="form-control">
+                                <option value="material" selected>Material</option>
+                                <option value="fabric">Fabric</option>
+                                <option value="bootstrap">Bootstrap</option>
+                                <option value="highcontrast">High Contrast</option>
+                                <option value="material-dark">Material Dark</option>
+                                <option value="fabric-dark">Fabric Dark</option>
+                                <option value="bootstrap-dark">Bootstrap Dark</option>
+                                <option value="highcontrast-light">High Contrast Light</option>
+                                <option value="bootstrap4">Bootstrap 4</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

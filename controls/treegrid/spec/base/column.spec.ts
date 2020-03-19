@@ -1,8 +1,8 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
 import { sampleData, projectData } from './datasource.spec';
-import { PageEventArgs, QueryCellInfoEventArgs, doesImplementInterface, RowDataBoundEventArgs, ColumnModel } from '@syncfusion/ej2-grids';
-import { Column } from '../../src';
+import { PageEventArgs, QueryCellInfoEventArgs, doesImplementInterface, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
+import { Column, ColumnModel } from '../../src';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 /**
@@ -141,7 +141,34 @@ describe('TreeGrid Column Module', () => {
     });
   });
   
-    describe('Stacked Header', () => {
+  
+  describe('Hide column method', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+            { field: 'taskName', headerText: 'Task Name', width: 250 },
+            { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+        ]
+        },
+        done
+      );
+    });
+    it('Check the Column Visibility after column hide', () => {
+      gridObj.hideColumns('Task Name', 'headerText');
+      expect(gridObj.columns[1]['visible'] == false).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Stacked Header', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
@@ -176,7 +203,7 @@ describe('TreeGrid Column Module', () => {
     });
   });
 
-  
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

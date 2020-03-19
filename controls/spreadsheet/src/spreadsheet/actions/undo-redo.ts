@@ -1,10 +1,10 @@
 import { Spreadsheet } from '../../spreadsheet/index';
 import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction } from '../common/index';
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
-import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs } from '../common/index';
+import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
 import { selectRange, clearUndoRedoCollection } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation } from '../../workbook/index';
-import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex } from '../../workbook/index';
+import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent } from '../../workbook/index';
 import { SheetModel } from '../../workbook/index';
 
 /**
@@ -43,11 +43,17 @@ export class UndoRedo {
             case 'beforeSort':
                 address = getRangeIndexes((args.eventArgs as BeforeSortEventArgs).range);
                 if (address[0] === address[2] && (address[2] - address[0]) === 0) { //if selected range is a single cell 
-                    address[0] = 0; address[1] = 0; address[2] = sheet.usedRange.rowIndex - 1; address[3] = sheet.usedRange.colIndex;
+                    address[0] = 0; address[1] = 0; address[2] = sheet.usedRange.rowIndex; address[3] = sheet.usedRange.colIndex;
                 }
                 break;
             case 'beforeCellSave':
                 address = getRangeIndexes(eventArgs.address);
+                break;
+            case 'beforeWrap':
+                address = this.parent.getAddressInfo(eventArgs.address).indices;
+                break;
+            case 'beforeReplace':
+                address = this.parent.getAddressInfo(eventArgs.address).indices;
                 break;
         }
         cells = this.getCellDetails(address, sheet);
@@ -66,6 +72,7 @@ export class UndoRedo {
                 case 'cellSave':
                 case 'format':
                 case 'sorting':
+                case 'wrap':
                     undoRedoArgs = this.performOperation(undoRedoArgs);
                     break;
                 case 'clipboard':
@@ -73,6 +80,22 @@ export class UndoRedo {
                     break;
                 case 'resize':
                     undoRedoArgs = this.undoForResize(undoRedoArgs);
+                    break;
+                case 'hideShow':
+                    undoRedoArgs.eventArgs.hide = !undoRedoArgs.eventArgs.hide;
+                    updateAction(undoRedoArgs, this.parent);
+                    break;
+                case 'replace':
+                    undoRedoArgs = this.performOperation(undoRedoArgs);
+                    break;
+                case 'insert':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'delete':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'validation':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
@@ -93,13 +116,18 @@ export class UndoRedo {
     }
 
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
-        let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit'];
+        let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
+        'validation'];
+        if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
+            actionList.push(options.args.action);
+        }
         let action: string = options.args.action;
         if (actionList.indexOf(action) === -1 && !options.isPublic) {
             return;
         }
         let eventArgs: UndoRedoEventArgs = options.args.eventArgs;
-        if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave') {
+        if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
+        action === 'wrap' || action === 'replace' || action === 'validation') {
             let beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -149,14 +177,18 @@ export class UndoRedo {
 
     private undoForResize(args: CollaborativeEditArgs): CollaborativeEditArgs {
         let eventArgs: UndoRedoEventArgs = args.eventArgs;
-        if (eventArgs.isCol) {
-            let temp: string = eventArgs.oldWidth;
-            eventArgs.oldWidth = eventArgs.width;
-            eventArgs.width = temp;
+        if (eventArgs.hide === undefined) {
+            if (eventArgs.isCol) {
+                let temp: string = eventArgs.oldWidth;
+                eventArgs.oldWidth = eventArgs.width;
+                eventArgs.width = temp;
+            } else {
+                let temp: string = eventArgs.oldHeight;
+                eventArgs.oldHeight = eventArgs.height;
+                eventArgs.height = temp;
+            }
         } else {
-            let temp: string = eventArgs.oldHeight;
-            eventArgs.oldHeight = eventArgs.height;
-            eventArgs.height = temp;
+            eventArgs.hide = !eventArgs.hide;
         }
         updateAction(args, this.parent);
         return args;
@@ -164,14 +196,16 @@ export class UndoRedo {
 
     private performOperation(args: CollaborativeEditArgs): CollaborativeEditArgs {
         let eventArgs: UndoRedoEventArgs = args.eventArgs;
-        let address: string[] = (args.action === 'cellSave') ? eventArgs.address.split('!') : eventArgs.range.split('!');
+        let address: string[] = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace') ?
+        eventArgs.address.split('!')
+            : eventArgs.range.split('!');
         let range: number[] = getRangeIndexes(address[1]);
         let sheetIndex: number = getSheetIndex(this.parent, address[0]);
         let sheet: SheetModel = getSheet(this.parent, sheetIndex);
         let actionData: BeforeActionData = eventArgs.beforeActionData;
         let isRefresh: boolean = this.checkRefreshNeeded(sheetIndex);
         if (this.isUndo) {
-            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
         } else {
             updateAction(args, this.parent);
         }
@@ -188,19 +222,22 @@ export class UndoRedo {
                 cell = getCell(i, j, sheet);
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
-                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : ''
+                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
+                    wrap: cell && cell.wrap
                 });
             }
         }
         return cells;
     }
 
-    private updateCellDetails(cells: PreviousCellDetails[], sheet: SheetModel, range: number[], isRefresh: boolean): void {
+    private updateCellDetails(
+        cells: PreviousCellDetails[], sheet: SheetModel, range: number[], isRefresh: boolean, args?: CollaborativeEditArgs): void {
         let len: number = cells.length;
         for (let i: number = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format,
-                style: cells[i].style, formula: cells[i].formula
+                style: cells[i].style, formula: cells[i].formula,
+                wrap: cells[i].wrap
             });
             if (cells[i].formula) {
                 this.parent.notify(
@@ -209,6 +246,12 @@ export class UndoRedo {
                         action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
                         cells[i].colIndex], value: cells[i].formula
                     });
+            }
+            if (args && args.action === 'wrap' && args.eventArgs.wrap) {
+                this.parent.notify(wrapEvent, {
+                    range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
+                    cells[i].colIndex], wrap: false, sheet: sheet
+                });
             }
         }
         if (isRefresh) {
@@ -231,6 +274,7 @@ export class UndoRedo {
         this.parent.on(setActionData, this.setActionData, this);
         this.parent.on(getBeforeActionData, this.getBeforeActionData, this);
         this.parent.on(clearUndoRedoCollection, this.clearUndoRedoCollection, this);
+        this.parent.on(setUndoRedo, this.updateUndoRedoIcons, this);
     }
 
     private removeEventListener(): void {
@@ -240,6 +284,7 @@ export class UndoRedo {
             this.parent.off(setActionData, this.setActionData);
             this.parent.off(getBeforeActionData, this.getBeforeActionData);
             this.parent.off(clearUndoRedoCollection, this.clearUndoRedoCollection);
+            this.parent.off(setUndoRedo, this.updateUndoRedoIcons);
         }
     }
 

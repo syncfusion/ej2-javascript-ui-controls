@@ -788,7 +788,7 @@ describe('Column chooser module', () => {
                     showColumnChooser: true,
                         toolbar: ['ColumnChooser'],
                         columns: [
-                            { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                            { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
                             { field: 'CustomerName', headerText: 'Customer Name', width: 150, showInColumnChooser: false },
                             { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
                             { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },

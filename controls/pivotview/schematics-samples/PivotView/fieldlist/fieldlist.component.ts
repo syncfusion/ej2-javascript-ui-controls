@@ -177,7 +177,7 @@ export class DefaultComponent {
 
         return pivotData;
     }
-
+/* tslint:enable */
     public gridSettings: GridSettings = {
         columnWidth: 140
     } as GridSettings;

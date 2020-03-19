@@ -14,6 +14,7 @@ import { IndexesModel } from '../common/model/base-model';
 import { Margin, Border, ChartArea, Font, Indexes, TooltipSettings } from '../common/model/base';
 import { AxisModel, RowModel, ColumnModel } from './axis/axis-model';
 import { Row, Column, Axis } from './axis/axis';
+import { Highlight } from './user-interaction/high-light';
 import { CartesianAxisLayoutPanel } from './axis/cartesian-panel';
 import { DateTime } from './axis/date-time-axis';
 import { Category } from './axis/category-axis';
@@ -23,7 +24,7 @@ import { ErrorBar } from './series/error-bar';
 import { Logarithmic } from './axis/logarithmic-axis';
 import { Rect, measureText, TextOption, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { ChartData } from './utils/get-data';
-import { SelectionMode, LineType, ZoomMode, ToolbarItems, ChartTheme } from './utils/enum';
+import { SelectionMode, HighlightMode, LineType, ZoomMode, ToolbarItems, ChartTheme } from './utils/enum';
 import { Series, SeriesBase } from './series/chart-series';
 import { SeriesModel } from './series/chart-series-model';
 import { Data } from '../common/model/data';
@@ -83,17 +84,17 @@ import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
-import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
+import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';
-import { chartMouseDown, chartMouseMove, chartMouseUp, load, regSub, regSup } from '../common/model/constants';
+import { chartMouseDown, chartMouseMove, chartMouseUp, load } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
 import { ChartAnnotationSettings } from './model/chart-base';
 import { ChartAnnotation } from './annotation/annotation';
-import { getElement, getTitle,  getUnicodeText} from '../common/utils/helper';
-import { Alignment, ExportType } from '../common/utils/enum';
+import { getElement, getTitle } from '../common/utils/helper';
+import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
 import { MultiColoredLineSeries } from './series/multi-colored-line-series';
 import { MultiColoredAreaSeries } from './series/multi-colored-area-series';
 import { ScrollBar } from '../common/scrollbar/scrollbar';
@@ -418,6 +419,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public selectionModule: Selection;
     /**
+     * `highlightModule` is used to manipulate and add highlight to the chart.
+     */
+    public highlightModule: Highlight;
+    /**
      * `annotationModule` is used to manipulate and add annotation in chart.
      */
     public annotationModule: ChartAnnotation;
@@ -705,6 +710,71 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public selectionMode: SelectionMode;
 
     /**
+     * Specifies whether series or data point has to be selected. They are,
+     * * none: Disables the highlight.
+     * * series: highlight a series.
+     * * point: highlight a point.
+     * * cluster: highlight a cluster of point
+     * @default None
+     */
+    @Property('None')
+    public highlightMode: HighlightMode;
+
+    /**
+     * Specifies whether series or data point has to be selected. They are,
+     * * none: sets none as selecting pattern.
+     * * chessboard: sets chess board as selecting pattern.
+     * * dots: sets dots as  selecting pattern.
+     * * diagonalForward: sets diagonal forward as selecting pattern.
+     * * crosshatch: sets crosshatch as selecting pattern.
+     * * pacman: sets pacman selecting pattern.
+     * * diagonalbackward: sets diagonal backward as selecting pattern.
+     * * grid: sets grid as selecting pattern.
+     * * turquoise: sets turquoise as selecting pattern.
+     * * star: sets star as selecting pattern.
+     * * triangle: sets triangle as selecting pattern.
+     * * circle: sets circle as selecting pattern.
+     * * tile: sets tile as selecting pattern.
+     * * horizontaldash: sets horizontal dash as selecting pattern.
+     * * verticaldash: sets vertical dash as selecting pattern.
+     * * rectangle: sets rectangle as selecting pattern.
+     * * box: sets box as selecting pattern.
+     * * verticalstripe: sets vertical stripe as  selecting pattern.
+     * * horizontalstripe: sets horizontal stripe as selecting pattern.
+     * * bubble: sets bubble as selecting pattern.
+     * @default None
+     */
+    @Property('None')
+    public selectionPattern: SelectionPattern;
+
+    /**
+     * Specifies whether series or data point has to be selected. They are,
+     * * none: sets none as highlighting pattern.
+     * * chessboard: sets chess board as highlighting pattern.
+     * * dots: sets dots as highlighting pattern.
+     * * diagonalForward: sets diagonal forward as highlighting pattern.
+     * * crosshatch: sets crosshatch as highlighting pattern.
+     * * pacman: sets pacman highlighting  pattern.
+     * * diagonalbackward: sets diagonal backward as highlighting pattern.
+     * * grid: sets grid as highlighting pattern.
+     * * turquoise: sets turquoise as highlighting pattern.
+     * * star: sets star as highlighting  pattern.
+     * * triangle: sets triangle as highlighting pattern.
+     * * circle: sets circle as highlighting  pattern.
+     * * tile: sets tile as highlighting pattern.
+     * * horizontaldash: sets horizontal dash as highlighting pattern.
+     * * verticaldash: sets vertical dash as highlighting pattern.
+     * * rectangle: sets rectangle as highlighting  pattern.
+     * * box: sets box as highlighting pattern.
+     * * verticalstripe: sets vertical stripe as highlighting  pattern.
+     * * horizontalstripe: sets horizontal stripe as highlighting  pattern.
+     * * bubble: sets bubble as highlighting  pattern.
+     * @default None
+     */
+    @Property('None')
+    public highlightPattern: SelectionPattern;
+
+    /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
      * @default false
      */
@@ -727,7 +797,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Specifies the point indexes to be selected while loading a chart.
-     * It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
+     * It requires `selectionMode` or `highlightMode` to be `Point` | `Series` | or `Cluster`.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -835,6 +905,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public beforePrint: EmitType<IPrintEventArgs>;
 
     /**
+     * Triggers after chart load.
+     * @event
+     * @blazorProperty 'Loaded'
+     */
+    @Event()
+    public loaded: EmitType<ILoadedEventArgs>;
+
+    /**
      * Triggers before the export gets started.
      * @event
      */
@@ -850,17 +928,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public afterExport: EmitType<IAfterExportEventArgs>;
 
     /**
-     * Triggers after chart load.
-     * @event
-     * @blazorProperty 'Loaded'
-     */
-    @Event()
-    public loaded: EmitType<ILoadedEventArgs>;
-
-    /**
      * Triggers before chart load.
      * @event
-     * @deprecated
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -1041,13 +1110,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public zoomComplete: EmitType<IZoomCompleteEventArgs>;
 
     /**
-     * Triggers after the zoom selection is completed.
-     * @event
-     */
-    @Event()
-    public onZooming: EmitType<IZoomingEventArgs>;
-
-    /**
      * Triggers when start the scroll.
      * @event
      * @blazorProperty 'OnScrollStart'
@@ -1218,6 +1280,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /** @private */
     public radius: number;
     /** @private */
+    public visible: number = 0;
+    /** @private */
     public chartAreaType: string = 'Cartesian';
     /**
      * `markerModule` is used to manipulate and add marker to the series.
@@ -1289,6 +1353,20 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.initPrivateVariable();
         this.setCulture();
         this.wireEvents();
+
+        if (this.stockChart) {
+            if (this.stockChart.tooltip.header === null) {
+                this.tooltip.header = '<b>${point.x}</b>';
+            }
+            if (this.stockChart.tooltip.format === null) {
+                this.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
+                    ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
+                if (this.stockChart.series[0].volume !== '') {
+                    this.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
+                }
+            }
+            this.animateSeries = false;
+        }
     }
 
     private initPrivateVariable(): void {
@@ -1317,31 +1395,45 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     protected render(): void {
         this.svgRenderer = new SvgRenderer(this.element.id);
+        let loadEventData: ILoadedEventArgs = { chart : this.isBlazor ? {} as Chart : this, theme: this.theme, name: load, cancel: false };
+        if (!this.stockChart) {
+            /**
+             * Load event for the chart will be triggered only chart componet, if this is stock chart, load event did not triggered.
+             */
+            this.trigger(load, loadEventData, () => {
+                this.cartesianChartRendering(loadEventData);
+            });
+        } else {
+            this.cartesianChartRendering(loadEventData);
+        }
+    }
 
-        this.trigger(load, { chart: this });
 
-        this.createChartSvg();
+    private cartesianChartRendering(beforeRenderData: ILoadedEventArgs): void {
 
-        this.setTheme();
+            this.theme = this.isBlazor ? beforeRenderData.theme : this.theme;
 
-        this.markerRender = new Marker(this);
+            this.createChartSvg();
 
-        this.calculateAreaType();
+            this.setTheme();
 
-        this.calculateVisibleSeries();
+            this.markerRender = new Marker(this);
 
-        this.initTechnicalIndicators();
+            this.calculateAreaType();
 
-        this.initTrendLines();
+            this.calculateVisibleSeries();
 
-        this.calculateVisibleAxis();
+            this.initTechnicalIndicators();
 
-        this.processData();
+            this.initTrendLines();
 
-        this.renderComplete();
+            this.calculateVisibleAxis();
 
-        this.allowServerDataBinding = true;
+            this.processData();
 
+            this.renderComplete();
+
+            this.allowServerDataBinding = true;
     }
 
     /**
@@ -1381,7 +1473,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.tooltip.enable && this.tooltipModule) {
             this.tooltipModule.previousPoints = [];
         }
-
         this.calculateStackValues();
 
         this.calculateBounds();
@@ -1605,6 +1696,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 visibility = item.visible;
             }
             if (visibility) {
+                this.visible++;
                 findClipRect(item);
                 if (this.enableCanvas) {
                     // To render scatter and bubble series in canvas
@@ -1618,6 +1710,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                }
             }
         }
+        this.visible = 0;
         let options: BaseAttibutes = {
             'id': this.element.id + '_ChartAreaClipRect_',
             'x': this.chartAxisLayoutPanel.seriesClipRect.x,
@@ -1740,6 +1833,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             selectedDataIndexes = <Indexes[]>extend([], this.selectionModule.selectedDataIndexes, null, true);
             this.selectionModule.invokeSelection(this);
         }
+        if (this.highlightModule) {
+            this.highlightModule.invokeHighlight(this);
+        }
         if (selectedDataIndexes.length > 0) {
             this.selectionModule.selectedDataIndexes = selectedDataIndexes;
             this.selectionModule.redrawSelection(this, this.selectionMode);
@@ -1789,21 +1885,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
-            if (regSub.test(this.title)) {
-                this.title = getUnicodeText(this.title, regSub);
-            }
-            if (regSup.test(this.title)) {
-                this.title = getUnicodeText(this.title, regSup);
-            }
             this.titleCollection = getTitle(this.title, this.titleStyle, width);
             titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
-                if (regSub.test(this.subTitle)) {
-                    this.subTitle = getUnicodeText(this.subTitle, regSub);
-                }
-                if (regSup.test(this.subTitle)) {
-                    this.subTitle = getUnicodeText(this.subTitle, regSup);
-                }
                 let maxWidth: number = 0;
                 for (let titleText of this.titleCollection) {
                     titleWidth = measureText(titleText, this.titleStyle).width;
@@ -1818,7 +1902,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let height: number = this.availableSize.height - top - this.border.width - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
         if (this.legendModule) {
-            this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize);
+            this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
         }
         this.chartAxisLayoutPanel.measureAxis(this.initialClipRect);
 
@@ -2320,7 +2404,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private setStyle(element: HTMLElement): void {
         let zooming: ZoomSettingsModel = this.zoomSettings;
         let disableScroll: boolean = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
-            this.selectionMode !== 'None' || this.crosshair.enable;
+            this.selectionMode !== 'None' || this.crosshair.enable || this.highlightMode !== 'None';
         element.style.touchAction = disableScroll ? 'none' : 'element';
         element.style.msTouchAction = disableScroll ? 'none' : 'element';
         element.style.msContentZooming = 'none';
@@ -2812,6 +2896,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 args: [this]
             });
         }
+        if (this.highlightMode !== 'None') {
+            modules.push({
+                member: 'Highlight',
+                args: [this]
+            });
+        }
         if (dataLabelEnable) {
             modules.push({
                 member: 'DataLabel',
@@ -3096,16 +3186,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
-     * Clear visible Axis labels
+     * To remove style element
      */
-    private clearVisibleAxisLabels(): void {
-        let axes: AxisModel[] = [this.primaryXAxis, this.primaryYAxis];
-        axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
-        for (let i: number = 0, len: number = axes.length; i < len; i++) {
-            (axes[i] as Axis).labels = [];
-        }
+    private removeStyles(): void {
+        removeElement(this.element.id + '_ej2_chart_selection');
+        removeElement(this.element.id + '_ej2_chart_highlight');
     }
-
     /**
      * Called internally if any of the property value changed.
      * @private
@@ -3237,13 +3323,23 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     case 'selectedDataIndexes':
                     case 'selectionMode':
                         if (this.selectionModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
+                            this.selectionModule.currentMode = this.selectionMode;
+                            this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                             this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                         }
                         break;
                     case 'isMultiSelect':
                         if (this.selectionModule && !newProp.isMultiSelect && this.selectionModule.selectedDataIndexes.length > 1) {
+                            this.selectionModule.currentMode = this.selectionMode;
+                            this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                             this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                         }
+                        break;
+                    case 'highlightMode':
+                    case 'selectionPattern':
+                    case 'highlightPattern':
+                        this.removeStyles();
+                        renderer = true;
                         break;
                     case 'theme':
                         this.animateSeries = true; break;

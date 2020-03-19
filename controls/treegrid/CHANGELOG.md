@@ -2,41 +2,19 @@
 
 ## [Unreleased]
 
-## 17.4.49 (2020-02-11)
+## 18.1.36-beta (2020-03-19)
 
 ### TreeGrid
 
-#### Bug Fixes
+#### New Features
 
-- `#262583`- Row Drag and drop works fine for newly added records in self-referential data binding.
-
-## 17.4.46 (2020-01-30)
-
-### TreeGrid
+- Provides support to copy the selected rows or cells data into clipboard.
+- Provides support to load large amount of data on-demand in Virtual Scrolling.
+- Provides batch editing support for bulk add, edit and delete operations.
 
 #### Bug Fixes
 
-- `#245194`- Cleared the template elements on performing TreeGrid actions.
-- `#260348`- Editing works fine when we dynamically change allowEditing property.
-
-## 17.4.43 (2020-01-14)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#258560`- Fixed issue in alignment of newly added child record when auto increment column is used for primary key column.
-
-## 17.4.40 (2019-12-24)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#257683`- Delete action works properly for the newly added record in TreeGrid using RemoteSaveAdaptor.
-- `#254018`- Alignment issue when enabling Row Drag and Drop has been fixed.
-- `#249633`- Dragged row removed properly from dragged position in Row Drag and Drop when we bind sorted data to Tree Grid data source.
-- `#147099`- Stacked Header works properly when we add dynamically.
+- `#262583`- Dragging a row works fine, when Tree Grid is in Edit state.
 
 ## 17.4.39 (2019-12-17)
 

@@ -240,6 +240,12 @@ export class RangeNavigator extends Component<HTMLElement> {
     public allowSnapping: boolean;
 
     /**
+     * Allow the data to be selected for that particular interval while clicking the particular label
+     */
+    @Property(false)
+    public allowIntervalData: boolean;
+
+    /**
      * Specifies whether a grouping separator should be used for a number.
      * @default false
      */
@@ -354,7 +360,6 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the range navigator rendering
      * @event
-     * @deprecated
      */
     @Event()
     public load: EmitType<IRangeLoadedEventArgs>;
@@ -453,7 +458,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /** @private */
     public stockChart: StockChart;
     /** @private */
-    public isGMT: boolean = false;
+    public isBlazor: boolean;
     /**
      * Constructor for creating the widget
      * @hidden
@@ -466,6 +471,8 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Starting point of the control initialization
      */
     public preRender(): void {
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.setCulture();
         this.allowServerDataBinding = false;
@@ -511,15 +518,22 @@ export class RangeNavigator extends Component<HTMLElement> {
      * To render the range navigator
      */
     public render(): void {
-        this.trigger('load', { rangeNavigator: this });
-        this.setTheme();
-        this.initPrivateVariables();
-        this.createRangeSvg();
-        this.calculateBounds();
-        this.chartSeries.renderChart(this);
-        removeElement('chartmeasuretext');
-        this.renderComplete();
-        this.allowServerDataBinding = true;
+        let loadEventData: IRangeLoadedEventArgs = {
+            name: 'load', rangeNavigator: this.isBlazor ? {} as RangeNavigator : this,
+            theme: this.theme
+        };
+        this.trigger('load', loadEventData, () => {
+            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.setTheme();
+            this.initPrivateVariables();
+            this.createRangeSvg();
+            this.calculateBounds();
+            this.chartSeries.renderChart(this);
+            removeElement('chartmeasuretext');
+            this.renderComplete();
+            this.allowServerDataBinding = true;
+        });
+
     }
 
     /**
@@ -597,7 +611,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             this.element.appendChild(this.svgObject);
         }
         let blazor: string = 'Blazor';
-        this.trigger('loaded', { rangeNavigator: window[blazor] ? {} : this });
+        this.trigger('loaded', { rangeNavigator: this.isBlazor ? {} : this });
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, false,
             this.tooltip.enable && this.tooltip.displayMode === 'Always'
@@ -1017,6 +1031,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         this.unWireEvents();
         this.rangeSlider.destroy();
         super.destroy();
+        this.element.innerHTML = '';
         this.element.classList.remove('e-rangenavigator');
     }
 }

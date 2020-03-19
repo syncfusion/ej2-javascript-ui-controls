@@ -2,7 +2,7 @@
  * tooltip spec document
  */
 import { createElement, isVisible } from '@syncfusion/ej2-base'
-import { Tooltip, TooltipEventArgs  } from '../../src/tooltip/tooltip';
+import { Tooltip, TooltipEventArgs } from '../../src/tooltip/tooltip';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
 
@@ -11,11 +11,11 @@ import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
 describe('Tooltip blazor coverage fix', () => {
     describe('Ensure the Public methods, Event arguments for blazor', () => {
         let tooltip: any;
-        
+
         beforeAll(() => {
             let tooltipElement: HTMLElement = createElement('div', { id: 'tooltip1' });
             document.body.appendChild(tooltipElement);
-            tooltip = new Tooltip({content:'First demo content' });
+            tooltip = new Tooltip({ content: 'First demo content' });
             tooltip.appendTo('#tooltip1');
             tooltip.isServerRendered = true;
         });
@@ -23,7 +23,7 @@ describe('Tooltip blazor coverage fix', () => {
         beforeEach(() => {
             enableBlazorMode();
         });
-        
+
         it("Coverage for tooltip show", () => {
             let element: HTMLElement = createElement('div', {});
             let contentElement: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
@@ -47,14 +47,14 @@ describe('Tooltip blazor coverage fix', () => {
             element.appendChild(contentElement);
             tooltip.tooltipEle = element;
             document.body.appendChild(tooltip.tooltipEle);
-           let args:TooltipEventArgs =  {element: document.getElementById('tooltip1'), target: document.getElementById('tooltip1'), type:"", event: null, cancel: false};
-           (window as any).ejsInterop={ updateModel:(args: any)=> {return true;}};
+            let args: TooltipEventArgs = { element: document.getElementById('tooltip1'), target: document.getElementById('tooltip1'), type: "", event: null, cancel: false };
+            (window as any).sfBlazor = { updateModel: (args: any) => { return true; } };
             tooltip.beforeRenderCallback(args);
         });
 
         it("Coverage for dynamic tooltip content", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -71,7 +71,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for dynamic tooltip cssClass", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -88,7 +88,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for dynamic tooltip height", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -105,7 +105,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for dynamic tooltip width", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -121,10 +121,10 @@ describe('Tooltip blazor coverage fix', () => {
         });
 
         it("Coverage for tooltip content", () => {
-            tooltip["interopAdaptor"] = function(){};
-            tooltip.interopAdaptor["invokeMethodAsync"] = function () {return Promise.resolve();};
+            tooltip["interopAdaptor"] = function () { };
+            tooltip.interopAdaptor["invokeMethodAsync"] = function () { return Promise.resolve(); };
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -133,15 +133,15 @@ describe('Tooltip blazor coverage fix', () => {
             element.appendChild(contentElement);
             element.appendChild(innerContent);
             document.body.appendChild(element);
-            let args:TooltipEventArgs =  {element: document.getElementById('tooltip1'), target: document.getElementById('tooltip1'), type:"", event: null, cancel: false};            
+            let args: TooltipEventArgs = { element: document.getElementById('tooltip1'), target: document.getElementById('tooltip1'), type: "", event: null, cancel: false };
             tooltip.beforeRenderCallback(args);
         });
 
         it("Coverage for contentUpdated", () => {
-            tooltip["interopAdaptor"] = function(){};
-            tooltip.interopAdaptor["invokeMethodAsync"] = function () {return Promise.resolve();};
-            let element: HTMLElement = createElement('div', {id: 'tooltip1_content'});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            tooltip["interopAdaptor"] = function () { };
+            tooltip.interopAdaptor["invokeMethodAsync"] = function () { return Promise.resolve(); };
+            let element: HTMLElement = createElement('div', { id: 'tooltip1_content' });
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -152,15 +152,15 @@ describe('Tooltip blazor coverage fix', () => {
             document.body.appendChild(element);
             tooltip.contentTargetValue = null;
             tooltip.contentEvent = null
-            tooltip.contentAnimation = null;           
+            tooltip.contentAnimation = null;
             tooltip.contentUpdated(true);
         });
 
         it("Coverage for clear function", () => {
-            tooltip["interopAdaptor"] = function(){};
-            tooltip.interopAdaptor["invokeMethodAsync"] = function () {return Promise.resolve();};
-            let element: HTMLElement = createElement('div', {id: 'tooltip1'});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            tooltip["interopAdaptor"] = function () { };
+            tooltip.interopAdaptor["invokeMethodAsync"] = function () { return Promise.resolve(); };
+            let element: HTMLElement = createElement('div', { id: 'tooltip1' });
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -169,12 +169,12 @@ describe('Tooltip blazor coverage fix', () => {
             element.appendChild(contentElement);
             element.appendChild(innerContent);
             document.body.appendChild(element);
-            tooltip.clear(); 
+            tooltip.clear();
         });
-        
+
         it("Coverage for RTL", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -192,7 +192,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for Is Sticky openDelay tooltip", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -211,12 +211,12 @@ describe('Tooltip blazor coverage fix', () => {
             tooltip.closeDelay = 1000;
             tooltip.enablePersistence = true;
             tooltip.content = "Is Sticky";
-            
+
         });
 
         it("Coverage for Mouse Trail tooltip and tip pointer", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -235,7 +235,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for tooltip position and Offset", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -255,7 +255,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for customize tooltip", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let wrap: HTMLElement = createElement('div', { className: 'e-tooltip-wrap' });
             let popup: HTMLElement = createElement('div', { className: 'e-popup' });
@@ -274,7 +274,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage tipPointer position", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -293,7 +293,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for dynamic tooltip cssClass", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -310,7 +310,7 @@ describe('Tooltip blazor coverage fix', () => {
 
         it("Coverage for animation", () => {
             let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             let outerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-outer' });
             let innerArrowElement: HTMLElement = createElement('div', { className: 'e-arrow-tip-inner' });
@@ -327,13 +327,15 @@ describe('Tooltip blazor coverage fix', () => {
         });
 
         it("Coverage Tooltip destroy method", () => {
-            let element: HTMLElement = createElement('div', {});
-            let contentElement: HTMLElement = createElement('div', {className: 'e-tip-content'});
+            let placeholder_element: HTMLElement = createElement('div', { id: 'tooltip1_content_placeholder' });
+            let element: HTMLElement = createElement('div', { id: 'tooltip1_content' });
+            let contentElement: HTMLElement = createElement('div', { className: 'e-tip-content' });
             let innerContent: HTMLElement = createElement('div', { className: 'e-arrow-tip' });
             element.appendChild(innerContent);
             element.appendChild(contentElement);
             tooltip.tooltipEle = element;
             document.body.appendChild(tooltip.tooltipEle);
+            document.body.appendChild(placeholder_element);
             tooltip.content = "Coustomiz tooltip";
             tooltip.destroy();
         });

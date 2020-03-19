@@ -1,22 +1,6 @@
-/**
- * Defines Position of Ticks / Labels / Pointers. They are
- * * Inside
- * * Outside
- * * Cross
- * @private
- */
-export type ExtraPosition =
-    /**  Inside of Axis. */
-    'Inside' |
-    /**  Outside of Axis. */
-    'Outside'|
-    /**  Cross of Axis. */
-    'Cross'|
-    /**  Based on Placement API. */
-    'Auto';
 
 /**
- * Defines Position of Range. They are
+ * Defines Position of Ticks / Labels / Pointers / Ranges. They are
  * * Inside
  * * Outside
  * * Cross
@@ -28,8 +12,10 @@ export type Position =
     'Inside' |
     /**  Outside of Axis. */
     'Outside'|
-     /**  Cross of Axis. */
-     'Cross' ;
+    /**  Cross of Axis. */
+    'Cross' |
+    /** Default position of Axis. */
+    'Auto';
 
 /**
  * Defines type of pointer. They are

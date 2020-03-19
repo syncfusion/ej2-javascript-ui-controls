@@ -1,8 +1,9 @@
 import { CircularGauge } from '../circular-gauge';
-import { Axis, Pointer, VisibleRangeModel } from './axis';
-import { stringToNumber, GaugeLocation, Size, calculateShapes, appendPath } from '../utils/helper';
-import { getLocationFromAngle, PathOption } from '../utils/helper';
-import { linear, getAngleFromValue, getCompleteArc, getRoundedPathArc } from '../utils/helper';
+import { Pointer, VisibleRangeModel, Axis } from './axis';
+import {
+    linear, getAngleFromValue, getCompleteArc, getRoundedPathArc, getLocationFromAngle, appendPath,
+    textElement, PathOption, TextOption, calculateShapes, Size, GaugeLocation, stringToNumber
+} from '../utils/helper';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { animationComplete } from '../model/constants';
 import { GaugeShape } from '../utils/enum';
@@ -74,18 +75,30 @@ export class PointerRenderer {
      */
 
     private pointerRadiusForPosition(axis: Axis, pointer: Pointer): number {
-        let pointerRadius: number;
-        let rangeBarOffset: number = pointer.type === 'RangeBar' ? pointer.pointerWidth : 0;
-        let markerOffset: number = pointer.type === 'Marker' ? ((pointer.markerShape === 'InvertedTriangle' ||
-            pointer.markerShape === 'Triangle') ? (pointer.position === 'Cross' ? pointer.markerWidth / 2 : 0) :
-            pointer.markerWidth / 2) : 0;
-        pointerRadius = pointer.position === 'Inside' ?
-            (axis.currentRadius - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
-            pointer.position === 'Outside' ?
-                (axis.currentRadius + rangeBarOffset + axis.lineStyle.width / 2 + markerOffset + pointer.currentDistanceFromScale) :
-                (axis.currentRadius + rangeBarOffset / 2 - pointer.currentDistanceFromScale -
-                    ((pointer.markerShape === 'InvertedTriangle' || pointer.markerShape === 'Triangle') ? markerOffset : 0));
-        return pointerRadius;
+        if (pointer.markerShape === 'Text') {
+              let pointerRadius: number;
+              let pointerSize : number = parseInt(pointer.textStyle.size, 10);
+              let markerOffset: number = pointer.position === 'Cross' ? pointerSize / 5 : 0;
+              pointerRadius = pointer.position === 'Inside' ?
+                  (axis.currentRadius - pointerSize / 1.2 - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
+                  pointer.position === 'Outside' ?
+                  (axis.currentRadius + axis.lineStyle.width / 2 + pointerSize / 4 + markerOffset + pointer.currentDistanceFromScale) :
+                  (axis.currentRadius - pointerSize / 6 - markerOffset - pointer.currentDistanceFromScale);
+              return pointerRadius;
+        } else {
+            let pointerRadius: number;
+            let rangeBarOffset: number = pointer.type === 'RangeBar' ? pointer.pointerWidth : 0;
+            let markerOffset: number = pointer.type === 'Marker' ? ((pointer.markerShape === 'InvertedTriangle' ||
+                pointer.markerShape === 'Triangle') ? (pointer.position === 'Cross' ? pointer.markerWidth / 2 : 0) :
+                pointer.markerWidth / 2) : 0;
+            pointerRadius = pointer.position === 'Inside' ?
+                (axis.currentRadius - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
+                pointer.position === 'Outside' ?
+                    (axis.currentRadius + rangeBarOffset + axis.lineStyle.width / 2 + markerOffset + pointer.currentDistanceFromScale) :
+                    (axis.currentRadius + rangeBarOffset / 2 - pointer.currentDistanceFromScale -
+                        ((pointer.markerShape === 'InvertedTriangle' || pointer.markerShape === 'Triangle') ? markerOffset : 0));
+            return pointerRadius;
+        }
     }
 
     /**
@@ -97,14 +110,21 @@ export class PointerRenderer {
         let pointerRadius: number;
         let location: GaugeLocation;
         let direction: string;
+        let needleStartWidth: number = pointer.needleStartWidth;
+        let needleEndWidth: number = pointer.needleEndWidth;
         let mid: GaugeLocation = gauge.midPoint;
         let width: number = pointer.pointerWidth / 2;
         let rectDirection: string;
         // To render the needle
         location = getLocationFromAngle(0, pointer.currentRadius, mid);
         let color: string = pointer.color || this.gauge.themeStyle.needleColor;
-        direction = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + mid.y +
-            ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
+        if ((needleStartWidth === 0) && (needleEndWidth === 0) && width) {
+            direction = 'M ' + mid.x + ' ' + (mid.y) + ' L ' + (location.x) + ' ' + mid.y +
+            ' L ' + (mid.x) + ' ' + (mid.y) + ' Z';
+        } else {
+            direction = 'M ' + mid.x + ' ' + (mid.y  - width - needleEndWidth) + ' L ' + (location.x) + ' ' + mid.y +
+        ' L ' + location.x + ' ' + (mid.y + needleStartWidth) + ' L ' + mid.x + ' ' + (mid.y + width + needleEndWidth) + ' Z';
+        }
         pointer.pathElement.push(appendPath(
             new PathOption(
                 gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, color,
@@ -242,6 +262,10 @@ export class PointerRenderer {
      */
     private drawMarkerPointer(axis: Axis, axisIndex: number, index: number, parentElement: Element, gauge: CircularGauge): void {
         let pointer: Pointer = <Pointer>axis.pointers[index];
+        let min: number = axis.visibleRange.min;
+        let max: number = axis.visibleRange.max;
+        let angle: number;
+        angle = Math.round(getAngleFromValue(pointer.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
         let shapeBasedOnPosition: GaugeShape = pointer.markerShape;
         if (isNullOrUndefined(pointer.radius) && !isNullOrUndefined(pointer.position) && (pointer.markerShape === 'InvertedTriangle' ||
             pointer.markerShape === 'Triangle')) {
@@ -250,20 +274,34 @@ export class PointerRenderer {
                     pointer.markerShape === 'InvertedTriangle' ? 'Triangle' as GaugeShape : pointer.markerShape));
         }
         let location: GaugeLocation = getLocationFromAngle(
-            0, pointer.currentRadius,
+            (pointer.markerShape === 'Text') ? angle : 0, pointer.currentRadius,
             gauge.midPoint
         );
-        pointer.pathElement.push(appendPath(
-            calculateShapes(
-                location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight),
-                pointer.imageUrl, new PathOption(
-                    gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index,
-                    pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', ''
-                )
-            ),
-            parentElement, gauge,
-            pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path'))
-        );
+        if (pointer.markerShape === 'Text') {
+            let textOption: TextOption =
+            new TextOption(
+                           gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, location.x, location.y, 'middle',
+                           pointer.text, 'rotate(' + (angle + 90) + ',' +
+                           (location.x) + ',' + location.y + ')',
+                           'auto');
+            textElement
+                (textOption, pointer.textStyle, pointer.textStyle.color, parentElement, 'pointer-events : auto; ');
+        } else {
+            pointer.pathElement.push(appendPath(
+                calculateShapes(
+                                location, shapeBasedOnPosition, new Size( pointer.markerWidth, pointer.markerHeight),
+                                pointer.imageUrl, new PathOption
+                                (
+                                    gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index,
+                                    pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width,
+                                    pointer.border.color, null, '0', '', ''
+                                )
+                ),
+                parentElement, gauge,
+                pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')
+            )
+            );
+        }
     }
 
     /**

@@ -46,10 +46,11 @@ export class Reorder {
       this.removeEventListener();
     }
     private getTreeColumn(): void {
-        let treeColumn: Column | string | ColumnModel = this.parent.columns[this.parent.treeColumnIndex];
-        let treeIndex: number;
-        let updatedCols: Column[] = this.parent.getColumns();
-        for (let f: number = 0 ; f < updatedCols.length; f++) {
+      let columnModel: string = 'columnModel';
+      let treeColumn: Column | string | ColumnModel = this.parent[columnModel][this.parent.treeColumnIndex];
+      let treeIndex: number;
+      let updatedCols: Column[] = this.parent.getColumns();
+      for (let f: number = 0 ; f < updatedCols.length; f++) {
            let treeColumnfield: string = getObject('field', treeColumn);
            let parentColumnfield: string = getObject('field', updatedCols[f]);
            if (treeColumnfield === parentColumnfield) {
@@ -57,6 +58,6 @@ export class Reorder {
                break;
            }
         }
-        this.parent.setProperties({treeColumnIndex: treeIndex}, true);
+      this.parent.setProperties({treeColumnIndex: treeIndex}, true);
     }
 }

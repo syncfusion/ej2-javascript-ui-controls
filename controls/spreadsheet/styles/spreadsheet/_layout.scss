@@ -5,8 +5,66 @@
     display: block;
     user-select: none;
 
+    & .e-protect-dlg {
+      height: $protect-dlg-height;
+      width: $protect-dlg-width;
+    }
+
+    & .e-goto-dlg {
+      height: $find-goto-dlg-height;
+    }
+
+    & .e-findnreplace-exactmatchcheckbox {
+      padding: 12px;
+    }
+
+    & .e-find-alert-dlg {
+      height: $find-alert-dlg-height;
+    }
+
+    & .e-findtool-dlg {
+      border: 1px solid;
+      height: $find-tool-dlg-height;
+      width: $find-tool-dlg-width;
+
+      & .e-dlg-content {
+        padding: 0%;
+
+        & .e-input-group {
+          width: 170px;
+
+          & .e-input-group-icon {
+            width: 70px;
+          }
+        }
+      }
+    }
+
     & .e-center-align {
       text-align: center;
+    }
+
+    & .e-protect-option-list {
+      border: $dlg-list-border;
+      cursor: default;
+      margin-top: 6px;
+      overflow-y: auto;
+    }
+
+    & .e-protect-checkbox {
+      height: 30px;
+      padding-top: 10px;
+
+      & .e-label {
+        font-size: 14px;
+      }
+    }
+
+    & .e-protect-content {
+      font-size: 13px;
+      height: 30px;
+      padding-top: 10px;
+      width: 100%;
     }
 
     & .e-formula-bar-panel {
@@ -214,6 +272,17 @@
             cursor: pointer;
             text-decoration: underline;
           }
+
+          &.e-wraptext {
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+
+            .e-wrap-content {
+              bottom: 0;
+              position: absolute;
+              width: 100%;
+            }
+          }
         }
 
         & .e-header-cell {
@@ -260,7 +329,7 @@
         padding-top: 0;
         vertical-align: bottom;
       }
-  }
+    }
 
     & .e-row-header .e-table {
       .e-reach-fntsize .e-header-cell {
@@ -268,7 +337,7 @@
         padding-top: 0;
         vertical-align: bottom;
       }
-  }
+    }
 
     & .e-row-header .e-table .e-zero-last .e-header-cell {
       border-bottom-width: 1px;
@@ -279,8 +348,8 @@
       .e-zero-start .e-cell ,
       .e-zero-end .e-cell  {
         border-bottom-width: 0;
+      }
     }
-  }
 
     & .e-column-header .e-table tr .e-header-cell.e-colresize {
       cursor: col-resize;
@@ -354,6 +423,38 @@
       border-style: solid;
       border-width: 0;
       overflow: hidden;
+
+      & .e-table th {
+        &.e-header-cell.e-hide-start::after,
+        &.e-header-cell.e-hide-end::before {
+          bottom: 0;
+          content: '';
+          height: inherit;
+          position: absolute;
+          top: 0;
+        }
+
+        &.e-header-cell.e-hide-start {
+          border-right-color: transparent;
+          height: inherit;
+          position: relative;
+
+          &::after {
+            border-right: $spreadsheet-border;
+            right: .5px;
+          }
+        }
+
+        &.e-hide-end.e-header-cell {
+          height: inherit;
+          position: relative;
+
+          &::before {
+            border-left: $spreadsheet-border;
+            left: .5px;
+          }
+        }
+      }
     }
 
     & .e-header-panel {
@@ -512,7 +613,10 @@
       border: 2px solid $selection-border-color;
       pointer-events: none;
 
-      &[style*='height: 1px;'] {
+      &[style*='height: 1px;'],
+      &[style*='width: 1px;'],
+      &[style*='height: 0px;'],
+      &[style*='width: 0px;'] {
         border-width: 1px;
       }
     }
@@ -619,6 +723,12 @@
 
           &:not(.e-caret) {
             font-size: 16px;
+          }
+
+          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
+            &.e-wrap-icon {
+              font-size: 19px;
+            }
           }
         }
 
@@ -846,6 +956,13 @@
 
     .e-sheet-panel {
       position: relative;
+
+      &.e-protected {
+        .e-selection,
+        .e-active-cell {
+          display: none;
+        }
+      }
     }
 
     & .e-colresize-handler {
@@ -863,6 +980,24 @@
       position: absolute;
       z-index: 1;
       }
+
+    & .e-validation-list {
+      border: 1px solid $cell-background;
+      bottom: 1px;
+      float: right;
+      height: 18px;
+      margin-right: 1px;
+      padding: 0;
+      position: relative;
+      right: 0;
+      text-align: initial;
+      width: 20px;
+      z-index: 2;
+
+      & .e-ddl-icon {
+        bottom: 5px;
+      }
+    }
 
     .e-rtl {
       .e-spreadsheet-edit {
@@ -896,6 +1031,131 @@
           margin-left: 0;
         }
       }
+    }
+
+    & .e-datavalidation-dlg {
+      & .e-validation-dlg {
+        margin-top: 14px;
+
+        & .e-cellrange {
+          margin-bottom: 24px;
+
+          & .e-header {
+            font-size: 14px;
+            line-height: 16px;
+        }
+
+          & .e-input {
+            font-size: 14px;
+            height: 32px;
+            }
+          }
+
+        & .e-allowdata {
+          margin-bottom: 24px;
+
+          & .e-allow {
+            display: inline-block;
+            padding-right: 12px;
+            width: 50%;
+
+            & .e-header {
+              font-size: 14px;
+              line-height: 16px;
+              }
+
+            & .e-valid-input {
+              height: 34px;
+              margin-top: 5px;
+              }
+            }
+
+          & .e-data {
+            display: inline-block;
+            padding-left: 12px;
+            width: 50%;
+
+            & .e-header {
+              font-size: 14px;
+              line-height: 16px;
+              }
+
+            & .e-valid-input {
+              height: 34px;
+              margin-top: 5px;
+              }
+            }
+          }
+
+        & .e-values {
+          margin-bottom: 24px;
+
+          & .e-minimum {
+            display: inline-block;
+            padding-right: 12px;
+            width: 50%;
+
+            & .e-header {
+              font-size: 14px;
+              line-height: 16px;
+              }
+
+            & .e-input {
+              font-size: 14px;
+              height: 32px;
+              }
+            }
+
+          & .e-maximum {
+            display: inline-block;
+            padding-left: 12px;
+            width: 50%;
+
+            & .e-header {
+              font-size: 14px;
+              line-height: 16px;
+              }
+
+            & .e-input {
+              font-size: 14px;
+              height: 32px;
+              }
+            }
+
+          & .e-dlg-error {
+            font-size: 12px;
+            padding-top: 10px;
+          }
+
+          & .e-header {
+            font-size: 14px;
+            line-height: 16px;
+            }
+
+          & .e-input {
+            font-size: 14px;
+            height: 32px;
+            }
+          }
+
+        & .e-ignoreblank {
+          margin-bottom: 5px;
+          }
+        }
+
+      & .e-footer-content {
+
+        & .e-clearall-btn {
+          float: left;
+          }
+        }
+      }
+
+    & .e-validationerror-dlg {
+      & .e-dlg-content {
+        font-size: 14px;
+        line-height: 28px;
+        }
     }
 
     & .e-hyperlink-dlg,
@@ -977,6 +1237,21 @@
       }
     }
 
+    & .e-find-dlg {
+      height: $find-dlg-height;
+      width: $find-dlg-width;
+
+      & p.e-header {
+        margin: 0;
+        padding-bottom: 13px;
+        padding-top: 13px;
+      }
+
+      & .e-footer-content {
+        text-align: left;
+      }
+    }
+
     & .e-filter-icon {
       margin-bottom: $filter-icon-margin-bottom;
 
@@ -988,13 +1263,27 @@
 
     & .e-btn.e-icon-btn.e-filter-btn {
       bottom: 0;
+      float: right;
       height: 18px;
       margin-right: 1px;
       padding: 0;
-      position: absolute;
+      position: relative;
       right: 0;
       width: 20px;
       z-index: 2;
+    }
+  }
+
+  & .e-colorpicker-wrapper.e-border-colorpicker {
+    display: none;
+
+    & .e-container {
+      box-shadow: none;
+      width: 270px !important; // sass-lint:disable-line no-important
+
+      & .e-selected-value {
+        display: flex;
+      }
     }
   }
 
@@ -1060,6 +1349,14 @@
     & .e-aggregate-list {
       margin-left: auto;
     }
+
+    &.e-borders-ddb .e-menu-wrapper {
+      border: 0;
+
+      & ul .e-menu-item .e-menu-icon {
+        font-size: 16px;
+      }
+    }
   }
 
   .e-menu-wrapper {
@@ -1072,6 +1369,52 @@
         margin-left: auto;
         opacity: .7;
         padding-left: $menu-extension-padding;
+      }
+    }
+
+    & .e-border-style {
+      & .e-menu-item {
+        align-items: center;
+        display: flex;
+
+        &::after {
+          content: '';
+          width: 135px;
+        }
+
+        $border-style-collection: solid solid solid dashed dotted double;
+        $border-width-collection: thin medium thick thin thin medium;
+        @for $i from 0 to length($border-style-collection) {
+          &:nth-child(#{$i+1})::after {
+            border-bottom-style: nth($border-style-collection, $i+1);
+            border-bottom-width: nth($border-width-collection, $i+1);
+          }
+        }
+      }
+    }
+
+    &.e-popup.e-menu-popup.e-border-color ul {
+      min-width: 270px;
+      overflow: visible;
+      padding: 0;
+
+      & .e-menu-item {
+        height: auto;
+        line-height: 0;
+        padding: 0;
+
+        &.e-ripple,
+        &.e-ripple-style {
+          overflow: visible;
+
+          & .e-ripple-element {
+            display: none;
+          }
+        }
+
+        & .e-container .e-slider-preview .e-colorpicker-slider .e-slider-container {
+          display: block;
+        }
       }
     }
   }
@@ -1224,6 +1567,12 @@
           &:not(.e-caret) {
             font-size: 18px;
           }
+
+          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
+            &.e-wrap-icon {
+              font-size: 21px;
+            }
+          }
         }
       }
 
@@ -1335,6 +1684,43 @@
 
     & .e-filter-icon {
       margin-bottom: $filter-icon-bigger-margin-bottom;
+    }
+
+    & .e-find-dlg {
+      & .e-footer-content {
+        & .e-btn {
+          font-size: 11px;
+        }
+      }
+    }
+
+    & .e-findtool-dlg {
+      height: $bigger-find-tool-dlg-height;
+      width: $bigger-find-tool-dlg-width;
+    }
+
+    & .e-find-alert-dlg {
+      height: $bigger-find-alert-dlg-height;
+
+      & .e-btn {
+        font-size: 12px;
+      }
+    }
+
+    & .e-goto-alert-dlg {
+      height: $bigger-goto-alert-dlg-height;
+
+      & .e-btn {
+        font-size: 12px;
+      }
+    }
+
+    & .e-goto-dlg {
+      height: $bigger-find-goto-dlg-height;
+
+      & .e-btn {
+        font-size: 12px;
+     }
     }
   }
 

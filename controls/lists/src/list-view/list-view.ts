@@ -1,4 +1,4 @@
-﻿import { Virtualization } from './virtualization';
+﻿﻿﻿import { Virtualization } from './virtualization';
 import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor, extend } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';
 import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';
@@ -230,6 +230,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private LISTVIEW_TEMPLATE_ID: string;
     private LISTVIEW_GROUPTEMPLATE_ID: string;
     private LISTVIEW_HEADERTEMPLATE_ID: string;
+    private liElement: Element;
+    private itemReRender: boolean = false;
     /**
      * This cssClass property helps to use custom skinning option for ListView component,
      *  by adding the mentioned class name into root element of ListView.
@@ -278,6 +280,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @blazorType Data.Query
      */
     @Property()
     public query: Query;
@@ -379,6 +382,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     @Property(null)
     public template: string;
@@ -391,6 +395,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     @Property(null)
     public headerTemplate: string;
@@ -403,6 +408,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     @Property(null)
     public groupTemplate: string;
@@ -476,6 +482,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.enableVirtualization) {
                         this.virtualizationModule.reRenderUiVirtualization();
                     } else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
                         this.reRender();
                     }
                     break;
@@ -495,27 +504,39 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'showCheckBox':
                 case 'checkBoxPosition':
-                    if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
-                    } else {
-                        this.setCheckbox();
+                    if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                        if (this.enableVirtualization) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        } else {
+                            this.setCheckbox();
+                        }
                     }
                     break;
                 case 'dataSource':
                     if (this.enableVirtualization) {
                         this.virtualizationModule.reRenderUiVirtualization();
                     } else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
                         this.reRender();
                     }
                     break;
                 case 'sortOrder':
                 case 'showIcon':
-                    if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                        // tslint:disable
+                        (this as any).interopAdaptor.invokeMethodAsync('ItemSorting');
+                        //tslint:enable
                     } else {
-                        this.listBaseOption.showIcon = this.showIcon;
-                        this.curViewDS = this.getSubDS();
-                        this.resetCurrentList();
+
+                        if (this.enableVirtualization) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        } else {
+                            this.listBaseOption.showIcon = this.showIcon;
+                            this.curViewDS = this.getSubDS();
+                            this.resetCurrentList();
+                        }
                     }
                     break;
                 default:
@@ -568,56 +589,65 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     // Support Component Functions
     private header(text?: string, showBack?: boolean): void {
-        if (this.headerEle === undefined && this.showHeader) {
-            if (this.enableHtmlSanitizer) {
-                this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
-            }
-            this.headerEle = this.createElement('div', { className: classNames.header });
-            let innerHeaderEle: HTMLElement = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
-            let textEle: HTMLElement = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
-            let hedBackButton: HTMLElement = this.createElement('div', {
-                className: classNames.icon + ' ' + classNames.backIcon + ' e-but-back',
-                attrs: { style: 'display:none;' }
-            });
-            this.headerEle.appendChild(hedBackButton);
-            this.headerEle.appendChild(textEle);
-            if (this.headerTemplate) {
-                let compiledString: Function = compile(this.headerTemplate);
-                let headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
-                append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
-                append([headerTemplateEle], this.headerEle);
-                this.updateBlazorTemplates(false, true, true);
-            }
-            if (this.headerTemplate && this.headerTitle) {
-                textEle.classList.add('header');
-            }
-            this.element.classList.add('e-has-header');
-            prepend([this.headerEle], this.element);
-        } else if (this.headerEle) {
-            if (this.showHeader) {
-                this.headerEle.style.display = '';
-                let textEle: Element = this.headerEle.querySelector('.' + classNames.headerText);
-                let hedBackButton: Element = this.headerEle.querySelector('.' + classNames.backIcon);
+
+        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+            let args: object = { HeaderText: text, BackButton: showBack };
+            // tslint:disable
+            (this as any).interopAdaptor.invokeMethodAsync('HeaderTitle', args);
+            // tslint:disable
+        } else {
+
+            if (this.headerEle === undefined && this.showHeader) {
                 if (this.enableHtmlSanitizer) {
-                    text = SanitizeHtmlHelper.sanitize(text);
+                    this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
                 }
-                textEle.innerHTML = text;
-                if (this.headerTemplate && showBack) {
-                    textEle.parentElement.classList.remove('header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('nested-header');
+                this.headerEle = this.createElement('div', { className: classNames.header });
+                let innerHeaderEle: HTMLElement = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
+                let textEle: HTMLElement = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
+                let hedBackButton: HTMLElement = this.createElement('div', {
+                    className: classNames.icon + ' ' + classNames.backIcon + ' e-but-back',
+                    attrs: { style: 'display:none;' }
+                });
+                this.headerEle.appendChild(hedBackButton);
+                this.headerEle.appendChild(textEle);
+                if (this.headerTemplate) {
+                    let compiledString: Function = compile(this.headerTemplate);
+                    let headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
+                    append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    append([headerTemplateEle], this.headerEle);
+                    this.updateBlazorTemplates(false, true, true);
                 }
-                if (this.headerTemplate && !showBack) {
-                    textEle.parentElement.classList.add('header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.remove('nested-header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('header');
+                if (this.headerTemplate && this.headerTitle) {
+                    textEle.classList.add('header');
                 }
-                if (showBack === true) {
-                    (hedBackButton as HTMLElement).style.display = '';
+                this.element.classList.add('e-has-header');
+                prepend([this.headerEle], this.element);
+            } else if (this.headerEle) {
+                if (this.showHeader) {
+                    this.headerEle.style.display = '';
+                    let textEle: Element = this.headerEle.querySelector('.' + classNames.headerText);
+                    let hedBackButton: Element = this.headerEle.querySelector('.' + classNames.backIcon);
+                    if (this.enableHtmlSanitizer) {
+                        text = SanitizeHtmlHelper.sanitize(text);
+                    }
+                    textEle.innerHTML = text;
+                    if (this.headerTemplate && showBack) {
+                        textEle.parentElement.classList.remove('header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('nested-header');
+                    }
+                    if (this.headerTemplate && !showBack) {
+                        textEle.parentElement.classList.add('header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.remove('nested-header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('header');
+                    }
+                    if (showBack === true) {
+                        (hedBackButton as HTMLElement).style.display = '';
+                    } else {
+                        (hedBackButton as HTMLElement).style.display = 'none';
+                    }
                 } else {
-                    (hedBackButton as HTMLElement).style.display = 'none';
+                    this.headerEle.style.display = 'none';
                 }
-            } else {
-                this.headerEle.style.display = 'none';
             }
         }
     }
@@ -902,6 +932,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             } else {
                 this.setSelectLI(li, e);
+            }
+            if ((e.target as HTMLElement).closest('li')) {
+                if ((e.target as HTMLElement).closest('li').classList.contains('e-has-child') && !(e.target as HTMLElement).parentElement.classList.contains('e-listview-checkbox')) { (e.target as HTMLElement).closest('li').classList.add(classNames.disable); }
             }
         }
     }
@@ -1383,11 +1416,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setLocalData(): void {
         this.trigger('actionBegin');
+        let _this = this;
         if (this.dataSource instanceof DataManager) {
             (this.dataSource as DataManager).executeQuery(this.getQuery()).then((e: Object) => {
                 if (this.isDestroyed) { return; }
                 this.localData = (e as ResultData).result;
-                this.removeElement(this.contentContainer);
+                if (_this.enableVirtualization || !this.isServerRendered || (!isBlazor())) {
+                    _this.removeElement(_this.contentContainer);
+                }
                 this.renderList();
                 this.trigger('actionComplete', e);
             }).catch((e: Object) => {
@@ -1411,16 +1447,18 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private reRender(): void {
-        this.resetBlazorTemplates();
-        this.removeElement(this.headerEle);
-        this.removeElement(this.ulElement);
-        this.removeElement(this.contentContainer);
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
-            this.element.innerHTML = '';
+        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+            this.resetBlazorTemplates();
+            this.removeElement(this.headerEle);
+            this.removeElement(this.ulElement);
+            this.removeElement(this.contentContainer);
+            if (Object.keys(window).indexOf('ejsInterop') === -1) {
+                this.element.innerHTML = '';
+            }
+            this.headerEle = this.ulElement = this.liCollection = undefined;
+            this.header();
         }
-        this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
-        this.header();
     }
 
     private resetCurrentList(): void {
@@ -1483,7 +1521,27 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    private exceptionEvent(e: object): void {
+        this.trigger('actionFailure', e);
+    }
+    private UpdateCurrentUL(): void {
+        this.ulElement = this.curUL = this.element.querySelector('.' + classNames.parentItem);
+        if (this.curUL) {
+            // tslint:disable
+            (this as any).liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+            // tslint:enable
+        }
+    }
+    private renderingNestedList(): void {
+        let ul: Element = closest(this.liElement.parentNode, '.' + classNames.parentItem);
+        let ctrlId: string = this.element.id;
+        let ulElement: Element = document.getElementById(ctrlId);
+        let currentListItem: Element = ulElement.getElementsByTagName('UL')[ulElement.getElementsByTagName('UL').length - 1];
+        this.switchView(<HTMLElement>ul, <HTMLElement>currentListItem);
+        this.liElement = null;
+    }
     private renderSubList(li: Element): void {
+        this.liElement = li;
         let uID: string = li.getAttribute('data-uid');
         if (li.classList.contains(classNames.hasChild) && uID) {
             let ul: Element = closest(li.parentNode, '.' + classNames.parentItem);
@@ -1492,15 +1550,23 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data: DataSource[] = this.curViewDS as DataSource[];
-                ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
-                let lists: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ele.querySelectorAll('.' + classNames.listItem);
-                this.setAttributes(lists);
-                ele.setAttribute('pID', <string>uID);
-                (ele as HTMLElement).style.display = 'none';
-                this.renderIntoDom(ele);
-                this.updateBlazorTemplates(true);
+                if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                    // tslint:disable
+                    (this as any).interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
+                    // tslint:enable
+                } else {
+                    ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                    let lists: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ele.querySelectorAll('.' + classNames.listItem);
+                    this.setAttributes(lists);
+                    ele.setAttribute('pID', <string>uID);
+                    (ele as HTMLElement).style.display = 'none';
+                    this.renderIntoDom(ele);
+                    this.updateBlazorTemplates(true);
+                }
             }
-            this.switchView(<HTMLElement>ul, <HTMLElement>ele);
+            if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                this.switchView(<HTMLElement>ul, <HTMLElement>ele);
+            }
             this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {
                 let fieldData: DataSource = <DataSource>
@@ -1517,20 +1583,29 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private renderList(data?: DataSource[]): void {
         this.setViewDataSource(data);
-        if (this.enableVirtualization) {
-            if (Object.keys(this.dataSource).length) {
-                if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                    this.listBaseOption.template = null;
-                    this.listBaseOption.groupTemplate = null;
-                    this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
-                }
-                this.virtualizationModule.uiVirtualization();
-            }
+        if (isBlazor() && this.isServerRendered && !this.enableVirtualization && this.itemReRender) {
+            // tslint:disable
+            (this as any).interopAdaptor.invokeMethodAsync('ListDynamicDataSource', this.localData);
+            this.itemReRender = false;
+            // tslint:enable
         } else {
-            this.createList();
-            this.contentContainer = this.createElement('div', { className: classNames.content });
-            this.element.appendChild(this.contentContainer);
-            this.renderIntoDom(this.ulElement);
+            if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                if (this.enableVirtualization) {
+                    if (Object.keys(this.dataSource).length) {
+                        if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                            this.listBaseOption.template = null;
+                            this.listBaseOption.groupTemplate = null;
+                            this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                        }
+                        this.virtualizationModule.uiVirtualization();
+                    }
+                } else {
+                    this.createList();
+                    this.contentContainer = this.createElement('div', { className: classNames.content });
+                    this.element.appendChild(this.contentContainer);
+                    this.renderIntoDom(this.ulElement);
+                }
+            }
         }
     }
 
@@ -1548,20 +1623,34 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * It is used to Initialize the control rendering.
      */
     public render(): void {
-        this.element.classList.add(classNames.root);
-        attributes(this.element, { role: 'listbox', tabindex: '0' });
-        this.setCSSClass();
-        this.setEnableRTL();
-        this.setEnable();
-        this.setSize();
-        this.wireEvents();
-        this.header();
-        this.setLocalData();
-        this.setHTMLAttribute();
+        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+            this.element.classList.add(classNames.root);
+            attributes(this.element, { role: 'list', tabindex: '0' });
+            this.setCSSClass();
+            this.setEnableRTL();
+            this.setEnable();
+            this.setSize();
+            this.wireEvents();
+            this.header();
+            this.setLocalData();
+            this.setHTMLAttribute();
+        } else {
+            this.initBlazor(true);
+        }
         this.rippleFn = rippleEffect(this.element, {
             selector: '.' + classNames.listItem
         });
         this.renderComplete();
+    }
+    private initBlazor(firstRender: boolean): void {
+
+        if (firstRender === null) { firstRender = false; }
+        this.setLocalData();
+        this.setViewDataSource(this.localData);
+        this.contentContainer = this.element.querySelector('.' + classNames.content);
+        if (firstRender) {
+            this.wireEvents();
+        }
     }
 
     /**
@@ -1602,6 +1691,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.switchView(fromUL, toUL, true);
         this.removeFocus();
         let li: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid=\'' + pID + '\']');
+        li.classList.remove(classNames.disable);
         li.classList.add(classNames.focused);
         if (this.showCheckBox && li.querySelector('.' + classNames.checkboxIcon).classList.contains(classNames.checked)) {
             li.setAttribute('aria-selected', 'true');
@@ -1915,7 +2005,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
-     * @blazorArgsType data|List<TValue>,fields|TValue
+     * @blazorArgsType data|object,fields|object
      */
     public addItem(data: { [key: string]: Object }[], fields: Fields = undefined): void {
         const dataSource: DataSource[] = this.dataSource instanceof DataManager

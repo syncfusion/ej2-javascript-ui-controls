@@ -141,10 +141,11 @@ function updateCloneProp(properties: string[], obj: Object): string[] {
             'backgroundColor', 'borderColor', 'borderWidth', 'rotateAngle', 'minHeight', 'minWidth', 'maxHeight',
             'maxWidth', 'pivot', 'margin', 'flip', 'wrapper', 'constraints', 'style', 'annotations', 'ports', 'isExpanded', 'expandIcon'];
     } else if (obj instanceof Connector) {
-        prop = ['constraints', 'sourcePadding', 'targetPadding', 'cornerRadius', 'flip', 'sourceID',
+        prop = ['constraints', 'sourcePadding', 'targetPadding', 'cornerRadius', 'flip', 'type', 'targetDecorator', 'sourceDecorator',
+            'sourceID', 'shape', 'bridgeSpace', 'annotations', 'segments', 'hitPadding', 'tooltip', 'previewSize', 'dragSize', 'style',
             'sourcePortID', 'targetID', 'targetPortID', 'visible'];
     } else if (obj instanceof Decorator) {
-        prop = ['height', 'width'];
+        prop = ['height', 'width', 'shape', 'style', 'pivot', 'pathData'];
     } else if (obj instanceof Shape || obj instanceof IconShape) {
         prop.push('shape');
         if (obj instanceof BasicShape) {

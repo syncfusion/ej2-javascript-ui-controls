@@ -1,4 +1,4 @@
-﻿import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor, extend } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates } from '@syncfusion/ej2-base';
+﻿﻿﻿import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor, extend } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates } from '@syncfusion/ej2-base';
 import {AnimationSettings,checkBoxPosition,SelectEventArgs} from "./list-view";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -125,6 +125,7 @@ export interface ListViewModel extends ComponentModel{
      *
      * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @blazorType Data.Query
      */
     query?: Query;
 
@@ -214,6 +215,7 @@ export interface ListViewModel extends ComponentModel{
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     template?: string;
 
@@ -225,6 +227,7 @@ export interface ListViewModel extends ComponentModel{
      *
      * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     headerTemplate?: string;
 
@@ -236,6 +239,7 @@ export interface ListViewModel extends ComponentModel{
      *
      * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     groupTemplate?: string;
 

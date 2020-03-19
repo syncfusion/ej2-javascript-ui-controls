@@ -24,7 +24,7 @@ import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeA
 import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';
 import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';
 import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
-import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs} from './interface';
+import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, ColumnDataStateChangeEventArgs} from './interface';
 import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
@@ -197,8 +197,8 @@ export class Predicate extends ChildProperty<Predicate> {
      * <br/>Number | Date<br/></td></tr> 
      * </table> 
      * @default null
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
+     * @blazorType Syncfusion.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.Blazor.Operator.None
      */
     @Property()
     public operator: string;
@@ -280,13 +280,6 @@ export class Predicate extends ChildProperty<Predicate> {
  */
 export class InfiniteScrollSettings extends ChildProperty<InfiniteScrollSettings> {
     /**
-     * If `enableScroll` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
-     * @default false
-     */
-    @Property(false)
-    public enableScroll: boolean;
-
-    /**
      * If `enableCache` is set to true, the Grid will cache the loaded data to be reused next time it is needed.
      * @default false
      */
@@ -298,7 +291,7 @@ export class InfiniteScrollSettings extends ChildProperty<InfiniteScrollSettings
      * @default 3
      */
     @Property(3)
-    public maxBlock: number;
+    public maxBlocks: number;
 
     /**
      * Defines the number of blocks will render at the initial Grid rendering while enableCache is enabled.
@@ -504,8 +497,8 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
      * @default 'contains'
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.Contains
+     * @blazorType Syncfusion.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.Blazor.Operator.Contains
      */
     @Property('contains')
     public operator: string;
@@ -568,15 +561,12 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
      */
     @Property(true)
     public showDropArea: boolean;
-
     /**
-     * If `allowGroupReordering` is set to true, Grid allows the grouped elements to be reordered.     
+     * If `allowReordering` is set to true, Grid allows the grouped elements to be reordered.     
      * @default false
      */
-    /** @hidden */
     @Property(false)
-    public allowGroupReordering: boolean;
-
+    public allowReordering: boolean;
     /**   
      * If `showToggleButton` set to true, then the toggle button will be showed in the column headers which can be used to group
      * or ungroup columns by clicking them.
@@ -764,8 +754,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private media: { [key: string]: MediaQueryList } = {};
     /** @hidden */
     public invokedFromMedia: boolean;
-    /** @hidden */
-    public allowGroupReordering: boolean;
     private dataBoundFunction: Function;
     private componentRefresh: Function = Component.prototype.refresh;
     /** @hidden */
@@ -805,6 +793,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     /**
      * Gets the parent Grid details.
+     * @deprecated
      */
     @Property()
     public parentDetails: ParentDetails;
@@ -836,6 +825,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isAutoGen: boolean = false;
     private mediaBindInstance: Object = {};
+    /** @hidden */
+    public isWheelScrolled: boolean;
 
     //Module Declarations
     /**
@@ -1079,6 +1070,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     @Property(false)
     public enableColumnVirtualization: boolean;
 
+    /**
+     * If `enableInfiniteScrolling` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
+     * This helps to load large dataset in Grid.
+     * @default false
+     * @deprecated
+     */
+    @Property(false)
+    public enableInfiniteScrolling: boolean;
 
     /**    
      * Configures the search behavior in the Grid. 
@@ -1140,7 +1139,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Configures the infinite scroll settings.  
-     * @default { enableScroll: false, enableCache: false, maxBlock: 5, initialBlocks: 5 }    
+     * @default { enableCache: false, maxBlocks: 5, initialBlocks: 5 }    
      * @deprecated
      */
     @Complex<InfiniteScrollSettingsModel>({}, InfiniteScrollSettings)
@@ -1389,7 +1388,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with data processing.    
      * @default null    
-     * @blazorType Syncfusion.EJ2.Blazor.Data.Query 
+     * @blazorType Syncfusion.Blazor.Data.Query 
      */
     @Property()
     public query: Query;
@@ -1838,7 +1837,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when toolbar item is clicked.
      * @event
      * @blazorProperty 'OnToolbarClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -1991,7 +1990,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when click on context menu.
      * @event
      * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -2008,7 +2007,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when click on column menu.
      * @event
      * @blazorProperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
@@ -2044,6 +2043,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public beforeAutoFill: EmitType<BeforeAutoFillEventArgs>;
+
+    /**
+     * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done to get column `dataSource`.
+     * In this event,the current view column data and total record count should be assigned to the column `dataSource` based
+     * on the action performed.
+     * @event
+     * @deprecated  
+     */
+    @Event()
+    public columnDataStateChange: EmitType<ColumnDataStateChangeEventArgs>;
 
     /** 
      * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
@@ -2217,7 +2226,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     public extendRequiredModules(modules: ModuleDeclaration[]): void {
-        if (this.infiniteScrollSettings.enableScroll) {
+        if (this.enableInfiniteScrolling) {
             modules.push({
                 member: 'infiniteScroll',
                 args: [this, this.serviceLocator]
@@ -2274,9 +2283,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.isInitialLoad = false;
         this.allowServerDataBinding = false;
         this.ignoreCollectionWatch = true;
-        if (this.enableVirtualization || this.enableColumnVirtualization) {            
-            this.isServerRendered = false; //NEW
-        }
+        if (isBlazor() && this.enableVirtualization && this.allowGrouping) {
+            let isExpanded: string = 'isExpanded';
+			this[isExpanded] = false;
+		}
         this.mergeCells = {};
         this.isEdit = false;
         this.checkAllRows = 'None';
@@ -2596,7 +2606,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this[modules[i]] = null;
             }
         }
-        this.element.innerHTML = '';
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.element.innerHTML = '';
+        } else {
+            this.element.style.display = 'none';
+        }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
     }
 
@@ -2703,6 +2717,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.headerModule.refreshUI();
                     requireRefresh = true;
                     checkCursor = true; break;
+                case 'enableInfiniteScrolling':
                 case 'childGrid':
                     requireRefresh = true; break;
                 case 'toolbar':
@@ -4583,7 +4598,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.hoverFrozenRows(e);
     }
 
-    private hoverFrozenRows(e: MouseEvent): void {
+    /** @hidden */
+    public hoverFrozenRows(e: MouseEvent): void {
         if (this.getFrozenColumns()) {
             let row: Element = parentsUntil(e.target as Element, 'e-row');
             if ([].slice.call(this.element.querySelectorAll('.e-frozenhover')).length && e.type === 'mouseout') {
@@ -4593,8 +4609,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             } else if (row) {
                 let rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
-                for (let i: number = 0; i < rows.length; i++) {
-                    rows[i].classList.add('e-frozenhover');
+                rows.splice(rows.indexOf(row), 1);
+                if (row.getAttribute('aria-selected') != 'true') {
+                    rows[0].classList.add('e-frozenhover');
+                } else {
+                    rows[0].classList.remove('e-frozenhover');
                 }
             }
         }
@@ -4877,7 +4896,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * hidden
+     * @hidden
      */
     public mergePersistGridData(persistedData?: Object): void {
         let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
@@ -5519,8 +5538,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return cols;
     }
 
-      /**
+    /**
      *  calculatePageSizeByParentHeight
+     * @deprecated
      */
     public calculatePageSizeByParentHeight(containerHeight: number | string): number {
         if (this.allowPaging) {
@@ -5568,7 +5588,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *To perform aggregate operation on a column.
      *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
      *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
-     * */
+     *
+     * @deprecated
+     */
     public getSummaryValues(summaryCol: AggregateColumnModel, summaryData: Object): number {
         return DataUtil.aggregates[(summaryCol.type as string).toLowerCase()](summaryData, summaryCol.field);
 
@@ -5579,12 +5601,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public isCollapseStateEnabled(): boolean {
         let isExpanded: string = 'isExpanded';
-        return this[isExpanded];
+        return this[isExpanded] === false;
     }
 
     /**
      * @param {number} key - Defines the primary key value.
      * @param {Object} value - Defines the row data.
+     * @deprecated
      */
     public updateRowValue(key: number, rowData: Object): void {
         let args: SaveEventArgs = {
@@ -5593,6 +5616,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.showSpinner();
         this.notify(events.updateData, args);
         this.refresh();
+    }
+
+    /**
+     * @hidden
+     */
+    public setForeignKeyData(): void {
+        this.dataBind();
+        let colpending = this.getDataModule().getForeignKeyDataState();
+        if (colpending.isPending) {
+            this.getDataModule().setForeignKeyDataState({});
+            colpending.resolver();
+        } else {
+            this.getDataModule().setForeignKeyDataState({ isDataChanged: false });
+            if(this.contentModule || this.headerModule){
+            this.renderModule.render();
+            }
+        }
     }
 
 }

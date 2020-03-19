@@ -216,9 +216,18 @@ export class Editor {
      */
     public applyStyle(style: string, clearDirectFormatting?: boolean): void {
         clearDirectFormatting = isNullOrUndefined(clearDirectFormatting) ? false : clearDirectFormatting;
+        let startPosition: number = undefined;
+        let endPosition: number = undefined;
         if (clearDirectFormatting) {
             this.initComplexHistory('ApplyStyle');
+            this.setOffsetValue(this.selection);
+            startPosition = this.startOffset;
+            endPosition = this.endOffset;
+            let isSelectionEmpty: boolean = this.selection.isEmpty;
             this.clearFormatting();
+            if (isSelectionEmpty && !this.selection.isEmpty) {
+                this.selection.end.setPositionInternal(this.selection.start);
+            }
         }
         let styleObj: Object = this.documentHelper.styles.findByName(style);
         if (styleObj !== undefined) {
@@ -229,6 +238,8 @@ export class Editor {
             this.applyStyle(style);
         }
         if (this.editorHistory && this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action === 'ApplyStyle') {
+            this.startOffset = startPosition;
+            this.endOffset = endPosition;
             this.editorHistory.updateComplexHistory();
         }
     }
@@ -4517,8 +4528,10 @@ export class Editor {
     public reLayout(selection: Selection, isSelectionChanged?: boolean): void {
         if (!this.documentHelper.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
             if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
-                this.startParagraph = undefined;
-                this.endParagraph = undefined;
+                if (this.editorHistory.currentHistoryInfo.action !== 'ApplyStyle') {
+                    this.startParagraph = undefined;
+                    this.endParagraph = undefined;
+                }
             }
             this.isHandledComplex = false;
             return;

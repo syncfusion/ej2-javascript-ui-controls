@@ -596,7 +596,7 @@ export class TreeMapLegend {
                     textLocation = legendRtlLocation['textLocation'];
                 }
                 eventArgs = {
-                    cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
+                    cancel: false, name: legendItemRendering, treemap: this.treemap.isBlazor ? null : treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
                 if (this.treemap.isBlazor) {

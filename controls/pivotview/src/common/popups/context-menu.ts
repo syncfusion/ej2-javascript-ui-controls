@@ -1,4 +1,4 @@
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, remove } from '@syncfusion/ej2-base';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
@@ -100,9 +100,11 @@ export class PivotContextMenu {
         if (!this.parent.isDestroyed) { return; }
         if (this.menuObj && !this.menuObj.isDestroyed) {
             this.menuObj.destroy();
+            if (document.querySelector('#' + this.parent.element.id + '_PivotContextMenu')) {
+                remove(document.querySelector('#' + this.parent.element.id + '_PivotContextMenu'));
+            }
         } else {
             return;
         }
-
     }
 }

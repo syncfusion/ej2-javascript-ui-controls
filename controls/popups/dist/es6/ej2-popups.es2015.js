@@ -2038,8 +2038,7 @@ let Dialog = class Dialog extends Component {
             this.contentEle.appendChild(this.innerContentElement);
         }
         else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
-            let blazorContain = Object.keys(window);
-            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
+            if (typeof (this.content) === 'string' && !isBlazor()) {
                 this.contentEle.innerHTML = this.sanitizeHelper(this.content);
             }
             else if (this.content instanceof HTMLElement) {
@@ -2065,7 +2064,6 @@ let Dialog = class Dialog extends Component {
     setTemplate(template, toElement) {
         let templateFn;
         let templateProps;
-        let blazorContain = Object.keys(window);
         if (toElement.classList.contains(DLG_HEADER)) {
             templateProps = this.element.id + 'header';
         }
@@ -2088,16 +2086,13 @@ let Dialog = class Dialog extends Component {
         }
         let fromElements = [];
         if (!isNullOrUndefined(templateFn)) {
-            let isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+            let isString = (isBlazor() &&
                 !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
             for (let item of templateFn({}, null, null, templateProps, isString)) {
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
-                this.blazorTemplate(templateProps);
-            }
         }
     }
     /**
@@ -2105,32 +2100,21 @@ let Dialog = class Dialog extends Component {
      */
     sanitizeHelper(value) {
         if (this.enableHtmlSanitizer) {
-            let item = SanitizeHtmlHelper.beforeSanitize();
+            let dialogItem = SanitizeHtmlHelper.beforeSanitize();
             let beforeEvent = {
                 cancel: false,
                 helper: null
             };
-            extend(item, item, beforeEvent);
-            this.trigger('beforeSanitizeHtml', item);
-            if (item.cancel && !isNullOrUndefined(item.helper)) {
-                value = item.helper(value);
+            extend(dialogItem, dialogItem, beforeEvent);
+            this.trigger('beforeSanitizeHtml', dialogItem);
+            if (dialogItem.cancel && !isNullOrUndefined(dialogItem.helper)) {
+                value = dialogItem.helper(value);
             }
-            else if (!item.cancel) {
-                value = SanitizeHtmlHelper.serializeValue(item, value);
+            else if (!dialogItem.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(dialogItem, value);
             }
         }
         return value;
-    }
-    blazorTemplate(templateProps) {
-        if (templateProps === this.element.id + 'header') {
-            updateBlazorTemplate(templateProps, 'Header', this);
-        }
-        else if (templateProps === this.element.id + 'footerTemplate') {
-            updateBlazorTemplate(templateProps, 'FooterTemplate', this);
-        }
-        else {
-            updateBlazorTemplate(templateProps, 'Content', this);
-        }
     }
     setMaxHeight() {
         if (!this.allowMaxHeight) {
@@ -3152,9 +3136,12 @@ let Tooltip = class Tooltip extends Component {
     }
     initialize() {
         this.formatPosition();
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!(this.isServerRender())) {
             addClass([this.element], ROOT$1);
         }
+    }
+    isServerRender() {
+        return isBlazor() && this.isServerRendered;
     }
     formatPosition() {
         if (this.position.indexOf('Top') === 0 || this.position.indexOf('Bottom') === 0) {
@@ -3166,7 +3153,7 @@ let Tooltip = class Tooltip extends Component {
     }
     renderArrow() {
         this.setTipClass(this.position);
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!(this.isServerRender())) {
             let tip = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
             tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
             tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
@@ -3196,24 +3183,14 @@ let Tooltip = class Tooltip extends Component {
     renderPopup(target) {
         let elePos = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
         this.tooltipEle.classList.remove(POPUP_LIB);
-        if (isBlazor() && this.isServerRendered) {
-            this.popupObj = new Popup(this.tooltipEle, {
-                position: { X: elePos.left, Y: elePos.top },
-                open: this.openPopupHandler.bind(this),
-                close: this.closePopupHandler.bind(this),
-                enableRtl: this.enableRtl
-            });
-        }
-        else {
-            this.popupObj = new Popup(this.tooltipEle, {
-                height: this.height,
-                width: this.width,
-                position: { X: elePos.left, Y: elePos.top },
-                enableRtl: this.enableRtl,
-                open: this.openPopupHandler.bind(this),
-                close: this.closePopupHandler.bind(this)
-            });
-        }
+        this.popupObj = new Popup(this.tooltipEle, {
+            height: this.height,
+            width: this.width,
+            position: { X: elePos.left, Y: elePos.top },
+            enableRtl: this.enableRtl,
+            open: this.openPopupHandler.bind(this),
+            close: this.closePopupHandler.bind(this)
+        });
     }
     getTooltipPosition(target) {
         this.tooltipEle.style.display = 'none';
@@ -3385,7 +3362,7 @@ let Tooltip = class Tooltip extends Component {
             target.removeAttribute('title');
         }
         if (!isNullOrUndefined(this.content)) {
-            if (this.isBlazorTooltip || !(isBlazor() && this.isServerRendered)) {
+            if (this.isBlazorTooltip || !(this.isServerRender())) {
                 tooltipContent.innerHTML = '';
                 if (this.content instanceof HTMLElement) {
                     tooltipContent.appendChild(this.content);
@@ -3494,9 +3471,10 @@ let Tooltip = class Tooltip extends Component {
     showTooltip(target, showAnimation, e) {
         clearTimeout(this.showTimer);
         clearTimeout(this.hideTimer);
-        this.tooltipEventArgs = e
-            ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle }
-            : { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
+        this.tooltipEventArgs = {
+            type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+            element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
+        };
         const observeCallback = (beforeRenderArgs) => {
             this.beforeRenderCallback(beforeRenderArgs, target, e, showAnimation);
         };
@@ -3511,7 +3489,7 @@ let Tooltip = class Tooltip extends Component {
         else {
             this.isHidden = false;
             if (isNullOrUndefined(this.tooltipEle)) {
-                if (isBlazor() && this.isServerRendered) {
+                if (this.isServerRender()) {
                     this.contentTargetValue = target;
                     this.contentEvent = e;
                     this.contentAnimation = showAnimation;
@@ -3537,7 +3515,7 @@ let Tooltip = class Tooltip extends Component {
                 }
             }
             else {
-                if (isBlazor() && this.isServerRendered) {
+                if (this.isServerRender()) {
                     addClass([this.tooltipEle], POPUP_OPEN);
                     document.body.appendChild(this.tooltipEle);
                     this.renderCloseIcon();
@@ -3557,7 +3535,7 @@ let Tooltip = class Tooltip extends Component {
     ;
     contentUpdated(args) {
         if (isNullOrUndefined(this.tooltipEle)) {
-            if (isBlazor() && this.isServerRendered) {
+            if (this.isServerRender()) {
                 this.ctrlId = this.element.id;
                 this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
                 this.tooltipEle.setAttribute('style', 'width:' + formatUnit(this.width) +
@@ -3577,7 +3555,7 @@ let Tooltip = class Tooltip extends Component {
             if (ctrlObj.width !== 'auto') {
                 ctrlObj.tooltipEle.style.maxWidth = formatUnit(ctrlObj.width);
             }
-            if (!(isBlazor() && this.isServerRendered)) {
+            if (!(this.isServerRender())) {
                 ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
             }
             document.body.appendChild(ctrlObj.tooltipEle);
@@ -3599,9 +3577,10 @@ let Tooltip = class Tooltip extends Component {
         if (target) {
             removeClass([ctrlObj.tooltipEle], POPUP_OPEN);
             addClass([ctrlObj.tooltipEle], POPUP_CLOSE);
-            ctrlObj.tooltipEventArgs = e ?
-                { type: e.type, cancel: false, target: target, event: e, element: ctrlObj.tooltipEle } :
-                { type: null, cancel: false, target: target, event: null, element: ctrlObj.tooltipEle };
+            ctrlObj.tooltipEventArgs = {
+                type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+                element: ctrlObj.tooltipEle, isInteracted: !isNullOrUndefined(e)
+            };
             if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail) {
                 ctrlObj.tooltipEle.style.display = 'none';
             }
@@ -3636,7 +3615,9 @@ let Tooltip = class Tooltip extends Component {
                 this.showTimer = setTimeout(show, this.openDelay);
             }
             else {
-                this.popupObj.show(openAnimation, target);
+                if (this.popupObj) {
+                    this.popupObj.show(openAnimation, target);
+                }
             }
         }
         if (e) {
@@ -3648,7 +3629,7 @@ let Tooltip = class Tooltip extends Component {
         const tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || (isBlazor() && this.isServerRendered) && this.isBlazorTemplate;
+            || (this.isServerRender()) && this.isBlazorTemplate;
     }
     checkCollision(target, x, y) {
         let elePos = {
@@ -3722,22 +3703,21 @@ let Tooltip = class Tooltip extends Component {
         let target;
         if (e) {
             target = this.target ? (targetElement || e.target) : this.element;
-            this.tooltipEventArgs = {
-                type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle
-            };
         }
         else {
             target = document.querySelector('[data-tooltip-id= ' + this.ctrlId + '_content]');
-            this.tooltipEventArgs = {
-                type: null, cancel: false, target: target, event: null, element: this.tooltipEle
-            };
         }
-        if (isNullOrUndefined(target)) {
-            return;
-        }
+        this.tooltipEventArgs = {
+            type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
+            element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
+        };
+        // this line commented for close the tooltip popup element even the target element destroyed in a page.
+        //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, (observedArgs) => {
             if (!observedArgs.cancel) {
-                this.restoreElement(target);
+                if (target) {
+                    this.restoreElement(target);
+                }
                 this.isHidden = true;
                 let closeAnimation = {
                     name: hideAnimation.effect,
@@ -3757,7 +3737,9 @@ let Tooltip = class Tooltip extends Component {
                     this.hideTimer = setTimeout(hide, this.closeDelay);
                 }
                 else {
-                    this.popupObj.hide(closeAnimation);
+                    if (this.popupObj) {
+                        this.popupObj.hide(closeAnimation);
+                    }
                 }
             }
             else {
@@ -3782,9 +3764,8 @@ let Tooltip = class Tooltip extends Component {
             if (this.popupObj) {
                 this.popupObj.destroy();
             }
-            if (isBlazor() && this.isServerRendered && this.tooltipEle) {
+            if (this.isServerRender() && this.tooltipEle) {
                 this.tooltipEle.style.display = 'none';
-                this.tooltipEle = null;
                 let args = { 'enableTooltip': 'false' };
                 // tslint:disable
                 this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
@@ -3809,15 +3790,18 @@ let Tooltip = class Tooltip extends Component {
             }
             else {
                 this.hideTooltip(this.animation.close, e);
+                this.clear();
             }
         }
         else {
             this.hideTooltip(this.animation.close, e);
+            this.clear();
         }
     }
     tooltipElementMouseOut(e) {
         this.hideTooltip(this.animation.close, e, this.findTarget());
         EventHandler.remove(this.element, 'mouseleave', this.tooltipElementMouseOut);
+        this.clear();
     }
     onStickyClose(e) {
         this.close();
@@ -3866,7 +3850,9 @@ let Tooltip = class Tooltip extends Component {
     }
     scrollHandler(e) {
         if (this.tooltipEle) {
-            this.close();
+            if (!(closest(e.target, `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT$1}`))) {
+                this.close();
+            }
         }
     }
     /**
@@ -3918,7 +3904,7 @@ let Tooltip = class Tooltip extends Component {
             }
         }
         EventHandler.add(document, 'touchend', this.touchEnd, this);
-        EventHandler.add(document, 'scroll', this.scrollHandler, this);
+        EventHandler.add(document, 'scroll wheel', this.scrollHandler, this);
         EventHandler.add(document, 'keydown', this.keyDown, this);
     }
     getTriggerList(trigger) {
@@ -3982,7 +3968,7 @@ let Tooltip = class Tooltip extends Component {
             }
         }
         EventHandler.remove(document, 'touchend', this.touchEnd);
-        EventHandler.remove(document, 'scroll', this.scrollHandler);
+        EventHandler.remove(document, 'scroll wheel', this.scrollHandler);
         EventHandler.remove(document, 'keydown', this.keyDown);
     }
     unwireFocusEvents() {
@@ -4052,12 +4038,12 @@ let Tooltip = class Tooltip extends Component {
                     break;
                 case 'content':
                     if (this.tooltipEle) {
-                        if (isBlazor() && this.isServerRendered) {
+                        if (this.isServerRender()) {
                             this.isBlazorTooltip = true;
                         }
                         this.renderContent();
                     }
-                    else if (isBlazor() && this.isServerRendered) {
+                    else if (this.isServerRender()) {
                         let args = { 'content': newProp.content };
                         // tslint:disable
                         this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
@@ -4118,11 +4104,17 @@ let Tooltip = class Tooltip extends Component {
     }
     /**
      * It is used to show the Tooltip on the specified target with specific animation settings.
-     * @param element Target element where the Tooltip is to be displayed.
-     * @param animation Sets the specific animation, while showing the Tooltip on the screen.
+     * @param element Target element where the Tooltip is to be displayed. (It is an optional parameter)
+     * @param animation Sets the specific animation, while showing the Tooltip on the screen. (It is an optional parameter)
      * @return {void}
      */
-    open(element, animation = this.animation.open) {
+    open(element, animation) {
+        if (isNullOrUndefined(animation)) {
+            animation = this.animation.open;
+        }
+        if (isNullOrUndefined(element)) {
+            element = this.element;
+        }
         if (element.style.display === 'none') {
             return;
         }
@@ -4130,10 +4122,13 @@ let Tooltip = class Tooltip extends Component {
     }
     /**
      * It is used to hide the Tooltip with specific animation effect.
-     * @param animation Sets the specific animation when hiding Tooltip from the screen.
+     * @param animation Sets the specific animation when hiding Tooltip from the screen. (It is an optional parameter)
      * @return {void}
      */
-    close(animation = this.animation.close) {
+    close(animation) {
+        if (!animation) {
+            animation = this.animation.close;
+        }
         this.hideTooltip(animation);
     }
     /**
@@ -4156,14 +4151,20 @@ let Tooltip = class Tooltip extends Component {
      * @memberof Tooltip
      */
     destroy() {
-        if (!isBlazor()) {
+        if (!this.isServerRender()) {
             super.destroy();
-            if (this.popupObj) {
-                this.popupObj.destroy();
-            }
             if (this.tooltipEle) {
                 remove(this.tooltipEle);
             }
+        }
+        if (this.isServerRender() && this.tooltipEle) {
+            let placeholder = document.querySelector('#' + this.ctrlId + '_content_placeholder');
+            if (placeholder) {
+                placeholder.appendChild(this.tooltipEle);
+            }
+        }
+        if (this.popupObj) {
+            this.popupObj.destroy();
         }
         removeClass([this.element], ROOT$1);
         this.unwireEvents(this.opensOn);

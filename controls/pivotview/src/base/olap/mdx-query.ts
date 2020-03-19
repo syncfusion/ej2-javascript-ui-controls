@@ -9,7 +9,6 @@ import { Operators, FilterType } from '../types';
  * @hidden
  */
 
-/* tslint:disable:all */
 /** @hidden */
 export class MDXQuery {
     /** @hidden */
@@ -50,8 +49,10 @@ export class MDXQuery {
     private static allowLabelFilter: boolean;
     /** @hidden */
     private static allowValueFilter: boolean;
-
+    /* tslint:disable:no-any */
+    /* tslint:disable-next-line:max-line-length */
     public static getCellSets(dataSourceSettings: IDataOptions, olapEngine: OlapEngine, refPaging?: boolean, drillInfo?: IDrilledItem, isQueryUpdate?: boolean): any {
+        /* tslint:enable:no-any */
         this.engine = olapEngine;
         this.isMondrian = olapEngine.isMondrian;
         this.isMeasureAvail = olapEngine.isMeasureAvail;
@@ -73,6 +74,7 @@ export class MDXQuery {
         this.filterMembers = extend({}, olapEngine.filterMembers, null, true) as { [key: string]: string[] | IFilter[] };
         this.fieldDataObj = olapEngine.fieldListObj;
         this.fieldList = olapEngine.fieldList;
+        /* tslint:disable-next-line:max-line-length */
         this.cellSetInfo = '\nDIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let measureQuery: string = this.getMeasuresQuery(this.values);
         let rowQuery: string = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/\&/g, '&amp;');
@@ -89,6 +91,7 @@ export class MDXQuery {
         rowQuery = (rowQuery.length > 0 ? rowQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON ROWS') : '');
         columnQuery = (columnQuery.length > 0 ? columnQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON COLUMNS') : '');
         let slicerQuery: string = this.getSlicersQuery(this.filters, 'filters').replace(/\&/g, '&amp;');
+        /* tslint:disable-next-line:max-line-length */
         let filterQuery: string = this.getfilterQuery(this.filterMembers, dataSourceSettings.cube).replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;');
         let caclQuery: string = this.getCalculatedFieldQuery(this.calculatedFieldSettings).replace(/\&/g, '&amp;');
         let query: string = this.frameMDXQuery(rowQuery, columnQuery, slicerQuery, filterQuery, caclQuery, refPaging);
@@ -104,11 +107,14 @@ export class MDXQuery {
         if (drillInfo) {
             drillInfo.axis = drillInfo.axis === 'rows' ? 'row' : 'column';
         }
+        /* tslint:disable */
         if (!isQueryUpdate) {
             this.getTableCellData(args, (this.isPaging && !refPaging ? this.engine.generatePagingData.bind(this.engine) : this.engine.generateEngine.bind(this.engine)),
                 drillInfo ? { action: drillInfo.action, drillInfo: drillInfo } : { dataSourceSettings: dataSourceSettings, action: 'loadTableElements' });
         }
+        /* tslint:enable */
     }
+    /* tslint:disable:max-line-length */
     private static getTableCellData(args: ConnectionInfo, successMethod: Function, customArgs: object): void {
         let connectionString: ConnectionInfo = this.engine.getConnectionInfo(args.url, args.LCID);
         let soapMessage: string = '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"> <Header></Header> <Body> <Execute xmlns="urn:schemas-microsoft-com:xml-analysis"> <Command> <Statement>' +
@@ -154,10 +160,11 @@ export class MDXQuery {
         let axisQuery: PagingQuery = {
             rowQuery: rowQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')},' + (calRowPage) + ',' + calRowSize + ')') : '',
             columnQuery: columnQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')},' + (calColPage) + ',' + calColumnSize + ')') : ''
-        }
+        };
         return axisQuery;
     }
     private static getPagingCountQuery(rowQuery: string, columnQuery: string): PagingQuery {
+        /* tslint:disable */
         rowQuery = rowQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         columnQuery = columnQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         let rowQueryCpy: string = rowQuery;
@@ -166,16 +173,18 @@ export class MDXQuery {
         let axisQuery: PagingQuery = {
             rowQuery: rowQuery !== '' ? ('\SET [d1876d2b-e50e-4547-85fe-5b8ed9d629de] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')\n') : '',
             columnQuery: columnQuery !== '' ? ('\nSET [e16a30d0-2174-4874-8dae-a5085a75a3e2] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')\n') : ''
-        }
+        };
         return axisQuery;
+        /* tslint:enable */
     }
+    /* tslint:enable:max-line-length */
     public static getDimensionsQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): string {
         let query: string = '';
         if (dimensions.length > 0) {
             query = '\nNON EMPTY ( ' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '');
             let i: number = 0;
             while (i < dimensions.length) {
-                let hierarchy: string = ''
+                let hierarchy: string = '';
                 if (i === 0) {
                     if (dimensions[i].name.toLowerCase() === '[measures]') {
                         if (measureQuery !== '') {
@@ -200,6 +209,7 @@ export class MDXQuery {
             // if (!this.isMeasureAvail && measureQuery !== '' && this.valueAxis === axis) {
             //     query = query + ' * ' + measureQuery;
             // }
+            /* tslint:disable:max-line-length */
             let drillQueryObj: { query: string, collection: string[] } = this.getDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (drillInfo && drillInfo.axis === axis ? '\nNON EMPTY ( ' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '') + drillQueryObj.query : query + (drillQueryObj.query !== '' ? ',' : '') + drillQueryObj.query);
             query = (this.valueAxis !== axis ? this.updateValueSortQuery(query, this.valueSortSettings) : query) +
@@ -210,8 +220,10 @@ export class MDXQuery {
         //     query = (this.valueAxis !== axis ? this.updateValueSortQuery(query, this.valueSortSettings) : query) +
         //         (this.drilledMembers.length > 0 ? '})' : '') + ') ' + this.cellSetInfo + ' ON ' + axis.toUpperCase();
         // }
+        /* tslint:enable:max-line-length */
         return query;
     }
+    /* tslint:disable-next-line:max-line-length */
     private static getDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): { query: string, collection: string[] } {
         let query: string = '';
         let rawDrillQuery: string[] = [];
@@ -230,6 +242,7 @@ export class MDXQuery {
                 let rawQuery: string[] = [];
                 let i: number = 0;
                 let drillInfo: string[] = item.split(field.delimiter ? field.delimiter : '~~');
+                /* tslint:disable:max-line-length */
                 while (i < dimensions.length) {
                     if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
                         if (drillInfo[drillInfo.length - 1].indexOf(dimensions[i].name) !== -1) {
@@ -291,6 +304,7 @@ export class MDXQuery {
                 }
                 // query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString().replace(/\&/g, "&amp;") + ')' : '');
                 query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString() + ')' : '');
+                /* tslint:enable:max-line-length */
                 if (rawQuery.length > 0) {
                     rawDrillQuery.push(('(' + rawQuery.toString() + ')'));
                 }
@@ -325,6 +339,7 @@ export class MDXQuery {
         }
         return query;
     }
+    /* tslint:disable */
     public static getSlicersQuery(slicers: IFieldOptions[], axis: string): string {
         let query: string = '';
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
@@ -353,6 +368,7 @@ export class MDXQuery {
         }
         return query;
     }
+    /* tslint:enable */
     private static getDimensionQuery(dimension: IFieldOptions, axis: string): string {
         let query: string = '';
         let name: string = dimension.isCalculatedField ? this.fieldList[dimension.name].tag : dimension.name;
@@ -385,8 +401,8 @@ export class MDXQuery {
     public static getMeasuresQuery(measures: IFieldOptions[]): string {
         let query: string = '';
         if (measures.length > 0) {
-            query = '{{'
-            let values: string = ''
+            query = '{{';
+            let values: string = '';
             for (let measure of measures) {
                 let name: string = (measure.isCalculatedField ? this.fieldList[measure.name].tag : measure.name);
                 if (values.length > 0) {
@@ -422,8 +438,9 @@ export class MDXQuery {
                 if (typeof filters[field.name][0] === 'string') {
                     columnFilter.push(filters[field.name] as string[]);
                 } else {
-                    /* tslint:disable */
+                    /* tslint:disable:no-any */
                     let filter: any = filters[field.name];
+                    /* tslint:enable:no-any */
                     filter[1] = (filter[0] as IFilter).type;
                     advancedFilters.push(filters[field.name] as IFilter[]);
                     delete filters[field.name];
@@ -462,6 +479,7 @@ export class MDXQuery {
             }
         }
         for (let i: number = 0, cnt: number = columnFilter.length; i < cnt; i++) {
+            /* tslint:disable-next-line:max-line-length */
             filterQuery = i === 0 ? filterQuery + '{' + columnFilter[i].toString() + '}' : filterQuery + ',{' + columnFilter[i].toString() + '}';
         }
         if (columnFilter.length > 0) {
@@ -471,7 +489,7 @@ export class MDXQuery {
             filterQuery = (i > 0) ? filterQuery + ',{' + rowFilter[i].toString() + '}' : filterQuery + '{' + rowFilter[i].toString() + '}';
         }
         filterQuery = (columnFilter.length > 0 && rowFilter.length > 0) ?
-            filterQuery = filterQuery + ') ON ROWS ' : (columnFilter.length == 0 && rowFilter.length > 0) ?
+            filterQuery = filterQuery + ') ON ROWS ' : (columnFilter.length === 0 && rowFilter.length > 0) ?
                 filterQuery + ') ON COLUMNS ' : filterQuery;
         let updatedFilterQuery: string = '';
         if (advancedFilterQuery.length > 0) {
@@ -483,20 +501,22 @@ export class MDXQuery {
         query = (columnFilter.length === 0 && rowFilter.length === 0) ? query : filterQuery + query + ')';
         return (updatedFilterQuery.length > 0) ? updatedFilterQuery : query;
     }
+
+    /* tslint:disable:max-line-length */
     private static getAdvancedFilterQuery(filterItem: IFilter, query: string, currentAxis: string): string {
         let filterQuery: string = '\nFROM (SELECT Filter(' + filterItem.selectedField + '.AllMembers, ' +
             this.getAdvancedFilterCondtions(filterItem.name, filterItem.condition, filterItem.value1 as string, filterItem.value2 as string, filterItem.type, filterItem.measure) +
-            ")) on " + currentAxis;
+            ')) on ' + currentAxis;
         return filterQuery;
     }
     private static getAdvancedFilterCondtions(fieldName: string, filterOperator: Operators, value1: string, value2: string, filterType: FilterType, measures: string): string {
-        let advancedFilterQuery: string = ''
+        let advancedFilterQuery: string = '';
         switch (filterOperator) {
             case 'Equals':
                 advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption =\"' + value1 + '\"') : (measures + ' = ' + value1));
                 break;
             case 'DoesNotEquals':
-                advancedFilterQuery = '(' + (filterType != 'Value' ? (fieldName + '.CurrentMember.member_caption <>\"' + value1 + '\"') : (measures + ' <>' + value1));
+                advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <>\"' + value1 + '\"') : (measures + ' <>' + value1));
                 break;
             case 'Contains':
                 advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,\"' + value1 + '\") >0';
@@ -517,22 +537,22 @@ export class MDXQuery {
                 advancedFilterQuery = '( Right (' + fieldName + '.CurrentMember.member_caption,' + value1.length + ') <>\"' + value1 + '\"';
                 break;
             case 'GreaterThan':
-                advancedFilterQuery = '(' + (filterType != 'Value' ? (fieldName + '.CurrentMember.member_caption >\"' + value1 + '\"') : (measures + ' >' + value1 + ''));
+                advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >\"' + value1 + '\"') : (measures + ' >' + value1 + ''));
                 break;
             case 'GreaterThanOrEqualTo':
-                advancedFilterQuery = '(' + (filterType != 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"') : (measures + ' >=' + value1 + ''));
+                advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"') : (measures + ' >=' + value1 + ''));
                 break;
             case 'LessThan':
-                advancedFilterQuery = '(' + (filterType != 'Value' ? (fieldName + '.CurrentMember.member_caption <\"' + value1 + '\"') : (measures + ' <' + value1 + ''));
+                advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <\"' + value1 + '\"') : (measures + ' <' + value1 + ''));
                 break;
             case 'LessThanOrEqualTo':
-                advancedFilterQuery = '(' + (filterType != 'Value' ? (fieldName + '.CurrentMember.member_caption <=\"' + value1 + '\"') : (measures + ' <=' + value1 + ''));
+                advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption <=\"' + value1 + '\"') : (measures + ' <=' + value1 + ''));
                 break;
             case 'Between':
-                advancedFilterQuery = '(' + (filterType != 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"AND ' + fieldName + '.CurrentMember.member_caption <=\"' + value2 + '\"') : (measures + ' >=' + value1 + ' AND ' + measures + ' <=' + value2));
+                advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"AND ' + fieldName + '.CurrentMember.member_caption <=\"' + value2 + '\"') : (measures + ' >=' + value1 + ' AND ' + measures + ' <=' + value2));
                 break;
             case 'NotBetween':
-                advancedFilterQuery = '(' + (filterType != 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"OR ' + fieldName + '.CurrentMember.member_caption <=\"' + value2 + '\"') : (measures + ' >=' + value1 + ' OR ' + measures + ' <=' + value2));
+                advancedFilterQuery = '(' + (filterType !== 'Value' ? (fieldName + '.CurrentMember.member_caption >=\"' + value1 + '\"OR ' + fieldName + '.CurrentMember.member_caption <=\"' + value2 + '\"') : (measures + ' >=' + value1 + ' OR ' + measures + ' <=' + value2));
                 break;
             default:
                 advancedFilterQuery = '( InStr (1,' + fieldName + '.CurrentMember.member_caption,\"' + value1 + '\") >0';
@@ -540,6 +560,8 @@ export class MDXQuery {
         }
         return advancedFilterQuery;
     }
+
+    /* tslint:enable:max-line-length */
     private static getCalculatedFieldQuery(calcMembers: ICalculatedFieldSettings[]): string {
         let calcQuery: string = '';
         if (calcMembers.length > 0) {
@@ -547,6 +569,7 @@ export class MDXQuery {
             for (let member of calcMembers) {
                 let prefixName: string = (member.formula.indexOf('Measure') > -1 ? '[Measures].' : member.hierarchyUniqueName + '.');
                 let aliasName: string = prefixName + '[' + member.name + ']';
+                /* tslint:disable-next-line:max-line-length */
                 let formatString: string = (!isNullOrUndefined(member.formatString) ? member.formatString : null);
                 calcQuery += ('\nMEMBER ' + aliasName + 'as (' + member.formula + ') ' + (!isNullOrUndefined(formatString) ? ', FORMAT_STRING =\"' + formatString.trim() + '\"' : ''));
             }
@@ -560,5 +583,5 @@ export class MDXQuery {
  */
 export interface PagingQuery {
     rowQuery: string;
-    columnQuery: string
+    columnQuery: string;
 }

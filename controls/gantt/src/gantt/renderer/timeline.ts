@@ -1,3 +1,5 @@
+import { timelineHeaderCellLabel } from './../base/css-constants';
+import { TimelineFormat } from './../base/interface';
 import { createElement, isNullOrUndefined, getValue, addClass, removeClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { TimelineSettingsModel } from '../models/timeline-settings-model';
@@ -12,7 +14,7 @@ export class Timeline {
     private parent: Gantt;
     public timelineStartDate: Date;
     public timelineEndDate: Date;
-    private topTierCellWidth: number;
+    public topTierCellWidth: number;
     public bottomTierCellWidth: number;
     public customTimelineSettings: TimelineSettingsModel;
     public chartTimelineContainer: HTMLElement;
@@ -25,6 +27,8 @@ export class Timeline {
     public isZoomIn: boolean = false;
     public isZooming: boolean = false;
     public isZoomToFit: boolean = false;
+    public topTierCollection: TimelineFormat[] = [];
+    public bottomTierCollection: TimelineFormat[] = [];
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
         this.initProperties();
@@ -512,6 +516,7 @@ export class Timeline {
         let tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
         this.updateTimelineHeaderHeight();
         for (let count: number = 0; count < loopCount; count++) {
+            let tierCollection: TimelineFormat[] = [];
             table = createElement(
                 'table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
             thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
@@ -755,16 +760,23 @@ export class Timeline {
         let endDate: Date = new Date(this.timelineRoundOffEndDate.toString());
         let scheduleDateCollection: Date[] = [];
         do {
-            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count);
+            // PDf export collection
+            let timelineCell: TimelineFormat = {};
+            timelineCell.startDate = new Date(startDate.getTime());
+            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell);
             scheduleDateCollection.push(new Date(startDate.toString()));
             increment = this.getIncrement(startDate, count, mode);
             newTime = startDate.getTime() + increment;
             startDate.setTime(newTime);
             if (startDate >= endDate) {
-                parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count);
+                /* tslint:disable-next-line */
+                parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
             }
             parentTh = parentTh + parentTr;
             parentTr = '';
+            let tierCollection: TimelineFormat[] = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
+            timelineCell.endDate = new Date(startDate.getTime());
+            tierCollection.push(timelineCell);
         } while (!(startDate >= endDate));
         return parentTh;
     }
@@ -849,7 +861,8 @@ export class Timeline {
      * @return {string}
      * @private
      */
-    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number): string {
+    /* tslint:disable-next-line */
+    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number, timelineCell?: TimelineFormat): string {
         let parentTr: string = '';
         let td: string = '';
         let format: string = tier === 'topTier' ?
@@ -871,7 +884,8 @@ export class Timeline {
             : thWidth;
         isWeekendCell = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         let textClassName: string = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
-
+        let value: string = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
+        this.customFormat(scheduleWeeks, format, tier, mode, formatter));
         td += this.parent.timelineModule.isSingleTier ?
             '<th class="' + cls.timelineSingleHeaderCell + ' ' : '<th class="' + cls.timelineTopHeaderCell;
         td += isWeekendCell ? ' ' + cls.weekendHeaderCell : '';
@@ -881,8 +895,7 @@ export class Timeline {
             'background-color:' + this.customTimelineSettings.weekendBackground + ';' : '';
         td += '"><div class="' + cls.timelineHeaderCellLabel + textClassName + '" style="width:' +
             (thWidth - 1) + 'px;' + (this.parent.timelineSettings.showTooltip ? '"title="' + date : '');
-        td += '">' + (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
-            this.customFormat(scheduleWeeks, format, tier, mode, formatter)) + '</div>';
+        td += '">' + value + '</div>';
         parentTr += td;
         parentTr += '</th>';
         td = '';
@@ -891,6 +904,10 @@ export class Timeline {
         } else if ((this.isSingleTier || tier === 'topTier') && isLast) {
             this.totalTimelineWidth = (this.totalTimelineWidth - cellWidth) + thWidth;
         }
+        // PDf export collection
+        timelineCell.value = value;
+        timelineCell.isWeekend = isWeekendCell;
+        timelineCell.width = cellWidth;
         return parentTr;
     }
 

@@ -384,7 +384,7 @@ describe('Chart', () => {
                 element = document.getElementById('container_Series_0_Point_5');
                 trigger.clickEvent(element);
                 selected = document.getElementsByClassName('container_ej2_chart_selection_series_0 ');
-                expect(selected.length).toBe(2);
+                expect(selected.length).toBe(3);
                 done();
             };
             chartObj.selectionMode = 'Point';

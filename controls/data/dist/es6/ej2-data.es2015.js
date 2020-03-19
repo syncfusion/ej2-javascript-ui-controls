@@ -185,7 +185,9 @@ class Query {
         if (typeof fieldNames === 'string') {
             fieldNames = [fieldNames];
         }
-        operator = operator || 'contains';
+        if (!operator || operator === 'none') {
+            operator = 'contains';
+        }
         let comparer = DataUtil.fnOperators[operator];
         this.queries.push({
             fn: 'onSearch',

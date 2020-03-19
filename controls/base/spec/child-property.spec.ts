@@ -386,7 +386,7 @@ describe('ChildProperty', () => {
         let bulkChanges: Object = null;
         beforeAll(() => {
             enableBlazorMode();
-            window['ejsInterop'] = {
+            window['sfBlazor'] = {
                 updateModel: (comp: any) => {                   
                     bulkChanges = comp.bulkChanges;
                 }
@@ -410,7 +410,7 @@ describe('ChildProperty', () => {
         });
         afterAll(() => {
             disableBlazorMode();
-            delete window['ejsInterop'];
+            delete window['sfBlazor'];
         });
     });
 });

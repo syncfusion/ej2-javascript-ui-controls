@@ -3,7 +3,8 @@ import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRen
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircleOption, MapLocation, findMidPointOfPolygon, Point, drawCircle, elementAnimate, getTranslate } from '../utils/helper';
-import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate, getRatioOfBubble, maintainSelection } from '../utils/helper';
+import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate, getRatioOfBubble, maintainSelection,
+    getValueFromObject } from '../utils/helper';
 
 /**
  * Bubble module class
@@ -29,9 +30,14 @@ export class Bubble {
         bubbleIndex: number, dataIndex: number, layerIndex: number, layer: LayerSettings, group: Element, bubbleID? : string
     ): void {
         let layerData: object[] = layer.layerData; let colorValuePath: string = bubbleSettings.colorValuePath;
-        let equalValue: string = shapeData[colorValuePath];
-        let colorValue: number = Number(shapeData[colorValuePath]);
-        let bubbleValue: number = Number(shapeData[bubbleSettings.valuePath]);
+        let equalValue: string = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
+            (getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : shapeData[colorValuePath]) : shapeData[colorValuePath];
+        let colorValue: number = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
+            Number(getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : Number(shapeData[colorValuePath])) :
+            Number(shapeData[colorValuePath]);
+        let bubbleValue: number = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
+            Number(getValueFromObject(shapeData, bubbleSettings.valuePath)) : Number(shapeData[bubbleSettings.valuePath])) :
+            Number(shapeData[bubbleSettings.valuePath]);
         let opacity: number; let bubbleColor: string;
         if (isNaN(bubbleValue) && isNaN(colorValue) && isNullOrUndefined(equalValue)) {
             return null;
@@ -43,7 +49,7 @@ export class Bubble {
             !isNullOrUndefined(shapeColor['fill'])) ? shapeColor['fill'] : color;
         opacity = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
             !isNullOrUndefined(shapeColor['opacity'])) ? shapeColor['opacity'] : bubbleSettings.opacity;
-        let shapePoints: [MapLocation[]] = [[]];
+        let shapePoints: [MapLocation[]] = [[]]; this.maps.translateType = 'bubble';
         let midIndex: number = 0; let pointsLength: number = 0; let currentLength: number = 0;
         for (let i: number = 0, len: number = layerData.length; i < len; i++) {
             let shape: object = layerData[i];

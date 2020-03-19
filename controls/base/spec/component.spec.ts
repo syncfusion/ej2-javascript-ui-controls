@@ -838,7 +838,7 @@ describe('Component', () => {
         });
         it(' - wrapper element and blazor testing', () => {
             window['Blazor'] = {};
-            window['ejsInterop'] = {
+            window['sfBlazor'] = {
                 renderComplete: function (wrapper: any) {
                     return wrapper;
                 }

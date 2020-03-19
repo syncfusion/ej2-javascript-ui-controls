@@ -6,6 +6,9 @@ import { FieldDroppedEventArgs, FieldDropEventArgs } from '../base/interface';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { PivotButton } from '../actions/pivot-button';
+import { PivotUtil } from '../../base/util';
+import { PivotView } from '../../pivotview';
+import { PivotFieldList } from '../../pivotfieldlist';
 
 /**
  * `DataSourceUpdate` module is used to update the dataSource.
@@ -59,13 +62,19 @@ export class DataSourceUpdate {
                 }
             }
         }
-
         let eventdrop: FieldDropEventArgs = {
-            'droppedField': this.parent.engineModule.fieldList[fieldName.toString()], 'dataSourceSettings': this.parent.dataSourceSettings,
-            'droppedAxis': droppedClass, 'draggedAxis': draggedClass, 'cancel': false
+            fieldName: fieldName, dropField: PivotUtil.getFieldInfo(fieldName, this.control).fieldItem,
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+            dropAxis: droppedClass, dropPosition: droppedPosition, draggedAxis: draggedClass, cancel: false
         };
-        this.control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
+        let control: PivotView | PivotFieldList = this.control.getModuleName() === 'pivotfieldlist' && this.control.isPopupView ?
+            this.control.pivotGridModule : this.control;
+        control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
             if (!observedArgs.cancel) {
+                droppedClass = observedArgs.dropAxis;
+                droppedPosition = observedArgs.dropPosition;
+                fieldName = observedArgs.dropField ? observedArgs.dropField.name : observedArgs.fieldName;
+                dataSourceItem = observedArgs.dropField;
                 if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
                     switch (droppedClass) {
                         case '':
@@ -79,15 +88,19 @@ export class DataSourceUpdate {
                             break;
                     }
                 } else {
-                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
-                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    // dataSourceItem = this.removeFieldFromReport(fieldName.toString());
+                    // dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    this.removeFieldFromReport(fieldName.toString());
+                    dataSourceItem = this.getNewField(fieldName.toString(), observedArgs.dropField);
                     if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
                         droppedClass = 'values';
                     }
                 }
                 if (this.parent.dataType === 'olap') {
-                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
-                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    // dataSourceItem = this.removeFieldFromReport(fieldName.toString());
+                    // dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    this.removeFieldFromReport(fieldName.toString());
+                    dataSourceItem = this.getNewField(fieldName.toString(), observedArgs.dropField);
                     if (this.parent.dataSourceSettings.values.length === 0) {
                         this.removeFieldFromReport('[measures]');
                     }
@@ -97,14 +110,17 @@ export class DataSourceUpdate {
                 }
                 if (this.control) {
                     let eventArgs: FieldDroppedEventArgs = {
-                        'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
+                        fieldName: fieldName, droppedField: dataSourceItem,
+                        dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                        droppedAxis: droppedClass, droppedPosition: droppedPosition
                     };
                     /* tslint:disable */
                     let dataSourceUpdate: DataSourceUpdate = this;
-                    this.control.trigger(events.onFieldDropped, eventArgs, (observedArgs: FieldDroppedEventArgs) => {
-                        eventArgs = observedArgs;
+                    control.trigger(events.onFieldDropped, eventArgs, (droppedArgs: FieldDroppedEventArgs) => {
+                        dataSourceItem = droppedArgs.droppedField;
                         if (dataSourceItem) {
-                            dataSourceItem = observedArgs.droppedField;
+                            droppedPosition = droppedArgs.droppedPosition;
+                            droppedClass = droppedArgs.droppedAxis;
                             switch (droppedClass) {
                                 case 'filters':
                                     droppedPosition !== -1 ?
@@ -128,7 +144,7 @@ export class DataSourceUpdate {
                                     if (isBlazor()) {
                                         if (dataSourceUpdate.parent.dataType === 'olap' && !(dataSourceUpdate.parent.engineModule as OlapEngine).isMeasureAvail) {
                                             let measureField: IFieldOptions = {
-                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                                name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
                                             };
                                             let fieldAxis: IFieldOptions[] = dataSourceUpdate.parent.dataSourceSettings.valueAxis === 'row' ?
                                                 dataSourceUpdate.parent.dataSourceSettings.rows : dataSourceUpdate.parent.dataSourceSettings.columns;
@@ -137,7 +153,7 @@ export class DataSourceUpdate {
                                     } else {
                                         if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail) {
                                             let measureField: IFieldOptions = {
-                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                                name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
                                             };
                                             let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
                                                 this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
@@ -206,29 +222,47 @@ export class DataSourceUpdate {
      * @return {void}
      * @hidden
      */
-    public getNewField(fieldName: string): IFieldOptions {
+    public getNewField(fieldName: string, fieldItem?: IFieldOptions): IFieldOptions {
         let newField: IFieldOptions;
         if (this.parent.dataType === 'olap') {
             let field: IOlapField = (this.parent.engineModule as OlapEngine).fieldList[fieldName];
             newField = {
-                name: fieldName,
-                caption: field.caption,
-                isNamedSet: field.isNamedSets,
-                isCalculatedField: field.isCalculatedField,
-                type: ((field.aggregateType as SummaryTypes) === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
-                    'Count' as SummaryTypes : field.aggregateType as SummaryTypes),
+                name: fieldItem ? fieldItem.name : fieldName,
+                caption: fieldItem ? fieldItem.caption : field.caption,
+                isNamedSet: fieldItem ? fieldItem.isNamedSet : field.isNamedSets,
+                isCalculatedField: fieldItem ? fieldItem.isCalculatedField : field.isCalculatedField,
+                type: (fieldItem ? (fieldItem.type === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
+                    'Count' as SummaryTypes : fieldItem.type) :
+                    ((field.aggregateType as SummaryTypes) === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
+                        'Count' as SummaryTypes : field.aggregateType as SummaryTypes)),
+                showFilterIcon: fieldItem ? fieldItem.showFilterIcon : field.showFilterIcon,
+                showSortIcon: fieldItem ? fieldItem.showSortIcon : field.showSortIcon,
+                showEditIcon: fieldItem ? fieldItem.showEditIcon : field.showEditIcon,
+                showRemoveIcon: fieldItem ? fieldItem.showRemoveIcon : field.showRemoveIcon,
+                showValueTypeIcon: fieldItem ? fieldItem.showValueTypeIcon : field.showValueTypeIcon,
+                allowDragAndDrop: fieldItem ? fieldItem.allowDragAndDrop : field.allowDragAndDrop,
+                showSubTotals: fieldItem ? fieldItem.showSubTotals : field.showSubTotals
             };
         } else {
             let field: IField = this.parent.engineModule.fieldList[fieldName];
             newField = {
-                name: fieldName,
-                caption: field.caption,
-                type: (((field.aggregateType as SummaryTypes) === undefined || (field.aggregateType as SummaryTypes) === null) ?
-                    field.type === 'number' ? 'Sum' as SummaryTypes :
-                        'Count' as SummaryTypes : field.aggregateType as SummaryTypes),
-                showNoDataItems: field.showNoDataItems,
-                baseField: field.baseField,
-                baseItem: field.baseItem,
+                name: fieldItem ? fieldItem.name : fieldName,
+                caption: fieldItem ? fieldItem.caption : field.caption,
+                type: (fieldItem ? ((fieldItem.type === undefined || fieldItem.type === null) ?
+                    field.type === 'number' ? 'Sum' as SummaryTypes : 'Count' as SummaryTypes : fieldItem.type) :
+                    (((field.aggregateType as SummaryTypes) === undefined || (field.aggregateType as SummaryTypes) === null) ?
+                        field.type === 'number' ? 'Sum' as SummaryTypes :
+                            'Count' as SummaryTypes : field.aggregateType as SummaryTypes)),
+                showNoDataItems: fieldItem ? fieldItem.showNoDataItems : field.showNoDataItems,
+                baseField: fieldItem ? fieldItem.baseField : field.baseField,
+                baseItem: fieldItem ? fieldItem.baseItem : field.baseItem,
+                allowDragAndDrop: fieldItem ? fieldItem.allowDragAndDrop : field.allowDragAndDrop,
+                showSubTotals: fieldItem ? fieldItem.showSubTotals : field.showSubTotals,
+                showFilterIcon: fieldItem ? fieldItem.showFilterIcon : field.showFilterIcon,
+                showSortIcon: fieldItem ? fieldItem.showSortIcon : field.showSortIcon,
+                showEditIcon: fieldItem ? fieldItem.showEditIcon : field.showEditIcon,
+                showRemoveIcon: fieldItem ? fieldItem.showRemoveIcon : field.showRemoveIcon,
+                showValueTypeIcon: fieldItem ? fieldItem.showValueTypeIcon : field.showValueTypeIcon
             };
         }
         return newField;

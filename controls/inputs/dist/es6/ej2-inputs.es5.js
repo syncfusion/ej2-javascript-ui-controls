@@ -3859,7 +3859,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Slider.prototype.render = function () {
-        this.initialize();
+        if (!isBlazor() || !this.isServerRendered) {
+            this.initialize();
+        }
         this.initRender();
         this.wireEvents();
         this.setZindex();
@@ -3902,11 +3904,18 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Slider.prototype.initRender = function () {
-        this.sliderContainer = this.createElement('div', { className: classNames.sliderContainer + ' ' + classNames.controlWrapper });
-        this.element.parentNode.insertBefore(this.sliderContainer, this.element);
-        this.sliderContainer.appendChild(this.element);
-        this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
-        this.element.appendChild(this.sliderTrack);
+        if (isBlazor() && this.isServerRendered) {
+            this.sliderContainer = this.element.parentElement;
+            this.sliderTrack = this.element.querySelector('.e-slider-track');
+            this.hiddenInput = this.element.parentElement.querySelector('.e-slider-input');
+        }
+        else {
+            this.sliderContainer = this.createElement('div', { className: classNames.sliderContainer + ' ' + classNames.controlWrapper });
+            this.element.parentNode.insertBefore(this.sliderContainer, this.element);
+            this.sliderContainer.appendChild(this.element);
+            this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
+            this.element.appendChild(this.sliderTrack);
+        }
         this.element.tabIndex = -1;
         this.getThemeInitialization();
         this.setHandler();
@@ -3914,16 +3923,18 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (this.limits.enabled) {
             this.createLimitBar();
         }
-        this.setOrientClass();
-        this.hiddenInput = (this.createElement('input', {
-            attrs: {
-                type: 'hidden', value: (isNullOrUndefined(this.value) ? this.min.toString() : this.value.toString()),
-                name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
-                    '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
-            }
-        }));
-        this.hiddenInput.tabIndex = -1;
-        this.sliderContainer.appendChild(this.hiddenInput);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.setOrientClass();
+            this.hiddenInput = (this.createElement('input', {
+                attrs: {
+                    type: 'hidden', value: (isNullOrUndefined(this.value) ? this.min.toString() : this.value.toString()),
+                    name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
+                        '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
+                }
+            }));
+            this.hiddenInput.tabIndex = -1;
+            this.sliderContainer.appendChild(this.hiddenInput);
+        }
         if (this.showButtons) {
             this.setButtons();
         }
@@ -3951,17 +3962,19 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (this.tooltip.isVisible) {
             this.renderTooltip();
         }
-        if (!this.enabled) {
-            addClass([this.sliderContainer], [classNames.sliderDisabled]);
-        }
-        else {
-            removeClass([this.sliderContainer], [classNames.sliderDisabled]);
-        }
-        if (this.readonly) {
-            addClass([this.sliderContainer], [classNames.readonly]);
-        }
-        else {
-            removeClass([this.sliderContainer], [classNames.readonly]);
+        if (!isBlazor() || !this.isServerRendered) {
+            if (!this.enabled) {
+                addClass([this.sliderContainer], [classNames.sliderDisabled]);
+            }
+            else {
+                removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+            }
+            if (this.readonly) {
+                addClass([this.sliderContainer], [classNames.readonly]);
+            }
+            else {
+                removeClass([this.sliderContainer], [classNames.readonly]);
+            }
         }
     };
     Slider.prototype.getThemeInitialization = function () {
@@ -3987,20 +4000,28 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.createLimitBar = function () {
-        var firstElementClassName = this.type !== 'Range' ? classNames.limitBarDefault :
-            classNames.limitBarFirst;
-        firstElementClassName += ' ' + classNames.limits;
-        this.limitBarFirst = (this.createElement('div', {
-            attrs: { class: firstElementClassName }
-        }));
-        this.element.appendChild(this.limitBarFirst);
-        if (this.type === 'Range') {
-            this.limitBarSecond = (this.createElement('div', {
-                attrs: {
-                    class: classNames.limitBarSecond + ' ' + classNames.limits
-                }
+        if (isBlazor() && this.isServerRendered) {
+            this.limitBarFirst = this.element.querySelectorAll('.e-limits')[0];
+            if (this.type === 'Range') {
+                this.limitBarSecond = this.element.querySelectorAll('.e-limit-second')[0];
+            }
+        }
+        else {
+            var firstElementClassName = this.type !== 'Range' ? classNames.limitBarDefault :
+                classNames.limitBarFirst;
+            firstElementClassName += ' ' + classNames.limits;
+            this.limitBarFirst = (this.createElement('div', {
+                attrs: { class: firstElementClassName }
             }));
-            this.element.appendChild(this.limitBarSecond);
+            this.element.appendChild(this.limitBarFirst);
+            if (this.type === 'Range') {
+                this.limitBarSecond = (this.createElement('div', {
+                    attrs: {
+                        class: classNames.limitBarSecond + ' ' + classNames.limits
+                    }
+                }));
+                this.element.appendChild(this.limitBarSecond);
+            }
         }
     };
     Slider.prototype.setOrientClass = function () {
@@ -4050,22 +4071,32 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.createSecondHandle = function () {
-        this.secondHandle = this.createElement('div', {
-            attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
-            }
-        });
-        this.secondHandle.classList.add(classNames.sliderSecondHandle);
-        this.element.appendChild(this.secondHandle);
+        if (isBlazor() && this.isServerRendered) {
+            this.secondHandle = this.element.querySelector('.e-handle-second');
+        }
+        else {
+            this.secondHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.secondHandle.classList.add(classNames.sliderSecondHandle);
+            this.element.appendChild(this.secondHandle);
+        }
     };
     Slider.prototype.createFirstHandle = function () {
-        this.firstHandle = this.createElement('div', {
-            attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
-            }
-        });
-        this.firstHandle.classList.add(classNames.sliderFirstHandle);
-        this.element.appendChild(this.firstHandle);
+        if (isBlazor() && this.isServerRendered) {
+            this.firstHandle = this.element.querySelector('.e-handle-first');
+        }
+        else {
+            this.firstHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.firstHandle.classList.add(classNames.sliderFirstHandle);
+            this.element.appendChild(this.firstHandle);
+        }
         if (this.isMaterialTooltip) {
             this.materialHandle = this.createElement('div', {
                 attrs: {
@@ -4169,23 +4200,25 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.setEnableRTL = function () {
-        this.enableRtl && this.orientation !== 'Vertical' ? addClass([this.sliderContainer], classNames.rtl) :
-            removeClass([this.sliderContainer], classNames.rtl);
-        var preDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
-        if (this.enableRtl) {
-            this.horDir = 'right';
-            this.verDir = 'bottom';
-        }
-        else {
-            this.horDir = 'left';
-            this.verDir = 'bottom';
-        }
-        var currDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
-        if (preDir !== currDir) {
-            if (this.orientation === 'Horizontal') {
-                setStyleAttribute(this.firstHandle, { 'right': '', 'left': 'auto' });
-                if (this.type === 'Range') {
-                    setStyleAttribute(this.secondHandle, { 'top': '', 'left': 'auto' });
+        if (!isBlazor() || !this.isServerRendered) {
+            this.enableRtl && this.orientation !== 'Vertical' ? addClass([this.sliderContainer], classNames.rtl) :
+                removeClass([this.sliderContainer], classNames.rtl);
+            var preDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (this.enableRtl) {
+                this.horDir = 'right';
+                this.verDir = 'bottom';
+            }
+            else {
+                this.horDir = 'left';
+                this.verDir = 'bottom';
+            }
+            var currDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (preDir !== currDir) {
+                if (this.orientation === 'Horizontal') {
+                    setStyleAttribute(this.firstHandle, { 'right': '', 'left': 'auto' });
+                    if (this.type === 'Range') {
+                        setStyleAttribute(this.secondHandle, { 'top': '', 'left': 'auto' });
+                    }
                 }
             }
         }
@@ -4198,8 +4231,13 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             value: this.value,
             text: ''
         };
-        this.setTooltipContent();
-        args.text = text = this.tooltipObj.content;
+        if (isBlazor() && this.isServerRendered) {
+            args.text = this.formatContent(this.tooltipFormatInfo, false);
+        }
+        else {
+            this.setTooltipContent();
+            args.text = text = this.tooltipObj.content;
+        }
         this.trigger('tooltipChange', args, function (observedArgs) {
             _this.addTooltipClass(observedArgs.text);
             if (text !== observedArgs.text) {
@@ -4465,7 +4503,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         });
         if (this.isMaterialTooltip) {
             this.sliderContainer.classList.add(classNames.materialSlider);
-            this.tooltipValue();
+            if (!isBlazor()) {
+                this.tooltipValue();
+            }
             this.tooltipObj.animation.close.effect = 'None';
             this.tooltipObj.open(this.firstHandle);
         }
@@ -4475,17 +4515,23 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         this.tooltipCollidedPosition = undefined;
     };
     Slider.prototype.setButtons = function () {
-        this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
-        this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
-        this.firstBtn.tabIndex = -1;
-        this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
-        this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
-        this.secondBtn.tabIndex = -1;
-        this.sliderContainer.classList.add(classNames.sliderButtonClass);
-        this.sliderContainer.appendChild(this.firstBtn);
-        this.sliderContainer.appendChild(this.secondBtn);
-        this.sliderContainer.appendChild(this.element);
-        this.buttonTitle();
+        if (isBlazor() && this.isServerRendered) {
+            this.firstBtn = this.element.parentElement.querySelector('.e-slider-button.e-first-button');
+            this.secondBtn = this.element.parentElement.querySelector('.e-slider-button.e-second-button');
+        }
+        else {
+            this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
+            this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.firstBtn.tabIndex = -1;
+            this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
+            this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.secondBtn.tabIndex = -1;
+            this.sliderContainer.classList.add(classNames.sliderButtonClass);
+            this.sliderContainer.appendChild(this.firstBtn);
+            this.sliderContainer.appendChild(this.secondBtn);
+            this.sliderContainer.appendChild(this.element);
+            this.buttonTitle();
+        }
     };
     Slider.prototype.buttonTitle = function () {
         var enabledRTL = this.enableRtl && this.orientation !== 'Vertical';
@@ -4535,7 +4581,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.repeatHandlerUp = function (e) {
-        this.changeEvent('changed');
+        this.changeEvent('changed', e);
         this.closeTooltip();
         clearInterval(this.repeatInterval);
         this.getHandle().focus();
@@ -4560,12 +4606,18 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     };
     // tslint:disable-next-line:max-func-body-length
     Slider.prototype.renderScale = function () {
+        var liElementPosition = 0;
         var orien = this.orientation === 'Vertical' ? 'v' : 'h';
         this.noOfDecimals = this.numberOfDecimals(this.step);
-        this.ul = this.createElement('ul', {
-            className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
-            attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
-        });
+        if (isBlazor() && this.isServerRendered) {
+            this.ul = this.element.querySelector('ul');
+        }
+        else {
+            this.ul = this.createElement('ul', {
+                className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
+                attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
+            });
+        }
         this.ul.style.zIndex = '-1';
         if (Browser.isAndroid && orien === 'h') {
             this.ul.classList.add(classNames.sliderTickPosition);
@@ -4585,7 +4637,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         var customStep = this.customTickCounter(bigNum);
         var count = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
             (bigNum * customStep) + bigNum : Math.abs((max - min) / steps);
-        this.element.appendChild(this.ul);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.element.appendChild(this.ul);
+        }
         var li;
         var start = parseFloat(this.min.toString());
         if (orien === 'v') {
@@ -4650,11 +4704,21 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 for (var j = 0; j < repeat; j++) {
                     this.createTick(li, start, tickWidth);
                 }
+                if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
             }
             else if (isNullOrUndefined(this.customValues)) {
                 this.formatTicksValue(li, start);
+                if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
             }
-            this.ul.appendChild(li);
+            if (!isBlazor() || !this.isServerRendered) {
+                this.ul.appendChild(li);
+            }
             this.tickElementCollection.push(li);
             var decimalPoints = void 0;
             if (isNullOrUndefined(this.customValues)) {
@@ -4674,6 +4738,34 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.ticksAlignment(orien, tickWidth);
+    };
+    Slider.prototype.updateTicksValues = function (start, liElement) {
+        if (liElement.childElementCount > 0) {
+            for (var i = 0; i < liElement.childElementCount; i++) {
+                this.blazortTicksValue(liElement, start, liElement.children[i]);
+            }
+        }
+        else {
+            this.blazortTicksValue(liElement, start, null);
+        }
+    };
+    Slider.prototype.blazortTicksValue = function (li, start, span) {
+        var _this = this;
+        var tickText = this.formatNumber(start);
+        var text = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
+            this.formatString(start, this.ticksFormatInfo).formatString : tickText;
+        var eventArgs = { value: start, text: text, tickElement: li };
+        this.trigger('renderingTicks', eventArgs, function (observedArgs) {
+            li.setAttribute('title', observedArgs.text.toString());
+            if (span) {
+                if (_this.enableHtmlSanitizer) {
+                    span.innerHTML = SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                }
+                else {
+                    span.innerHTML = observedArgs.text.toString();
+                }
+            }
+        });
     };
     Slider.prototype.ticksAlignment = function (orien, tickWidth, triggerEvent) {
         if (triggerEvent === void 0) { triggerEvent = true; }
@@ -4751,8 +4843,10 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.tickValuePosition = function () {
+        this.firstChild = this.element.querySelector('ul').children[0];
         var first = this.firstChild.getBoundingClientRect();
         var firstChild;
+        var otherChild;
         var smallStep = this.ticks.smallStep;
         var count = Math.abs((parseFloat(formatUnit(this.max))) - (parseFloat(formatUnit(this.min)))) / smallStep;
         if (this.firstChild.children.length > 0) {
@@ -4771,7 +4865,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             (first.height * 2) : (first.width * 2);
         for (var i = 0; i < this.firstChild.children.length; i++) {
             if (this.orientation === 'Vertical') {
-                this.firstChild.children[i].style.top = -(firstChild.height / 2) + 'px';
+                if (!isBlazor() || !this.isServerRendered) {
+                    this.firstChild.children[i].style.top = -(firstChild.height / 2) + 'px';
+                }
             }
             else {
                 if (!this.enableRtl) {
@@ -4784,9 +4880,11 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             }
         }
         for (var i = 0; i < other.length; i++) {
-            var otherChild = other[i].getBoundingClientRect();
+            otherChild = other[i].getBoundingClientRect();
             if (this.orientation === 'Vertical') {
-                setStyleAttribute(other[i], { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                if (!isBlazor() || !this.isServerRendered) {
+                    setStyleAttribute(other[i], { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                }
             }
             else {
                 setStyleAttribute(other[i], { left: (tickWidth - otherChild.width) / 2 + 'px' });
@@ -4795,29 +4893,73 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (this.enableRtl && this.lastChild.children.length && count !== 0) {
             this.lastChild.children[0].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
             if (this.ticks.placement === 'Both') {
-                this.lastChild.children[1].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+                if (!isBlazor()) {
+                    this.lastChild.children[1].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+                }
             }
         }
         if (count === 0) {
             if (this.orientation === 'Horizontal') {
                 if (!this.enableRtl) {
                     this.firstChild.classList.remove(classNames.sliderLastTick);
-                    this.firstChild.style.left = this.firstHandle.style.left;
+                    if (!isBlazor()) {
+                        this.firstChild.style.left = this.firstHandle.style.left;
+                    }
                 }
                 else {
                     this.firstChild.classList.remove(classNames.sliderLastTick);
                     this.firstChild.style.right = this.firstHandle.style.right;
-                    this.firstChild.children[0].style.left =
-                        (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
-                    if (this.ticks.placement === 'Both') {
-                        this.firstChild.children[1].style.left =
+                    if (!isBlazor()) {
+                        this.firstChild.children[0].style.left =
                             (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        if (this.ticks.placement === 'Both') {
+                            this.firstChild.children[1].style.left =
+                                (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        }
                     }
                 }
             }
-            if (this.orientation === 'Vertical') {
-                this.firstChild.classList.remove(classNames.sliderLastTick);
+            if (!isBlazor() || !this.isServerRendered) {
+                if (this.orientation === 'Vertical') {
+                    this.firstChild.classList.remove(classNames.sliderLastTick);
+                }
             }
+        }
+        if (isBlazor() && this.isServerRendered) {
+            var args = void 0;
+            if (this.firstChild != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { firstTickPostion: this.firstChild.children[0].style.left };
+                }
+                else {
+                    args = { firstTickPostion: -(firstChild.height / 2) + 'px' };
+                }
+            }
+            if (other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { otherTicksPosition: other[0].style.left };
+                }
+                else {
+                    args = { otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px' };
+                }
+            }
+            if (this.firstChild != null && other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = {
+                        firstTickPostion: this.firstChild.children[0].style.left,
+                        otherTicksPosition: other[0].style.left
+                    };
+                }
+                else {
+                    args = {
+                        firstTickPostion: -(firstChild.height / 2) + 'px',
+                        otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px'
+                    };
+                }
+            }
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('SliderTicksData', args);
+            // tslint:enable
         }
     };
     Slider.prototype.setAriaAttrValue = function (element) {
@@ -5068,11 +5210,11 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 this.handlePos1 = values[1];
                 this.preHandlePos1 = this.handlePos1;
             }
-            this.setHandlePosition();
+            this.setHandlePosition(null);
             this.handleStart();
             this.value = this.handleVal1;
             this.setAriaAttrValue(this.firstHandle);
-            this.changeEvent('changed');
+            this.changeEvent('changed', null);
         }
         else {
             this.validateRangeValue();
@@ -5108,7 +5250,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.tooltipElement.style.zIndex = getZindexPartial(this.element) + '';
         }
     };
-    Slider.prototype.setHandlePosition = function () {
+    Slider.prototype.setHandlePosition = function (event) {
         var _this = this;
         var handle;
         var pos = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
@@ -5127,8 +5269,11 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             else {
                 handle.style.bottom = pos + "px";
             }
+            if (isBlazor() && _this.isServerRendered) {
+                handle.style.removeProperty('visibility');
+            }
         });
-        this.changeEvent('change');
+        this.changeEvent('change', event);
     };
     Slider.prototype.getHandle = function () {
         return (this.activeHandle === 1) ? this.firstHandle : this.secondHandle;
@@ -5136,17 +5281,17 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     Slider.prototype.setRangeValue = function () {
         this.updateRangeValue();
         this.activeHandle = 1;
-        this.setHandlePosition();
+        this.setHandlePosition(null);
         this.activeHandle = 2;
-        this.setHandlePosition();
+        this.setHandlePosition(null);
         this.activeHandle = 1;
     };
-    Slider.prototype.changeEvent = function (eventName) {
+    Slider.prototype.changeEvent = function (eventName, e) {
         var previous = eventName === 'change' ? this.previousVal : this.previousChanged;
         if (this.type !== 'Range') {
             this.setProperties({ 'value': this.handleVal1 }, true);
             if (previous !== this.value) {
-                this.trigger(eventName, this.changeEventArgs(eventName));
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.firstHandle);
@@ -5156,21 +5301,23 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ 'value': value }, true);
             if (previous.length === this.value.length
                 && this.value[0] !== previous[0] || this.value[1] !== previous[1]) {
-                this.trigger(eventName, this.changeEventArgs(eventName));
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.getHandle());
         }
         this.hiddenInput.value = this.value.toString();
     };
-    Slider.prototype.changeEventArgs = function (eventName) {
+    Slider.prototype.changeEventArgs = function (eventName, e) {
         var eventArgs;
         if (this.tooltip.isVisible && this.tooltipObj) {
-            this.tooltipValue();
+            if (!isBlazor() || !this.isServerRendered) {
+                this.tooltipValue();
+            }
             eventArgs = {
                 value: this.value,
                 previousValue: eventName === 'change' ? this.previousVal : this.previousChanged,
-                action: eventName, text: this.tooltipObj.content
+                action: eventName, text: this.tooltipObj.content, isInteracted: isNullOrUndefined(e) ? false : true
             };
         }
         else {
@@ -5180,7 +5327,8 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 action: eventName, text: isNullOrUndefined(this.ticksFormatInfo.format) ? this.value.toString() :
                     (this.type !== 'Range' ? this.formatString(this.value, this.ticksFormatInfo).formatString :
                         (this.formatString(this.value[0], this.ticksFormatInfo).formatString + ' - ' +
-                            this.formatString(this.value[1], this.ticksFormatInfo).formatString))
+                            this.formatString(this.value[1], this.ticksFormatInfo).formatString)),
+                isInteracted: isNullOrUndefined(e) ? false : true
             };
         }
         return eventArgs;
@@ -5321,9 +5469,14 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.setLimitBar();
         }
         if (this.ticks.placement !== 'None' && this.ul) {
-            this.removeElement(this.ul);
-            this.ul = undefined;
+            if (!isBlazor()) {
+                this.removeElement(this.ul);
+                this.ul = undefined;
+            }
             this.renderScale();
+            if (isBlazor()) {
+                this.tickValuePosition();
+            }
         }
         this.handleStart();
         if (!this.tooltip.isVisible) {
@@ -5334,7 +5487,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 }
             });
         }
-        this.refreshTooltip(this.tooltipTarget);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
         this.setBarColor();
     };
     Slider.prototype.changeHandleValue = function (value) {
@@ -5371,7 +5526,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             if (this.type !== 'Default') {
                 this.setRangeBar();
             }
-            this.setHandlePosition();
+            this.setHandlePosition(null);
         }
     };
     Slider.prototype.tempStartEnd = function () {
@@ -5527,7 +5682,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = transition.rangeBar;
         }
-        this.setHandlePosition();
+        this.setHandlePosition(evt);
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -5642,14 +5797,14 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.activeHandle = 1;
-        this.setHandlePosition();
+        this.setHandlePosition(event);
         this.activeHandle = 2;
-        this.setHandlePosition();
+        this.setHandlePosition(event);
         this.tooltipToggle(this.rangeBar);
         this.setRangeBar();
     };
-    Slider.prototype.sliderBarUp = function () {
-        this.changeEvent('changed');
+    Slider.prototype.sliderBarUp = function (event) {
+        this.changeEvent('changed', event);
         this.handleFocusOut();
         this.firstHandle.classList.remove(classNames.sliderActiveHandle);
         if (this.type === 'Range') {
@@ -5738,7 +5893,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = 'none';
         }
-        this.setHandlePosition();
+        this.setHandlePosition(evt);
         if (this.isMaterial && !this.tooltip.isVisible &&
             !this.getHandle().classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
@@ -5749,7 +5904,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.dragRangeBarUp = function (event) {
-        this.changeEvent('changed');
+        this.changeEvent('changed', event);
         this.closeTooltip();
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
@@ -5896,7 +6051,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.closeTooltip();
-        this.changeEvent('changed');
+        this.changeEvent('changed', event);
     };
     Slider.prototype.hover = function (event) {
         if (!isNullOrUndefined(event)) {
@@ -5933,7 +6088,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             element.parentNode.removeChild(element);
         }
     };
-    Slider.prototype.changeSliderType = function (type) {
+    Slider.prototype.changeSliderType = function (type, args) {
         if (this.isMaterialTooltip && this.materialHandle) {
             this.sliderContainer.classList.remove(classNames.materialSlider);
             this.removeElement(this.materialHandle);
@@ -5988,7 +6143,10 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.renderTooltip();
             this.wireMaterialTooltipEvent(false);
         }
-        this.updateConfig();
+        this.setBarColor();
+        if ((!isBlazor() && !this.isServerRendered) || args !== 'tooltip') {
+            this.updateConfig();
+        }
     };
     Slider.prototype.changeRtl = function () {
         if (!this.enableRtl && this.type === 'Range') {
@@ -6005,13 +6163,15 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.changeOrientation = function () {
-        this.changeSliderType(this.type);
+        this.changeSliderType(this.type, 'null');
     };
     Slider.prototype.updateConfig = function () {
         this.setEnableRTL();
         this.setValue();
         if (this.tooltip.isVisible) {
-            this.refreshTooltip(this.tooltipTarget);
+            if (!isBlazor()) {
+                this.refreshTooltip(this.tooltipTarget);
+            }
         }
         if (this.ticks.placement !== 'None') {
             if (this.ul) {
@@ -6065,12 +6225,16 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');
         }
-        this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
-        detach(this.sliderContainer);
+        if (!isBlazor() && !this.isServerRendered) {
+            this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
+            detach(this.sliderContainer);
+        }
         if (this.tooltip.isVisible) {
             this.tooltipObj.destroy();
         }
-        this.element.innerHTML = '';
+        if (!isBlazor() && !this.isServerRendered) {
+            this.element.innerHTML = '';
+        }
     };
     /**
      * Calls internally if any of the property value is changed.
@@ -6092,7 +6256,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                         this.setProperties({ 'value': value }, true);
                         if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
                             this.setValue();
-                            this.refreshTooltip(this.tooltipTarget);
+                            if (!isBlazor() || !this.isServerRendered) {
+                                this.refreshTooltip(this.tooltipTarget);
+                            }
                             if (this.type === 'Range') {
                                 if (isNullOrUndefined(newProp.value) || oldProp.value[1] === value[1]) {
                                     this.activeHandle = 1;
@@ -6107,35 +6273,70 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 case 'min':
                 case 'step':
                 case 'max':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.setMinMaxValue();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'tooltip':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
-                        this.setTooltip();
+                        this.setTooltip(prop);
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'type':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
                         && !isNullOrUndefined(oldProp.type)) {
-                        this.changeSliderType(oldProp.type);
+                        this.changeSliderType(oldProp.type, prop);
                         this.setZindex();
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'enableRtl':
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                        this.isServerRendered = false;
+                    }
                     if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
                         this.rtl = oldProp.enableRtl;
                         this.changeRtl();
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'limits':
                     this.limitsPropertyChange();
                     break;
                 case 'orientation':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.changeOrientation();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'ticks':
                     if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
-                        detach(this.ul);
+                        if (!isBlazor() || !this.isServerRendered) {
+                            detach(this.ul);
+                        }
                         Array.prototype.forEach.call(this.sliderContainer.classList, function (className) {
                             if (className.match(/e-scale-/)) {
                                 _this.sliderContainer.classList.remove(className);
@@ -6161,28 +6362,57 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                     else {
-                        if (this.firstBtn && this.secondBtn) {
-                            this.sliderContainer.removeChild(this.firstBtn);
-                            this.sliderContainer.removeChild(this.secondBtn);
-                            this.sliderContainer.classList.remove(classNames.sliderButtonClass);
-                            this.firstBtn = undefined;
-                            this.secondBtn = undefined;
-                            this.reposition();
+                        if (!isBlazor() || !this.isServerRendered) {
+                            if (this.firstBtn && this.secondBtn) {
+                                this.sliderContainer.removeChild(this.firstBtn);
+                                this.sliderContainer.removeChild(this.secondBtn);
+                                this.sliderContainer.classList.remove(classNames.sliderButtonClass);
+                                this.firstBtn = undefined;
+                                this.secondBtn = undefined;
+                                this.reposition();
+                            }
+                        }
+                    }
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
                         }
                     }
                     break;
                 case 'enabled':
                     this.setEnabled();
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
                     break;
                 case 'readonly':
                     this.setReadOnly();
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
                     break;
                 case 'customValues':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.setValue();
                     this.reposition();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'colorRange':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.reposition();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
             }
         }
@@ -6200,7 +6430,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     Slider.prototype.setMinMaxValue = function () {
         var _this = this;
         this.setValue();
-        this.refreshTooltip(this.tooltipTarget);
+        if (!isBlazor()) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
         if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
             if (this.ul) {
                 detach(this.ul);
@@ -6230,8 +6462,8 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.secondHandle.style.zIndex = (this.zIndex + 4) + '';
         }
     };
-    Slider.prototype.setTooltip = function () {
-        this.changeSliderType(this.type);
+    Slider.prototype.setTooltip = function (args) {
+        this.changeSliderType(this.type, args);
     };
     Slider.prototype.setBarColor = function () {
         var trackPosition;
@@ -7330,6 +7562,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         _this.flag = true;
         _this.selectedFiles = [];
         _this.uploaderName = 'UploadFiles';
+        _this.fileStreams = [];
+        _this.newFileRef = 0;
         /**
          * Get the file item(li) which are shown in file list.
          * @private
@@ -7386,9 +7620,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 case 'directoryUpload':
                     this.updateDirectoryAttributes();
                     break;
+                case 'template':
+                    if (!this.isServerBlazor) {
+                        this.clearAll();
+                    }
+                    break;
                 case 'minFileSize':
                 case 'maxFileSize':
-                case 'template':
                 case 'autoUpload':
                     this.clearAll();
                     break;
@@ -7412,7 +7650,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
                     this.localizedTexts('Browse') : this.buttons.browse;
                 this.browseButton.setAttribute('title', this.browseButton.innerText);
-                this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
+                if (this.uploadWrapper) {
+                    this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
+                }
             }
             this.updateFileList();
         }
@@ -7484,8 +7724,64 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
-        this.updateHTMLAttrToElement();
-        this.checkHTMLAttributes(false);
+        this.isServerBlazor = (isBlazor() && this.isServerRendered) ? true : false;
+        this.isBlazorTemplate = this.isServerBlazor && this.template !== '' && !isNullOrUndefined(this.template) ? true : false;
+        this.isBlazorSaveUrl = (this.isServerRendered &&
+            (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl))) ? true : false;
+        if (this.isBlazorSaveUrl && this.sequentialUpload) {
+            this.sequentialUpload = false;
+        }
+        this.formRendered();
+        if (!this.isServerBlazor) {
+            this.updateHTMLAttrToElement();
+            this.checkHTMLAttributes(false);
+            // tslint:disable-next-line
+            var ejInstance = getValue('ej2_instances', this.element);
+            /* istanbul ignore next */
+            if (this.element.tagName === 'EJS-UPLOADER') {
+                var inputElement = this.createElement('input', { attrs: { type: 'file' } });
+                var index = 0;
+                for (index; index < this.element.attributes.length; index++) {
+                    inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    inputElement.innerHTML = this.element.innerHTML;
+                }
+                if (!inputElement.hasAttribute('name')) {
+                    inputElement.setAttribute('name', 'UploadFiles');
+                }
+                this.element.appendChild(inputElement);
+                this.element = inputElement;
+                setValue('ej2_instances', ejInstance, this.element);
+            }
+            /* istanbul ignore next */
+            if (ejInstance[0].isPureReactComponent) {
+                if (!isNullOrUndefined(ejInstance[0].props.name)) {
+                    this.element.setAttribute('name', ejInstance[0].props.name);
+                }
+                else if (!isNullOrUndefined(ejInstance[0].props.id) && isNullOrUndefined(ejInstance[0].props.name)) {
+                    this.element.setAttribute('name', ejInstance[0].props.id);
+                }
+                else {
+                    this.element.setAttribute('name', 'UploadFiles');
+                }
+            }
+            if (isNullOrUndefined(this.element.getAttribute('name'))) {
+                this.element.setAttribute('name', this.element.getAttribute('id'));
+            }
+            if (!this.element.hasAttribute('type')) {
+                this.element.setAttribute('type', 'file');
+            }
+            this.updateDirectoryAttributes();
+        }
+        this.keyConfigs = {
+            enter: 'enter'
+        };
+        if (this.element.hasAttribute('tabindex')) {
+            this.tabIndex = this.element.getAttribute('tabindex');
+        }
+        this.browserName = Browser.info.name;
+        this.uploaderName = this.element.getAttribute('name');
+    };
+    Uploader.prototype.formRendered = function () {
         var parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -7497,50 +7793,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        // tslint:disable-next-line
-        var ejInstance = getValue('ej2_instances', this.element);
-        /* istanbul ignore next */
-        if (this.element.tagName === 'EJS-UPLOADER') {
-            var inputElement = this.createElement('input', { attrs: { type: 'file' } });
-            var index = 0;
-            for (index; index < this.element.attributes.length; index++) {
-                inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
-                inputElement.innerHTML = this.element.innerHTML;
-            }
-            if (!inputElement.hasAttribute('name')) {
-                inputElement.setAttribute('name', 'UploadFiles');
-            }
-            this.element.appendChild(inputElement);
-            this.element = inputElement;
-            setValue('ej2_instances', ejInstance, this.element);
-        }
-        /* istanbul ignore next */
-        if (ejInstance[0].isPureReactComponent) {
-            if (!isNullOrUndefined(ejInstance[0].props.name)) {
-                this.element.setAttribute('name', ejInstance[0].props.name);
-            }
-            else if (!isNullOrUndefined(ejInstance[0].props.id) && isNullOrUndefined(ejInstance[0].props.name)) {
-                this.element.setAttribute('name', ejInstance[0].props.id);
-            }
-            else {
-                this.element.setAttribute('name', 'UploadFiles');
-            }
-        }
-        if (isNullOrUndefined(this.element.getAttribute('name'))) {
-            this.element.setAttribute('name', this.element.getAttribute('id'));
-        }
-        if (!this.element.hasAttribute('type')) {
-            this.element.setAttribute('type', 'file');
-        }
-        this.updateDirectoryAttributes();
-        this.keyConfigs = {
-            enter: 'enter'
-        };
-        if (this.element.hasAttribute('tabindex')) {
-            this.tabIndex = this.element.getAttribute('tabindex');
-        }
-        this.browserName = Browser.info.name;
-        this.uploaderName = this.element.getAttribute('name');
     };
     Uploader.prototype.getPersistData = function () {
         return this.addOnPersist([]);
@@ -7566,16 +7818,26 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Uploader.prototype.render = function () {
-        this.renderBrowseButton();
-        this.initializeUpload();
-        this.updateHTMLAttrToWrapper();
-        this.wireEvents();
-        this.setMultipleSelection();
-        this.setExtensions(this.allowedExtensions);
-        this.setRTL();
-        this.renderPreLoadFiles();
-        this.setControlStatus();
-        this.setCSSClass();
+        if (!this.isServerBlazor) {
+            this.renderBrowseButton();
+            this.initializeUpload();
+            this.updateHTMLAttrToWrapper();
+            this.wireEvents();
+            this.setMultipleSelection();
+            this.setExtensions(this.allowedExtensions);
+            this.setRTL();
+            this.renderPreLoadFiles();
+            this.setControlStatus();
+            this.setCSSClass();
+        }
+        else {
+            this.dropAreaWrapper = closest(this.element, '.' + DROP_WRAPPER);
+            this.uploadWrapper = closest(this.element, '.e-upload.e-control-wrapper');
+            this.browseButton = this.dropAreaWrapper.querySelector('button.e-upload-browse-btn');
+            this.setDropArea();
+            this.renderPreLoadFiles();
+            this.wireEvents();
+        }
         this.renderComplete();
     };
     Uploader.prototype.renderBrowseButton = function () {
@@ -7593,18 +7855,46 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     Uploader.prototype.renderActionButtons = function () {
         this.element.setAttribute('tabindex', '-1');
-        this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
-        this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS,
-            attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
-        this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
-            attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
-        this.actionButtons.appendChild(this.clearButton);
-        this.actionButtons.appendChild(this.uploadButton);
-        this.renderButtonTemplates();
-        this.uploadWrapper.appendChild(this.actionButtons);
-        this.browseButton.blur();
-        this.uploadButton.focus();
-        this.wireActionButtonEvents();
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
+            this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS,
+                attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
+            this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
+                attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
+            this.actionButtons.appendChild(this.clearButton);
+            this.actionButtons.appendChild(this.uploadButton);
+            this.renderButtonTemplates();
+            this.uploadWrapper.appendChild(this.actionButtons);
+            this.browseButton.blur();
+            this.uploadButton.focus();
+            this.wireActionButtonEvents();
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.serverActionButtonsEventBind = function (element) {
+        if (element && !this.isForm) {
+            this.browseButton.blur();
+            this.actionButtons = element;
+            this.uploadButton = this.actionButtons.querySelector('.e-file-upload-btn');
+            this.clearButton = this.actionButtons.querySelector('.e-file-clear-btn');
+            this.uploadButton.focus();
+            this.unwireActionButtonEvents();
+            this.wireActionButtonEvents();
+            this.checkActionButtonStatus();
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.serverUlElement = function (element) {
+        if (element) {
+            if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+                this.listParent = element;
+                this.fileList = [].slice.call(this.listParent.querySelectorAll('li'));
+                this.serverRemoveIconBindEvent();
+                if (!this.isForm) {
+                    this.checkAutoUpload(this.filesData);
+                }
+            }
+        }
     };
     Uploader.prototype.wireActionButtonEvents = function () {
         EventHandler.add(this.uploadButton, 'click', this.uploadButtonClick, this);
@@ -7617,7 +7907,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.removeActionButtons = function () {
         if (this.actionButtons) {
             this.unwireActionButtonEvents();
-            detach(this.actionButtons);
+            if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                detach(this.actionButtons);
+            }
             this.actionButtons = null;
         }
     };
@@ -8004,6 +8296,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         var selectedElement = args.target.parentElement;
+        if (this.isBlazorSaveUrl) {
+            this.fileList = [].slice.call(this.uploadWrapper.querySelectorAll('li'));
+        }
         var index = this.fileList.indexOf(selectedElement);
         var liElement = this.fileList[index];
         var formUpload = this.isFormUpload();
@@ -8045,20 +8340,28 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(selectedElement)) {
             return;
         }
-        detach(selectedElement);
+        if (!this.isBlazorSaveUrl) {
+            detach(selectedElement);
+        }
         index = this.fileList.indexOf(selectedElement);
         this.fileList.splice(index, 1);
         this.filesData.splice(index, 1);
-        if (this.fileList.length === 0 && !isNullOrUndefined(this.listParent)) {
-            detach(this.listParent);
-            this.listParent = null;
-            this.removeActionButtons();
-        }
-        if (this.sequentialUpload) {
-            /* istanbul ignore next */
-            if (index <= this.count) {
-                --this.count;
+        if (!this.isBlazorSaveUrl) {
+            if (this.fileList.length === 0 && !isNullOrUndefined(this.listParent)) {
+                detach(this.listParent);
+                this.listParent = null;
+                this.removeActionButtons();
             }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                if (index <= this.count) {
+                    --this.count;
+                }
+            }
+        }
+        else {
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('removeFileData', index);
         }
     };
     Uploader.prototype.removeUploadedFile = function (file, eventArgs, removeDirectly, custom) {
@@ -8069,7 +8372,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var formData = new FormData();
         ajax.beforeSend = function (e) {
             eventArgs.currentRequest = ajax.httpRequest;
-            if (isBlazor()) {
+            if (_this.isServerBlazor) {
                 if (_this.currentRequestHeader) {
                     _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
                 }
@@ -8091,6 +8394,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 _this.removingEventCallback(eventArgs, formData, selectedFiles, file);
             }
         };
+        if (this.isServerBlazor) {
+            var name_1 = this.element.getAttribute('name');
+            if (!isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                formData.append(name_1, selectedFiles.rawFile, selectedFiles.name);
+            }
+            else {
+                formData.append(name_1, selectedFiles.name);
+            }
+        }
         ajax.onLoad = function (e) { _this.removeCompleted(e, selectedFiles, custom); return {}; };
         /* istanbul ignore next */
         ajax.onError = function (e) { _this.removeFailed(e, selectedFiles, custom); return {}; };
@@ -8108,13 +8420,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             createSpinner({ target: spinnerTarget, width: '20px' });
             showSpinner(spinnerTarget);
         }
-        if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
-            formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+        if (!this.isServerBlazor) {
+            if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+            }
+            else {
+                formData.append(name, selectedFiles.name);
+            }
+            this.updateFormData(formData, eventArgs.customFormData);
         }
-        else {
-            formData.append(name, selectedFiles.name);
-        }
-        this.updateFormData(formData, eventArgs.customFormData);
     };
     /* istanbul ignore next */
     Uploader.prototype.updateFormData = function (formData, customData) {
@@ -8376,7 +8690,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype._internalRenderSelect = function (eventArgs, fileData) {
         if (!eventArgs.cancel) {
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (this.isServerBlazor) {
                 this.currentRequestHeader = eventArgs.currentRequest;
                 this.customFormDatas = eventArgs.customFormData;
             }
@@ -8384,6 +8698,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
             if (this.showFileList) {
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                    for (var j = 0; j < eventArgs.modifiedFilesData.length; j++) {
+                        for (var k = 0; k < fileData.length; k++) {
+                            if (eventArgs.modifiedFilesData[j].name === fileData[k].name) {
+                                eventArgs.modifiedFilesData[j].rawFile = fileData[k].rawFile;
+                            }
+                        }
+                    }
                     var dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
                         this.checkExtension(eventArgs.modifiedFilesData);
                     this.updateSortedFileList(dataFiles);
@@ -8393,10 +8714,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 else {
-                    this.createFileList(fileData);
-                    this.filesData = this.filesData.concat(fileData);
+                    this.createFileList(fileData, true);
+                    if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                        this.filesData = this.filesData.concat(fileData);
+                    }
                     if (!this.isForm || this.allowUpload()) {
-                        this.checkAutoUpload(fileData);
+                        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                            this.checkAutoUpload(fileData);
+                        }
                     }
                 }
                 if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
@@ -8405,6 +8730,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.filesData = this.filesData.concat(fileData);
+                if (this.isBlazorSaveUrl) {
+                    // tslint:disable-next-line
+                    this.interopAdaptor.invokeMethodAsync('updateServerFileData', this.filesData, this.isForm);
+                }
                 if (this.autoUpload) {
                     this.upload(this.filesData, true);
                 }
@@ -8428,7 +8757,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         return isFormUpload;
     };
     Uploader.prototype.clearData = function (singleUpload) {
-        if (!isNullOrUndefined(this.listParent)) {
+        if (!isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             detach(this.listParent);
             this.listParent = null;
         }
@@ -8437,7 +8766,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
         this.fileList = [];
         this.filesData = [];
-        this.removeActionButtons();
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('clearAll');
+        }
+        else {
+            this.removeActionButtons();
+        }
     };
     Uploader.prototype.updateSortedFileList = function (filesData) {
         var previousListClone = this.createElement('div', { id: 'clonewrapper' });
@@ -8758,89 +9093,99 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @param { FileInfo[] } fileData - specifies the files data for file list creation.
      * @returns void
      */
-    Uploader.prototype.createFileList = function (fileData) {
-        this.createParentUL();
-        if (this.template !== '' && !isNullOrUndefined(this.template)) {
-            if (this.isFormUpload()) {
-                this.uploadWrapper.classList.add(FORM_UPLOAD);
-                this.formCustomFileList(fileData, this.element.files);
-            }
-            else {
-                this.createCustomfileList(fileData);
-            }
-        }
-        else if (this.isFormUpload()) {
-            this.uploadWrapper.classList.add(FORM_UPLOAD);
-            this.formFileList(fileData, this.element.files);
+    Uploader.prototype.createFileList = function (fileData, isSelectedFile) {
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            var fileListData = (isSelectedFile) ? this.filesData = this.filesData.concat(fileData) : fileData;
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('createFileList', fileListData, this.isForm);
         }
         else {
-            for (var _i = 0, fileData_7 = fileData; _i < fileData_7.length; _i++) {
-                var listItem = fileData_7[_i];
-                var liElement = this.createElement('li', { className: FILE,
-                    attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' } });
-                var textContainer = this.createElement('span', { className: TEXT_CONTAINER });
-                var textElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
-                textElement.innerHTML = this.getFileNameOnly(listItem.name);
-                var fileExtension = this.createElement('span', { className: FILE_TYPE });
-                fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
-                if (!this.enableRtl) {
-                    textContainer.appendChild(textElement);
-                    textContainer.appendChild(fileExtension);
+            this.createParentUL();
+            if (this.template !== '' && !isNullOrUndefined(this.template)) {
+                if (this.isFormUpload()) {
+                    this.uploadWrapper.classList.add(FORM_UPLOAD);
+                    this.formCustomFileList(fileData, this.element.files);
                 }
                 else {
-                    var rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
-                    rtlContainer.appendChild(fileExtension);
-                    rtlContainer.appendChild(textElement);
-                    textContainer.appendChild(rtlContainer);
+                    this.createCustomfileList(fileData);
                 }
-                var fileSize = this.createElement('span', { className: FILE_SIZE });
-                fileSize.innerHTML = this.bytesToSize(listItem.size);
-                textContainer.appendChild(fileSize);
-                var statusElement = this.createElement('span', { className: STATUS });
-                textContainer.appendChild(statusElement);
-                statusElement.innerHTML = listItem.status;
-                liElement.appendChild(textContainer);
-                var iconElement = this.createElement('span', { className: ' e-icons', attrs: { 'tabindex': this.btnTabIndex } });
-                /* istanbul ignore next */
-                if (this.browserName === 'msie') {
-                    iconElement.classList.add('e-msie');
+            }
+            else if (this.isFormUpload()) {
+                this.uploadWrapper.classList.add(FORM_UPLOAD);
+                this.formFileList(fileData, this.element.files);
+            }
+            else {
+                for (var _i = 0, fileData_7 = fileData; _i < fileData_7.length; _i++) {
+                    var listItem = fileData_7[_i];
+                    var liElement = this.createElement('li', {
+                        className: FILE,
+                        attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' }
+                    });
+                    var textContainer = this.createElement('span', { className: TEXT_CONTAINER });
+                    var textElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
+                    textElement.innerHTML = this.getFileNameOnly(listItem.name);
+                    var fileExtension = this.createElement('span', { className: FILE_TYPE });
+                    fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
+                    if (!this.enableRtl) {
+                        textContainer.appendChild(textElement);
+                        textContainer.appendChild(fileExtension);
+                    }
+                    else {
+                        var rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
+                        rtlContainer.appendChild(fileExtension);
+                        rtlContainer.appendChild(textElement);
+                        textContainer.appendChild(rtlContainer);
+                    }
+                    var fileSize = this.createElement('span', { className: FILE_SIZE });
+                    fileSize.innerHTML = this.bytesToSize(listItem.size);
+                    textContainer.appendChild(fileSize);
+                    var statusElement = this.createElement('span', { className: STATUS });
+                    textContainer.appendChild(statusElement);
+                    statusElement.innerHTML = listItem.status;
+                    liElement.appendChild(textContainer);
+                    var iconElement = this.createElement('span', { className: ' e-icons',
+                        attrs: { 'tabindex': this.btnTabIndex } });
+                    /* istanbul ignore next */
+                    if (this.browserName === 'msie') {
+                        iconElement.classList.add('e-msie');
+                    }
+                    iconElement.setAttribute('title', this.localizedTexts('remove'));
+                    liElement.appendChild(iconElement);
+                    EventHandler.add(iconElement, 'click', this.removeFiles, this);
+                    if (listItem.statusCode === '2') {
+                        statusElement.classList.add(UPLOAD_SUCCESS);
+                        iconElement.classList.add(DELETE_ICON);
+                        iconElement.setAttribute('title', this.localizedTexts('delete'));
+                    }
+                    else if (listItem.statusCode !== '1') {
+                        statusElement.classList.remove(UPLOAD_SUCCESS);
+                        statusElement.classList.add(VALIDATION_FAILS);
+                    }
+                    if (this.autoUpload && listItem.statusCode === '1' && this.asyncSettings.saveUrl !== '') {
+                        statusElement.innerHTML = '';
+                    }
+                    if (!iconElement.classList.contains(DELETE_ICON)) {
+                        iconElement.classList.add(REMOVE_ICON);
+                    }
+                    var index = fileData.indexOf(listItem);
+                    var eventArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    var eventsArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    this.trigger('rendering', eventArgs);
+                    this.trigger('fileListRendering', eventsArgs);
+                    this.listParent.appendChild(liElement);
+                    this.fileList.push(liElement);
+                    this.truncateName(textElement);
                 }
-                iconElement.setAttribute('title', this.localizedTexts('remove'));
-                liElement.appendChild(iconElement);
-                EventHandler.add(iconElement, 'click', this.removeFiles, this);
-                if (listItem.statusCode === '2') {
-                    statusElement.classList.add(UPLOAD_SUCCESS);
-                    iconElement.classList.add(DELETE_ICON);
-                    iconElement.setAttribute('title', this.localizedTexts('delete'));
-                }
-                else if (listItem.statusCode !== '1') {
-                    statusElement.classList.remove(UPLOAD_SUCCESS);
-                    statusElement.classList.add(VALIDATION_FAILS);
-                }
-                if (this.autoUpload && listItem.statusCode === '1' && this.asyncSettings.saveUrl !== '') {
-                    statusElement.innerHTML = '';
-                }
-                if (!iconElement.classList.contains(DELETE_ICON)) {
-                    iconElement.classList.add(REMOVE_ICON);
-                }
-                var index = fileData.indexOf(listItem);
-                var eventArgs = {
-                    element: liElement,
-                    fileInfo: listItem,
-                    index: index,
-                    isPreload: this.isPreLoadFile(listItem)
-                };
-                var eventsArgs = {
-                    element: liElement,
-                    fileInfo: listItem,
-                    index: index,
-                    isPreload: this.isPreLoadFile(listItem)
-                };
-                this.trigger('rendering', eventArgs);
-                this.trigger('fileListRendering', eventsArgs);
-                this.listParent.appendChild(liElement);
-                this.fileList.push(liElement);
-                this.truncateName(textElement);
             }
         }
     };
@@ -8904,8 +9249,18 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.updateStatus = function (files, status, statusCode, updateLiStatus) {
         if (updateLiStatus === void 0) { updateLiStatus = true; }
         if (!(status === '' || isNullOrUndefined(status)) && !(statusCode === '' || isNullOrUndefined(statusCode))) {
-            files.status = status;
-            files.statusCode = statusCode;
+            if (this.isBlazorSaveUrl) {
+                for (var i = 0; i < this.filesData.length; i++) {
+                    if (this.filesData[i].name === files.name) {
+                        this.filesData[i].status = status;
+                        this.filesData[i].statusCode = statusCode;
+                    }
+                }
+            }
+            else {
+                files.status = status;
+                files.statusCode = statusCode;
+            }
         }
         if (updateLiStatus) {
             var li = this.getLiElement(files);
@@ -9011,8 +9366,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     request.httpRequest.abort();
                     var formData = new FormData();
                     if (files.statusCode === '5') {
-                        var name_1 = _this.element.getAttribute('name');
-                        formData.append(name_1, files.name);
+                        var name_2 = _this.element.getAttribute('name');
+                        formData.append(name_2, files.name);
                         formData.append('cancel-uploading', files.name);
                         var ajax = new Ajax(_this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
@@ -9111,6 +9466,19 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         return response;
     };
+    /* istanbul ignore next */
+    Uploader.prototype.serverRemoveIconBindEvent = function () {
+        if (this.uploadWrapper && this.isBlazorSaveUrl) {
+            var iconElement = [].slice.call(this.uploadWrapper.querySelectorAll('ul li'));
+            for (var i = 0; i < iconElement.length; i++) {
+                var removeIconEle = (iconElement[i]) ? iconElement[i].querySelector('.e-icons') : null;
+                if (removeIconEle) {
+                    EventHandler.remove(removeIconEle, 'click', this.removeFiles);
+                    EventHandler.add(removeIconEle, 'click', this.removeFiles, this);
+                }
+            }
+        }
+    };
     Uploader.prototype.raiseSuccessEvent = function (e, file) {
         var _this = this;
         var response = e && e.currentTarget ? this.getResponse(e) : null;
@@ -9118,19 +9486,23 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var args = {
             e: e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
-        var liElement = this.getLiElement(file);
-        if (!isNullOrUndefined(liElement)) {
-            var spinnerEle = liElement.querySelector('.' + SPINNER_PANE);
-            if (!isNullOrUndefined(spinnerEle)) {
-                hideSpinner(liElement);
-                detach(spinnerEle);
+        if (!this.isBlazorSaveUrl) {
+            var liElement = this.getLiElement(file);
+            if (!isNullOrUndefined(liElement)) {
+                var spinnerEle = liElement.querySelector('.' + SPINNER_PANE);
+                if (!isNullOrUndefined(spinnerEle)) {
+                    hideSpinner(liElement);
+                    detach(spinnerEle);
+                }
             }
         }
         this.trigger('success', args, function (args) {
             // tslint:disable-next-line
             _this.updateStatus(file, args.statusText, '2');
             _this.uploadedFilesData.push(file);
-            _this.trigger('change', { file: _this.uploadedFilesData });
+            if (!_this.isBlazorSaveUrl) {
+                _this.trigger('change', { file: _this.uploadedFilesData });
+            }
             _this.checkActionButtonStatus();
             if (_this.fileList.length > 0) {
                 if ((!(_this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
@@ -9365,7 +9737,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (_this.isServerBlazor) {
                 if (_this.currentRequestHeader) {
                     _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
                 }
@@ -9460,8 +9832,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                         metaData.request.emitError = false;
                         response.abort();
                         var formData = new FormData();
-                        var name_2 = _this.element.getAttribute('name');
-                        formData.append(name_2, metaData.file.name);
+                        var name_3 = _this.element.getAttribute('name');
+                        formData.append(name_3, metaData.file.name);
                         formData.append('cancel-uploading', metaData.file.name);
                         formData.append('cancelUploading', metaData.file.name);
                         var ajax = new Ajax(_this.asyncSettings.removeUrl, 'POST', true, null);
@@ -9824,9 +10196,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var sortedFileNames = fileNames.sort();
         var sortedFilesData = [];
         for (var _i = 0, sortedFileNames_1 = sortedFileNames; _i < sortedFileNames_1.length; _i++) {
-            var name_3 = sortedFileNames_1[_i];
+            var name_4 = sortedFileNames_1[_i];
             for (var i = 0; i < files.length; i++) {
-                if (name_3 === files[i].name) {
+                if (name_4 === files[i].name) {
                     sortedFilesData.push(files[i]);
                 }
             }
@@ -9840,7 +10212,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.destroy = function () {
         this.element.value = null;
-        this.clearAll();
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.clearAll();
+        }
         this.unWireEvents();
         this.unBindDropEvents();
         if (this.multiple) {
@@ -9856,12 +10230,17 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var key = attributes_2[_i];
             this.element.removeAttribute(key);
         }
-        if (!isNullOrUndefined(this.uploadWrapper)) {
-            this.uploadWrapper.parentElement.appendChild(this.element);
-            detach(this.uploadWrapper);
+        if (!this.isServerBlazor) {
+            if (!isNullOrUndefined(this.uploadWrapper)) {
+                this.uploadWrapper.parentElement.appendChild(this.element);
+                detach(this.uploadWrapper);
+            }
+            this.uploadWrapper = null;
+            _super.prototype.destroy.call(this);
         }
-        this.uploadWrapper = null;
-        _super.prototype.destroy.call(this);
+        else {
+            this.uploadWrapper = null;
+        }
     };
     /**
      * Allows you to call the upload process manually by calling save URL action.
@@ -9879,7 +10258,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             currentRequest: null
         };
         this.trigger('beforeUpload', eventArgs, function (eventArgs) {
-            if (isBlazor()) {
+            if (_this.isServerBlazor) {
                 _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
                 _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
                     eventArgs.customFormData : _this.customFormDatas;
@@ -9897,10 +10276,73 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
         return uploadFiles;
     };
+    /* istanbul ignore next */
+    Uploader.prototype.serverReadFileBase64 = function (fileIndex, position, totalCount) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var file = _this.fileStreams[fileIndex].rawFile;
+            try {
+                var reader = new FileReader();
+                // tslint:disable-next-line
+                reader.onload = (function (args) {
+                    return function () {
+                        try {
+                            var contents = args.result;
+                            var data = contents ? contents.split(';base64,')[1] : null;
+                            resolve(data);
+                        }
+                        catch (e) {
+                            reject(e);
+                        }
+                    };
+                })(reader);
+                reader.readAsDataURL(file.slice(position, position + totalCount));
+            }
+            catch (e) {
+                reject(e);
+            }
+        });
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.uploadFileCount = function (ele) {
+        var files = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        var result = files.length;
+        return result;
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.getFileRead = function (index, ele) {
+        var files = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        var file = files[index];
+        var fileCount = this.newFileRef++;
+        this.fileStreams[fileCount] = file;
+        return fileCount;
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.getFileInfo = function (index, ele) {
+        var files = this.filesData;
+        if (!files || files.length === 0) {
+            return null;
+        }
+        var file = files[index];
+        if (!file) {
+            return null;
+        }
+        return this.filesData[index];
+    };
     Uploader.prototype.uploadFiles = function (files, custom) {
         var _this = this;
         var selectedFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
+            if (this.isServerBlazor) {
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('GetFileDetails', files);
+            }
             return;
         }
         if (!custom || isNullOrUndefined(custom)) {
@@ -9917,13 +10359,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             selectedFiles = files;
         }
         var _loop_5 = function (i) {
-            if (isBlazor() && !this_3.checkChunkUpload()) {
+            if (this_3.isServerBlazor && !this_3.checkChunkUpload()) {
                 /* istanbul ignore next */
                 /* tslint:disable */
-                this_3.getBase64(selectedFiles[i].rawFile).then(function (data) {
-                    _this.base64String.push(data);
-                    _this.uploadFilesRequest(selectedFiles, i, custom);
-                });
+                if (selectedFiles[i] && selectedFiles[i].rawFile instanceof File) {
+                    this_3.getBase64(selectedFiles[i].rawFile).then(function (data) {
+                        _this.base64String.push(data);
+                        _this.uploadFilesRequest(selectedFiles, i, custom);
+                    });
+                }
                 /* tslint:disable */
             }
             else {
@@ -9943,12 +10387,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         ajax.emitError = false;
         var getFileData;
         /* istanbul ignore next */
-        if (isBlazor()) {
+        if (this.isServerBlazor) {
             getFileData = selectedFiles.slice(0);
             cloneFiles.push(getFileData[i].rawFile);
         }
         var eventArgs = {
-            fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
+            fileData: (this.isServerBlazor) ? getFileData[i] : selectedFiles[i],
             customFormData: [],
             cancel: false
         };
@@ -9956,7 +10400,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         ajax.beforeSend = function (e) {
             eventArgs.currentRequest = ajax.httpRequest;
             /* istanbul ignore next */
-            if (isBlazor()) {
+            if (_this.isServerBlazor) {
                 eventArgs.fileData.rawFile = !chunkEnabled ? _this.base64String[i] : eventArgs.fileData.rawFile;
                 if (_this.currentRequestHeader) {
                     _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
@@ -9967,7 +10411,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
             _this.trigger('uploading', eventArgs, function (eventArgs) {
                 /* istanbul ignore next */
-                if (isBlazor() && !chunkEnabled) {
+                if (_this.isServerBlazor && !chunkEnabled) {
                     selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
                 }
                 if (eventArgs.cancel) {
@@ -9977,14 +10421,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             });
         };
         if (selectedFiles[i].statusCode === '1') {
-            var name_4 = this.element.getAttribute('name');
-            formData.append(name_4, selectedFiles[i].rawFile, selectedFiles[i].name);
+            var name_5 = this.element.getAttribute('name');
+            formData.append(name_5, selectedFiles[i].rawFile, selectedFiles[i].name);
             if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
                 this.chunkUpload(selectedFiles[i], custom, i);
             }
             else {
                 ajax.onLoad = function (e) {
-                    if (eventArgs.cancel && isBlazor()) {
+                    if (eventArgs.cancel && _this.isServerBlazor) {
                         return {};
                     }
                     else {
@@ -9993,7 +10437,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     }
                 };
                 ajax.onUploadProgress = function (e) {
-                    if (eventArgs.cancel && isBlazor()) {
+                    if (eventArgs.cancel && _this.isServerBlazor) {
                         return {};
                     }
                     else {
@@ -10050,12 +10494,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         this.trigger('beforeRemove', beforeEventArgs, function (beforeEventArgs) {
             if (!beforeEventArgs.cancel) {
-                if (isBlazor()) {
+                if (_this.isServerBlazor) {
                     _this.currentRequestHeader = beforeEventArgs.currentRequest;
                     _this.customFormDatas = beforeEventArgs.customFormData;
                 }
                 var index = void 0;
-                if (_this.isFormUpload()) {
+                if (_this.isFormUpload() && !_this.isBlazorSaveUrl) {
                     eventArgs.filesData = fileData;
                     _this.trigger('removing', eventArgs, function (eventArgs) {
                         if (!eventArgs.cancel) {
@@ -10082,7 +10526,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                         }
                     });
                 }
-                else if (_this.isForm && (isNullOrUndefined(_this.asyncSettings.removeUrl) || _this.asyncSettings.removeUrl === '')) {
+                else if (_this.isForm && (isNullOrUndefined(_this.asyncSettings.removeUrl) || _this.asyncSettings.removeUrl === '')
+                    && !_this.isBlazorSaveUrl) {
                     eventArgs.filesData = _this.getFilesData();
                     _this.trigger('removing', eventArgs, function (eventArgs) {
                         if (!eventArgs.cancel) {
@@ -10143,7 +10588,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.clearAll = function () {
         var _this = this;
-        if (isNullOrUndefined(this.listParent)) {
+        if (isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
             if (this.browserName !== 'msie') {
                 this.element.value = '';
             }
@@ -10168,7 +10613,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns FileInfo[]
      */
     Uploader.prototype.getFilesData = function (index) {
-        if (!isBlazor()) {
+        if (!this.isServerBlazor) {
             if (isNullOrUndefined(index)) {
                 return this.filesData;
             }
@@ -11741,9 +12186,13 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.tileRipple = null;
         this.ctrlBtnRipple();
         this.ctrlBtnRipple = null;
-        detach(this.element.nextElementSibling);
-        wrapper.parentElement.insertBefore(this.element, wrapper);
-        detach(wrapper);
+        if (this.element.nextElementSibling) {
+            detach(this.element.nextElementSibling);
+        }
+        if (wrapper) {
+            wrapper.parentElement.insertBefore(this.element, wrapper);
+            detach(wrapper);
+        }
         this.container = null;
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);

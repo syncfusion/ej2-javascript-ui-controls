@@ -221,6 +221,20 @@
         //margin-left: $gantt-child-progress-margin-left;
       }
 
+      .e-gantt-child-manualtaskbar {
+        background-color: $gantt-manualchild-task-bar;
+        border: $gantt-manualchild-task-bar-border;
+      }
+
+      .e-gantt-unscheduled-taskbar.e-gantt-child-manualtaskbar {
+        background: $gantt-unscheduled-manualtaskbar-background;
+      }
+
+      .e-gantt-child-manualprogressbar {
+        background-color: $gantt-manualchild-progress-bar;
+        border: $gantt-manualchild-progress-bar-border;
+      }
+
       .e-holiday {
         background: $holiday-background;
 
@@ -413,6 +427,18 @@
         border-top-color: $gantt-parent-milestone-border-color;
       }
 
+      .e-manualparent-milestone-top {
+        border-bottom-color: $gantt-manualparent-background-color;
+      }
+
+      .e-manualparent-milestone-bottom {
+        border-top-color: $gantt-manualparent-background-color;
+      }
+
+      .e-gantt-unscheduled-manualtask {
+        background: $gantt-unscheduledmanualparent-background-color;
+      }
+
       .e-label {
         color: $gantt-label-font-color;
         font-size: $gantt-label-font-size;
@@ -578,7 +604,11 @@
 
     }
 
-    .e-grid .e-icons {
+    .e-icons {
+      color: $gantt-icons-color;
+    }
+
+    .e-grid .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {
       color: $gantt-header-color !important; // sass-lint:disable-line no-important
     }
 

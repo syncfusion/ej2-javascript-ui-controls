@@ -21,6 +21,7 @@ export class Columns extends ChildProperty<Columns> {
     /**
      * Defines the column template
      * @default null
+     * @deprecated
      */
     @Property()
     public template: string;
@@ -42,6 +43,9 @@ export class Columns extends ChildProperty<Columns> {
     /**
      * Defines the minimum card count in column
      * @default null
+     * @aspType int
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     @Property()
     public minCount: number;
@@ -49,15 +53,18 @@ export class Columns extends ChildProperty<Columns> {
     /**
      * Defines the maximum card count in column
      * @default null
+     * @aspType int
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     @Property()
     public maxCount: number;
 
     /**
      * Enable or disable card count in column
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public showItemCount: boolean;
 
 }

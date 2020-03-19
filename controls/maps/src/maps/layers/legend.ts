@@ -7,7 +7,7 @@ import {
 import { LegendArrangement, LegendMode } from '../index';
 import {
     Rect, measureText, CircleOption, PathOption, textTrim,
-    removeClass, querySelector, getTemplateFunction, maintainStyleClass
+    removeClass, querySelector, getTemplateFunction, maintainStyleClass, getValueFromObject
 } from '../utils/helper';
 import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol, checkPropertyPath, getElement } from '../utils/helper';
 import { isNullOrUndefined, Browser, EventHandler, remove, extend } from '@syncfusion/ej2-base';
@@ -348,6 +348,9 @@ export class Legend {
                 let textId: string = map.element.id + '_Legend_Index_' + i + '_Text';
                 let item: Object = this.legendRenderingCollections[i];
                 let bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
+                if (i === 0) {
+                    this.renderLegendBorder();
+                }
                 let textLocation: Point = new Point(item['textX'], item['textY']);
                 textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
                 let rectOptions: RectOption = new RectOption(itemId, item['fill'], item['shapeBorder'], legend.opacity, bounds);
@@ -356,9 +359,7 @@ export class Legend {
                 textFont.size = map.themeStyle.legendFontSize || textFont.size;
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
-                if (i === this.legendRenderingCollections.length - 1) {
-                    this.renderLegendBorder();
-                }
+                this.legendToggle();
             }
         } else {
             this.drawLegendItem(this.currentPage);
@@ -400,6 +401,9 @@ export class Legend {
                     this.maps.themeStyle.legendTextColor;
                 legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
                 legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                if (i === 0) {
+                    this.renderLegendBorder();
+                }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
@@ -461,7 +465,7 @@ export class Legend {
                         pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
                         this.legendGroup.appendChild(pagingGroup);
                     }
-                    this.renderLegendBorder();
+                    this.legendToggle();
                 }
             }
         }
@@ -1033,40 +1037,11 @@ export class Legend {
         }
         return legendShapeElements;
     }
+
     //tslint:disable
-    private renderLegendBorder(): void {
+    private legendToggle(): void {
         let map: Maps = this.maps;
         let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
-        let legendTitle: string = legend.title.text;
-        let textStyle: FontModel = legend.titleStyle;
-        let textOptions: TextOption;
-        let spacing: number = 10;
-        let trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
-        let textSize: Size = measureText(trimTitle, textStyle);
-        this.legendBorderRect = new Rect(
-            (this.legendItemRect.x - spacing),
-            (this.legendItemRect.y - spacing - textSize.height),
-            (this.legendItemRect.width) + (spacing * 2),
-            (this.legendItemRect.height) + (spacing * 2) + textSize.height +
-            (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0)
-        );
-        if (legendTitle) {
-            textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTextColor;
-            textOptions = new TextOption(
-                map.element.id + '_LegendTitle',
-                (this.legendItemRect.x) + (this.legendItemRect.width / 2),
-                this.legendItemRect.y - (textSize.height / 2) - spacing / 2,
-                'middle', trimTitle, '');
-            renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
-        }
-        let renderOptions: RectOption = new RectOption(
-            map.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, null, null, '', ''
-        );
-        this.legendGroup.appendChild(map.renderer.drawRectangle(renderOptions));
-        this.getLegendAlignment(map, this.legendBorderRect.width, this.legendBorderRect.height, legend);
-        this.legendGroup.setAttribute('transform', 'translate( ' + (this.translate.x + (-(this.legendBorderRect.x))) + ' ' +
-            (this.translate.y + (-(this.legendBorderRect.y))) + ' )');
-        map.svgObject.appendChild(this.legendGroup);
         if (this.maps.selectedLegendElementId) {
             // To maintain the state of legend selection during page resize.
             for (let j: number = 0; j < this.maps.selectedLegendElementId.length; j++) {
@@ -1108,6 +1083,43 @@ export class Legend {
                 }
             }
         }
+    }
+
+    //tslint:disable
+    private renderLegendBorder(): void {
+        let map: Maps = this.maps;
+        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
+        let legendTitle: string = legend.title.text;
+        let textStyle: FontModel = legend.titleStyle;
+        let textOptions: TextOption;
+        let spacing: number = 10;
+        let trimTitle: string = textTrim((this.legendItemRect.width + (spacing * 2)), legendTitle, textStyle);
+        let textSize: Size = measureText(trimTitle, textStyle);
+        this.legendBorderRect = new Rect(
+            (this.legendItemRect.x - spacing),
+            (this.legendItemRect.y - spacing - textSize.height),
+            (this.legendItemRect.width) + (spacing * 2),
+            (this.legendItemRect.height) + (spacing * 2) + textSize.height +
+            (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0)
+        );
+        let renderOptions: RectOption = new RectOption(
+            map.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, null, null, '', ''
+        );
+        this.legendGroup.appendChild(map.renderer.drawRectangle(renderOptions));
+        this.getLegendAlignment(map, this.legendBorderRect.width, this.legendBorderRect.height, legend);
+        this.legendGroup.setAttribute('transform', 'translate( ' + (this.translate.x + (-(this.legendBorderRect.x))) + ' ' +
+            (this.translate.y + (-(this.legendBorderRect.y))) + ' )');
+        map.svgObject.appendChild(this.legendGroup);
+        if (legendTitle) {
+            textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTextColor;
+            textOptions = new TextOption(
+                map.element.id + '_LegendTitle',
+                (this.legendItemRect.x) + (this.legendItemRect.width / 2),
+                this.legendItemRect.y - (textSize.height / 2) - spacing / 2,
+                'middle', trimTitle, '');
+            renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
+        }
+        
     }
 
     public changeNextPage(e: PointerEvent): void {
@@ -1165,7 +1177,7 @@ export class Legend {
                     }
                     break;
             }
-            if (legend.height && legend.width && legend.mode !== 'Interactive') {
+            if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
                 map.totalRect = totalRect;
             } else {
                 map.mapAreaRect = totalRect;
@@ -1218,7 +1230,8 @@ export class Legend {
                 rangeData = [];
                 let colorMapProcess: boolean = false;
                 Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
-                    let colorValue: number = parseFloat(data[colorValuePath]);
+                    let colorValue: number = (colorValuePath.indexOf(".") > -1) ? Number(getValueFromObject(data, colorValuePath)) :
+                    parseFloat(data[colorValuePath]);
                     if (colorValue >= colorMap.from && colorValue <= colorMap.to) {
                         colorMapProcess = true;
                         rangeData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, colorValue));
@@ -1291,7 +1304,8 @@ export class Legend {
                 equalData = [];
                 let eqaulColorProcess: boolean = false;
                 Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
-                    let equalValue: string = data[colorValuePath];
+                    let equalValue: string = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
+                                              (data[colorValuePath]));
                     if (equalValue === colorMap.value) {
                         eqaulColorProcess = true;
                         if (equalValues.indexOf(equalValue) === -1) {
@@ -1325,7 +1339,8 @@ export class Legend {
             } else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
                     Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
-                        let equalValue: string = data[colorValuePath];
+                        let equalValue: string = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
+                                                  (data[colorValuePath]));
                         for (let k: number = 0; k < outOfRangeValues.length; k++) {
                             if (equalValue === outOfRangeValues[k]) {
                                 outOfRange.push(
@@ -1374,11 +1389,14 @@ export class Legend {
                 let showLegend: boolean = isNullOrUndefined(this.maps.legendSettings.showLegendPath) ?
                     true : isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
                         false : data[this.maps.legendSettings.showLegendPath];
-                let dataValue: string = data[colorValuePath];
+                let dataValue: string = ((colorValuePath.indexOf(".") > -1) ? (getValueFromObject(data, colorValuePath)) :
+                                         (data[colorValuePath]));
                 let newData: Object[] = [];
                 let legendFill: string = (isNullOrUndefined(fill)) ? dataValue : fill;
                 if (!isNullOrUndefined(dataValue) && colorMapping.length === 0) {
-                    legendText = !isNullOrUndefined(data[valuePath]) ? data[valuePath] : data[dataPath];
+                    legendText = !isNullOrUndefined(data[valuePath]) ? ((valuePath.indexOf(".") > -1) ?
+                    getValueFromObject(data, valuePath) : data[valuePath]) : ((dataPath.indexOf(".") > -1) ?
+                    getValueFromObject(data, dataPath) : data[dataPath])
                     newData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, dataValue));
                 }
                 this.getOverallLegendItemsCollection(legendText, legendFill, newData, showLegend);
@@ -1751,8 +1769,9 @@ export class Legend {
         if (Object.prototype.toString.call(layerData) === '[object Array]') {
             for (let i: number = 0; i < layerData.length; i++) {
                 let shapeData: Object = layerData[i];
+                let dataPathValue: string = (dataPath.indexOf(".") > -1 ) ? getValueFromObject(data, dataPath) : data[dataPath];
                 let shapePath: string = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
-                if (shapeData['properties'][shapePath] === data[dataPath]) {
+                if (shapeData['properties'][shapePath] === dataPathValue) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,
                         name: data[dataPath], value: value

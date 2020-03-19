@@ -1,7 +1,7 @@
-import { Property, Collection, ChildProperty } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel } from './index';
-import { Cell } from './cell';
 import { RowModel } from './row-model';
+import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';
+import { Cell } from './cell';
 
 /**
  * Configures the Row behavior for the spreadsheet.
@@ -55,7 +55,6 @@ export class Row extends ChildProperty<SheetModel> {
     /**
      * To hide/show the row in spreadsheet.
      * @default false
-     * @hidden
      */
     @Property(false)
     public hidden: boolean;

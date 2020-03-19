@@ -112,6 +112,7 @@ let Splitter = class Splitter extends Component {
         this.templateElement = [];
         this.collapseFlag = false;
         this.expandFlag = true;
+        this.isModalChange = true;
     }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
@@ -121,7 +122,7 @@ let Splitter = class Splitter extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        if (!this.element.classList.contains(ROOT)) {
+        if (!this.element.classList.contains(ROOT) || !this.isModalChange) {
             return;
         }
         for (let prop of Object.keys(newProp)) {
@@ -168,7 +169,7 @@ let Splitter = class Splitter extends Component {
                                         this.collapsibleModelUpdate(index);
                                         break;
                                     case 'collapsed':
-                                        newProp.paneSettings[index].collapsed ? this.isCollapsed() : this.collapsedOnchange(index);
+                                        newProp.paneSettings[index].collapsed ? this.isCollapsed(index) : this.collapsedOnchange(index);
                                         break;
                                     case 'cssClass':
                                         this.setCssClass(this.allPanes[index], newProp.paneSettings[index].cssClass);
@@ -226,12 +227,16 @@ let Splitter = class Splitter extends Component {
     preRender() {
         this.wrapper = this.element.cloneNode(true);
         this.wrapperParent = this.element.parentElement;
-        removeClass([this.wrapper], ['e-control', 'e-lib', ROOT]);
-        let orientation = this.orientation === 'Horizontal' ? HORIZONTAL_PANE : VERTICAL_PANE;
-        addClass([this.element], orientation);
+        if (!this.checkBlazor()) {
+            removeClass([this.wrapper], ['e-control', 'e-lib', ROOT]);
+            let orientation = this.orientation === 'Horizontal' ? HORIZONTAL_PANE : VERTICAL_PANE;
+            addClass([this.element], orientation);
+        }
         let name = Browser.info.name;
         let css = (name === 'msie') ? 'e-ie' : '';
-        this.setCssClass(this.element, css);
+        if (!this.checkBlazor()) {
+            this.setCssClass(this.element, css);
+        }
         if (Browser.isDevice) {
             addClass([this.element], SPLIT_TOUCH);
         }
@@ -252,15 +257,19 @@ let Splitter = class Splitter extends Component {
      * @private
      */
     render() {
-        this.checkDataAttributes();
-        this.setCssClass(this.element, this.cssClass);
-        this.isEnabled(this.enabled);
-        this.setDimension(this.getHeight(this.element), this.getWidth(this.element));
+        if (!this.checkBlazor()) {
+            this.checkDataAttributes();
+            this.setCssClass(this.element, this.cssClass);
+            this.isEnabled(this.enabled);
+            this.setDimension(this.getHeight(this.element), this.getWidth(this.element));
+        }
         this.createSplitPane(this.element);
         this.addSeparator(this.element);
         this.getPanesDimensions();
         this.setPaneSettings();
-        this.setRTL(this.enableRtl);
+        if (!this.checkBlazor()) {
+            this.setRTL(this.enableRtl);
+        }
         this.collapseFlag = true;
         this.isCollapsed();
         this.collapseFlag = false;
@@ -329,7 +338,8 @@ let Splitter = class Splitter extends Component {
                 this.checkPaneSize(event);
                 this.triggerResizing(event);
             }
-            else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+            else if (event.keyCode === 13 && this.paneSettings[index].collapsible &&
+                document.activeElement.classList.contains(SPLIT_BAR)) {
                 if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
                     this.collapse(index);
                     addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
@@ -410,6 +420,9 @@ let Splitter = class Splitter extends Component {
     destroyPaneSettings() {
         [].slice.call(this.element.children).forEach((el) => { detach(el); });
         this.restoreElem();
+    }
+    checkBlazor() {
+        return isBlazor() && this.isServerRendered;
     }
     setPaneSettings() {
         let childCount = this.allPanes.length;
@@ -545,7 +558,6 @@ let Splitter = class Splitter extends Component {
                             j++;
                         }
                     }
-                    this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
                     collapsedindex = collapsedindex.sort();
                     this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
                     for (let i = 0; i < collapsedindex.length; i++) {
@@ -605,9 +617,9 @@ let Splitter = class Splitter extends Component {
     }
     setSeparatorSize(size) {
         let sizeValue = isNullOrUndefined(size) ? 'auto' : size + 'px';
-        let seaprator = this.orientation === 'Horizontal' ? SPLIT_H_BAR : SPLIT_V_BAR;
+        let separator = this.orientation === 'Horizontal' ? SPLIT_H_BAR : SPLIT_V_BAR;
         for (let index = 0; index < this.allBars.length; index++) {
-            let splitBar = selectAll('.' + seaprator, this.element)[index];
+            let splitBar = selectAll('.' + separator, this.element)[index];
             let resizeBar = selectAll('.' + RESIZE_BAR, splitBar)[0];
             if (this.orientation === 'Horizontal') {
                 splitBar.style.width = sizeValue;
@@ -644,7 +656,7 @@ let Splitter = class Splitter extends Component {
     collectPanes(childNodes) {
         let elements = [];
         for (let i = 0; i < childNodes.length; i++) {
-            if (childNodes[i].classList.contains('e-pane')) {
+            if (childNodes[i].classList.contains(PANE)) {
                 elements.push(childNodes[i]);
             }
         }
@@ -656,11 +668,14 @@ let Splitter = class Splitter extends Component {
     getNextPane(currentBar, order) {
         return this.checkSplitPane(currentBar, (((order - 1) / 2) + 1));
     }
+    updateSeparatorSize(resizeHanlder) {
+        let sizeValue = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
+        this.orientation === 'Horizontal' ? (resizeHanlder.style.width = sizeValue) : resizeHanlder.style.height = sizeValue;
+    }
     addResizeHandler(currentBar) {
         let resizeHanlder = this.createElement('div');
         addClass([resizeHanlder], [RESIZE_BAR, E_ICONS]);
-        let sizeValue = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
-        this.orientation === 'Horizontal' ? (resizeHanlder.style.width = sizeValue) : resizeHanlder.style.height = sizeValue;
+        this.updateSeparatorSize(resizeHanlder);
         currentBar.appendChild(resizeHanlder);
     }
     getHeight(target) {
@@ -691,6 +706,16 @@ let Splitter = class Splitter extends Component {
             }
         }
     }
+    updateIconClass() {
+        if (this.orientation === 'Horizontal') {
+            this.leftArrow = ARROW_LEFT;
+            this.rightArrow = ARROW_RIGHT;
+        }
+        else {
+            this.leftArrow = ARROW_UP;
+            this.rightArrow = ARROW_DOWN;
+        }
+    }
     createSeparator(i) {
         let separator = this.createElement('div');
         this.allBars.push(separator);
@@ -706,8 +731,7 @@ let Splitter = class Splitter extends Component {
         let proxy;
         size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
         if (this.orientation === 'Horizontal') {
-            this.leftArrow = ARROW_LEFT;
-            this.rightArrow = ARROW_RIGHT;
+            this.updateIconClass();
             addClass([arrow2], [NAVIGATE_ARROW, ARROW_LEFT, HIDE_ICON]);
             addClass([arrow1], [NAVIGATE_ARROW, ARROW_RIGHT, HIDE_ICON]);
             addClass([separator], [SPLIT_BAR, SPLIT_H_BAR]);
@@ -717,8 +741,7 @@ let Splitter = class Splitter extends Component {
             addClass([arrow1], [NAVIGATE_ARROW, ARROW_DOWN, HIDE_ICON]);
             addClass([arrow2], [NAVIGATE_ARROW, ARROW_UP, HIDE_ICON]);
             addClass([separator], [SPLIT_BAR, SPLIT_V_BAR]);
-            this.leftArrow = ARROW_UP;
-            this.rightArrow = ARROW_DOWN;
+            this.updateIconClass();
             separator.style.height = size;
         }
         this.addMouseActions(separator);
@@ -729,14 +752,12 @@ let Splitter = class Splitter extends Component {
         separator.setAttribute('tabindex', '0');
         proxy = this;
         separator.addEventListener('focus', () => {
-            if (document.activeElement.classList.contains('e-split-bar')) {
-                proxy.currentSeparator = document.activeElement;
-                proxy.currentSeparator.classList.add(SPLIT_BAR_ACTIVE);
-            }
+            separator.classList.add(SPLIT_BAR_ACTIVE);
+            proxy.currentSeparator = separator;
             proxy.getPaneDetails();
         });
         separator.addEventListener('blur', () => {
-            proxy.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
+            separator.classList.remove(SPLIT_BAR_ACTIVE);
         });
         return separator;
     }
@@ -748,25 +769,55 @@ let Splitter = class Splitter extends Component {
         let childCount = this.allPanes.length;
         let clonedEle = target.children;
         let separator;
+        let proxy;
         for (let i = 0; i < childCount; i++) {
             if (i < childCount - 1) {
-                separator = this.createSeparator(i);
-                setStyleAttribute(separator, { 'order': (i * 2) + 1 });
-                this.separatorOrder.push((i * 2) + 1);
-                clonedEle[i].parentNode.appendChild(separator);
-                this.currentSeparator = separator;
-                separator.setAttribute('role', 'separator');
-                separator.setAttribute('aria-orientation', this.orientation.toLowerCase());
-                this.wireClickEvents();
-                if (this.isResizable()) {
-                    EventHandler.add(separator, 'mousedown', this.onMouseDown, this);
-                    let eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
-                    EventHandler.add(separator, eventName, this.onMouseDown, this);
-                    separator.classList.add(RESIZABLE_BAR);
-                    this.updateResizablePanes(i);
+                if (!this.checkBlazor()) {
+                    separator = this.createSeparator(i);
+                    setStyleAttribute(separator, { 'order': (i * 2) + 1 });
+                    this.separatorOrder.push((i * 2) + 1);
+                    clonedEle[i].parentNode.appendChild(separator);
+                    this.currentSeparator = separator;
+                    separator.setAttribute('role', 'separator');
+                    separator.setAttribute('aria-orientation', this.orientation.toLowerCase());
                 }
-                else {
-                    addClass([select('.' + RESIZE_BAR, separator)], HIDE_HANDLER);
+                if (this.checkBlazor()) {
+                    proxy = this;
+                    separator = this.element.getElementsByClassName('e-split-bar')[i];
+                    if (this.checkBlazor()) {
+                        this.allBars.push(separator);
+                    }
+                    this.updateIconClass();
+                }
+                if (!this.checkBlazor()) {
+                    this.wireClickEvents();
+                }
+                if (this.checkBlazor() && !isNullOrUndefined(separator)) {
+                    this.currentSeparator = separator;
+                    this.addMouseActions(separator);
+                    this.wireClickEvents();
+                    separator.addEventListener('focus', () => {
+                        if (document.activeElement.classList.contains('e-split-bar')) {
+                            proxy.currentSeparator = document.activeElement;
+                            proxy.currentSeparator.classList.add(SPLIT_BAR_ACTIVE);
+                        }
+                        this.getPaneDetails();
+                    });
+                    separator.addEventListener('blur', () => {
+                        proxy.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
+                    });
+                }
+                if (!isNullOrUndefined(separator)) {
+                    if (this.isResizable()) {
+                        EventHandler.add(separator, 'mousedown', this.onMouseDown, this);
+                        let eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+                        EventHandler.add(separator, eventName, this.onMouseDown, this);
+                        separator.classList.add(RESIZABLE_BAR);
+                        this.updateResizablePanes(i);
+                    }
+                    else {
+                        addClass([select('.' + RESIZE_BAR, separator)], HIDE_HANDLER);
+                    }
                 }
             }
             else {
@@ -931,14 +982,18 @@ let Splitter = class Splitter extends Component {
             addClass([this.previousPane], EXPAND_PANE);
             addClass([this.nextPane], collapseClass);
             if (this.expandFlag) {
-                this.updatePaneSettings(this.nextPaneIndex, true);
+                this.isModalChange = false;
+                this.paneSettings[this.nextPaneIndex].collapsed = true;
+                this.isModalChange = true;
             }
         }
         else {
             removeClass([this.previousPane], collapseClass);
             removeClass([this.nextPane], EXPAND_PANE);
             if (this.expandFlag) {
-                this.updatePaneSettings(this.prevPaneIndex, false);
+                this.isModalChange = false;
+                this.paneSettings[this.prevPaneIndex].collapsed = false;
+                this.isModalChange = true;
             }
         }
         this.updateIconsOnExpand(e);
@@ -1017,7 +1072,7 @@ let Splitter = class Splitter extends Component {
         }
         else if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneExpanded) {
             this.resizableModel(this.currentBarIndex, true);
-            if (!this.splitInstance.nextPaneNextEle.classList.contains('e-collapsed')) {
+            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE)) {
                 this.resizableModel(this.currentBarIndex + 1, true);
             }
             if (!this.paneSettings[this.currentBarIndex].collapsible) {
@@ -1033,9 +1088,9 @@ let Splitter = class Splitter extends Component {
                 this.showTargetBarIcon(this.currentSeparator, this.rightArrow);
             }
             if (!isNullOrUndefined(this.nextBar)) {
-                if (this.nextPane.nextElementSibling && (this.nextPane.nextElementSibling.classList.contains('e-collapsed') &&
+                if (this.nextPane.nextElementSibling && (this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE) &&
                     this.paneSettings[this.nextPaneIndex + 1].collapsible) ||
-                    (!this.nextPane.nextElementSibling.classList.contains('e-collapsed') &&
+                    (!this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE) &&
                         this.paneSettings[this.nextPaneIndex].collapsible)) {
                     this.showTargetBarIcon(this.nextBar, this.leftArrow);
                 }
@@ -1081,7 +1136,9 @@ let Splitter = class Splitter extends Component {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
             if (!this.collapseFlag) {
-                this.updatePaneSettings(this.nextPaneIndex, false);
+                this.isModalChange = false;
+                this.paneSettings[this.nextPaneIndex].collapsed = false;
+                this.isModalChange = true;
             }
         }
         else {
@@ -1090,7 +1147,9 @@ let Splitter = class Splitter extends Component {
             addClass([this.nextPane], EXPAND_PANE);
             addClass([this.previousPane], collapseClass);
             if (!this.collapseFlag) {
-                this.updatePaneSettings(this.prevPaneIndex, true);
+                this.isModalChange = false;
+                this.paneSettings[this.prevPaneIndex].collapsed = true;
+                this.isModalChange = true;
             }
         }
         this.updateIconsOnCollapse(e);
@@ -1217,6 +1276,10 @@ let Splitter = class Splitter extends Component {
         this.currentBarIndex = this.getSeparatorIndex(e.target.parentElement);
     }
     getSeparatorIndex(target) {
+        let separator = this.orientation === 'Horizontal' ? SPLIT_H_BAR : SPLIT_V_BAR;
+        if (this.checkBlazor() && this.allBars.length < 1) {
+            this.allBars = selectAll('.' + separator, this.element);
+        }
         let array = [].slice.call(this.allBars);
         return array.indexOf(target);
     }
@@ -1344,20 +1407,6 @@ let Splitter = class Splitter extends Component {
         else {
             return parseFloat(value);
         }
-    }
-    updatePaneSettings(index, collapsed) {
-        let paneValue = {
-            size: this.paneSettings[index].size,
-            min: this.paneSettings[index].min,
-            max: this.paneSettings[index].max,
-            content: this.paneSettings[index].content,
-            resizable: this.paneSettings[index].resizable,
-            collapsed: collapsed,
-            collapsible: this.paneSettings[index].collapsible,
-            cssClass: this.paneSettings[index].size,
-        };
-        this.paneSettings.splice(index, 1, paneValue);
-        this.setProperties({ 'paneSettings': this.paneSettings }, true);
     }
     calcDragPosition(rectValue, offsetValue) {
         let separatorPosition;
@@ -1726,20 +1775,15 @@ let Splitter = class Splitter extends Component {
     }
     // tslint:disable-next-line
     templateCompile(ele, cnt) {
-        let blazorContain = Object.keys(window);
         let tempEle = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content');
         if (tempEle.childNodes.length !== 0) {
             [].slice.call(tempEle.childNodes).forEach((childEle) => {
                 ele.appendChild(childEle);
             });
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && cnt.indexOf('<div>Blazor') === 0) {
-                updateBlazorTemplate(this.element.id + 'content' + this.allPanes.length.toString(), 'ContentTemplate', this.paneSettings[this.allPanes.length - 1]);
-            }
         }
     }
     compileElement(ele, val, prop) {
-        let blazorContain = Object.keys(window);
         if (typeof (val) === 'string') {
             if (val[0] === '.' || val[0] === '#') {
                 let eleVal = document.querySelector(val);
@@ -1771,7 +1815,7 @@ let Splitter = class Splitter extends Component {
         }
         let templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+            if (isBlazor() && !this.isStringTemplate) {
                 templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), this.isStringTemplate);
             }
             else {
@@ -1789,11 +1833,13 @@ let Splitter = class Splitter extends Component {
     }
     createSplitPane(target) {
         let childCount = target.children.length;
-        for (let i = 0; i < this.paneSettings.length; i++) {
-            if (childCount < this.paneSettings.length) {
-                let childElement = this.createElement('div');
-                this.element.appendChild(childElement);
-                childCount = childCount + 1;
+        if (!this.checkBlazor()) {
+            for (let i = 0; i < this.paneSettings.length; i++) {
+                if (childCount < this.paneSettings.length) {
+                    let childElement = this.createElement('div');
+                    this.element.appendChild(childElement);
+                    childCount = childCount + 1;
+                }
             }
         }
         childCount = target.children.length;
@@ -1803,23 +1849,30 @@ let Splitter = class Splitter extends Component {
             for (let i = 0; i < childCount; i++) {
                 // To accept only div and span element as pane
                 if (child[i].nodeName === 'DIV' || child[i].nodeName === 'SPAN') {
-                    this.allPanes.push(child[i]);
-                    if (this.orientation === 'Horizontal') {
-                        addClass([child[i]], [PANE, SPLIT_H_PANE, SCROLL_PANE]);
-                        this.panesDimension(i, child);
+                    if (this.checkBlazor() && child[i].classList.contains(PANE)) {
+                        this.allPanes.push(child[i]);
                     }
-                    else {
-                        addClass([child[i]], [PANE, SPLIT_V_PANE, SCROLL_PANE]);
-                        this.panesDimension(i, child);
+                    else if (!this.checkBlazor()) {
+                        this.allPanes.push(child[i]);
                     }
-                    if (!isNullOrUndefined(this.paneSettings[i]) && !isNullOrUndefined(this.paneSettings[i].content)) {
-                        this.setTemplate(this.paneSettings[i].content, child[i]);
-                    }
-                    if (!isNullOrUndefined(this.paneSettings[i]) && this.paneSettings[i].cssClass) {
-                        this.setCssClass(child[i], this.paneSettings[i].cssClass);
-                    }
-                    if (!isNullOrUndefined(this.paneSettings[i])) {
-                        this.paneCollapsible(child[i], i);
+                    if (!this.checkBlazor()) {
+                        if (this.orientation === 'Horizontal') {
+                            addClass([child[i]], [PANE, SPLIT_H_PANE, SCROLL_PANE]);
+                            this.panesDimension(i, child);
+                        }
+                        else {
+                            addClass([child[i]], [PANE, SPLIT_V_PANE, SCROLL_PANE]);
+                            this.panesDimension(i, child);
+                        }
+                        if (!isNullOrUndefined(this.paneSettings[i]) && !isNullOrUndefined(this.paneSettings[i].content)) {
+                            this.setTemplate(this.paneSettings[i].content, child[i]);
+                        }
+                        if (!isNullOrUndefined(this.paneSettings[i]) && this.paneSettings[i].cssClass) {
+                            this.setCssClass(child[i], this.paneSettings[i].cssClass);
+                        }
+                        if (!isNullOrUndefined(this.paneSettings[i])) {
+                            this.paneCollapsible(child[i], i);
+                        }
                     }
                 }
             }
@@ -1833,7 +1886,9 @@ let Splitter = class Splitter extends Component {
      */
     expand(index) {
         this.collapsedOnchange(index);
-        this.updatePaneSettings(index, false);
+        this.isModalChange = false;
+        this.paneSettings[index].collapsed = false;
+        this.isModalChange = true;
     }
     /**
      * collapses corresponding pane based on the index is passed.
@@ -1842,7 +1897,9 @@ let Splitter = class Splitter extends Component {
      */
     collapse(index) {
         this.isCollapsed(index);
-        this.updatePaneSettings(index, true);
+        this.isModalChange = false;
+        this.paneSettings[index].collapsed = true;
+        this.isModalChange = true;
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -1850,14 +1907,24 @@ let Splitter = class Splitter extends Component {
      */
     destroy() {
         if (!this.isDestroyed) {
-            super.destroy();
+            if (!this.checkBlazor()) {
+                super.destroy();
+            }
             EventHandler.remove(document, 'touchstart click', this.onDocumentClick);
             while (this.element.attributes.length > 0) {
                 this.element.removeAttribute(this.element.attributes[0].name);
             }
-            this.element.innerHTML = this.wrapper.innerHTML;
-            for (let i = 0; i < this.wrapper.attributes.length; i++) {
-                this.element.setAttribute(this.wrapper.attributes[i].name, this.wrapper.attributes[i].value);
+            if (this.checkBlazor()) {
+                let splitNodes = this.element.children;
+                for (let i = splitNodes.length - 1; i >= 0; i--) {
+                    detach(splitNodes[i]);
+                }
+            }
+            else {
+                this.element.innerHTML = this.wrapper.innerHTML;
+                for (let i = 0; i < this.wrapper.attributes.length; i++) {
+                    this.element.setAttribute(this.wrapper.attributes[i].name, this.wrapper.attributes[i].value);
+                }
             }
             if (this.refreshing) {
                 addClass([this.element], ['e-control', 'e-lib', ROOT]);
@@ -3862,6 +3929,12 @@ let DashboardLayout = class DashboardLayout extends Component {
             }
         }
     }
+    ensureDrag() {
+        this.checkDragging(this.dragCollection);
+        let dragPanels = this.element.querySelectorAll('.' + drag);
+        removeClass(dragPanels, [drag]);
+        this.setClasses(this.panelCollection);
+    }
     setClasses(panelCollection) {
         for (let i = 0; i < panelCollection.length; i++) {
             let element = panelCollection[i];
@@ -4292,6 +4365,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.allowDragging &&
             this.mediaQuery ? !(this.checkMediaQuery()) : false) {
             this.enableDraggingContent([document.getElementById(panelProp.id)]);
+            this.setClasses(this.panelCollection);
         }
         if (this.allowFloating) {
             this.moveItemsUpwards();
@@ -4575,17 +4649,6 @@ let DashboardLayout = class DashboardLayout extends Component {
     setEnableRtl() {
         this.enableRtl ? addClass([this.element], 'e-rtl') : removeClass([this.element], 'e-rtl');
     }
-    getDragInstance(id) {
-        let draggableInstance;
-        let ele = document.getElementById(id);
-        for (let i = 0; i < this.dragCollection.length; i++) {
-            draggableInstance = this.dragCollection[i].element === ele ? this.dragCollection[i] : null;
-            if (draggableInstance) {
-                return draggableInstance;
-            }
-        }
-        return draggableInstance;
-    }
     /**
      * Called internally if any of the property value changed.
      * returns void
@@ -4653,7 +4716,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                     break;
                 case 'allowDragging':
                     this.setProperties({ allowDragging: newProp.allowDragging }, true);
-                    this.checkDragging(this.dragCollection);
+                    this.ensureDrag();
                     break;
                 case 'allowResizing':
                     this.setProperties({ allowResizing: newProp.allowResizing }, true);
@@ -4681,14 +4744,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                     break;
                 case 'draggableHandle':
                     this.setProperties({ draggableHandle: newProp.draggableHandle }, true);
-                    for (let i = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
-                        let ele = this.element.querySelectorAll('.e-panel')[i];
-                        let draggableInstance = this.getDragInstance(ele.id);
-                        draggableInstance.handle = this.draggableHandle;
-                    }
-                    let dragPanels = this.element.querySelectorAll('.' + drag);
-                    removeClass(dragPanels, [drag]);
-                    this.setClasses(this.panelCollection);
+                    this.ensureDrag();
                     break;
                 case 'allowFloating':
                     this.setProperties({ allowFloating: newProp.allowFloating }, true);

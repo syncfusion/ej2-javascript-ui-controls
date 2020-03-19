@@ -728,6 +728,7 @@ describe('DropDownList Control', () => {
             destroy(editorObj);
         });
         it('Inline - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'DropDownList',
                 mode: 'Inline',
@@ -736,16 +737,19 @@ describe('DropDownList Control', () => {
                     dataSource: dataSource
                 },
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });
         it('Popup - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'DropDownList',
                 mode: 'Popup',
@@ -754,12 +758,14 @@ describe('DropDownList Control', () => {
                     dataSource: dataSource
                 },
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });

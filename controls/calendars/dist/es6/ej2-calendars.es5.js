@@ -2,7 +2,7 @@ import { Animation, Browser, ChildProperty, Collection, Component, Event, EventH
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
-import { ListBase, cssClass } from '@syncfusion/ej2-lists';
+import { ListBase } from '@syncfusion/ej2-lists';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -470,7 +470,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 targetEle.blur();
                 this.tableBodyElement.focus();
             }
-            if (this.serverModuleName === 'ejs.calendars.Calendar') {
+            if (this.serverModuleName === 'sf.calendars.Calendar') {
                 this.tableBodyElement = null;
             }
         }
@@ -2257,6 +2257,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
      * This method is used to add the single or multiple dates to the values property of the Calendar.
      * @param  {Date || Date[]} dates - Specifies the date or dates to be added to the values property of the Calendar.
      * @returns void
+     * @deprecated
      */
     Calendar.prototype.addDate = function (dates) {
         if (typeof dates !== 'string' && typeof dates !== 'number') {
@@ -2298,6 +2299,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
      * This method is used to remove the single or multiple dates from the values property of the Calendar.
      * @param  {Date || Date[]} dates - Specifies the date or dates which need to be removed from the values property of the Calendar.
      * @returns void
+     * @deprecated
      */
     Calendar.prototype.removeDate = function (dates) {
         if (typeof dates !== 'string' && typeof dates !== 'number' && !isNullOrUndefined(this.values) && this.values.length > 0) {
@@ -4790,7 +4792,7 @@ var CANCEL = 'e-cancel';
 var DEVICE$1 = 'e-device';
 var OVERLAY$2 = 'e-overlay';
 var CHANGEICON = 'e-change-icon e-icons';
-var LISTCLASS = cssClass.li;
+var LISTCLASS = 'e-list-item';
 var RTL$2 = 'e-rtl';
 var HOVER = 'e-hover';
 var OVERFLOW$1 = 'e-range-overflow';
@@ -5323,7 +5325,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         e.preventDefault();
         this.targetElement = null;
-        if (this.isPopupOpen()) {
+        if (this.isPopupOpen() && document.body.contains(this.popupObj.element)) {
             this.applyFunction(e);
         }
         else {
@@ -7834,7 +7836,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             && !(closest(target, '.' + INPUTCONTAINER$1) === this.inputWrapper.container)
             && !(closest(target, '.e-daterangepicker.e-popup') && (!target.classList.contains('e-day')))) {
             this.preventBlur = false;
-            if (this.isPopupOpen()) {
+            if (this.isPopupOpen() && document.body.contains(this.popupObj.element)) {
                 this.applyFunction(e);
                 if (!this.isMobile) {
                     this.isRangeIconClicked = false;
@@ -8948,8 +8950,10 @@ var HOVER$1 = 'e-hover';
 var NAVIGATION = 'e-navigation';
 var DISABLED$3 = 'e-disabled';
 var ICONANIMATION = 'e-icon-anim';
+var TIMEICON = 'e-time-icon';
+var CLEARICON$1 = 'e-clear-icon';
 var FOCUS = 'e-input-focus';
-var LISTCLASS$1 = cssClass.li;
+var LISTCLASS$1 = 'e-list-item';
 var HALFPOSITION = 2;
 var ANIMATIONDURATION = 50;
 var OVERFLOW$2 = 'e-time-overflow';
@@ -9003,8 +9007,10 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.liCollections = [];
         _this.timeCollections = [];
+        _this.blazorTimeCollections = [];
         _this.disableItemCollection = [];
         _this.invalidValueString = null;
+        _this.isBlazorServer = false;
         _this.timeOptions = options;
         return _this;
     }
@@ -9031,31 +9037,58 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.inputElement = this.element;
         this.angularTag = null;
         this.formElement = closest(this.element, 'form');
-        if (this.element.tagName === 'EJS-TIMEPICKER') {
-            this.angularTag = this.element.tagName;
-            this.inputElement = this.createElement('input');
-            this.element.appendChild(this.inputElement);
+        this.isBlazorServer = (isBlazor() && this.isServerRendered && this.getModuleName() === 'timepicker') ? true : false;
+        if (!this.isBlazorServer) {
+            if (this.element.tagName === 'EJS-TIMEPICKER') {
+                this.angularTag = this.element.tagName;
+                this.inputElement = this.createElement('input');
+                this.element.appendChild(this.inputElement);
+            }
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            this.element.removeAttribute('tabindex');
+            this.openPopupEventArgs = {
+                appendTo: document.body
+            };
         }
-        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.removeAttribute('tabindex');
-        this.openPopupEventArgs = {
-            appendTo: document.body
-        };
     };
     // element creation
     TimePicker.prototype.render = function () {
-        this.initialize();
-        this.createInputElement();
-        this.updateHtmlAttributeToWrapper();
-        this.setTimeAllowEdit();
-        this.setEnable();
-        this.validateInterval();
+        if (!this.isBlazorServer) {
+            this.initialize();
+            this.createInputElement();
+            this.updateHtmlAttributeToWrapper();
+            this.setTimeAllowEdit();
+            this.setEnable();
+            this.validateInterval();
+        }
+        else {
+            this.globalize = new Internationalization(this.locale);
+            this.defaultCulture = new Internationalization('en');
+            this.checkTimeFormat();
+            var parentElement = this.element.parentElement;
+            this.inputWrapper = {
+                container: parentElement,
+                clearButton: parentElement.querySelector('.' + CLEARICON$1),
+                buttons: [parentElement.querySelector('.' + TIMEICON)]
+            };
+            Input.bindInitialEvent({
+                element: this.inputElement,
+                floatLabelType: this.floatLabelType
+            });
+            if (this.showClearButton && this.inputWrapper.clearButton) {
+                Input.wireClearBtnEvents(this.inputElement, this.inputWrapper.clearButton, this.inputWrapper.container);
+            }
+        }
         this.bindEvents();
-        this.validateDisable();
-        this.setValue(this.getFormattedValue(this.value));
+        if (!this.isBlazorServer) {
+            this.validateDisable();
+            this.setValue(this.getFormattedValue(this.value));
+        }
         this.anchor = this.inputElement;
         this.inputElement.setAttribute('value', this.inputElement.value);
-        this.inputEleValue = this.getDateObject(this.inputElement.value);
+        if (!this.isBlazorServer) {
+            this.inputEleValue = this.getDateObject(this.inputElement.value);
+        }
         this.renderComplete();
     };
     TimePicker.prototype.setTimeAllowEdit = function () {
@@ -9281,38 +9314,43 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     // destroy function
     TimePicker.prototype.destroy = function () {
-        this.hide();
-        this.unBindEvents();
-        var ariaAttribute = {
-            'aria-haspopup': 'true', 'aria-autocomplete': 'list', 'tabindex': '0', 'aria-activedescendant': 'null',
-            'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-disabled': 'true', 'aria-invalid': 'false'
-        };
-        if (this.inputElement) {
-            Input.removeAttributes(ariaAttribute, this.inputElement);
-            if (this.angularTag === null) {
-                this.inputWrapper.container.parentElement.appendChild(this.inputElement);
+        if (this.isBlazorServer) {
+            this.unBindEvents();
+        }
+        else {
+            this.hide();
+            this.unBindEvents();
+            var ariaAttribute = {
+                'aria-haspopup': 'true', 'aria-autocomplete': 'list', 'tabindex': '0', 'aria-activedescendant': 'null',
+                'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
+                'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-disabled': 'true', 'aria-invalid': 'false'
+            };
+            if (this.inputElement) {
+                Input.removeAttributes(ariaAttribute, this.inputElement);
+                if (this.angularTag === null) {
+                    this.inputWrapper.container.parentElement.appendChild(this.inputElement);
+                }
+                (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) ?
+                    this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
+                this.ensureInputAttribute();
+                this.enableElement([this.inputElement]);
+                this.inputElement.classList.remove('e-input');
+                if (isNullOrUndefined(this.cloneElement.getAttribute('disabled'))) {
+                    Input.setEnabled(true, this.inputElement, this.floatLabelType);
+                }
             }
-            (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) ?
-                this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
-            this.ensureInputAttribute();
-            this.enableElement([this.inputElement]);
-            this.inputElement.classList.remove('e-input');
-            if (isNullOrUndefined(this.cloneElement.getAttribute('disabled'))) {
-                Input.setEnabled(true, this.inputElement, this.floatLabelType);
+            if (this.inputWrapper.container) {
+                detach(this.inputWrapper.container);
             }
-        }
-        if (this.inputWrapper.container) {
-            detach(this.inputWrapper.container);
-        }
-        this.inputWrapper = this.popupWrapper = this.cloneElement = undefined;
-        this.liCollections = this.timeCollections = this.disableItemCollection = [];
-        if (!isNullOrUndefined(this.rippleFn)) {
-            this.rippleFn();
-        }
-        _super.prototype.destroy.call(this);
-        if (this.formElement) {
-            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+            this.inputWrapper = this.popupWrapper = this.cloneElement = undefined;
+            this.liCollections = this.timeCollections = this.disableItemCollection = [];
+            if (!isNullOrUndefined(this.rippleFn)) {
+                this.rippleFn();
+            }
+            _super.prototype.destroy.call(this);
+            if (this.formElement) {
+                EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+            }
         }
     };
     TimePicker.prototype.ensureInputAttribute = function () {
@@ -9337,18 +9375,24 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     //popup creation
     TimePicker.prototype.popupCreation = function () {
-        this.popupWrapper = this.createElement('div', {
-            className: ROOT$3 + ' ' + POPUP$2,
-            attrs: { 'id': this.element.id + '_popup', 'style': 'visibility:hidden' }
-        });
-        if (!isNullOrUndefined(this.cssClass)) {
-            this.popupWrapper.className += ' ' + this.cssClass;
+        if (!this.isBlazorServer) {
+            this.popupWrapper = this.createElement('div', {
+                className: ROOT$3 + ' ' + POPUP$2,
+                attrs: { 'id': this.element.id + '_popup', 'style': 'visibility:hidden' }
+            });
+            if (!isNullOrUndefined(this.cssClass)) {
+                this.popupWrapper.className += ' ' + this.cssClass;
+            }
+            if (!isNullOrUndefined(this.step) && this.step > 0) {
+                this.generateList();
+                append([this.listWrapper], this.popupWrapper);
+            }
+            this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         }
-        if (!isNullOrUndefined(this.step) && this.step > 0) {
+        else {
+            this.popupWrapper = this.inputWrapper.container.nextElementSibling;
             this.generateList();
-            append([this.listWrapper], this.popupWrapper);
         }
-        this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         this.addSelection();
         this.renderPopup();
         detach(this.popupWrapper);
@@ -9359,11 +9403,22 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         return popupHeight > height ? height : popupHeight;
     };
     TimePicker.prototype.generateList = function () {
-        this.createListItems();
+        if (!this.isBlazorServer) {
+            this.createListItems();
+        }
+        else {
+            this.listWrapper = this.popupWrapper.querySelector('.e-content');
+        }
         this.wireListEvents();
         var rippleModel = { duration: 300, selector: '.' + LISTCLASS$1 };
         this.rippleFn = rippleEffect(this.listWrapper, rippleModel);
         this.liCollections = this.listWrapper.querySelectorAll('.' + LISTCLASS$1);
+        if (this.isBlazorServer) {
+            this.blazorTimeCollections = [];
+            for (var index = 0; index < this.liCollections.length; index++) {
+                this.blazorTimeCollections.push(this.liCollections[index].getAttribute('data-value'));
+            }
+        }
     };
     TimePicker.prototype.renderPopup = function () {
         var _this = this;
@@ -9384,9 +9439,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 removeClass([_this.inputWrapper.buttons[0]], SELECTED$4);
                 _this.unWireListEvents();
                 _this.inputElement.setAttribute('aria-activedescendant', 'null');
-                remove(_this.popupObj.element);
-                _this.popupObj.destroy();
-                _this.popupWrapper.innerHTML = '';
+                if (!_this.isBlazorServer) {
+                    remove(_this.popupObj.element);
+                    _this.popupObj.destroy();
+                    _this.popupWrapper.innerHTML = '';
+                }
                 _this.listWrapper = _this.popupWrapper = _this.listTag = undefined;
             }, targetExitViewport: function () {
                 if (!Browser.isDevice) {
@@ -9487,6 +9544,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.selectInputText = function () {
         this.inputElement.setSelectionRange(0, (this.inputElement).value.length);
     };
+    TimePicker.prototype.setCursorToEnd = function () {
+        this.inputElement.setSelectionRange((this.inputElement).value.length, (this.inputElement).value.length);
+    };
     TimePicker.prototype.getMeridianText = function () {
         var meridian;
         if (this.locale === 'en' || this.locale === 'en-US') {
@@ -9571,8 +9631,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.popupWrapper)) {
             var items = this.popupWrapper.querySelectorAll('.' + LISTCLASS$1);
             if (items.length) {
-                var initialTime = this.timeCollections[0];
-                var scrollTime = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
+                var initialTime = this.isBlazorServer ? new Date(new Date().toDateString() + ' ' +
+                    this.blazorTimeCollections[0]).setMilliseconds(0) : this.timeCollections[0];
+                var scrollTime = this.isBlazorServer ? new Date(new Date().toDateString() + ' ' +
+                    this.scrollTo.toLocaleTimeString()).setMilliseconds(0) :
+                    this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
                 element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
             }
         }
@@ -9666,12 +9729,26 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         Input.setPlaceholder(this.l10n.getConstant('placeholder'), this.inputElement);
     };
     //event related functions
+    TimePicker.prototype.updateInputValue = function (value) {
+        Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
+    };
+    TimePicker.prototype.preventEventBubbling = function (e) {
+        e.preventDefault();
+        // tslint:disable
+        this.interopAdaptor.invokeMethodAsync('OnTimeIconClick');
+        // tslint:enable
+    };
+    TimePicker.prototype.updateBlazorTimeCollections = function (listData) {
+        this.blazorTimeCollections = listData;
+    };
     TimePicker.prototype.popupHandler = function (e) {
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
-        e.preventDefault();
-        if (this.isPopupOpen()) {
+        if (!this.isBlazorServer) {
+            e.preventDefault();
+        }
+        if (this.isPopupOpen() && !this.isBlazorServer) {
             this.closePopup(0, e);
         }
         else {
@@ -9748,11 +9825,24 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'enter':
                     if (this.isNavigate) {
                         this.selectedElement = this.liCollections[this.activeIndex];
-                        this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
-                        this.updateValue(this.valueWithMinutes, event);
+                        if (!this.isBlazorServer) {
+                            this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
+                            this.updateValue(this.valueWithMinutes, event);
+                        }
+                        else {
+                            this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
+                            // tslint:disable-next-line
+                            this.interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
+                        }
                     }
                     else {
-                        this.updateValue(this.inputElement.value, event);
+                        if (!this.isBlazorServer) {
+                            this.updateValue(this.inputElement.value, event);
+                        }
+                        else {
+                            // tslint:disable-next-line
+                            this.interopAdaptor.invokeMethodAsync('OnStrictMode', this.inputElement.value);
+                        }
                     }
                     this.hide();
                     addClass([this.inputWrapper.container], FOCUS);
@@ -9762,11 +9852,20 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'open':
-                    this.show(event);
+                    if (this.isBlazorServer) {
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnPopupHide', true);
+                        // tslint:enable
+                    }
+                    else {
+                        this.show(event);
+                    }
                     break;
                 case 'escape':
-                    Input.setValue(this.objToString(this.value), this.inputElement, this.floatLabelType, this.showClearButton);
-                    this.previousState(this.value);
+                    if (!this.isBlazorServer) {
+                        this.updateInputValue(this.objToString(this.value));
+                        this.previousState(this.value);
+                    }
                     this.hide();
                     break;
                 case 'close':
@@ -9791,7 +9890,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         if (this.isPopupOpen() && this.popupWrapper) {
             var args = {
-                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj,
+                popup: this.isBlazorServer ? null : this.popupObj,
                 event: e || null,
                 cancel: false,
                 name: 'open'
@@ -9808,6 +9907,14 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     removeClass([_this.inputWrapper.container], [ICONANIMATION]);
                     attributes(_this.inputElement, { 'aria-expanded': 'false' });
                     EventHandler.remove(document, 'mousedown touchstart', _this.documentClickHandler);
+                    if (_this.isBlazorServer) {
+                        _this.disposeServerPopup();
+                        // tslint:disable
+                        _this.inputWrapper.container.parentElement.insertBefore(_this.popupWrapper, _this.inputWrapper.container.nextElementSibling);
+                        _this.interopAdaptor.invokeMethodAsync('OnPopupHide', false);
+                        // tslint:enable
+                        _this.popupWrapper = _this.popupObj = null;
+                    }
                 }
                 if (Browser.isDevice && _this.modal) {
                     _this.modal.style.display = 'none';
@@ -9829,6 +9936,15 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             if (Browser.isDevice && this.allowEdit && !this.readonly) {
                 this.inputElement.removeAttribute('readonly');
             }
+        }
+    };
+    TimePicker.prototype.disposeServerPopup = function () {
+        if (this.popupWrapper) {
+            this.popupWrapper.style.visibility = 'hidden';
+            this.popupWrapper.style.top = '-9999px';
+            this.popupWrapper.style.left = '-9999px';
+            this.popupWrapper.style.width = '0px';
+            this.popupWrapper.style.height = '0px';
         }
     };
     TimePicker.prototype.checkValueChange = function (event, isNavigation) {
@@ -9872,13 +9988,25 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.setSelection = function (li, event) {
         if (this.isValidLI(li) && !li.classList.contains(SELECTED$4)) {
-            this.checkValue(li.getAttribute('data-value'));
-            this.selectedElement = li;
-            this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
-            this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
-            addClass([this.selectedElement], SELECTED$4);
-            this.selectedElement.setAttribute('aria-selected', 'true');
-            this.checkValueChange(event, true);
+            if (!this.isBlazorServer) {
+                this.checkValue(li.getAttribute('data-value'));
+                this.selectedElement = li;
+                this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
+                this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
+                addClass([this.selectedElement], SELECTED$4);
+                this.selectedElement.setAttribute('aria-selected', 'true');
+                this.checkValueChange(event, true);
+            }
+            else {
+                this.selectedElement = li;
+                this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
+                addClass([this.selectedElement], SELECTED$4);
+                this.selectedElement.setAttribute('aria-selected', 'true');
+                this.inputElement.setAttribute('value', li.getAttribute('data-value'));
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, false);
+                this.addSelection();
+            }
         }
     };
     TimePicker.prototype.onMouseLeave = function () {
@@ -9962,7 +10090,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             if (+minValue > +maxValue) {
                 this.disableTimeIcon();
                 this.initValue = this.getDateObject(maxValue);
-                Input.setValue(this.getValue(this.initValue), this.inputElement, this.floatLabelType, this.showClearButton);
+                this.updateInputValue(this.getValue(this.initValue));
                 return this.inputElement.value;
             }
             else if (+minValue >= +value) {
@@ -9983,7 +10111,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         return dateVal;
     };
     TimePicker.prototype.bindEvents = function () {
-        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.popupHandler, this);
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', (this.isBlazorServer ? this.preventEventBubbling : this.popupHandler), this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
@@ -10008,19 +10136,23 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.formResetHandler = function () {
         if (!this.inputElement.disabled) {
             var timeValue = this.inputElement.getAttribute('value');
-            var val = this.checkDateValue(this.inputEleValue);
+            var val = this.isBlazorServer ? this.inputEleValue : this.checkDateValue(this.inputEleValue);
             if (this.element.tagName === 'EJS-TIMEPICKER') {
                 val = null;
                 timeValue = '';
                 this.inputElement.setAttribute('value', '');
             }
-            this.setProperties({ value: val }, true);
-            this.prevDate = this.value;
-            this.valueWithMinutes = this.value;
-            this.initValue = this.value;
+            if (!this.isBlazorServer) {
+                this.setProperties({ value: val }, true);
+                this.prevDate = this.value;
+                this.valueWithMinutes = this.value;
+                this.initValue = this.value;
+            }
             if (this.inputElement) {
-                Input.setValue(timeValue, this.inputElement, this.floatLabelType, this.showClearButton);
-                this.checkErrorState(timeValue);
+                this.updateInputValue(timeValue);
+                if (!this.isBlazorServer) {
+                    this.checkErrorState(timeValue);
+                }
                 this.prevValue = this.inputElement.value;
             }
         }
@@ -10030,7 +10162,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.unBindEvents = function () {
         if (this.inputWrapper) {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.popupHandler));
         }
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
@@ -10066,16 +10198,25 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.resetState();
             this.raiseClearedEvent(e);
         }
+        if (this.isBlazorServer) {
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('OnValueCleared');
+            // tslint:enable
+        }
         if (this.popupWrapper) {
             this.popupWrapper.scrollTop = 0;
         }
     };
     TimePicker.prototype.clear = function (event) {
-        this.setProperties({ value: null }, true);
+        if (!this.isBlazorServer) {
+            this.setProperties({ value: null }, true);
+        }
         this.initValue = null;
         this.resetState();
         this.raiseClearedEvent(event);
-        this.changeEvent(event);
+        if (!this.isBlazorServer) {
+            this.changeEvent(event);
+        }
     };
     TimePicker.prototype.setZIndex = function () {
         if (this.popupObj) {
@@ -10123,31 +10264,37 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                         }
                         break;
                     case 'min':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ min: value }, !isDynamic);
+                        if (!this.isBlazorServer) {
+                            // tslint:disable-next-line
+                            if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || isDynamic) {
+                                value = new Date(this.inputElement.getAttribute(prop));
+                                if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                    this.setProperties({ min: value }, !isDynamic);
+                                }
                             }
                         }
                         break;
                     case 'max':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ max: value }, !isDynamic);
+                        if (!this.isBlazorServer) {
+                            // tslint:disable-next-line
+                            if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || isDynamic) {
+                                value = new Date(this.inputElement.getAttribute(prop));
+                                if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                    this.setProperties({ max: value }, !isDynamic);
+                                }
                             }
                         }
                         break;
                     case 'value':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || isDynamic) {
-                            value = new Date(this.inputElement.getAttribute(prop));
-                            if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.initValue = value;
-                                this.updateInput(false, this.initValue);
-                                this.setProperties({ value: value }, !isDynamic);
+                        if (!this.isBlazorServer) {
+                            // tslint:disable-next-line
+                            if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || isDynamic) {
+                                value = new Date(this.inputElement.getAttribute(prop));
+                                if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                    this.initValue = value;
+                                    this.updateInput(false, this.initValue);
+                                    this.setProperties({ value: value }, !isDynamic);
+                                }
                             }
                         }
                         break;
@@ -10188,7 +10335,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 // this case set previous value to the text box when set invalid date
                 var inputVal = (val === null && value.trim().length > 0) ?
                     this.previousState(this.prevDate) : this.inputElement.value;
-                Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+                this.updateInputValue(inputVal);
             }
         }
         this.checkValueChange(event, typeof value === 'string' ? false : true);
@@ -10209,7 +10356,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.removeSelection();
         Input.setValue('', this.inputElement, this.floatLabelType, false);
         this.valueWithMinutes = this.activeIndex = null;
-        if (!this.strictMode) {
+        if (!this.strictMode && !this.isBlazorServer) {
             this.checkErrorState(null);
         }
     };
@@ -10247,42 +10394,53 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         if (!this.strictMode && isNullOrUndefined(time)) {
             var value_1 = val.trim().length > 0 ? val : '';
-            Input.setValue(value_1, this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue(value_1);
         }
         else {
-            Input.setValue(time, this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue(time);
         }
         return time;
     };
     TimePicker.prototype.findNextElement = function (event) {
         var textVal = (this.inputElement).value;
-        var value = isNullOrUndefined(this.valueWithMinutes) ? this.createDateObj(textVal) :
+        var value = isNullOrUndefined(this.valueWithMinutes) || this.isBlazorServer ? this.createDateObj(textVal) :
             this.getDateObject(this.valueWithMinutes);
         var timeVal = null;
         var count = this.liCollections.length;
+        var collections = this.isBlazorServer ? (isNullOrUndefined(this.blazorTimeCollections) ? [] :
+            this.blazorTimeCollections) : this.timeCollections;
         if (!isNullOrUndefined(this.checkDateValue(value)) || !isNullOrUndefined(this.activeIndex)) {
             if (event.action === 'home') {
                 var index = this.validLiElement(0);
-                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                if (!this.isBlazorServer) {
+                    timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                }
                 this.activeIndex = index;
             }
             else if (event.action === 'end') {
-                var index = this.validLiElement(this.timeCollections.length - 1, true);
-                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                var index = this.validLiElement(collections.length - 1, true);
+                if (!this.isBlazorServer) {
+                    timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                }
                 this.activeIndex = index;
             }
             else {
                 if (event.action === 'down') {
                     for (var i = 0; i < count; i++) {
-                        if (+value < this.timeCollections[i]) {
+                        if (this.isBlazorServer ? (+value < +this.createDateObj(this.blazorTimeCollections[i])) :
+                            (+value < this.timeCollections[i])) {
                             var index = this.validLiElement(i);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            if (!this.isBlazorServer) {
+                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            }
                             this.activeIndex = index;
                             break;
                         }
                         else if (i === count - 1) {
                             var index = this.validLiElement(0);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            if (!this.isBlazorServer) {
+                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            }
                             this.activeIndex = index;
                             break;
                         }
@@ -10290,15 +10448,20 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     for (var i = count - 1; i >= 0; i--) {
-                        if (+value > this.timeCollections[i]) {
+                        if (this.isBlazorServer ? (+value > +this.createDateObj(this.blazorTimeCollections[i])) :
+                            (+value > this.timeCollections[i])) {
                             var index = this.validLiElement(i, true);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            if (!this.isBlazorServer) {
+                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            }
                             this.activeIndex = index;
                             break;
                         }
                         else if (i === 0) {
                             var index = this.validLiElement(count - 1);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            if (!this.isBlazorServer) {
+                                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            }
                             this.activeIndex = index;
                             break;
                         }
@@ -10306,14 +10469,77 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             this.selectedElement = this.liCollections[this.activeIndex];
-            this.elementValue(isNullOrUndefined(timeVal) ? null : new Date(timeVal));
+            if (this.isBlazorServer) {
+                this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
+            }
+            else {
+                this.elementValue(isNullOrUndefined(timeVal) ? null : new Date(timeVal));
+            }
         }
         else {
-            var index = this.validLiElement(0, event.action === 'down' ? false : true);
-            this.activeIndex = index;
-            this.selectedElement = this.liCollections[index];
+            this.selectNextItem(event);
+        }
+    };
+    TimePicker.prototype.selectNextItem = function (event) {
+        var index = this.validLiElement(0, event.action === 'down' ? false : true);
+        this.activeIndex = index;
+        this.selectedElement = this.liCollections[index];
+        if (this.isBlazorServer) {
+            this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('OnListItemClick', index, true);
+        }
+        else {
             this.elementValue(new Date(this.timeCollections[index]));
         }
+    };
+    TimePicker.prototype.findNextInBlazor = function (event) {
+        var count = isNullOrUndefined(this.blazorTimeCollections) ? 0 : this.blazorTimeCollections.length;
+        var index = 0;
+        var value = this.createDateObj(this.inputElement.value);
+        switch (event.action) {
+            case 'home':
+                this.activeIndex = index;
+                break;
+            case 'end':
+                index = count - 1;
+                this.activeIndex = index;
+                break;
+            case 'down':
+                for (var i = 0; i < count; i++) {
+                    if (this.isBlazorServer ? (+value < +this.createDateObj(this.blazorTimeCollections[i])) :
+                        (+value < this.timeCollections[i])) {
+                        var index_1 = this.validLiElement(i);
+                        this.activeIndex = index_1;
+                        break;
+                    }
+                    else if (i === count - 1) {
+                        var index_2 = this.validLiElement(0);
+                        this.activeIndex = index_2;
+                        break;
+                    }
+                }
+                break;
+            case 'up':
+                for (var i = count - 1; i >= 0; i--) {
+                    if (this.isBlazorServer ? (+value > +this.createDateObj(this.blazorTimeCollections[i])) :
+                        (+value > this.timeCollections[i])) {
+                        var index_3 = this.validLiElement(i, true);
+                        this.activeIndex = index_3;
+                        break;
+                    }
+                    else if (i === 0) {
+                        var index_4 = this.validLiElement(count - 1);
+                        this.activeIndex = index_4;
+                        break;
+                    }
+                }
+                break;
+        }
+        // tslint:disable-next-line
+        this.interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
     };
     TimePicker.prototype.elementValue = function (value) {
         if (!isNullOrUndefined(this.checkDateValue(value))) {
@@ -10322,34 +10548,53 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.validLiElement = function (index, backward) {
         var elementIndex = null;
-        var items = isNullOrUndefined(this.popupWrapper) ? this.liCollections :
-            this.popupWrapper.querySelectorAll('.' + LISTCLASS$1);
-        var isCheck = true;
-        if (items.length) {
-            if (backward) {
-                for (var i = index; i >= 0; i--) {
-                    if (!items[i].classList.contains(DISABLED$3)) {
+        if (this.isBlazorServer && isNullOrUndefined(this.popupWrapper)) {
+            var items = this.blazorTimeCollections;
+            if (items.length) {
+                if (backward) {
+                    for (var i = index; i >= 0; i--) {
                         elementIndex = i;
                         break;
                     }
-                    else if (i === 0) {
-                        if (isCheck) {
-                            index = i = items.length;
-                            isCheck = false;
-                        }
+                }
+                else {
+                    for (var i = index; i <= items.length - 1; i++) {
+                        elementIndex = i;
+                        break;
                     }
                 }
             }
-            else {
-                for (var i = index; i <= items.length - 1; i++) {
-                    if (!items[i].classList.contains(DISABLED$3)) {
-                        elementIndex = i;
-                        break;
+        }
+        else {
+            var items = isNullOrUndefined(this.popupWrapper) ? this.liCollections :
+                this.popupWrapper.querySelectorAll('.' + LISTCLASS$1);
+            var isCheck = true;
+            if (items.length) {
+                if (backward) {
+                    for (var i = index; i >= 0; i--) {
+                        if (!items[i].classList.contains(DISABLED$3)) {
+                            elementIndex = i;
+                            break;
+                        }
+                        else if (i === 0) {
+                            if (isCheck) {
+                                index = i = items.length;
+                                isCheck = false;
+                            }
+                        }
                     }
-                    else if (i === items.length - 1) {
-                        if (isCheck) {
-                            index = i = -1;
-                            isCheck = false;
+                }
+                else {
+                    for (var i = index; i <= items.length - 1; i++) {
+                        if (!items[i].classList.contains(DISABLED$3)) {
+                            elementIndex = i;
+                            break;
+                        }
+                        else if (i === items.length - 1) {
+                            if (isCheck) {
+                                index = i = -1;
+                                isCheck = false;
+                            }
                         }
                     }
                 }
@@ -10361,21 +10606,33 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.step) || this.step <= 0 || this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
             return;
         }
-        var count = this.timeCollections.length;
+        var count = this.isBlazorServer ? (isNullOrUndefined(this.blazorTimeCollections) ? 0 :
+            this.blazorTimeCollections.length) : this.timeCollections.length;
         if (isNullOrUndefined(this.getActiveElement()) || this.getActiveElement().length === 0) {
-            if (this.liCollections.length > 0) {
-                if (isNullOrUndefined(this.value) && isNullOrUndefined(this.activeIndex)) {
+            if (isNullOrUndefined(this.popupObj) && this.isBlazorServer) {
+                if (isNullOrUndefined(this.activeIndex)) {
                     var index = this.validLiElement(0, event.action === 'down' ? false : true);
                     this.activeIndex = index;
-                    this.selectedElement = this.liCollections[index];
-                    this.elementValue(new Date(this.timeCollections[index]));
+                    // tslint:disable-next-line
+                    this.interopAdaptor.invokeMethodAsync('OnListItemClick', index, true);
+                }
+                else {
+                    this.findNextInBlazor(event);
+                }
+            }
+            else {
+                if (this.liCollections.length > 0) {
+                    if (this.isBlazorServer ? (isNullOrUndefined(this.activeIndex)) : (isNullOrUndefined(this.value) &&
+                        isNullOrUndefined(this.activeIndex))) {
+                        this.selectNextItem(event);
+                    }
+                    else {
+                        this.findNextElement(event);
+                    }
                 }
                 else {
                     this.findNextElement(event);
                 }
-            }
-            else {
-                this.findNextElement(event);
             }
         }
         else {
@@ -10386,25 +10643,40 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 this.activeIndex = index = this.activeIndex < 0 ? (count - 1) : this.activeIndex;
                 this.activeIndex = index = this.validLiElement(this.activeIndex, (event.keyCode === 40 || event.keyCode === 39) ?
                     false : true);
-                nextItem = isNullOrUndefined(this.timeCollections[index]) ? this.timeCollections[0] : this.timeCollections[index];
+                if (!this.isBlazorServer) {
+                    nextItem = isNullOrUndefined(this.timeCollections[index]) ? this.timeCollections[0] : this.timeCollections[index];
+                }
             }
             else if (event.action === 'home') {
                 var index = this.validLiElement(0);
                 this.activeIndex = index;
-                nextItem = this.timeCollections[index];
+                if (!this.isBlazorServer) {
+                    nextItem = this.timeCollections[index];
+                }
             }
             else if (event.action === 'end') {
                 var index = this.validLiElement(count - 1, true);
                 this.activeIndex = index;
-                nextItem = this.timeCollections[index];
+                if (!this.isBlazorServer) {
+                    nextItem = this.timeCollections[index];
+                }
             }
             this.selectedElement = this.liCollections[this.activeIndex];
-            this.elementValue(new Date(nextItem));
+            if (this.isBlazorServer) {
+                this.inputElement.setAttribute('value', this.selectedElement.getAttribute('data-value'));
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('OnListItemClick', this.activeIndex, true);
+            }
+            else {
+                this.elementValue(new Date(nextItem));
+            }
         }
         this.isNavigate = true;
         this.setHover(this.selectedElement, NAVIGATION);
         this.setActiveDescendant();
-        this.selectInputText();
+        if (!this.isBlazorServer) {
+            this.selectInputText();
+        }
         if (this.isPopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) {
             this.setScrollPosition();
         }
@@ -10464,7 +10736,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
             this.checkErrorState(this.invalidValueString);
-            Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue(this.invalidValueString);
         }
         this.clearIconState();
     };
@@ -10507,7 +10779,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             var items = this.popupWrapper.querySelectorAll('.' + LISTCLASS$1);
             if (items.length) {
                 for (var i = 0; i < items.length; i++) {
-                    if (this.timeCollections[i] === +this.getDateObject(this.valueWithMinutes)) {
+                    if ((!this.isBlazorServer && this.timeCollections[i] === +this.getDateObject(this.valueWithMinutes))
+                        || (this.isBlazorServer && this.blazorTimeCollections[i] === this.blazorTimeCollections[this.activeIndex])) {
                         items[i].setAttribute('aria-selected', 'true');
                         this.selectedElement = items[i];
                         this.activeIndex = i;
@@ -10664,14 +10937,18 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.closePopup(0, e);
         removeClass([this.inputWrapper.container], [FOCUS]);
         var blurArguments = {
-            model: (isBlazor() && this.isServerRendered) ? null : this
+            model: this.isBlazorServer ? null : this,
         };
         this.trigger('blur', blurArguments);
-        if (this.getText() !== this.inputElement.value) {
+        if (!this.isBlazorServer && this.getText() !== this.inputElement.value) {
             this.updateValue((this.inputElement).value, e);
         }
         else if (this.inputElement.value.trim().length === 0) {
             this.resetState();
+        }
+        if (this.isBlazorServer) {
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('OnStrictMode', this.inputElement.value);
         }
         this.cursorDetails = null;
         this.isNavigate = false;
@@ -10687,7 +10964,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         if (document.activeElement === this.inputElement) {
             this.inputElement.blur();
             var blurArguments = {
-                model: (isBlazor() && this.isServerRendered) ? null : this
+                model: this.isBlazorServer ? null : this
             };
             this.trigger('blur', blurArguments);
         }
@@ -10700,7 +10977,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.inputFocusHandler = function () {
         var focusArguments = {
-            model: (isBlazor() && this.isServerRendered) ? null : this
+            model: this.isBlazorServer ? null : this
         };
         if (!this.readonly && !Browser.isDevice) {
             this.selectInputText();
@@ -10721,6 +10998,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     /**
      * Hides the TimePicker popup.
      * @returns void
+     * @deprecated
      */
     TimePicker.prototype.hide = function () {
         this.closePopup(100, null);
@@ -10729,6 +11007,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     /**
      * Opens the popup to show the list items.
      * @returns void
+     * @deprecated
      */
     TimePicker.prototype.show = function (event) {
         var _this = this;
@@ -10748,7 +11027,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 document.body.appendChild(this.mobileTimePopupWrap);
             }
             this.openPopupEventArgs = {
-                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || null,
+                popup: this.isBlazorServer ? null : (this.popupObj || null),
                 cancel: false,
                 event: event || null,
                 name: 'open',
@@ -10761,6 +11040,14 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 _this.openPopupEventArgs = eventArgs;
                 if (!_this.openPopupEventArgs.cancel && !_this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
+                    if (_this.isBlazorServer) {
+                        _this.popupWrapper.style.visibility = '';
+                        _this.popupWrapper.style.width = _this.inputWrapper.container.offsetWidth + 'px';
+                        _this.popupWrapper.style.height = 'auto';
+                    }
+                    if (_this.isBlazorServer) {
+                        _this.openPopupEventArgs.popup = _this.popupObj;
+                    }
                     _this.openPopupEventArgs.appendTo.appendChild(_this.popupWrapper);
                     _this.popupAlignment(_this.openPopupEventArgs);
                     _this.setScrollPosition();
@@ -10786,6 +11073,13 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     _this.popupObj.destroy();
+                    if (_this.isBlazorServer) {
+                        _this.disposeServerPopup();
+                        // tslint:disable
+                        _this.inputWrapper.container.parentElement.insertBefore(_this.popupWrapper, _this.inputWrapper.container.nextElementSibling);
+                        _this.interopAdaptor.invokeMethodAsync('OnPopupHide', false);
+                        // tslint:enable
+                    }
                     _this.popupWrapper = _this.listTag = undefined;
                     _this.liCollections = _this.timeCollections = _this.disableItemCollection = [];
                     _this.popupObj = null;
@@ -10902,8 +11196,10 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setTimeAllowEdit();
                     break;
                 case 'enableRtl':
-                    this.setProperties({ enableRtl: newProp.enableRtl }, true);
-                    this.setEnableRtl();
+                    if (!this.isBlazorServer) {
+                        this.setProperties({ enableRtl: newProp.enableRtl }, true);
+                        this.setEnableRtl();
+                    }
                     break;
                 case 'cssClass':
                     Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
@@ -10922,7 +11218,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'min':
                 case 'max':
-                    this.getProperty(newProp, prop);
+                    if (!this.isBlazorServer) {
+                        this.getProperty(newProp, prop);
+                    }
                     break;
                 case 'showClearButton':
                     Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
@@ -10933,7 +11231,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.globalize = new Internationalization(this.locale);
                     this.l10n.setLocale(this.locale);
                     this.updatePlaceHolder();
-                    this.setValue(this.value);
+                    if (!this.isBlazorServer) {
+                        this.setValue(this.value);
+                    }
                     break;
                 case 'width':
                     setStyleAttribute(this.inputWrapper.container, { 'width': this.setWidth(newProp.width) });
@@ -10942,30 +11242,34 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);
                     this.checkTimeFormat();
-                    this.setValue(this.value);
+                    if (!this.isBlazorServer) {
+                        this.setValue(this.value);
+                    }
                     break;
                 case 'value':
-                    this.invalidValueString = null;
-                    this.checkInvalidValue(newProp.value);
-                    newProp.value = this.value;
-                    if (!this.invalidValueString) {
-                        if (typeof newProp.value === 'string') {
-                            this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
-                            newProp.value = this.value;
+                    if (!this.isBlazorServer) {
+                        this.invalidValueString = null;
+                        this.checkInvalidValue(newProp.value);
+                        newProp.value = this.value;
+                        if (!this.invalidValueString) {
+                            if (typeof newProp.value === 'string') {
+                                this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
+                                newProp.value = this.value;
+                            }
+                            else {
+                                if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
+                                    newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                                }
+                            }
+                            this.initValue = newProp.value;
+                            newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
                         }
                         else {
-                            if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
-                                newProp.value = this.checkDateValue(new Date('' + newProp.value));
-                            }
+                            this.updateInputValue(this.invalidValueString);
+                            this.checkErrorState(this.invalidValueString);
                         }
-                        this.initValue = newProp.value;
-                        newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
+                        this.checkValueChange(null, false);
                     }
-                    else {
-                        Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
-                        this.checkErrorState(this.invalidValueString);
-                    }
-                    this.checkValueChange(null, false);
                     break;
                 case 'floatLabelType':
                     this.floatLabelType = newProp.floatLabelType;
@@ -10973,23 +11277,32 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
                     break;
                 case 'strictMode':
-                    this.invalidValueString = null;
-                    if (newProp.strictMode) {
-                        this.checkErrorState(null);
+                    if (!this.isBlazorServer) {
+                        this.invalidValueString = null;
+                        if (newProp.strictMode) {
+                            this.checkErrorState(null);
+                        }
+                        this.setProperties({ strictMode: newProp.strictMode }, true);
+                        this.checkValue((this.inputElement).value);
+                        this.checkValueChange(null, false);
                     }
-                    this.setProperties({ strictMode: newProp.strictMode }, true);
-                    this.checkValue((this.inputElement).value);
-                    this.checkValueChange(null, false);
                     break;
                 case 'scrollTo':
-                    if (this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo)))) {
+                    if (!this.isBlazorServer) {
+                        if (this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo)))) {
+                            if (this.popupWrapper) {
+                                this.setScrollTo();
+                            }
+                            this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                        }
+                        else {
+                            this.setProperties({ scrollTo: null }, true);
+                        }
+                    }
+                    else {
                         if (this.popupWrapper) {
                             this.setScrollTo();
                         }
-                        this.setProperties({ scrollTo: newProp.scrollTo }, true);
-                    }
-                    else {
-                        this.setProperties({ scrollTo: null }, true);
                     }
                     break;
             }
@@ -11132,7 +11445,7 @@ var ROOT$4 = 'e-datetimepicker';
 var DATETIMEPOPUPWRAPPER = 'e-datetimepopup-wrapper';
 var INPUTWRAPPER$1 = 'e-input-group-icon';
 var POPUP$3 = 'e-popup';
-var TIMEICON = 'e-time-icon';
+var TIMEICON$1 = 'e-time-icon';
 var INPUTFOCUS$2 = 'e-input-focus';
 var POPUPDIMENSION$1 = '250px';
 var ICONANIMATION$1 = 'e-icon-anim';
@@ -11144,7 +11457,7 @@ var ACTIVE$2 = 'e-active';
 var HOVER$2 = 'e-hover';
 var ICONS$1 = 'e-icons';
 var HALFPOSITION$1 = 2;
-var LISTCLASS$2 = cssClass.li;
+var LISTCLASS$2 = 'e-list-item';
 var ANIMATIONDURATION$1 = 100;
 var OVERFLOW$3 = 'e-time-overflow';
 /**
@@ -11389,7 +11702,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         this.renderTimeIcon();
     };
     DateTimePicker.prototype.renderTimeIcon = function () {
-        this.timeIcon = Input.appendSpan(INPUTWRAPPER$1 + ' ' + TIMEICON + ' ' + ICONS$1, this.inputWrapper.container);
+        this.timeIcon = Input.appendSpan(INPUTWRAPPER$1 + ' ' + TIMEICON$1 + ' ' + ICONS$1, this.inputWrapper.container);
     };
     DateTimePicker.prototype.bindInputEvents = function () {
         EventHandler.add(this.timeIcon, 'mousedown', this.timeHandler, this);

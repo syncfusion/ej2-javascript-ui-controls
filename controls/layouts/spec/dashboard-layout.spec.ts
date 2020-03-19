@@ -2,7 +2,7 @@ import { DashboardLayout, ResizeArgs, ChangeEventArgs, DragStartArgs, DragStopAr
 import { PanelModel } from "../src/dashboard-layout/dashboard-layout-model";
 import { setStyleAttribute as setStyle, isNullOrUndefined, createElement, detach, EventHandler } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from './common.spec';
-import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
+import { enableBlazorMode, disableBlazorMode, Browser } from '@syncfusion/ej2-base';
 
 function copyObject(source: any, destiation: any): Object {
     for (let prop in source) {
@@ -101,6 +101,8 @@ function setCss(panelElements: HTMLElement[]) {
 
 describe('GridLayout', () => {
     beforeAll(() => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             console.log("Unsupported environment, window.performance.memory is unavailable");
@@ -7586,10 +7588,12 @@ describe('Blazor dashboard layout testing', () => {
     let gridLayOut: any;
     let ele: HTMLElement;
     beforeEach(() => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
         enableBlazorMode();
-        (window as any)["ejsInterop"] = function () { };
-        (window as any).ejsInterop["updateModel"] = function () { };
-        (window as any).ejsInterop["renderComplete"] = function () { };
+        (window as any)["sfBlazor"] = function () { };
+        (window as any).sfBlazor["updateModel"] = function () { };
+        (window as any).sfBlazor["renderComplete"] = function () { };
         ele = createElement('div', { id: 'gridlayout', className: 'e-control e-lib e-dashboardlayout' });
         let parentEle: HTMLElement = createElement('div', { id: 'container' });
         parentEle.style.width = '1264px';

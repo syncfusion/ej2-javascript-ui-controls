@@ -448,6 +448,8 @@ export class Edit implements IAction {
     }
 
     private dlgCancel(): void {
+        this.parent.focusModule.clearIndicator();
+        this.parent.focusModule.restoreFocus();
         this.dialogObj.hide();
     }
 
@@ -513,6 +515,9 @@ export class Edit implements IAction {
         let actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel'];
         if (actions.indexOf(e.requestType) < 0) {
             this.parent.isEdit = false;
+        }
+        if (e.requestType === 'batchsave') {
+            this.parent.focusModule.restoreFocus();
         }
         this.refreshToolbar();
     }
@@ -619,6 +624,7 @@ export class Edit implements IAction {
                 this.destroyForm();
             }
         }
+
     }
 
     /**

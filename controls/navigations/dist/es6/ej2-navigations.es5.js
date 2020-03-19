@@ -1496,7 +1496,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
                         trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
                     }
-                    if (isOpen && _this.hamburgerMode && ulIndex) {
+                    var submenus = liElem && liElem.querySelectorAll('.e-menu-item');
+                    if (isOpen && _this.hamburgerMode && ulIndex && !(submenus.length)) {
                         _this.afterCloseMenu(e);
                     }
                     else if (isOpen && !_this.hamburgerMode && _this.navIdx.length && closedLi && !trgtLi) {
@@ -3980,6 +3981,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             var tbEleData = this.element.getBoundingClientRect();
             setStyleAttribute(popObj.element, { maxHeight: (tbEleData.top + this.element.offsetHeight) + 'px', bottom: 0, visibility: '' });
         }
+        if (popObj) {
+            popObj.refreshPosition();
+        }
     };
     Toolbar.prototype.popupClose = function (e) {
         var element = this.element;
@@ -5168,6 +5172,12 @@ var AccordionItem = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(false)
     ], AccordionItem.prototype, "expanded", void 0);
+    __decorate$4([
+        Property(true)
+    ], AccordionItem.prototype, "visible", void 0);
+    __decorate$4([
+        Property(false)
+    ], AccordionItem.prototype, "disabled", void 0);
     return AccordionItem;
 }(ChildProperty));
 /**
@@ -5209,7 +5219,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.destroy = function () {
         var _this = this;
         var ele = this.element;
-        this.resetBlazorTemplates();
         _super.prototype.destroy.call(this);
         this.unwireEvents();
         this.isDestroy = true;
@@ -5251,35 +5260,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             this.expandedItems = [];
         }
     };
-    Accordion.prototype.resetBlazorTemplates = function () {
-        var _this = this;
-        if (isBlazor() && !this.isStringTemplate) {
-            if (this.itemTemplate) {
-                // tslint:disable-next-line:no-any
-                blazorTemplates[this.element.id + '_itemTemplate'] = [];
-                resetBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate');
-            }
-            if (this.headerTemplate) {
-                // tslint:disable-next-line:no-any
-                blazorTemplates[this.element.id + '_headerTemplate'] = [];
-                resetBlazorTemplate(this.element.id + '_headerTemplate', 'HeaderTemplate');
-            }
-            if (!isNullOrUndefined(this.items)) {
-                this.items.forEach(function (item, index) {
-                    if (item && item.header && item.header.indexOf('<div>Blazor') === 0) {
-                        // tslint:disable-next-line:no-any
-                        blazorTemplates[_this.element.id + index + '_header'] = [];
-                        resetBlazorTemplate(_this.element.id + index + '_header', 'HeaderTemplate');
-                    }
-                    if (item && item.content && item.content.indexOf('<div>Blazor') === 0) {
-                        // tslint:disable-next-line:no-any
-                        blazorTemplates[_this.element.id + index + '_content'] = [];
-                        resetBlazorTemplate(_this.element.id + index + '_content', 'ContentTemplate');
-                    }
-                });
-            }
-        }
-    };
     Accordion.prototype.add = function (ele, val) {
         ele.classList.add(val);
     };
@@ -5291,10 +5271,12 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Accordion.prototype.render = function () {
-        this.initializeheaderTemplate();
-        this.initializeItemTemplate();
-        this.initialize();
-        this.renderControl();
+        if (!this.isServerRendered) {
+            this.initializeheaderTemplate();
+            this.initializeItemTemplate();
+            this.initialize();
+            this.renderControl();
+        }
         this.wireEvents();
         this.renderComplete();
     };
@@ -5305,6 +5287,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var ariaAttr = {
             'aria-disabled': 'false', 'role': 'presentation', 'aria-multiselectable': 'true'
         };
+        if (isNullOrUndefined(this.initExpand)) {
+            this.initExpand = [];
+        }
         if (this.expandedItems.length > 0) {
             this.initExpand = this.expandedItems;
         }
@@ -5367,22 +5352,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.getItemTemplate = function () {
         return this.itemTemplateFn;
     };
-    Accordion.prototype.updateContentBlazorTemplate = function (item, index) {
-        if (this.itemTemplate && isBlazor() && !this.isStringTemplate) {
-            updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this, false);
-        }
-        if (item && item.content && isBlazor() && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
-            updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
-        }
-    };
-    Accordion.prototype.updateHeaderBlazorTemplate = function (item, index) {
-        if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
-            updateBlazorTemplate(this.element.id + '_headerTemplate', 'HeaderTemplate', this, false);
-        }
-        if (item && item.header && isBlazor() && !this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
-            updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
-        }
-    };
     Accordion.prototype.focusIn = function (e) {
         e.target.parentElement.classList.add(CLS_ITEMFOCUS);
     };
@@ -5439,9 +5408,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var ele = this.element;
         var innerItem;
         var innerDataSourceItem;
-        if (isNullOrUndefined(this.initExpand)) {
-            this.initExpand = [];
-        }
         if (!isNullOrUndefined(this.trgtEle)) {
             this.ctrlTemplate();
         }
@@ -5454,7 +5420,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     EventHandler.add(innerDataSourceItem.querySelector('.' + CLS_HEADER), 'blur', _this.focusOut, _this);
                 }
             });
-            this.updateHeaderBlazorTemplate();
         }
         else {
             var items = this.items;
@@ -5462,7 +5427,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 items.forEach(function (item, index) {
                     innerItem = _this.renderInnerItem(item, index);
                     ele.appendChild(innerItem);
-                    _this.updateHeaderBlazorTemplate(item, index);
                     if (innerItem.childElementCount > 0) {
                         EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', _this.focusIn, _this);
                         EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', _this.focusOut, _this);
@@ -5500,7 +5464,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         else if (acrdnCtn) {
             acrdnCtnItem = closest(acrdnCtn, '.' + CLS_ITEM$1);
         }
-        var acrdActive = [];
         index = this.getIndexByItem(acrdnItem);
         if (acrdnCtnItem) {
             eventArgs.item = items[this.getIndexByItem(acrdnCtnItem)];
@@ -5508,10 +5471,40 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         eventArgs.originalEvent = e;
         var ctnCheck = !isNullOrUndefined(tglIcon) && acrdnItem.childElementCount <= 1;
         if (ctnCheck && (isNullOrUndefined(acrdnCtn) || !isNullOrUndefined(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem)))) {
-            acrdnItem.appendChild(this.contentRendering(index));
-            this.updateContentBlazorTemplate(eventArgs.item, index);
-            this.ariaAttrUpdate(acrdnItem);
+            if (!this.isServerRendered) {
+                acrdnItem.appendChild(this.contentRendering(index));
+                this.ariaAttrUpdate(acrdnItem);
+                this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
+            }
+            else {
+                var id = acrdnItem.id;
+                if (this.items.length > 0) {
+                    // tslint:disable-next-line:no-any
+                    this.interopAdaptor.invokeMethodAsync('OnItemClick', index).then(function () {
+                        if (_this.isDestroyed) {
+                            return;
+                        }
+                        _this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
+                    });
+                }
+                else {
+                    // tslint:disable-next-line:no-any
+                    this.interopAdaptor.invokeMethodAsync('OnDataClick', id).then(function () {
+                        if (_this.isDestroyed) {
+                            return;
+                        }
+                        _this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
+                    });
+                }
+            }
         }
+        else {
+            this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
+        }
+    };
+    Accordion.prototype.afterContentRender = function (trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem) {
+        var _this = this;
+        var acrdActive = [];
         this.trigger('clicked', eventArgs);
         var cntclkCheck = (acrdnCtn && !isNullOrUndefined(select('.e-target', acrdnCtn)));
         var inlineAcrdnSel = '.' + CLS_CONTENT + ' .' + CLS_ROOT$2;
@@ -5653,12 +5646,13 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (item.cssClass) {
-            var acrdnClass = item.cssClass;
-            var arcdnClassList = [];
-            arcdnClassList = acrdnClass.split(' ');
-            arcdnClassList.forEach(function (el) {
-                addClass([innerEle], el);
-            });
+            addClass([innerEle], item.cssClass.split(' '));
+        }
+        if (item.disabled) {
+            addClass([innerEle], CLS_DISABLE$3);
+        }
+        if (item.visible === false) {
+            addClass([innerEle], CLS_ITEMHIDE);
         }
         if (item.iconCss) {
             var hdrIcnEle = this.createElement('div', { className: CLS_HEADERICN });
@@ -5801,7 +5795,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: true
         };
-        var eff = animation.name;
         this.trigger('expanding', eventArgs, function (expandArgs) {
             if (!expandArgs.cancel) {
                 icon.classList.add(CLS_TOGANIMATE);
@@ -5815,7 +5808,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     _this.expandProgress('end', icon, trgt, trgtItemEle, expandArgs);
                 }
                 else {
-                    _this.expandAnimation(eff, icon, trgt, trgtItemEle, animation, expandArgs);
+                    _this.expandAnimation(animation.name, icon, trgt, trgtItemEle, animation, expandArgs);
                 }
             }
         });
@@ -5909,7 +5902,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: false
         };
-        var eff = animation.name;
         this.trigger('expanding', eventArgs, function (expandArgs) {
             if (!expandArgs.cancel) {
                 _this.expandedItemsPop(trgtItemEle);
@@ -5920,7 +5912,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     _this.collapseProgress('end', icon, trgt, trgtItemEle, expandArgs);
                 }
                 else {
-                    _this.collapseAnimation(eff, trgt, trgtItemEle, icon, animation, expandArgs);
+                    _this.collapseAnimation(animation.name, trgt, trgtItemEle, icon, animation, expandArgs);
                 }
             }
         });
@@ -6010,6 +6002,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @param  {number} index - Number value that determines where the item should be added.
      * By default, item is added at the last index if the index is not specified.
      * @returns void
+     * @deprecated
      */
     Accordion.prototype.addItem = function (item, index) {
         var ele = this.element;
@@ -6027,7 +6020,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             else {
                 ele.insertBefore(innerItemEle, itemEle[index]);
             }
-            this.updateHeaderBlazorTemplate();
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
             this.itemAttribUpdate();
@@ -6051,6 +6043,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * Dynamically removes item from Accordion.
      * @param  {number} index - Number value that determines which item should be removed.
      * @returns void.
+     * @deprecated
      */
     Accordion.prototype.removeItem = function (index) {
         var itemEle = this.getItemElements();
@@ -6127,6 +6120,15 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Refresh the Accordion component.
+     * @returns void.
+     */
+    Accordion.prototype.refresh = function () {
+        if (!this.isServerRendered) {
+            _super.prototype.refresh.call(this);
+        }
+    };
+    /**
      * Expands/Collapses the specified Accordion item.
      * @param  {boolean} isExpand - Boolean value that determines the action as expand or collapse.
      * @param  {number} index - Number value that determines which item should be expanded/collapsed.`index` is optional parameter.
@@ -6170,21 +6172,45 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.itemExpand = function (isExpand, ele, index) {
+        var _this = this;
         var ctn = ele.children[1];
-        var items = this.getItems();
         if (ele.classList.contains(CLS_DISABLE$3)) {
             return;
         }
         if (isNullOrUndefined(ctn) && isExpand) {
-            ctn = this.contentRendering(index);
-            ele.appendChild(ctn);
-            this.updateContentBlazorTemplate(items[index], index);
-            this.ariaAttrUpdate(ele);
+            if (!this.isServerRendered) {
+                ctn = this.contentRendering(index);
+                ele.appendChild(ctn);
+                this.ariaAttrUpdate(ele);
+                this.expand(ctn);
+            }
+            else {
+                var id = ele.id;
+                if (this.items.length > 0) {
+                    // tslint:disable-next-line:no-any
+                    this.interopAdaptor.invokeMethodAsync('OnItemClick', index).then(function () {
+                        if (_this.isDestroyed) {
+                            return;
+                        }
+                        ctn = ele.children[1];
+                        _this.expand(ctn);
+                    });
+                }
+                else {
+                    // tslint:disable-next-line:no-any
+                    this.interopAdaptor.invokeMethodAsync('OnDataClick', id).then(function () {
+                        if (_this.isDestroyed) {
+                            return;
+                        }
+                        ctn = ele.children[1];
+                        _this.expand(ctn);
+                    });
+                }
+            }
         }
-        else if (isNullOrUndefined(ctn)) {
-            return;
+        else if (!isNullOrUndefined(ctn)) {
+            isExpand ? this.expand(ctn) : this.collapse(ctn);
         }
-        isExpand ? this.expand(ctn) : this.collapse(ctn);
     };
     Accordion.prototype.destroyItems = function () {
         this.restoreContent(null);
@@ -6234,6 +6260,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'items':
+                    if (this.isServerRendered) {
+                        break;
+                    }
                     if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
                         var changedProp = Object.keys(newProp.items);
                         for (var j = 0; j < changedProp.length; j++) {
@@ -6249,6 +6278,12 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                             if (property === 'cssClass' && !isNullOrUndefined(item)) {
                                 item.classList.remove(oldVal);
                                 item.classList.add(newVal);
+                            }
+                            if (property === 'visible' && !isNullOrUndefined(item)) {
+                                (Object(newProp.items[index])[property] === false) ? item.classList.add(CLS_ITEMHIDE) : item.classList.remove(CLS_ITEMHIDE);
+                            }
+                            if (property === 'disabled' && !isNullOrUndefined(item)) {
+                                this.enableItem(index, !newVal);
                             }
                             if (property === 'content' && !isNullOrUndefined(item) && item.children.length === 2) {
                                 if (item.classList.contains(CLS_SLCTED)) {
@@ -6295,8 +6330,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
-        if (isRefresh) {
-            this.resetBlazorTemplates();
+        if (isRefresh && !this.isServerRendered) {
             this.destroyItems();
             this.renderItems();
             this.initItemExpand();
@@ -6956,7 +6990,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (!this.isServerRendered) {
             _super.prototype.refresh.call(this);
         }
-        else if (this.isServerRendered && this.loadOn === 'Init') {
+        else if (this.isServerRendered && this.loadOn !== 'Dynamic') {
             this.setActiveBorder();
         }
     };
@@ -7042,6 +7076,20 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.serverItemsChanged = function () {
         this.enableAnimation = false;
         this.setActive(this.selectedItem, true);
+        if (this.loadOn !== 'Dynamic' && !isNullOrUndefined(this.cntEle)) {
+            var itemCollection = [].slice.call(this.cntEle.children);
+            var content_1 = CLS_CONTENT$1 + this.tabId + '_' + this.selectedItem;
+            itemCollection.forEach(function (item) {
+                if (item.classList.contains(CLS_ACTIVE$1) && item.id !== content_1) {
+                    item.classList.remove(CLS_ACTIVE$1);
+                }
+                if (item.id === content_1) {
+                    item.classList.add(CLS_ACTIVE$1);
+                }
+            });
+            this.prevIndex = this.selectedItem;
+            this.triggerAnimation(CLS_ITEM$2 + this.tabId + '_' + this.selectedItem, false);
+        }
         this.enableAnimation = true;
     };
     Tab.prototype.headerReady = function () {
@@ -7073,8 +7121,20 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.cntEle)) {
             this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) });
         }
+        if (this.loadOn === 'Demand') {
+            var id = this.setActiveContent();
+            this.triggerAnimation(id, false);
+        }
         this.initRender = false;
         this.renderComplete();
+    };
+    Tab.prototype.setActiveContent = function () {
+        var id = CLS_ITEM$2 + this.tabId + '_' + this.selectedItem;
+        var item = this.getTrgContent(this.cntEle, this.extIndex(id));
+        if (!isNullOrUndefined(item)) {
+            item.classList.add(CLS_ACTIVE$1);
+        }
+        return id;
     };
     Tab.prototype.renderHeader = function () {
         var _this = this;
@@ -7348,7 +7408,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var prevIndex = this.prevIndex;
         var oldCnt;
         var newCnt;
-        if (!this.isServerRendered || (this.isServerRendered && this.loadOn === 'Init')) {
+        if (!this.isServerRendered || (this.isServerRendered && this.loadOn !== 'Dynamic')) {
             var itemCollection = [].slice.call(this.element.querySelector('.' + CLS_CONTENT$1).children);
             itemCollection.forEach(function (item) {
                 if (item.id === _this.prevActiveEle) {
@@ -7365,7 +7425,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         else {
             newCnt = this.cntEle.firstElementChild;
         }
-        this.prevActiveEle = newCnt.id;
+        if (!isNullOrUndefined(newCnt)) {
+            this.prevActiveEle = newCnt.id;
+        }
         if (this.initRender || value === false || this.animation === {} || isNullOrUndefined(this.animation)) {
             if (oldCnt && oldCnt !== newCnt) {
                 oldCnt.classList.remove(CLS_ACTIVE$1);
@@ -7815,10 +7877,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Tab.prototype.contentReady = function () {
-        if (this.isServerRendered && this.loadOn === 'Dynamic') {
-            var id = CLS_ITEM$2 + this.tabId + '_' + this.selectedItem;
-            this.triggerAnimation(id, this.enableAnimation);
-        }
+        var id = this.setActiveContent();
+        this.triggerAnimation(id, this.enableAnimation);
     };
     Tab.prototype.setItems = function (items) {
         this.isReplace = true;
@@ -8648,6 +8708,7 @@ var BIGGER = 'e-bigger';
 var SMALL = 'e-small';
 var CHILD = 'e-has-child';
 var ITEM_ANIMATION_ACTIVE = 'e-animation-active';
+var DISABLED$1 = 'e-disabled';
 var treeAriaAttr = {
     treeRole: 'tree',
     itemRole: 'treeitem',
@@ -8788,6 +8849,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.preRender = function () {
         var _this = this;
+        this.isBlazorPlatform = (isBlazor() && this.isServerRendered);
         this.checkActionNodes = [];
         this.dragStartAction = false;
         this.isAnimate = false;
@@ -8828,7 +8890,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             itemCreated: function (e) {
                 _this.beforeNodeCreate(e);
             },
-            enableHtmlSanitizer: this.enableHtmlSanitizer
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
+            itemNavigable: this.fullRowNavigable,
         };
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
@@ -8866,25 +8929,42 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.render = function () {
         this.initialRender = true;
+        this.blazorInitialRender = false;
         this.initialize();
         this.setDataBinding();
+        this.setDisabledMode();
         this.setExpandOnType();
-        this.setRipple();
+        if (!this.disabled) {
+            this.setRipple();
+        }
         this.wireEditingEvents(this.allowEditing);
         this.setDragAndDrop(this.allowDragAndDrop);
-        this.wireEvents();
-        this.initialRender = false;
+        if (!this.disabled) {
+            this.wireEvents();
+        }
+        if (!this.isBlazorPlatform) {
+            this.initialRender = false;
+        }
         this.renderComplete();
     };
     TreeView.prototype.initialize = function () {
-        this.element.setAttribute('role', 'tree');
-        this.element.setAttribute('tabindex', '0');
-        this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
-        this.isBlazorPlatform = isBlazor();
-        this.setCssClass(null, this.cssClass);
-        this.setEnableRtl();
-        this.setFullRow(this.fullRowSelect);
+        if (!this.isBlazorPlatform) {
+            this.element.setAttribute('role', 'tree');
+            this.element.setAttribute('tabindex', '0');
+            this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
+            this.setCssClass(null, this.cssClass);
+            this.setEnableRtl();
+            this.setFullRow(this.fullRowSelect);
+        }
         this.nodeTemplateFn = this.templateComplier(this.nodeTemplate);
+    };
+    TreeView.prototype.setDisabledMode = function () {
+        if (this.disabled) {
+            this.element.classList.add(DISABLED$1);
+        }
+        else {
+            this.element.classList.remove(DISABLED$1);
+        }
     };
     TreeView.prototype.setEnableRtl = function () {
         this.enableRtl ? addClass([this.element], RTL$1) : removeClass([this.element], RTL$1);
@@ -9026,28 +9106,35 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.renderItems = function (isSorted) {
-        this.listBaseOption.ariaAttributes.level = 1;
-        this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData), this.listBaseOption);
-        this.element.appendChild(this.ulElement);
-        if (this.loadOnDemand === false) {
-            var rootNodes = this.ulElement.querySelectorAll('.e-list-item');
-            var i = 0;
-            while (i < rootNodes.length) {
-                this.renderChildNodes(rootNodes[i], true, null, true);
-                i++;
+        // tslint:disable
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor'))) {
+            this.listBaseOption.ariaAttributes.level = 1;
+            var sortedData = this.getSortedData(this.rootData);
+            this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : sortedData, this.listBaseOption);
+            this.element.appendChild(this.ulElement);
+            if (this.loadOnDemand === false) {
+                var rootNodes = this.ulElement.querySelectorAll('.e-list-item');
+                var i = 0;
+                while (i < rootNodes.length) {
+                    this.renderChildNodes(rootNodes[i], true, null, true);
+                    i++;
+                }
+            }
+            else {
+                this.finalizeNode(this.element);
             }
         }
-        else {
-            this.finalizeNode(this.element);
-        }
-        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-            this.updateBlazorTemplate();
-        }
+        this.updateTemplateForBlazor();
         this.parentNodeCheck = [];
         this.parentCheckData = [];
         this.updateCheckedStateFromDS();
         if (this.autoCheck && this.showCheckBox && !this.isLoaded) {
             this.updateParentCheckState();
+        }
+    };
+    TreeView.prototype.updateTemplateForBlazor = function () {
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+            this.updateBlazorTemplate();
         }
     };
     /**
@@ -9095,8 +9182,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
-                !this.loadOnDemand)) {
+                this.fields.dataSource.dataSource.offline)) {
                 for (var index = 0; index < this.treeData.length; index++) {
                     var fieldId = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -9603,8 +9689,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
-            !this.loadOnDemand)) {
+            this.fields.dataSource.dataSource.offline)) {
             var id = void 0;
             var parentElement = void 0;
             var check = void 0;
@@ -9787,6 +9872,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (!isPrevent) {
             if (!isNullOrUndefined(ariaState)) {
                 wrapper.setAttribute('aria-checked', ariaState);
+                this.updateServerProperties("check");
                 eventArgs.data[0].checked = ariaState;
                 this.trigger('nodeChecked', eventArgs);
                 this.checkActionNodes = [];
@@ -9826,6 +9912,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var eUids = this.expandedNodes;
         if (this.isInitalExpand && eUids.length > 0) {
             this.setProperties({ expandedNodes: [] }, true);
+            if (this.isBlazorPlatform && !this.initialRender) {
+                return;
+            }
             // tslint:disable
             if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
                 this.expandGivenNodes(eUids);
@@ -9881,8 +9970,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.afterFinalized = function () {
-        this.doSelectionAction();
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && !this.initialRender)) {
+            this.doSelectionAction();
+        }
         this.updateCheckedProp();
+        if (this.isBlazorPlatform) {
+            if (this.initialRender) {
+                this.setCheckedNodes(this.checkedNodes);
+            }
+            this.updateInstance();
+            this.initialRender = false;
+        }
         this.isAnimate = true;
         this.isInitalExpand = false;
         if (!this.isLoaded || this.isFieldChange) {
@@ -10057,6 +10155,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         currLi.style.height = '';
         removeClass([icon], PROCESS);
         this.addExpand(currLi);
+        this.updateServerProperties("expand");
         if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
             this.trigger('nodeExpanded', this.expandArgs);
@@ -10067,12 +10166,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         removeClass([liEle], NODECOLLAPSED);
         var id = liEle.getAttribute('data-uid');
         if (!isNullOrUndefined(id) && this.expandedNodes.indexOf(id) === -1) {
-            if (this.isBlazorPlatform) {
-                this.setProperties({ expandedNodes: [].concat([], this.expandedNodes, [id]) }, true);
-            }
-            else {
-                this.expandedNodes.push(id);
-            }
+            this.expandedNodes.push(id);
         }
     };
     TreeView.prototype.collapseNode = function (currLi, icon, e) {
@@ -10157,14 +10251,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         var index = this.expandedNodes.indexOf(liEle.getAttribute('data-uid'));
         if (index > -1) {
-            if (this.isBlazorPlatform) {
-                var removeVal = this.expandedNodes.slice(0);
-                removeVal.splice(index, 1);
-                this.setProperties({ expandedNodes: [].concat([], removeVal) }, true);
-            }
-            else {
-                this.expandedNodes.splice(index, 1);
-            }
+            this.expandedNodes.splice(index, 1);
         }
     };
     TreeView.prototype.disableExpandAttr = function (liEle) {
@@ -10201,16 +10288,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             this.treeList.push('false');
-            if ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) ||
-                (this.fields.dataSource instanceof DataManager && !this.loadOnDemand)) {
+            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                 this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
-                if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-                    this.updateBlazorTemplate();
-                }
+                this.updateTemplateForBlazor();
             }
-            else if (this.fields.dataSource instanceof DataManager && this.loadOnDemand) {
+            else {
                 mapper_2.dataSource.executeQuery(this.getQuery(mapper_2, parentLi.getAttribute('data-uid'))).then(function (e) {
                     _this.treeList.pop();
                     childItems = e.result;
@@ -10218,9 +10302,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                         _this.dataType = 2;
                     }
                     _this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
-                    if (_this.nodeTemplate && _this.isBlazorPlatform && !_this.isStringTemplate) {
-                        _this.updateBlazorTemplate();
-                    }
+                    _this.updateTemplateForBlazor();
                 }).catch(function (e) {
                     _this.trigger('actionFailure', { error: e });
                 });
@@ -10235,8 +10317,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             else {
-                this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
-                parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
+                if (!this.isBlazorPlatform || !this.initialRender) {
+                    this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
+                    parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
+                }
                 this.expandNode(parentLi, eicon, loaded);
                 this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
@@ -10452,6 +10536,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.updateServerProperties("select");
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -10475,6 +10560,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.updateServerProperties("select");
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -10774,6 +10860,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
             this.ensureStateChange(li, doCheck);
         }
+        this.updateServerProperties("check");
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     };
     /**
@@ -11230,7 +11317,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var txtEle = closest(target, '.' + LISTTEXT);
         var liEle = closest(target, '.' + LISTITEM);
         detach(this.inputObj.container);
-        this.appendNewText(liEle, txtEle, newText, true);
+        if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+            this.crudOperation('update', null, liEle, newText, null, null, true);
+        }
+        else {
+            this.appendNewText(liEle, txtEle, newText, true);
+        }
     };
     TreeView.prototype.appendNewText = function (liEle, txtEle, newText, isInput) {
         var _this = this;
@@ -11335,7 +11427,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         return newList;
     };
     TreeView.prototype.setDragAndDrop = function (toBind) {
-        if (toBind) {
+        if (toBind && !this.disabled) {
             this.initializeDrag();
         }
         else {
@@ -12018,20 +12110,61 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.updateList();
         this.updateSelectedNodes();
         this.updateExpandedNodes();
+        this.updateServerProperties("expand");
+        this.updateServerProperties("check");
+        this.updateServerProperties("select");
+    };
+    TreeView.prototype.updateServerProperties = function (action) {
+        if (this.isBlazorPlatform) {
+            this.allowServerDataBinding = true;
+            if (action == "expand") {
+                this.setProperties({ expandedNodes: [] }, true);
+            }
+            else if (action == "check") {
+                this.setProperties({ checkedNodes: this.checkedNodes }, true);
+            }
+            else {
+                this.setProperties({ selectedNodes: this.selectedNodes }, true);
+            }
+            this.serverDataBind();
+            this.allowServerDataBinding = false;
+        }
     };
     TreeView.prototype.updateList = function () {
         this.liList = Array.prototype.slice.call(selectAll('.' + LISTITEM, this.element));
     };
     TreeView.prototype.updateSelectedNodes = function () {
-        this.setProperties({ selectedNodes: [] }, true);
-        var sNodes = selectAll('.' + ACTIVE, this.element);
-        this.selectGivenNodes(sNodes);
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && !this.initialRender)) {
+            this.setProperties({ selectedNodes: [] }, true);
+            var sNodes = selectAll('.' + ACTIVE, this.element);
+            this.selectGivenNodes(sNodes);
+        }
+        else if (this.isBlazorPlatform && this.initialRender) {
+            var sNodes = selectAll('.' + ACTIVE, this.element);
+            for (var a = 0; a < sNodes.length; a++) {
+                var id = sNodes[a].getAttribute("data-uid").toString();
+                if (!isNullOrUndefined(id) && this.selectedNodes.indexOf(id) === -1) {
+                    this.selectedNodes.push(id);
+                }
+            }
+        }
     };
     TreeView.prototype.updateExpandedNodes = function () {
-        this.setProperties({ expandedNodes: [] }, true);
-        var eNodes = selectAll('[aria-expanded="true"]', this.element);
-        for (var i = 0, len = eNodes.length; i < len; i++) {
-            this.addExpand(eNodes[i]);
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && !this.initialRender)) {
+            this.setProperties({ expandedNodes: [] }, true);
+            var eNodes = selectAll('[aria-expanded="true"]', this.element);
+            for (var i = 0, len = eNodes.length; i < len; i++) {
+                this.addExpand(eNodes[i]);
+            }
+        }
+        else if (this.isBlazorPlatform && this.initialRender) {
+            var eNodes = selectAll('[aria-expanded="true"]', this.element);
+            for (var a = 0; a < eNodes.length; a++) {
+                var id = eNodes[a].getAttribute("data-uid").toString();
+                if (!isNullOrUndefined(id) && this.expandedNodes.indexOf(id) === -1) {
+                    this.expandedNodes.push(id);
+                }
+            }
         }
     };
     TreeView.prototype.removeData = function (node) {
@@ -12098,6 +12231,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var refNode = dropUl.childNodes[index];
         for (var i = 0; i < li.length; i++) {
             dropUl.insertBefore(li[i], refNode);
+        }
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+            this.updateBlazorTemplate();
         }
         var id = this.getId(dropLi);
         if (this.dataType === 1) {
@@ -12379,20 +12515,21 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         return removedData;
     };
     TreeView.prototype.triggerEvent = function () {
-        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-            this.updateBlazorTemplate();
-        }
+        this.updateTemplateForBlazor();
         var eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     };
     TreeView.prototype.updateBlazorTemplate = function () {
         updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this, false);
     };
+    TreeView.prototype.clientUpdateInitial = function () {
+        this.blazorInitialRender = true;
+    };
     TreeView.prototype.wireInputEvents = function (inpEle) {
         EventHandler.add(inpEle, 'blur', this.inputFocusOut, this);
     };
     TreeView.prototype.wireEditingEvents = function (toBind) {
-        if (toBind) {
+        if (toBind && !this.disabled) {
             var proxy_2 = this;
             this.touchEditObj = new Touch(this.element, {
                 tap: function (e) {
@@ -12480,7 +12617,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, 'blur', this.focusOut);
         EventHandler.remove(this.element, 'mouseover', this.onMouseOver);
         EventHandler.remove(this.element, 'mouseout', this.onMouseLeave);
-        this.keyboardModule.destroy();
+        if (!this.disabled) {
+            this.keyboardModule.destroy();
+        }
     };
     TreeView.prototype.parents = function (element, selector) {
         var matched = [];
@@ -12663,6 +12802,127 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         return found;
     };
+    TreeView.prototype.dynamicState = function () {
+        this.setDragAndDrop(this.allowDragAndDrop);
+        this.wireEditingEvents(this.allowEditing);
+        if (!this.disabled) {
+            this.wireEvents();
+            this.setRipple();
+        }
+        else {
+            this.unWireEvents();
+            this.rippleFn();
+            this.rippleIconFn();
+        }
+    };
+    TreeView.prototype.crudOperation = function (operation, nodes, target, newText, newNode, index, prevent) {
+        var _this = this;
+        var data = this.fields.dataSource;
+        var matchedArr = [];
+        var query = this.getQuery(this.fields);
+        var key = this.fields.id;
+        var crud;
+        var changes = {
+            addedRecords: [],
+            deletedRecords: [],
+            changedRecords: []
+        };
+        var nodesID = [];
+        if (nodes) {
+            nodesID = this.nodeType(nodes);
+        }
+        else if (target) {
+            if (typeof target == "string") {
+                nodesID[0] = target.toString();
+            }
+            else if (typeof target === "object") {
+                nodesID[0] = target.getAttribute("data-uid").toString();
+            }
+        }
+        for (var i = 0, len = nodesID.length; i < len; i++) {
+            var liEle = this.getElement(nodesID[i]);
+            if (isNullOrUndefined(liEle)) {
+                continue;
+            }
+            var removedData = this.getNodeObject(nodesID[i]);
+            matchedArr.push(removedData);
+        }
+        switch (operation) {
+            case 'delete':
+                if (nodes.length == 1) {
+                    crud = data.remove(key, matchedArr[0], query.fromTable, query);
+                }
+                else {
+                    changes.deletedRecords = matchedArr;
+                    crud = data.saveChanges(changes, key, query.fromTable, query);
+                }
+                crud.then(function (e) { return _this.deleteSuccess(nodesID); })
+                    .catch(function (e) { return _this.dmFailure(e); });
+                break;
+            case 'update':
+                matchedArr[0][this.fields.text] = newText;
+                crud = data.update(key, matchedArr[0], query.fromTable, query);
+                crud.then(function (e) { return _this.editSucess(target, newText, prevent); })
+                    .catch(function (e) { return _this.dmFailure(e); });
+                break;
+            case 'insert':
+                if (newNode.length == 1) {
+                    crud = data.insert(newNode[0], query.fromTable, query);
+                }
+                else {
+                    var arr = [];
+                    for (var i = 0, len = newNode.length; i < len; i++) {
+                        arr.push(newNode[i]);
+                    }
+                    changes.addedRecords = arr;
+                    crud = data.saveChanges(changes, key, query.fromTable, query);
+                }
+                crud.then(function (e) {
+                    var dropLi = _this.getElement(target);
+                    _this.addSuccess(newNode, dropLi, index);
+                    _this.preventExpand = false;
+                }).catch(function (e) { return _this.dmFailure(e); });
+                break;
+        }
+    };
+    TreeView.prototype.deleteSuccess = function (nodes) {
+        for (var i = 0, len = nodes.length; i < len; i++) {
+            var liEle = this.getElement(nodes[i]);
+            if (isNullOrUndefined(liEle)) {
+                continue;
+            }
+            this.removeNode(liEle);
+        }
+        if (this.dataType === 1) {
+            this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
+        }
+        this.triggerEvent();
+    };
+    TreeView.prototype.editSucess = function (target, newText, prevent) {
+        var liEle = this.getElement(target);
+        var txtEle = select('.' + LISTTEXT, liEle);
+        this.appendNewText(liEle, txtEle, newText, prevent);
+    };
+    TreeView.prototype.addSuccess = function (nodes, dropLi, index) {
+        var dropUl;
+        var icon = dropLi ? dropLi.querySelector('.' + ICON) : null;
+        var proxy = this;
+        if (dropLi && icon && icon.classList.contains(EXPANDABLE) &&
+            dropLi.querySelector('.' + PARENTITEM) === null) {
+            proxy.renderChildNodes(dropLi, null, function () {
+                dropUl = dropLi.querySelector('.' + PARENTITEM);
+                proxy.addGivenNodes(nodes, dropLi, index, true, dropUl);
+                proxy.triggerEvent();
+            });
+        }
+        else {
+            this.addGivenNodes(nodes, dropLi, index, true);
+            this.triggerEvent();
+        }
+    };
+    TreeView.prototype.dmFailure = function (e) {
+        this.trigger('actionFailure', { error: e });
+    };
     /**
      * Called internally if any of the property value changed.
      * @param  {TreeView} newProp
@@ -12727,16 +12987,23 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 case 'expandOn':
                     this.wireExpandOnEvent(false);
                     this.setExpandOnType();
-                    if (this.expandOnType !== 'None') {
+                    if (this.expandOnType !== 'None' && !this.disabled) {
                         this.wireExpandOnEvent(true);
                     }
+                    break;
+                case 'disabled':
+                    this.setDisabledMode();
+                    this.dynamicState();
                     break;
                 case 'fields':
                     this.isAnimate = false;
                     this.isFieldChange = true;
                     this.initialRender = true;
                     this.updateListProp(this.fields);
-                    this.reRenderNodes();
+                    if (!this.blazorInitialRender) {
+                        this.reRenderNodes();
+                    }
+                    this.blazorInitialRender = false;
                     this.initialRender = false;
                     this.isAnimate = true;
                     this.isFieldChange = false;
@@ -12750,7 +13017,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                         var nodes = this.element.querySelectorAll('li');
                         var i = 0;
                         while (i < nodes.length) {
-                            this.renderChildNodes(nodes[i], true, null, true);
+                            if (nodes[i].getAttribute('aria-expanded') !== 'true') {
+                                this.renderChildNodes(nodes[i], true, null, true);
+                            }
                             i++;
                         }
                         this.onLoaded = true;
@@ -12771,6 +13040,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 case 'sortOrder':
                     this.reRenderNodes();
                     break;
+                case 'fullRowNavigable':
+                    this.setProperties({ fullRowNavigable: newProp.fullRowNavigable }, true);
+                    this.listBaseOption.itemNavigable = newProp.fullRowNavigable;
+                    this.reRenderNodes();
+                    break;
             }
         }
     };
@@ -12783,15 +13057,22 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.element.removeAttribute('tabindex');
         this.unWireEvents();
         this.wireEditingEvents(false);
-        this.rippleFn();
-        this.rippleIconFn();
+        if (!this.disabled) {
+            this.rippleFn();
+            this.rippleIconFn();
+        }
         this.setCssClass(this.cssClass, null);
         this.setDragAndDrop(false);
         this.setFullRow(false);
+        if (this.isBlazorPlatform) {
+            this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
+        }
         if (this.ulElement && this.ulElement.parentElement) {
             this.ulElement.parentElement.removeChild(this.ulElement);
         }
-        _super.prototype.destroy.call(this);
+        if (!this.isBlazorPlatform) {
+            _super.prototype.destroy.call(this);
+        }
     };
     /**
      * Adds the collection of TreeView nodes based on target and index position. If target node is not specified,
@@ -12809,20 +13090,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var dropLi = this.getElement(target);
         this.preventExpand = preventTargetExpand;
         if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
-            var dropUl_1;
-            var icon = dropLi ? dropLi.querySelector('.' + ICON) : null;
-            var proxy_5 = this;
-            if (dropLi && icon && icon.classList.contains(EXPANDABLE) &&
-                dropLi.querySelector('.' + PARENTITEM) === null) {
-                proxy_5.renderChildNodes(dropLi, null, function () {
-                    dropUl_1 = dropLi.querySelector('.' + PARENTITEM);
-                    proxy_5.addGivenNodes(nodes, dropLi, index, true, dropUl_1);
-                    proxy_5.triggerEvent();
-                });
+            if (!(this.fields.dataSource.dataSource.offline)) {
+                this.crudOperation('insert', null, target, null, nodes, index, this.preventExpand);
             }
             else {
-                this.addGivenNodes(nodes, dropLi, index, true);
-                this.triggerEvent();
+                this.addSuccess(nodes, dropLi, index);
             }
         }
         else if (this.dataType === 2) {
@@ -12858,9 +13130,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.beginEdit = function (node) {
         var ele = this.getElement(node);
-        if (!isNullOrUndefined(ele)) {
-            this.createTextbox(ele, null);
+        if (isNullOrUndefined(ele) || this.disabled) {
+            return;
         }
+        this.createTextbox(ele, null);
     };
     /**
      * Checks all the unchecked nodes. You can also check specific nodes by passing array of unchecked nodes
@@ -13115,17 +13388,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.removeNodes = function (nodes) {
         if (!isNullOrUndefined(nodes)) {
-            for (var i = 0, len = nodes.length; i < len; i++) {
-                var liEle = this.getElement(nodes[i]);
-                if (isNullOrUndefined(liEle)) {
-                    continue;
-                }
-                this.removeNode(liEle);
+            if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+                this.crudOperation('delete', nodes);
             }
-            if (this.dataType === 1) {
-                this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
+            else {
+                this.deleteSuccess(nodes);
             }
-            this.triggerEvent();
         }
     };
     /**
@@ -13147,7 +13415,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var eventArgs = this.getEditEvent(liEle, null, null);
         this.trigger('nodeEditing', eventArgs, function (observedArgs) {
             if (!observedArgs.cancel) {
-                _this.appendNewText(liEle, txtEle, newText, false);
+                if (_this.fields.dataSource instanceof DataManager && !(_this.fields.dataSource.dataSource.offline) && (_this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
+                    _this.crudOperation('update', null, target, newText, null, null, false);
+                }
+                else {
+                    _this.appendNewText(liEle, txtEle, newText, false);
+                }
             }
         });
     };
@@ -13180,6 +13453,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     __decorate$8([
         Property('')
     ], TreeView.prototype, "cssClass", void 0);
+    __decorate$8([
+        Property(false)
+    ], TreeView.prototype, "disabled", void 0);
     __decorate$8([
         Property(false)
     ], TreeView.prototype, "enableHtmlSanitizer", void 0);
@@ -13216,6 +13492,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     __decorate$8([
         Property(true)
     ], TreeView.prototype, "autoCheck", void 0);
+    __decorate$8([
+        Property(false)
+    ], TreeView.prototype, "fullRowNavigable", void 0);
     __decorate$8([
         Event()
     ], TreeView.prototype, "actionFailure", void 0);
@@ -13699,17 +13978,17 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         this.hide(e);
     };
     Sidebar.prototype.enableGestureHandler = function (args) {
-        if (this.position === 'Left' && args.swipeDirection === 'Right' &&
+        if (!this.isOpen && this.position === 'Left' && args.swipeDirection === 'Right' &&
             (args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
             this.show();
         }
-        else if (this.position === 'Left' && args.swipeDirection === 'Left') {
+        else if (this.isOpen && this.position === 'Left' && args.swipeDirection === 'Left') {
             this.hide();
         }
-        else if (this.position === 'Right' && args.swipeDirection === 'Right') {
+        else if (this.isOpen && this.position === 'Right' && args.swipeDirection === 'Right') {
             this.hide();
         }
-        else if (this.position === 'Right' && args.swipeDirection === 'Left'
+        else if (!this.isOpen && this.position === 'Right' && args.swipeDirection === 'Left'
             && (window.innerWidth - args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
             this.show();
         }
@@ -13740,6 +14019,10 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             this.sidebarEle.destroy();
         }
     };
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
     Sidebar.prototype.onPropertyChanged = function (newProp, oldProp) {
         var sibling = document.querySelector('.e-main-content') ||
             this.element.nextElementSibling;

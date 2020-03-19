@@ -61,7 +61,7 @@ export class Sort {
     private isValidSortRange(): boolean {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let range: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+        if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             return false;
         }
         return true;
@@ -451,7 +451,7 @@ export class Sort {
             this.parent.notify(getFilterRange, eventArgs);
             if (eventArgs.hasFilter && eventArgs.filterRange) {
                 range[0] = eventArgs.filterRange[0]; range[1] = 0;
-                range[2] = sheet.usedRange.rowIndex - 1; range[3] = sheet.usedRange.colIndex;
+                range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
                 beforeArgs.sortOptions.containsHeader = true;
             }
         }

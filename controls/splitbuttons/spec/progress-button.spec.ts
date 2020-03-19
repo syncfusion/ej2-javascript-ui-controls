@@ -253,7 +253,7 @@ describe('Progress Button', () => {
         expect(ele.classList).not.toContain('e-spin-left');
         button.spinSettings.width = 30;
         button.dataBind();
-        //expect(ele.getElementsByClassName('e-spin-material')[0].style.width).toBe('30px');
+        // expect(ele.getElementsByClassName('e-spin-material')[0].style.width).toBe('30px');
     });
 
     it('Spinner Events', () => {

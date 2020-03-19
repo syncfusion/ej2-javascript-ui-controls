@@ -62,15 +62,15 @@ export class DrillThrough {
         }
         if (ele) {
             if (this.parent.allowDrillThrough && ele.classList.contains('e-valuescontent') || this.parent.editSettings.allowEditing) {
-                this.executeDrillThrough(ele);
+                let colIndex: number = Number(ele.getAttribute('aria-colindex'));
+                let rowIndex: number = Number(ele.getAttribute('index'));
+                this.executeDrillThrough(this.parent.pivotValues[rowIndex][colIndex] as IAxisSet, rowIndex, colIndex, ele);
             }
         }
     }
 
-    private executeDrillThrough(ele: Element): void {
-        let colIndex: number = Number(ele.getAttribute('aria-colindex'));
-        let rowIndex: number = Number(ele.getAttribute('index'));
-        let pivotValue: IAxisSet = this.parent.pivotValues[rowIndex][colIndex] as IAxisSet;
+    /** @hidden */
+    public executeDrillThrough(pivotValue: IAxisSet, rowIndex: number, colIndex: number, element?: Element): void {
         let engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let valueCaption: string = '';
         let aggType: string = '';
@@ -116,7 +116,8 @@ export class DrillThrough {
                                 indexObject[parsedObj[len].Key] = parsedObj[len].Value;
                             }
                             pivotValue.indexObject = indexObject;
-                            currModule.triggerDialog(valueCaption, aggType, rawData, pivotValue, ele);
+                            currModule.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
+                            /* tslint:enable:no-any */
                         });
                 } else {
                     if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
@@ -137,23 +138,23 @@ export class DrillThrough {
                 }
             }
             if (!(isBlazor() && this.parent.enableVirtualization)) {
-                this.triggerDialog(valueCaption, aggType, rawData, pivotValue, ele);
+                this.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
             }
         }
     }
 
-    private triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, ele: Element): void {
+    private triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
         let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
             valueCaption;
         let eventArgs: DrillThroughEventArgs = {
-            currentTarget: ele,
+            currentTarget: element,
             currentCell: pivotValue,
             rawData: rawData,
             rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
             columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
             value: valuetText + '(' + pivotValue.formattedText + ')',
-            gridColumns: this.drillThroughDialog.frameGridColumns()
+            gridColumns: this.drillThroughDialog.frameGridColumns(rawData)
         };
         let drillThrough: DrillThrough = this;
         let gridColumns: ColumnModel[] = eventArgs.gridColumns;

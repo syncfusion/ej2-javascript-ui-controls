@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-kanban",
-	"version": "17.4.46",
+	"version": "0.21.1",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-kanban.umd.min.js",
@@ -8,7 +8,10 @@
 	"es2015": "./dist/es6/ej2-kanban.es2015.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-buttons": "*",
 		"@syncfusion/ej2-data": "*",
+		"@syncfusion/ej2-dropdowns": "*",
+		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-layouts": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-popups": "*"

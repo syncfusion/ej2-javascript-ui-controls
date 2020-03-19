@@ -34,7 +34,6 @@ export class WorkbookNumberFormat {
             for (let j: number = selectedRange[1]; j <= selectedRange[3]; j++) {
                 setCell(i, j, sheet, { format: args.format }, true);
                 cell = getCell(i, j, sheet, true);
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.getFormattedCell({
                     type: getTypeFromFormat(cell.format), value: cell.value,
                     format: cell.format, rowIndex: i, colIndex: j,
@@ -51,6 +50,7 @@ export class WorkbookNumberFormat {
         let fResult: string = isNullOrUndefined(args.value as string) ? '' : args.value as string;
         let sheet: SheetModel = args.sheetIndex ? this.parent.sheets[(args.sheetIndex as number) - 1] : this.parent.getActiveSheet();
         let range: number[] = getRangeIndexes(sheet.activeCell);
+        let sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetTab;
         let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
         let rightAlign: boolean = false;
         let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
@@ -73,7 +73,7 @@ export class WorkbookNumberFormat {
         }
         args.type = args.format ? getTypeFromFormat(args.format as string) : 'General';
         let result: { [key: string]: string | boolean } = this.processFormats(args, fResult, rightAlign, cell);
-        if (!args.onLoad && (this.parent.getActiveSheet().id - 1 === (args.sheetIndex as number) - 1)) {
+        if ((this.parent.getActiveSheet().id - 1 === sheetIdx - 1)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value as string,
                 rowIndex: args.rowIndex, colIndex: args.colIndex, sheetIndex: args.sheetIndex,
@@ -82,7 +82,6 @@ export class WorkbookNumberFormat {
         }
         if (!args.onLoad && (args.rowIndex > sheet.usedRange.rowIndex || args.colIndex > sheet.usedRange.colIndex)) {
             this.parent.setUsedRange(args.rowIndex as number, args.colIndex as number);
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         args.formattedText = result.fResult as string || args.value as string;
         args.isRightAlign = result.rightAlign;
@@ -102,7 +101,8 @@ export class WorkbookNumberFormat {
                 case 'General':
                     result = this.autoDetectGeneralFormat({
                         args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                        isRightAlign: isRightAlign, curCode: 'USD', cell: cell
+                        isRightAlign: isRightAlign, curCode: 'USD', cell: cell, rowIdx: Number(args.rowIdx),
+                        colIdx: Number(args.colIdx)
                     });
                     fResult = result.fResult as string;
                     isRightAlign = result.isRightAlign as boolean;
@@ -164,6 +164,7 @@ export class WorkbookNumberFormat {
     }
 
     private autoDetectGeneralFormat(options: AutoDetectGeneralFormatArgs): { [key: string]: string | boolean } {
+        let range: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         if (isNumber(options.fResult)) {
             if (options.args.format && options.args.format !== '') {
                 if (options.args.format.toString().indexOf('%') > -1) {
@@ -187,6 +188,7 @@ export class WorkbookNumberFormat {
                 options.cell.format = options.args.format = getFormatFromType('Percentage');
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
+                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             } else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
                 Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN') {
@@ -194,9 +196,9 @@ export class WorkbookNumberFormat {
                 options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
+                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             }
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         return { isRightAlign: options.isRightAlign, fResult: options.fResult };
     }
@@ -360,7 +362,7 @@ export class WorkbookNumberFormat {
         let cell: CellModel = getCell(
             <number>args.rowIndex, <number>args.colIndex,
             getSheet(this.parent, (<number>args.sheetIndex || this.parent.activeSheetTab) - 1));
-        if (value && value.indexOf('/') > -1 || value.indexOf('-') > -1 || value.indexOf(':') > -1) {
+        if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
             dateObj = toDate(value, intl);
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                 cell = cell ? cell : {};
@@ -372,7 +374,6 @@ export class WorkbookNumberFormat {
                         cell.format = getFormatFromType('ShortDate');
                     }
                 }
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
                 args.isTime = dateObj.type === 'time';
                 args.dateObj = dateObj.dateObj;
@@ -542,4 +543,6 @@ interface AutoDetectGeneralFormatArgs {
     isRightAlign: boolean;
     curCode: string;
     cell: CellModel;
+    rowIdx: number;
+    colIdx: number;
 }

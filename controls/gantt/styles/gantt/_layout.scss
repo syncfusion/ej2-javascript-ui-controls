@@ -398,9 +398,21 @@
       .e-gantt-child-progressbar,
       .e-gantt-parent-progressbar,
       .e-gantt-milestone,
-      .e-gantt-parent-milestone {
+      .e-gantt-parent-milestone,
+      .e-gantt-manualparent-milestone {
         display: inline-block;
         width: 100%;
+      }
+
+      .e-manualparent-main-container {
+        background-color: transparent;
+        cursor: move;
+        margin-top: -5px;
+        position: absolute;
+      }
+
+      .e-gantt-manualparent-taskbar {
+        margin-top: 3px;
       }
 
       .e-gantt-child-taskbar-inner-div,
@@ -494,7 +506,8 @@
       }
 
       .e-milestone-top,
-      .e-parent-milestone-top {
+      .e-parent-milestone-top,
+      .e-manualparent-milestone-top {
         border-style: none solid solid;
         border-top: 0;
       }
@@ -502,13 +515,16 @@
       .e-milestone-top,
       .e-milestone-bottom,
       .e-parent-milestone-top,
-      .e-parent-milestone-bottom {
+      .e-parent-milestone-bottom,
+      .e-manualparent-milestone-top,
+      .e-manualparent-milestone-bottom {
         border-left-color: transparent;
         border-right-color: transparent;
       }
 
       .e-milestone-bottom,
-      .e-parent-milestone-bottom {
+      .e-parent-milestone-bottom,
+      .e-manualparent-milestone-bottom {
         border-bottom: 0;
         border-style: solid solid none;
       }
@@ -652,6 +668,38 @@
 
       .e-connectorpoint-allow-block {
         cursor: no-drop;
+      }
+
+      .e-gantt-manualparenttaskbar-left,
+      .e-gantt-manualparenttaskbar-right {
+        background-color: $gantt-manualparent-background-color;
+        border-color: $gantt-manualparent-background-color;
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        margin: -1px;
+        position: absolute;
+        width: 10px;
+      }
+
+      .e-manualparent-milestone-top,
+      .e-manualparent-milestone-bottom {
+        border-bottom-color: $gantt-manualparent-background-color;
+      }
+
+      .e-gantt-manualparenttaskbar-right {
+        cursor: e-resize;
+        margin-left: -8px;
+      }
+
+      .e-gantt-manualparenttaskbar-left {
+        margin-left: 0;
+      }
+
+      .e-gantt-manualparenttaskbar {
+        background: $gantt-manualparent-background-color;
+        margin-top: 3px;
+        position: absolute;
       }
 
       .e-icon {

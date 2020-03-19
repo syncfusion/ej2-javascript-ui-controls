@@ -61,6 +61,10 @@ describe('Action module', () => {
             expect(card.classList.contains('e-selection')).toEqual(false);
             expect(cardDoubleClickFunction).toHaveBeenCalled();
         });
+
+        it('dialog close after card double click', () => {
+            kanbanObj.closeDialog();
+        });
     });
 
     describe('row expand and collapse testing', () => {

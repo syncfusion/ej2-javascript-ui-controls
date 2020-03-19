@@ -317,6 +317,7 @@ export interface IImageCommandsArgs {
     /** Defines the image element to be edited */
     selectParent?: Node[];
 }
+
 /**
  * @deprecated
  */
@@ -723,6 +724,10 @@ export interface SanitizeSelectors {
     tags?: string[];
     /** Returns the attributes. */
     attributes?: SanitizeRemoveAttrs[];
+}
+
+export interface ExecuteCommandOption {
+    undo ?: boolean;
 }
 
 export interface SanitizeRemoveAttrs {

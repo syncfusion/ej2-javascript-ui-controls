@@ -273,7 +273,7 @@ export class AccumulationLegend extends BaseLegend {
         for (let id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 let pointIndex: number = parseInt(targetId.split(id)[1], 10);
-                if (this.chart.legendSettings.toggleVisibility && !isNaN(pointIndex)) {
+                if ((this.chart as AccumulationChart).legendSettings.toggleVisibility && !isNaN(pointIndex)) {
                     let currentSeries: AccumulationSeries = (<AccumulationChart>this.chart).visibleSeries[0];
                     let point: AccPoints = pointByIndex(pointIndex, currentSeries.points);
                     let legendOption: LegendOptions = this.legendByIndex(pointIndex, this.legendCollections);
@@ -306,7 +306,7 @@ export class AccumulationLegend extends BaseLegend {
      */
     private sliceVisibility(index: number, isVisible: boolean): void {
         let sliceId: string = this.chart.element.id + '_Series_0_Point_';
-        if ((this.chart.visibleSeries[0] as AccumulationSeries).dataLabel.visible) {
+        if (((this.chart as AccumulationChart).visibleSeries[0] as AccumulationSeries).dataLabel.visible) {
             sliceId = this.chart.element.id + '_datalabel_Series_0_';
             this.sliceAnimate(getElement(sliceId + 'g_' + index), isVisible);
         }

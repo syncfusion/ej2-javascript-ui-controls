@@ -1,12 +1,12 @@
 import { Base, Browser, ChildProperty, Collection, Complex, Component, Event as Event$1, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, attributes, closest, compile, detach, enableRipple, extend, formatUnit, getComponent, getDefaultDateObject, getNumberDependable, getNumericObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { ContextMenu, Item, Menu, MenuItem, Tab, Toolbar, TreeView } from '@syncfusion/ej2-navigations';
-import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
-import { Dialog, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
+import { ColorPicker, FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
-import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { AutoComplete, ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ListView } from '@syncfusion/ej2-lists';
+import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { Dialog, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { CheckBoxFilterBase, ExcelFilterBase, beforeCustomFilterOpen, beforeFltrcMenuOpen, filterCboxValue, parentsUntil } from '@syncfusion/ej2-grids';
 
 /**
@@ -15,6 +15,7 @@ import { CheckBoxFilterBase, ExcelFilterBase, beforeCustomFilterOpen, beforeFltr
 function getRangeIndexes(range) {
     var cellindexes;
     var indexes = [];
+    range = range.indexOf('!') > -1 ? range.split('!')[1] : range;
     range = range.indexOf(':') === -1 ? range + ':' + range : range;
     range.split(':').forEach(function (address) {
         cellindexes = getCellIndexes(address);
@@ -78,6 +79,26 @@ function getIndexesFromAddress(address) {
  */
 function getRangeFromAddress(address) {
     return address.split('!')[1] || address;
+}
+/**
+ * Get complete address for selected range
+ * @hidden
+ */
+function getAddressFromSelectedRange(sheet) {
+    return sheet.name + '!' + sheet.selectedRange;
+}
+/**
+ * @hidden
+ */
+function getAddressInfo(context, address) {
+    var sIdx;
+    if (address.indexOf('!') > -1) {
+        sIdx = getSheetIndex(context, getSheetNameFromAddress(address));
+    }
+    else {
+        sIdx = context.activeSheetTab - 1;
+    }
+    return { sheetIndex: sIdx, indices: getIndexesFromAddress(address) };
 }
 /**
  * Given range will be swapped/arranged in increasing order.
@@ -269,7 +290,7 @@ function dateToInt(val, isTime) {
     var date = isDateTime(val) ? val : new Date(val);
     var timeDiff = (date.getTime() - startDate.getTime());
     var diffDays = (timeDiff / (1000 * 3600 * 24)) + 1;
-    return isTime ? diffDays + 1 : parseInt(diffDays.toString(), 10) + 2;
+    return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 /**
  * @hidden
@@ -308,6 +329,10 @@ function toDate(text, intl) {
             dObj.dateObj = intl.parseDate(text, { format: availabelDateTimeFormat[key], skeleton: key });
             if (dObj.dateObj) {
                 dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+                if (dObj.type === 'time') {
+                    var time = dObj.dateObj.toLocaleTimeString();
+                    dObj.dateObj = new Date('01/01/1900 ' + time);
+                }
                 dObj.isCustom = true;
                 break;
             }
@@ -318,6 +343,8 @@ function toDate(text, intl) {
             var key = _e[_d];
             dObj.dateObj = intl.parseDate(text, { format: defaultDateFormats.timeFormats[key], skeleton: key });
             if (dObj.dateObj) {
+                var time = dObj.dateObj.toLocaleTimeString();
+                dObj.dateObj = new Date('01/01/1900 ' + time);
                 dObj.type = 'time';
                 dObj.isCustom = false;
                 break;
@@ -412,7 +439,63 @@ var filterRangeAlert = 'filterRangeAlert';
 /** @hidden */
 var clearAllFilter = 'clearAllFilter';
 /** @hidden */
+var wrapEvent = 'wrapText';
+/** @hidden */
 var onSave = 'onSave';
+/** @hidden */
+var insert = 'insert';
+/** @hidden */
+var deleteAction = 'delete';
+/** @hidden */
+var insertModel = 'insertModel';
+/** @hidden */
+var deleteModel = 'deleteModel';
+/** @hidden */
+var isValidation = 'isValidation';
+/** @hidden */
+var setValidation = 'setValidation';
+/** @hidden */
+var addHighlight = 'addHighlight';
+/** @hidden */
+var dataValidate = 'dataValidate';
+/** @hidden */
+var findNext = 'findNext';
+/** @hidden */
+var findPrevious = 'findPrevious';
+/** @hidden */
+var goto = 'gotoHandler';
+/** @hidden */
+var findWorkbookHandler = 'findHandler';
+/** @hidden */
+var replaceHandler = 'replace';
+/** @hidden */
+var replaceAllHandler = 'replaceAll';
+/** @hidden */
+var showDialog = 'ShowDialog';
+/** @hidden */
+var findUndoRedo = 'findUndoRedo';
+/** @hidden */
+var findKeyUp = 'findKeyUp';
+/** @hidden */
+var removeValidation = 'removeValidation';
+/** @hidden */
+var removeHighlight = 'removeHighlight';
+/** @hidden */
+var queryCellInfo = 'queryCellInfo';
+/** @hidden */
+var count = 'count';
+/** @hidden */
+var findCount = 'findCount';
+/** @hidden */
+var protectSheetWorkBook = 'protectSheet';
+/** @hidden */
+var updateToggle = 'updateToggleItem';
+/** @hidden */
+var protectsheetHandler = 'protectsheetHandler';
+/** @hidden */
+var replaceAllDialog = 'replaceAllDialog';
+/** @hidden */
+var workBookeditAlert = 'editAlert';
 
 /**
  * Specifies number format.
@@ -440,7 +523,6 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
             for (var j = selectedRange[1]; j <= selectedRange[3]; j++) {
                 setCell(i, j, sheet, { format: args.format }, true);
                 cell = getCell(i, j, sheet, true);
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.getFormattedCell({
                     type: getTypeFromFormat(cell.format), value: cell.value,
                     format: cell.format, rowIndex: i, colIndex: j,
@@ -456,6 +538,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         var fResult = isNullOrUndefined(args.value) ? '' : args.value;
         var sheet = args.sheetIndex ? this.parent.sheets[args.sheetIndex - 1] : this.parent.getActiveSheet();
         var range = getRangeIndexes(sheet.activeCell);
+        var sheetIdx = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetTab;
         var cell = args.cell ? args.cell : getCell(range[0], range[1], sheet);
         var rightAlign = false;
         var currencySymbol = getNumberDependable(this.parent.locale, 'USD');
@@ -479,7 +562,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         }
         args.type = args.format ? getTypeFromFormat(args.format) : 'General';
         var result = this.processFormats(args, fResult, rightAlign, cell);
-        if (!args.onLoad && (this.parent.getActiveSheet().id - 1 === args.sheetIndex - 1)) {
+        if ((this.parent.getActiveSheet().id - 1 === sheetIdx - 1)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value,
                 rowIndex: args.rowIndex, colIndex: args.colIndex, sheetIndex: args.sheetIndex,
@@ -488,7 +571,6 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         }
         if (!args.onLoad && (args.rowIndex > sheet.usedRange.rowIndex || args.colIndex > sheet.usedRange.colIndex)) {
             this.parent.setUsedRange(args.rowIndex, args.colIndex);
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         args.formattedText = result.fResult || args.value;
         args.isRightAlign = result.rightAlign;
@@ -505,7 +587,8 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
                 case 'General':
                     result = this.autoDetectGeneralFormat({
                         args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                        isRightAlign: isRightAlign, curCode: 'USD', cell: cell
+                        isRightAlign: isRightAlign, curCode: 'USD', cell: cell, rowIdx: Number(args.rowIdx),
+                        colIdx: Number(args.colIdx)
                     });
                     fResult = result.fResult;
                     isRightAlign = result.isRightAlign;
@@ -566,6 +649,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         return { fResult: fResult, rightAlign: isRightAlign };
     };
     WorkbookNumberFormat.prototype.autoDetectGeneralFormat = function (options) {
+        var range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         if (isNumber(options.fResult)) {
             if (options.args.format && options.args.format !== '') {
                 if (options.args.format.toString().indexOf('%') > -1) {
@@ -591,6 +675,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
                 options.cell.format = options.args.format = getFormatFromType('Percentage');
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
+                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             }
             else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
@@ -599,9 +684,9 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
                 options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
+                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             }
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         return { isRightAlign: options.isRightAlign, fResult: options.fResult };
     };
@@ -757,7 +842,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         var intl = new Internationalization();
         var value = !isNullOrUndefined(args.value) ? args.value.toString() : '';
         var cell = getCell(args.rowIndex, args.colIndex, getSheet(this.parent, (args.sheetIndex || this.parent.activeSheetTab) - 1));
-        if (value && value.indexOf('/') > -1 || value.indexOf('-') > -1 || value.indexOf(':') > -1) {
+        if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
             dateObj = toDate(value, intl);
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                 cell = cell ? cell : {};
@@ -770,7 +855,6 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
                         cell.format = getFormatFromType('ShortDate');
                     }
                 }
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
                 args.isTime = dateObj.type === 'time';
                 args.dateObj = dateObj.dateObj;
@@ -931,19 +1015,12 @@ function getTypeFromFormat(format) {
 var DataBind = /** @__PURE__ @class */ (function () {
     function DataBind(parent) {
         this.parent = parent;
+        this.requestedInfo = [];
         this.addEventListener();
     }
     DataBind.prototype.addEventListener = function () {
         this.parent.on(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler, this);
         this.parent.on(dataSourceChanged, this.dataSourceChangedHandler, this);
-    };
-    /**
-     * Destroys the Data binding module.
-     * @return {void}
-     */
-    DataBind.prototype.destroy = function () {
-        this.removeEventListener();
-        this.parent = null;
     };
     DataBind.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
@@ -954,6 +1031,7 @@ var DataBind = /** @__PURE__ @class */ (function () {
     /**
      * Update given data source to sheet.
      */
+    // tslint:disable-next-line
     DataBind.prototype.updateSheetFromDataSourceHandler = function (args) {
         var _this = this;
         var cell;
@@ -997,17 +1075,26 @@ var DataBind = /** @__PURE__ @class */ (function () {
                     sRange -= 1;
                 }
                 var isEndReached = false;
+                var insertRowCount = 0;
                 this_1.initRangeInfo(range);
                 var count = this_1.getMaxCount(range);
                 loadedInfo = this_1.getLoadedInfo(sRange, eRange, range);
                 sRange = loadedInfo.unloadedRange[0];
                 eRange = loadedInfo.unloadedRange[1];
+                if (range.info.insertRowRange) {
+                    range.info.insertRowRange.forEach(function (range) {
+                        insertRowCount += ((range[1] - range[0]) + 1);
+                    });
+                    sRange -= insertRowCount;
+                    eRange -= insertRowCount;
+                }
                 if (sRange > count) {
                     isEndReached = true;
                 }
                 else if (eRange > count) {
                     eRange = count;
                 }
+                this_1.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange;
                     requestedRange.push(false);
@@ -1019,35 +1106,51 @@ var DataBind = /** @__PURE__ @class */ (function () {
                         }
                         result = (e.result && e.result.result ? e.result.result : e.result);
                         if (result.length) {
-                            range.info.count = e.count;
+                            if (!range.info.count) {
+                                count = e.count;
+                                range.info.count = e.count;
+                            }
                             flds = Object.keys(result[0]);
-                            range.info.fldLen = flds.length;
+                            if (!range.info.fldLen) {
+                                range.info.fldLen = flds.length;
+                            }
                             sCellIdx = getRangeIndexes(range.startCell);
                             sRowIdx = sCellIdx[0];
                             sColIdx = sCellIdx[1];
-                            if (sRanges[k] === 0 && range.showFieldAsHeader) {
-                                flds.forEach(function (field, i) {
-                                    cell = getCell(sRowIdx + sRanges[k], sColIdx + i, args.sheet, true);
-                                    if (!cell) {
-                                        args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = { value: field };
+                            if (range.info.insertColumnRange) {
+                                var insertCount_1 = 0;
+                                range.info.insertColumnRange.forEach(function (insertRange) {
+                                    for (var i = insertRange[0]; i <= insertRange[1]; i++) {
+                                        i <= sColIdx ? flds.splice(0, 0, "emptyCell" + insertCount_1) : flds.splice(i - sColIdx, 0, "emptyCell" + insertCount_1);
+                                        insertCount_1++;
                                     }
-                                    else if (!cell.value) {
+                                });
+                            }
+                            if (sRanges[k] === 0 && range.showFieldAsHeader) {
+                                rowIdx = sRowIdx + sRanges[k] + insertRowCount;
+                                flds.forEach(function (field, i) {
+                                    cell = getCell(rowIdx, sColIdx + i, args.sheet, true);
+                                    if (!cell) {
+                                        args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
+                                            : { value: field };
+                                    }
+                                    else if (!cell.value && !field.includes('emptyCell')) {
                                         cell.value = field;
                                     }
                                 });
                             }
                             result.forEach(function (item, i) {
+                                rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
                                 for (var j = 0; j < flds.length; j++) {
-                                    rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0);
                                     cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
                                     if (cell) {
-                                        if (!cell.value) {
+                                        if (!cell.value && !flds[j].includes('emptyCell')) {
                                             setCell(rowIdx, sColIdx + j, args.sheet, _this.getCellDataFromProp(item[flds[j]]), true);
                                         }
                                     }
                                     else {
-                                        args.sheet.rows[rowIdx]
-                                            .cells[sColIdx + j] = _this.getCellDataFromProp(item[flds[j]]);
+                                        args.sheet.rows[rowIdx].cells[sColIdx + j] =
+                                            flds[j].includes('emptyCell') ? {} : _this.getCellDataFromProp(item[flds[j]]);
                                     }
                                     _this.checkDataForFormat({
                                         args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k,
@@ -1059,24 +1162,56 @@ var DataBind = /** @__PURE__ @class */ (function () {
                         else {
                             flds = [];
                         }
-                        args.sheet.usedRange.rowIndex =
-                            Math.max(sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0), args.sheet.usedRange.rowIndex);
+                        args.sheet.usedRange.rowIndex = Math.max((sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0) + insertRowCount) - 1, args.sheet.usedRange.rowIndex);
                         args.sheet.usedRange.colIndex = Math.max(sColIdx + flds.length - 1, args.sheet.usedRange.colIndex);
-                        range.info.loadedRange.push([sRange, eRange]);
+                        if (insertRowCount) {
+                            loadedInfo = _this.getLoadedInfo(sRange, eRange, range);
+                            sRange = loadedInfo.unloadedRange[0];
+                            eRange = loadedInfo.unloadedRange[1];
+                            if (sRange > count) {
+                                loadedInfo.isNotLoaded = false;
+                            }
+                            if (loadedInfo.isNotLoaded) {
+                                if (eRange > count) {
+                                    eRange = count;
+                                }
+                                range.info.loadedRange.push([sRange, eRange]);
+                            }
+                        }
+                        else {
+                            range.info.loadedRange.push([sRange, eRange]);
+                        }
                         requestedRange[k] = true;
                         if (requestedRange.indexOf(false) === -1) {
-                            if (remoteUrl) {
-                                _this.updateSheetFromDataSourceHandler({
+                            if (eRange + sRowIdx < args.sheet.usedRange.rowIndex) {
+                                if (!args.rangeSettingCount) {
+                                    args.rangeSettingCount = [];
+                                }
+                                args.rangeSettingCount.push(k);
+                                //if (remoteUrl) {
+                                var unloadedArgs = {
                                     sheet: args.sheet, indexes: [0, 0, args.sheet.usedRange.rowIndex, args.sheet.usedRange.colIndex],
-                                    promise: new Promise(function (resolve) { resolve((function () { })()); })
+                                    promise: new Promise(function (resolve, reject) { resolve((function () { })()); }),
+                                    rangeSettingCount: args.rangeSettingCount
+                                };
+                                _this.updateSheetFromDataSourceHandler(unloadedArgs);
+                                unloadedArgs.promise.then(function () {
+                                    if (_this.parent.getModuleName() === 'workbook') {
+                                        return;
+                                    }
+                                    args.rangeSettingCount.pop();
+                                    if (!args.rangeSettingCount.length) {
+                                        _this.parent.notify('created', null);
+                                    }
                                 });
+                                //}
                             }
-                            deferred.resolve();
+                            _this.checkResolve(args.indexes);
                         }
                     });
                 }
                 else if (k === 0 && requestedRange.indexOf(false) === -1) {
-                    deferred.resolve();
+                    this_1.checkResolve(args.indexes);
                 }
             };
             var this_1 = this;
@@ -1087,6 +1222,38 @@ var DataBind = /** @__PURE__ @class */ (function () {
         else {
             deferred.resolve();
         }
+    };
+    DataBind.prototype.checkResolve = function (indexes) {
+        var resolved;
+        var isSameRng;
+        var cnt = 0;
+        this.requestedInfo.forEach(function (info, idx) {
+            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes);
+            if (isSameRng || resolved) {
+                if (idx === 0) {
+                    info.deferred.resolve();
+                    cnt++;
+                    resolved = true;
+                }
+                else {
+                    if (resolved && (info.isLoaded || !info.isNotLoaded)) {
+                        info.deferred.resolve();
+                        cnt++;
+                    }
+                    else if (isSameRng && resolved) {
+                        info.deferred.resolve();
+                        cnt++;
+                    }
+                    else if (isSameRng) {
+                        info.isLoaded = true;
+                    }
+                    else {
+                        resolved = false;
+                    }
+                }
+            }
+        });
+        this.requestedInfo.splice(0, cnt);
     };
     DataBind.prototype.getCellDataFromProp = function (prop) {
         var data = {};
@@ -1229,6 +1396,15 @@ var DataBind = /** @__PURE__ @class */ (function () {
     DataBind.prototype.getModuleName = function () {
         return 'dataBind';
     };
+    /**
+     * Destroys the Data binding module.
+     * @return {void}
+     */
+    DataBind.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+        this.requestedInfo = [];
+    };
     return DataBind;
 }());
 
@@ -1290,7 +1466,7 @@ var selectionComplete = 'selectionComplete';
 /** @hidden */
 var cMenuBeforeOpen = 'contextmenuBeforeOpen';
 /** @hidden */
-var addSheetTab = 'addSheetTab';
+var insertSheetTab = 'insertSheetTab';
 /** @hidden */
 var removeSheetTab = 'removeSheetTab';
 /** @hidden */
@@ -1362,9 +1538,7 @@ var applySort = 'applySort';
 /** @hidden */
 var collaborativeUpdate = 'collaborativeUpdate';
 /** @hidden */
-var hideShowRow = 'hideShowRow';
-/** @hidden */
-var hideShowCol = 'hideShowCol';
+var hideShow = 'hideShow';
 /** @hidden */
 var autoFit = 'autoFitRowsColumns';
 /** @hidden */
@@ -1417,6 +1591,42 @@ var getFilterRange = 'getFilterRange';
 var setAutoFit = 'setAutoFit';
 /** @hidden */
 var refreshFormulaDatasource = 'refreshFormulaDatasource';
+/** @hidden */
+var setScrollEvent = 'setScrollEvent';
+/** @hidden */
+var initiateDataValidation = 'initiatedatavalidation';
+/** @hidden */
+var validationError = 'validationError';
+/** @hidden */
+var startEdit = 'startEdit';
+/** @hidden */
+var invalidData = 'invalidData';
+/** @hidden */
+var clearInvalid = 'clearInvalid';
+/** @hidden */
+var protectSheet = 'protectSheet';
+/** @hidden */
+var applyProtect = 'applyProtect';
+/** @hidden */
+var protectCellFormat = 'protectCellFormat';
+/** @hidden */
+var gotoDlg = 'renderGotoDlgt';
+/** @hidden */
+var findDlg = 'renderFindDlg';
+/** @hidden */
+var findHandler = 'findHandler';
+/** @hidden */
+var replace = 'replaceHandler';
+/** @hidden */
+var created = 'created';
+/** @hidden */
+var editAlert = 'editAlert';
+/** @hidden */
+var setUndoRedo = 'setUndoRedo';
+/** @hidden */
+var enableFormulaInput = 'enableFormulaInput';
+/** @hidden */
+var protectSelection = 'protectSelection';
 
 /**
  * Open properties.
@@ -1504,7 +1714,6 @@ var WorkbookOpen = /** @__PURE__ @class */ (function () {
         this.parent.isOpen = false;
     };
     WorkbookOpen.prototype.updateModel = function (workbookModel) {
-        var _this = this;
         this.parent.notify(workbookFormulaOperation, { action: 'unRegisterSheet' });
         this.parent.sheetNameCount = 1;
         this.parent.sheets = [];
@@ -1515,10 +1724,8 @@ var WorkbookOpen = /** @__PURE__ @class */ (function () {
             'activeSheetTab': workbookModel.activeSheetTab,
             'definedNames': workbookModel.definedNames || []
         }, true);
+        initSheet(this.parent);
         this.parent.notify(sheetCreated, null);
-        this.parent.sheets.forEach(function (key) {
-            key.id = getMaxSheetId(_this.parent.sheets);
-        });
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
     };
@@ -1637,7 +1844,7 @@ var SaveWorker = /** @__PURE__ @class */ (function () {
     return SaveWorker;
 }());
 
-var __extends$4 = (undefined && undefined.__extends) || (function () {
+var __extends$2 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1655,7 +1862,7 @@ var __extends$4 = (undefined && undefined.__extends) || (function () {
  * The `WorkbookSave` module is used to handle the save action in Workbook library.
  */
 var WorkbookSave = /** @__PURE__ @class */ (function (_super) {
-    __extends$4(WorkbookSave, _super);
+    __extends$2(WorkbookSave, _super);
     /**
      * Constructor for WorkbookSave module in Workbook library.
      * @private
@@ -1728,10 +1935,10 @@ var WorkbookSave = /** @__PURE__ @class */ (function (_super) {
     WorkbookSave.prototype.updateBasicSettings = function () {
         var jsonStr = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
-            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
-            'contextMenuBeforeOpen', 'created', 'dataBound', 'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure',
+            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
+            'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
-            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete']);
+            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo']);
         var basicSettings = JSON.parse(jsonStr);
         var sheetCount = this.parent.sheets.length;
         if (sheetCount) {
@@ -2682,8 +2889,8 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
         if (startDate[0] === '#') {
             return startDate;
         }
-        var d1 = this.parent.parseDate(endDate);
-        var d2 = this.parent.parseDate(startDate);
+        var d1 = this.parent.intToDate(endDate);
+        var d2 = this.parent.intToDate(startDate);
         if (d1.toString()[0] === '#') {
             return d1.toString();
         }
@@ -4867,7 +5074,7 @@ var Parser = /** @__PURE__ @class */ (function () {
     return Parser;
 }());
 
-var __extends$5 = (undefined && undefined.__extends) || (function () {
+var __extends$3 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4880,7 +5087,7 @@ var __extends$5 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -4891,7 +5098,7 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  * Represents the calculate library.
  */
 var Calculate = /** @__PURE__ @class */ (function (_super) {
-    __extends$5(Calculate, _super);
+    __extends$3(Calculate, _super);
     /**
      * Base constructor for creating Calculate library.
      */
@@ -5205,6 +5412,15 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
         else {
             return null;
         }
+    };
+    /** @hidden */
+    Calculate.prototype.intToDate = function (val) {
+        var dateVal = Number(val);
+        dateVal = (dateVal > 0 && dateVal < 1) ? (1 + dateVal) : (dateVal === 0) ? 1 : dateVal;
+        if (dateVal > 60) {
+            dateVal -= 1; // Due to leap year issue of 1900 in MSExcel.
+        }
+        return new Date(((dateVal - 1) * (1000 * 3600 * 24)) + new Date('01/01/1900').getTime());
     };
     Calculate.prototype.getFormulaInfoTable = function () {
         if (this.isSheetMember()) {
@@ -5627,6 +5843,14 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
                     var libFormula = sFormula.split(this.leftBracket)[0].split('q').join(this.emptyString);
                     var args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
                         .split(this.getParseArgumentSeparator());
+                    if (this.getLibraryFormulas().get(libFormula.toUpperCase()).isCustom) {
+                        var j = 0;
+                        var customArgs = [];
+                        for (j = 0; j < args.length; j++) {
+                            customArgs.push(this.getValueFromArg(args[j]));
+                        }
+                        args = customArgs;
+                    }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] : this.getFunction(libFormula).apply(void 0, args);
                     if (nestedFormula) {
                         fNested = this.processNestedFormula(parsedText, sFormula, formulatResult);
@@ -7244,6 +7468,15 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
         }
     };
     
+    /**
+     * @hidden
+     */
+    Calculate.prototype.computeExpression = function (formula) {
+        var parsedFormula = this.parser.parseFormula(formula);
+        var calcValue = this.computeFormula(parsedFormula);
+        return calcValue;
+    };
+    
     Calculate.prototype.isSheetMember = function () {
         var family = this.getSheetFamilyItem(this.grid);
         return isNullOrUndefined(family) ? false : family.isSheetMember;
@@ -7353,13 +7586,13 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
         }
     };
     var Calculate_1;
-    __decorate$4([
+    __decorate$2([
         Property(true)
     ], Calculate.prototype, "includeBasicFormulas", void 0);
-    __decorate$4([
+    __decorate$2([
         Event$1()
     ], Calculate.prototype, "onFailure", void 0);
-    Calculate = Calculate_1 = __decorate$4([
+    Calculate = Calculate_1 = __decorate$2([
         NotifyPropertyChanges
     ], Calculate);
     return Calculate;
@@ -7533,7 +7766,6 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
         this.addEventListener();
         this.initCalculate();
         this.registerSheet();
-        this.initiateDefinedNames();
     };
     /**
      * To destroy the formula module.
@@ -7654,6 +7886,9 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
                 break;
             case 'addCustomFunction':
                 this.addCustomFunction(args.functionHandler, args.functionName);
+                break;
+            case 'computeExpression':
+                args.calcValue = this.calculateInstance.computeExpression(args.formula);
                 break;
         }
     };
@@ -7879,8 +8114,11 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
         }
     };
     WorkbookFormula.prototype.autoCorrectFormula = function (formula) {
-        if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
-            formula += ')';
+        if (!isNullOrUndefined(formula)) {
+            formula = formula.toString();
+            if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
+                formula += ')';
+            }
         }
         return formula;
     };
@@ -7890,7 +8128,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
         var i = 0;
         while (i < len) {
             var definedname = definedNames[i];
-            this.addDefinedName(definedname);
+            this.addDefinedName(definedname, true);
             i++;
         }
     };
@@ -7899,12 +8137,18 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
      * Used to add defined name to workbook.
      * @param {DefineNameModel} name - Define named range.
      */
-    WorkbookFormula.prototype.addDefinedName = function (definedName) {
+    WorkbookFormula.prototype.addDefinedName = function (definedName, isValidate) {
         var isAdded = true;
         var sheetIdx;
         var name = definedName.name;
-        var refersTo = definedName.refersTo.indexOf('!') > 0 ? definedName.refersTo :
-            getSheetName(this.parent) + '!' + definedName.refersTo;
+        if (definedName.refersTo.indexOf('!') < 0) {
+            var sheetName = getSheetName(this.parent);
+            sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
+            definedName.refersTo = sheetName + '!' + ((definedName.refersTo.indexOf('=') < 0) ?
+                definedName.refersTo : definedName.refersTo.split('=')[1]);
+        }
+        var visibleRefersTo = definedName.refersTo;
+        var refersTo = this.parseSheetRef(definedName.refersTo);
         if (definedName.scope) {
             sheetIdx = getSheetIndex(this.parent, definedName.scope);
             if (sheetIdx > -1) {
@@ -7918,15 +8162,17 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             definedName.comment = '';
         }
         //need to extend once internal sheet value changes done.
-        if (this.checkIsNameExist(definedName.name, definedName.scope)) {
+        if (!isValidate && this.checkIsNameExist(definedName.name, definedName.scope)) {
             isAdded = false;
         }
         else {
             this.calculateInstance.addNamedRange(name, refersTo[0] === '=' ? refersTo.substr(1) : refersTo);
             if (refersTo[0] !== '=') {
-                definedName.refersTo = '=' + refersTo;
+                definedName.refersTo = '=' + visibleRefersTo;
             }
-            this.parent.definedNames.push(definedName);
+            if (this.parent.definedNames.indexOf(definedName) < 0) {
+                this.parent.definedNames.push(definedName);
+            }
         }
         return isAdded;
     };
@@ -8034,7 +8280,7 @@ var WorkbookSort = /** @__PURE__ @class */ (function () {
         var sortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
         var isSingleCell = false;
         eventArgs.promise = deferred.promise;
-        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+        if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             deferred.reject(this.parent.serviceLocator.getService(workbookLocale).getConstant('SortOutOfRangeError'));
             return;
         }
@@ -8042,7 +8288,7 @@ var WorkbookSort = /** @__PURE__ @class */ (function () {
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
-            range[2] = sheet.usedRange.rowIndex - 1;
+            range[2] = sheet.usedRange.rowIndex;
             range[3] = sheet.usedRange.colIndex;
             isSingleCell = true;
             containsHeader = isNullOrUndefined(sortOptions.containsHeader) ? true : sortOptions.containsHeader;
@@ -8196,7 +8442,7 @@ var WorkbookFilter = /** @__PURE__ @class */ (function () {
         }
         else {
             var range = getSwapRange(getIndexesFromAddress(args.range));
-            if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+            if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
                 deferred.reject('Select a cell or range inside the used range and try again.');
                 return;
             }
@@ -8205,7 +8451,7 @@ var WorkbookFilter = /** @__PURE__ @class */ (function () {
                 range[1] = 0;
                 range[3] = sheet.usedRange.colIndex;
             }
-            range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+            range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             range[0] = range[0] + 1; //ignore first row        
             var address_1 = getRangeAddress(range);
             getData(this.parent, sheet.name + "!" + address_1, true, true).then(function (jsonData) {
@@ -8233,7 +8479,7 @@ var WorkbookFilter = /** @__PURE__ @class */ (function () {
                 if (!data) {
                     return;
                 }
-                _this.parent.showHideRow(result_1.indexOf(data) < 0, parseInt(data[rowKey_1], 10) - 1);
+                _this.parent.hideRow(parseInt(data[rowKey_1], 10) - 1, undefined, result_1.indexOf(data) < 0);
             });
         }
     };
@@ -8244,7 +8490,7 @@ var WorkbookFilter = /** @__PURE__ @class */ (function () {
         if (this.filterRange) {
             var range = getCellIndexes(this.filterRange);
             var sheet = this.parent.getActiveSheet();
-            this.parent.showHideRow(false, range[0], sheet.usedRange.rowIndex - 1);
+            this.parent.hideRow(range[0], sheet.usedRange.rowIndex - 1, false);
         }
     };
     /**
@@ -8272,6 +8518,7 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
     WorkbookCellFormat.prototype.format = function (args) {
         var sheet;
         var rng = args.range;
+        var eventArgs;
         if (rng && typeof rng === 'string' && rng.indexOf('!') > -1) {
             rng = rng.split('!')[1];
             sheet = this.parent.sheets[getSheetIndex(this.parent, args.range.split('!')[0])];
@@ -8279,7 +8526,6 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
         else {
             sheet = this.parent.getActiveSheet();
         }
-        var eventArgs;
         if (rng === undefined) {
             rng = sheet.selectedRange;
         }
@@ -8295,26 +8541,143 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
         }
         var indexes = typeof (eventArgs.range) === 'object' ? eventArgs.range :
             getSwapRange(getRangeIndexes(eventArgs.range));
-        for (var i = indexes[0]; i <= indexes[2]; i++) {
-            for (var j = indexes[1]; j <= indexes[3]; j++) {
-                setCell(i, j, sheet, { style: eventArgs.style }, true);
-                if (this.parent.getActiveSheet().id === sheet.id) {
-                    this.parent.notify(applyCellFormat, {
-                        style: eventArgs.style, rowIdx: i, colIdx: j, lastCell: j === indexes[3],
-                        isHeightCheckNeeded: true, manualUpdate: true,
-                        onActionUpdate: args.onActionUpdate
-                    });
+        if (args.borderType) {
+            this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate);
+            delete args.style.border;
+        }
+        if (eventArgs.style.borderTop !== undefined) {
+            for (var i = indexes[1]; i <= indexes[3]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderBottom', indexes[0] - 1, i);
+                this.checkFullBorder(sheet, 'borderBottom', indexes[0] - 1, i);
+                this.checkFullBorder(sheet, 'borderTop', indexes[0], i);
+                this.setCellBorder(sheet, { borderTop: eventArgs.style.borderTop }, indexes[0], i, args.onActionUpdate, i === indexes[3]);
+            }
+            delete eventArgs.style.borderTop;
+        }
+        if (eventArgs.style.borderBottom !== undefined) {
+            for (var i = indexes[1]; i <= indexes[3]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderTop', indexes[2] + 1, i);
+                this.checkFullBorder(sheet, 'borderTop', indexes[2] + 1, i);
+                this.checkFullBorder(sheet, 'borderBottom', indexes[2], i);
+                this.setCellBorder(sheet, { borderBottom: eventArgs.style.borderBottom }, indexes[2], i, args.onActionUpdate, i === indexes[3]);
+                this.setBottomBorderPriority(sheet, indexes[2], i);
+            }
+            delete eventArgs.style.borderBottom;
+        }
+        if (eventArgs.style.borderLeft !== undefined) {
+            for (var i = indexes[0]; i <= indexes[2]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderRight', i, indexes[1] - 1);
+                this.checkFullBorder(sheet, 'borderRight', i, indexes[1] - 1);
+                this.checkFullBorder(sheet, 'borderLeft', i, indexes[1]);
+                this.setCellBorder(sheet, { borderLeft: eventArgs.style.borderLeft }, i, indexes[1], args.onActionUpdate);
+            }
+            delete eventArgs.style.borderLeft;
+        }
+        if (eventArgs.style.borderRight !== undefined) {
+            for (var i = indexes[0]; i <= indexes[2]; i++) {
+                this.checkAdjustantBorder(sheet, 'borderLeft', i, indexes[3] - 1);
+                this.checkFullBorder(sheet, 'borderLeft', i, indexes[3] - 1);
+                this.checkFullBorder(sheet, 'borderRight', i, indexes[3]);
+                this.setCellBorder(sheet, { borderRight: eventArgs.style.borderRight }, i, indexes[3], args.onActionUpdate);
+            }
+            delete eventArgs.style.borderRight;
+        }
+        var border;
+        var isFullBorder;
+        if (Object.keys(args.style).length) {
+            for (var i = indexes[0]; i <= indexes[2]; i++) {
+                for (var j = indexes[1]; j <= indexes[3]; j++) {
+                    if (isFullBorder === undefined) {
+                        if (eventArgs.style.border !== undefined) {
+                            border = eventArgs.style.border;
+                            eventArgs.style.border = undefined;
+                            isFullBorder = true;
+                        }
+                        else {
+                            isFullBorder = false;
+                        }
+                    }
+                    if (isFullBorder) {
+                        this.setFullBorder(sheet, border, indexes, i, j, args.onActionUpdate);
+                    }
+                    this.setCellStyle(sheet, i, j, eventArgs.style);
+                    if (this.parent.getActiveSheet().id === sheet.id) {
+                        this.parent.notify(applyCellFormat, { style: eventArgs.style, rowIdx: i, colIdx: j,
+                            lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate
+                        });
+                    }
                 }
             }
+        }
+        if (isFullBorder) {
+            eventArgs.style.border = border;
         }
         this.parent.setUsedRange(indexes[2], indexes[3]);
         if (args.refreshRibbon) {
             this.parent.notify(activeCellChanged, null);
         }
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         if (triggerEvent) {
-            eventArgs.range = sheet.name + '!' + rng;
+            eventArgs.range = sheet.name + "!" + rng;
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+        }
+    };
+    WorkbookCellFormat.prototype.setBottomBorderPriority = function (sheet, rowIdx, colIdx) {
+        if (isHiddenRow(sheet, rowIdx + 1)) {
+            var pIdx = this.skipHiddenRows(sheet, rowIdx + 1);
+            var pCellStyle = this.parent.getCellStyleValue(['borderTop'], [pIdx, colIdx]).borderTop;
+            if (pCellStyle !== '') {
+                sheet.rows[rowIdx].cells[colIdx].style.bottomPriority = true;
+            }
+        }
+    };
+    WorkbookCellFormat.prototype.setFullBorder = function (sheet, border, indexes, i, j, actionUpdate) {
+        var style = {};
+        if (i === indexes[0]) {
+            this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
+            this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
+        }
+        if (j === indexes[1]) {
+            this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1);
+            this.checkFullBorder(sheet, 'borderRight', i, j - 1);
+        }
+        if (j === indexes[3]) {
+            this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1);
+            this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+        }
+        else {
+            this.checkAdjustantBorder(sheet, 'border', i, j + 1);
+        }
+        style.borderRight = border;
+        style.borderTop = border;
+        style.borderLeft = border;
+        style.borderBottom = border;
+        this.setCellBorder(sheet, style, i, j, actionUpdate, j === indexes[3]);
+        if (i === indexes[2]) {
+            this.checkAdjustantBorder(sheet, 'borderTop', i + 1, j);
+            this.checkFullBorder(sheet, 'borderTop', i + 1, j);
+            this.setBottomBorderPriority(sheet, i, j);
+        }
+        else {
+            this.checkAdjustantBorder(sheet, 'border', i + 1, j);
+        }
+    };
+    WorkbookCellFormat.prototype.checkAdjustantBorder = function (sheet, prop, rowIdx, colIdx) {
+        var style = {};
+        if (this.parent.getCellStyleValue([prop], [rowIdx, colIdx])[prop] !== '') {
+            style[prop] = undefined;
+            this.setCellStyle(sheet, rowIdx, colIdx, style);
+        }
+    };
+    WorkbookCellFormat.prototype.checkFullBorder = function (sheet, prop, rowIdx, colIdx) {
+        var border = this.parent.getCellStyleValue(['border'], [rowIdx, colIdx]).border;
+        if (border !== '') {
+            var style_1 = { border: undefined };
+            ['borderBottom', 'borderTop', 'borderLeft', 'borderRight'].forEach(function (value) {
+                if (value !== prop) {
+                    style_1[value] = border;
+                }
+            });
+            this.setCellStyle(sheet, rowIdx, colIdx, style_1);
         }
     };
     WorkbookCellFormat.prototype.textDecorationActionUpdate = function (args) {
@@ -8392,6 +8755,130 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
         }
         eventArgs.range = sheet.name + '!' + eventArgs.range;
         this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+    };
+    WorkbookCellFormat.prototype.setTypedBorder = function (sheet, border, range, type, actionUpdate) {
+        var prevBorder;
+        if (type === 'Outer') {
+            for (var colIdx = range[1]; colIdx <= range[3]; colIdx++) {
+                this.checkAdjustantBorder(sheet, 'borderBottom', range[0] - 1, colIdx);
+                this.checkFullBorder(sheet, 'borderBottom', range[0] - 1, colIdx);
+                this.setCellBorder(sheet, { borderTop: border }, range[0], colIdx, actionUpdate, colIdx === range[3]);
+                this.checkAdjustantBorder(sheet, 'borderTop', range[2] + 1, colIdx);
+                this.checkFullBorder(sheet, 'borderTop', range[2] + 1, colIdx);
+                this.setCellBorder(sheet, { borderBottom: border }, range[2], colIdx, actionUpdate, colIdx === range[3]);
+                this.setBottomBorderPriority(sheet, range[2], colIdx);
+            }
+            for (var rowIdx = range[0]; rowIdx <= range[2]; rowIdx++) {
+                this.checkAdjustantBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
+                this.checkFullBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
+                this.setCellBorder(sheet, { borderLeft: border }, rowIdx, range[1], actionUpdate);
+                this.checkAdjustantBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
+                this.checkFullBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
+                this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[3], actionUpdate);
+            }
+        }
+        else if (type === 'Inner') {
+            for (var i = range[0]; i <= range[2]; i++) {
+                for (var j = range[1]; j <= range[3]; j++) {
+                    var style = {};
+                    prevBorder = this.parent.getCellStyleValue(['border'], [i, j]).border;
+                    if (prevBorder !== '') {
+                        style.border = undefined;
+                        if (j === range[3] || j === range[1] || i === range[0] || i === range[2]) {
+                            if (i === range[0]) {
+                                style.borderTop = prevBorder;
+                            }
+                            if (i === range[2]) {
+                                style.borderBottom = prevBorder;
+                            }
+                            if (j === range[3]) {
+                                style.borderRight = prevBorder;
+                            }
+                            if (j === range[1]) {
+                                style.borderLeft = prevBorder;
+                            }
+                        }
+                    }
+                    if (j !== range[3]) {
+                        style.borderRight = border;
+                    }
+                    if (i !== range[0]) {
+                        style.borderTop = border;
+                    }
+                    if (i !== range[2]) {
+                        style.borderBottom = border;
+                    }
+                    if (j !== range[1]) {
+                        style.borderLeft = border;
+                    }
+                    this.setCellBorder(sheet, style, i, j, actionUpdate, j === range[3]);
+                }
+            }
+        }
+        else if (type === 'Vertical') {
+            for (var i = range[0]; i <= range[2]; i++) {
+                for (var j = range[1]; j <= range[3]; j++) {
+                    var style = { borderRight: border, borderLeft: border };
+                    if (j === range[1]) {
+                        this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1);
+                        this.checkFullBorder(sheet, 'borderRight', i, j - 1);
+                    }
+                    if (j === range[3]) {
+                        this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1);
+                        this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+                    }
+                    this.setCellBorder(sheet, style, i, j, actionUpdate);
+                }
+            }
+        }
+        else {
+            for (var i = range[0]; i <= range[2]; i++) {
+                for (var j = range[1]; j <= range[3]; j++) {
+                    var style = { borderTop: border, borderBottom: border };
+                    if (i === range[0]) {
+                        this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
+                        this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
+                    }
+                    this.setCellBorder(sheet, style, i, j, actionUpdate, j === range[3]);
+                    if (i === range[2]) {
+                        this.checkAdjustantBorder(sheet, 'borderTop', i + 1, j);
+                        this.checkFullBorder(sheet, 'borderTop', i + 1, j);
+                        this.setBottomBorderPriority(sheet, i, j);
+                    }
+                }
+            }
+        }
+    };
+    WorkbookCellFormat.prototype.setCellBorder = function (sheet, style, rowIdx, colIdx, actionUpdate, lastCell) {
+        this.setCellStyle(sheet, rowIdx, colIdx, style);
+        if (this.parent.getActiveSheet().id === sheet.id) {
+            this.parent.notify(applyCellFormat, {
+                style: style, rowIdx: rowIdx, colIdx: colIdx, onActionUpdate: actionUpdate, first: '', lastCell: lastCell,
+                isHeightCheckNeeded: true, manualUpdate: true
+            });
+        }
+    };
+    WorkbookCellFormat.prototype.setCellStyle = function (sheet, rowIdx, colIdx, style) {
+        if (!sheet.rows[rowIdx]) {
+            sheet.rows[rowIdx] = { cells: [] };
+        }
+        else if (!sheet.rows[rowIdx].cells) {
+            sheet.rows[rowIdx].cells = [];
+        }
+        if (!sheet.rows[rowIdx].cells[colIdx]) {
+            sheet.rows[rowIdx].cells[colIdx] = {};
+        }
+        if (!sheet.rows[rowIdx].cells[colIdx].style) {
+            sheet.rows[rowIdx].cells[colIdx].style = {};
+        }
+        Object.assign(sheet.rows[rowIdx].cells[colIdx].style, style, null, true);
+    };
+    WorkbookCellFormat.prototype.skipHiddenRows = function (sheet, startIdx) {
+        startIdx++;
+        if (isHiddenRow(sheet, startIdx)) {
+            startIdx = this.skipHiddenRows(sheet, startIdx);
+        }
+        return startIdx;
     };
     WorkbookCellFormat.prototype.addEventListener = function () {
         this.parent.on(setCellFormat, this.format, this);
@@ -8526,7 +9013,6 @@ var WorkbookEdit = /** @__PURE__ @class */ (function () {
             this.parent.notify(checkDateFormat, dateEventArgs);
             if (!isNullOrUndefined(dateEventArgs.updatedVal) && dateEventArgs.updatedVal.length > 0) {
                 cell.value = dateEventArgs.updatedVal;
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
             }
         }
         else {
@@ -8534,7 +9020,6 @@ var WorkbookEdit = /** @__PURE__ @class */ (function () {
                 value = this.checkDecimalPoint(value);
             }
             cell.value = value;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
         this.parent.setUsedRange(range[0] + 1, range[1]);
     };
@@ -8630,6 +9115,1390 @@ var WorkbookHyperlink = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * The `WorkbookInsert` module is used to insert cells, rows, columns and sheets in to workbook.
+ */
+var WorkbookInsert = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the workbook insert module.
+     * @private
+     */
+    function WorkbookInsert(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    WorkbookInsert.prototype.insertModel = function (args) {
+        var _this = this;
+        var _a, _b, _c;
+        var index;
+        var model = [];
+        if (typeof (args.start) === 'number') {
+            index = args.start;
+            args.end = args.end || index;
+            if (index > args.end) {
+                index = args.end;
+                args.end = args.start;
+            }
+            for (var i = index; i <= args.end; i++) {
+                model.push({});
+            }
+        }
+        else {
+            if (args.start) {
+                index = args.start[0].index || 0;
+                model = args.start;
+            }
+            else {
+                index = 0;
+                model.push({});
+            }
+        }
+        if (args.modelType === 'Row') {
+            args.model = args.model;
+            if (!args.model.rows) {
+                args.model.rows = [];
+            }
+            (_a = args.model.rows).splice.apply(_a, [index, 0].concat(model));
+            //this.setInsertInfo(args.model, index, model.length, 'count');
+            if (index > args.model.usedRange.rowIndex) {
+                this.parent.setUsedRange(index + (model.length - 1), args.model.usedRange.colIndex);
+            }
+            else {
+                this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex);
+            }
+        }
+        else if (args.modelType === 'Column') {
+            args.model = args.model;
+            if (!args.model.columns) {
+                args.model.columns = [];
+            }
+            (_b = args.model.columns).splice.apply(_b, [index, 0].concat(model));
+            //this.setInsertInfo(args.model, index, model.length, 'fldLen', 'Column');
+            if (index > args.model.usedRange.colIndex) {
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, index + (model.length - 1));
+            }
+            else {
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, args.model.usedRange.colIndex + model.length);
+            }
+            if (!args.model.rows) {
+                args.model.rows = [];
+            }
+            var cellModel = [];
+            if (!args.columnCellsModel) {
+                args.columnCellsModel = [];
+            }
+            for (var i = 0; i < model.length; i++) {
+                cellModel.push({});
+            }
+            for (var i = 0; i <= args.model.usedRange.rowIndex; i++) {
+                if (!args.model.rows[i]) {
+                    args.model.rows[i] = { cells: [] };
+                }
+                else if (!args.model.rows[i].cells) {
+                    args.model.rows[i].cells = [];
+                }
+                if (index && !args.model.rows[i].cells[index - 1]) {
+                    args.model.rows[i].cells[index - 1] = {};
+                }
+                (_c = args.model.rows[i].cells).splice.apply(_c, [index, 0].concat((args.columnCellsModel[i] && args.columnCellsModel[i].cells ?
+                    args.columnCellsModel[i].cells : cellModel)));
+            }
+        }
+        else {
+            if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) {
+                return;
+            }
+            this.parent.createSheet(index, model);
+            var id_1;
+            if (args.activeSheetTab) {
+                this.parent.setProperties({ activeSheetTab: args.activeSheetTab }, true);
+            }
+            model.forEach(function (sheet) {
+                id_1 = sheet.id;
+                _this.parent.notify(workbookFormulaOperation, { action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id_1,
+                    index: id_1 });
+            });
+        }
+        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetTab: args.activeSheetTab, sheetCount: this.parent.sheets.length });
+    };
+    WorkbookInsert.prototype.setInsertInfo = function (sheet, startIndex, count, totalKey, modelType) {
+        if (modelType === void 0) { modelType = 'Row'; }
+        var endIndex = count = startIndex + (count - 1);
+        sheet.rangeSettings.forEach(function (range) {
+            if (range.info && startIndex < range.info[totalKey]) {
+                if (!range.info["insert" + modelType + "Range"]) {
+                    range.info["insert" + modelType + "Range"] = [[startIndex, endIndex]];
+                }
+                else {
+                    range.info["insert" + modelType + "Range"].push([startIndex, endIndex]);
+                }
+                range.info[totalKey] += ((endIndex - startIndex) + 1);
+            }
+        });
+    };
+    WorkbookInsert.prototype.addEventListener = function () {
+        this.parent.on(insertModel, this.insertModel, this);
+    };
+    /**
+     * Destroy workbook insert module.
+     */
+    WorkbookInsert.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    WorkbookInsert.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(insertModel, this.insertModel);
+        }
+    };
+    /**
+     * Get the workbook insert module name.
+     */
+    WorkbookInsert.prototype.getModuleName = function () {
+        return 'workbookinsert';
+    };
+    return WorkbookInsert;
+}());
+
+/**
+ * The `WorkbookDelete` module is used to delete cells, rows, columns and sheets from workbook.
+ */
+var WorkbookDelete = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the workbook delete module.
+     * @private
+     */
+    function WorkbookDelete(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    WorkbookDelete.prototype.deleteModel = function (args) {
+        var modelName = args.modelType.toLowerCase() + "s";
+        args.start = args.start;
+        if (args.start > args.end) {
+            var temp = args.start;
+            args.start = args.end;
+            args.end = temp;
+        }
+        var deletedCells;
+        if (args.modelType === 'Row') {
+            args.model = args.model;
+            if (args.start > args.model.usedRange.rowIndex) {
+                return;
+            }
+            if (args.end > args.model.usedRange.rowIndex) {
+                args.end -= (args.end - args.model.usedRange.rowIndex);
+            }
+            args.model.usedRange.rowIndex -= ((args.end - args.start) + 1);
+            if (args.model.usedRange.rowIndex < 0) {
+                args.model.usedRange.rowIndex = 0;
+            }
+            this.parent.notify(updateUsedRange, { index: args.model.usedRange.rowIndex, update: 'row' });
+        }
+        else if (args.modelType === 'Column') {
+            args.model = args.model;
+            if (args.start > args.model.usedRange.colIndex) {
+                return;
+            }
+            if (args.end > args.model.usedRange.colIndex) {
+                args.end -= (args.end - args.model.usedRange.colIndex);
+            }
+            var count = (args.end - args.start) + 1;
+            args.model.usedRange.colIndex -= count;
+            if (args.model.usedRange.colIndex < 0) {
+                args.model.usedRange.colIndex = 0;
+            }
+            //this.setDeleteInfo(args.start, args.end, 'fldLen', 'Column');
+            this.parent.notify(updateUsedRange, { index: args.model.usedRange.colIndex, update: 'col' });
+            deletedCells = [];
+            for (var i = 0; i <= args.model.usedRange.rowIndex; i++) {
+                deletedCells.push({});
+                if (args.model.rows[i] && args.model.rows[i].cells) {
+                    deletedCells[i].cells = (args.model.rows[i].cells.splice(args.start, count));
+                }
+            }
+        }
+        var deletedModel = [];
+        for (var i = args.start; i <= args.end; i++) {
+            if (args.model[modelName][args.start]) {
+                deletedModel.push(args.model[modelName][args.start]);
+                args.model[modelName].splice(args.start, 1);
+            }
+            else {
+                deletedModel.push({});
+            }
+            if (i === args.start) {
+                deletedModel[0].index = args.start;
+            }
+        }
+        this.parent.notify(deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+            isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells });
+    };
+    WorkbookDelete.prototype.setDeleteInfo = function (startIndex, endIndex, totalKey, modelType) {
+        if (modelType === void 0) { modelType = 'Row'; }
+        var total = (endIndex - startIndex) + 1;
+        var newRange = [];
+        this.parent.getActiveSheet().rangeSettings.forEach(function (range) {
+            if (range.info && startIndex < range.info[totalKey]) {
+                if (range.info["delete" + modelType + "Range"]) {
+                    range.info["delete" + modelType + "Range"].push([startIndex, endIndex]);
+                }
+                else {
+                    range.info["delete" + modelType + "Range"] = [[startIndex, endIndex]];
+                }
+                range.info[totalKey] -= total;
+                if (range.info["insert" + modelType + "Range"]) {
+                    range.info["insert" + modelType + "Range"] = newRange;
+                }
+            }
+        });
+    };
+    WorkbookDelete.prototype.addEventListener = function () {
+        this.parent.on(deleteModel, this.deleteModel, this);
+    };
+    /**
+     * Destroy workbook delete module.
+     */
+    WorkbookDelete.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    WorkbookDelete.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(deleteModel, this.deleteModel);
+        }
+    };
+    /**
+     * Get the workbook delete module name.
+     */
+    WorkbookDelete.prototype.getModuleName = function () {
+        return 'workbookdelete';
+    };
+    return WorkbookDelete;
+}());
+
+/**
+ * The `WorkbookHyperlink` module is used to handle Hyperlink action in Spreadsheet.
+ */
+var WorkbookDataValidation = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for WorkbookSort module.
+     */
+    function WorkbookDataValidation(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the sort module.
+     */
+    WorkbookDataValidation.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    WorkbookDataValidation.prototype.addEventListener = function () {
+        this.parent.on(setValidation, this.addValidationHandler, this);
+        this.parent.on(removeValidation, this.removeValidationHandler, this);
+        this.parent.on(addHighlight, this.addHighlightHandler, this);
+        this.parent.on(removeHighlight, this.removeHighlightHandler, this);
+    };
+    WorkbookDataValidation.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(setValidation, this.addValidationHandler);
+            this.parent.off(removeValidation, this.removeValidationHandler);
+            this.parent.off(addHighlight, this.addHighlightHandler);
+            this.parent.off(removeHighlight, this.removeHighlightHandler);
+        }
+    };
+    WorkbookDataValidation.prototype.addValidationHandler = function (args) {
+        this.ValidationHandler(args.rules, args.range, false);
+    };
+    WorkbookDataValidation.prototype.removeValidationHandler = function (args) {
+        this.ValidationHandler(args.rules, args.range, true);
+    };
+    WorkbookDataValidation.prototype.ValidationHandler = function (rules, range, isRemoveValidation) {
+        var cell;
+        var sheet = this.parent.getActiveSheet();
+        var indexes = getRangeIndexes(range);
+        for (var rowIdx = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+            if (!sheet.rows[rowIdx]) {
+                setRow(sheet, rowIdx, {});
+            }
+            for (var colIdx = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                if (!sheet.rows[rowIdx].cells || !sheet.rows[rowIdx].cells[colIdx]) {
+                    setCell(rowIdx, colIdx, sheet, {});
+                }
+                cell = sheet.rows[rowIdx].cells[colIdx];
+                if (isRemoveValidation && cell.validation) {
+                    delete (cell.validation);
+                }
+                else {
+                    cell.validation = {
+                        type: rules.type,
+                        operator: rules.operator,
+                        value1: rules.value1,
+                        value2: rules.value2,
+                        ignoreBlank: rules.ignoreBlank,
+                        inCellDropDown: rules.inCellDropDown,
+                    };
+                }
+            }
+        }
+    };
+    WorkbookDataValidation.prototype.addHighlightHandler = function (args) {
+        this.InvalidDataHandler(args.range, false);
+    };
+    WorkbookDataValidation.prototype.removeHighlightHandler = function (args) {
+        this.InvalidDataHandler(args.range, true);
+    };
+    WorkbookDataValidation.prototype.InvalidDataHandler = function (range, isRemoveHighlightedData) {
+        var isCell = false;
+        var cell;
+        var value;
+        var sheet = this.parent.getActiveSheet();
+        var indexes = range ? getRangeIndexes(range) : [];
+        var rowIdx = range ? indexes[0] : 0;
+        var lastRowIdx = range ? indexes[2] : sheet.rows.length;
+        for (rowIdx; rowIdx <= lastRowIdx; rowIdx++) {
+            if (sheet.rows[rowIdx]) {
+                var colIdx = range ? indexes[1] : 0;
+                var lastColIdx = range ? indexes[3] : sheet.rows[rowIdx].cells.length;
+                for (colIdx; colIdx <= lastColIdx; colIdx++) {
+                    if (sheet.rows[rowIdx].cells[colIdx]) {
+                        cell = sheet.rows[rowIdx].cells[colIdx];
+                        value = cell.value ? cell.value : '';
+                        var range_1 = [rowIdx, colIdx];
+                        var sheetIdx = this.parent.activeSheetTab;
+                        if (cell.validation && this.parent.allowDataValidation) {
+                            this.parent.notify(isValidation, { value: value, range: range_1, sheetIdx: sheetIdx, isCell: isCell });
+                            var isValid = this.parent.allowDataValidation;
+                            this.parent.allowDataValidation = true;
+                            if (!isValid) {
+                                if (!isRemoveHighlightedData) {
+                                    setCell(rowIdx, colIdx, sheet, { style: { backgroundColor: '#ffff00', color: '#ff0000' } }, true);
+                                    this.parent.notify(applyCellFormat, {
+                                        style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx,
+                                        isHeightCheckNeeded: true, manualUpdate: true,
+                                        onActionUpdate: true
+                                    });
+                                }
+                                else if (isRemoveHighlightedData) {
+                                    if (cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
+                                        cell.style.backgroundColor = '';
+                                        cell.style.color = '';
+                                        this.parent.notify(applyCellFormat, {
+                                            style: { backgroundColor: '', color: '' }, rowIdx: rowIdx, colIdx: colIdx,
+                                            isHeightCheckNeeded: true, manualUpdate: true,
+                                            onActionUpdate: true
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    WorkbookDataValidation.prototype.getModuleName = function () {
+        return 'workbookDataValidation';
+    };
+    return WorkbookDataValidation;
+}());
+
+/**
+ * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
+ */
+var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for WorkbookFindAndReplace module.
+     */
+    function WorkbookFindAndReplace(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the FindAndReplace module.
+     */
+    WorkbookFindAndReplace.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    WorkbookFindAndReplace.prototype.addEventListener = function () {
+        this.parent.on(findNext, this.findNext, this);
+        this.parent.on(findPrevious, this.findPrevious, this);
+        this.parent.on(replaceHandler, this.replace, this);
+        this.parent.on(replaceAllHandler, this.replaceAll, this);
+        this.parent.on(count, this.totalCount, this);
+    };
+    WorkbookFindAndReplace.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(findNext, this.findNext);
+            this.parent.off(findPrevious, this.findPrevious);
+            this.parent.off(replaceHandler, this.replace);
+            this.parent.off(replaceAllHandler, this.replaceAll);
+            this.parent.off(count, this.totalCount);
+        }
+    };
+    WorkbookFindAndReplace.prototype.findNext = function (args) {
+        var sheets = this.parent.sheets;
+        var val;
+        var sheetIndex = args.sheetIndex;
+        var sheet = sheets[sheetIndex - 1];
+        var activecell = getCellIndexes(sheet.activeCell);
+        var usedRange = sheet.usedRange;
+        var endColumn = usedRange.colIndex;
+        var stringValue = args.value.toString();
+        var cidx;
+        var ridx;
+        var count = 0;
+        var endRow = usedRange.rowIndex;
+        var loopCount = 0;
+        var cellFormat;
+        var valueOfCell;
+        cidx = activecell[1];
+        ridx = activecell[0];
+        var startColumn = cidx;
+        var startRow = ridx;
+        if (sheet.rows[ridx]) {
+            if (sheet.rows[ridx].cells[cidx]) {
+                cellFormat = sheet.rows[ridx].cells[cidx].format;
+                if (cellFormat) {
+                    var dispTxt = this.parent.getDisplayText(sheet.rows[ridx].cells[cidx]);
+                    valueOfCell = dispTxt.toString();
+                }
+                else {
+                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                }
+            }
+        }
+        if (valueOfCell) {
+            var lcValueOfCell = valueOfCell.toLowerCase();
+            var ivalueOfCell = valueOfCell.indexOf(args.value) > -1;
+            var lowerCaseIndex = lcValueOfCell.indexOf(args.value) > -1;
+            if ((stringValue === valueOfCell) || (stringValue === lcValueOfCell) || (ivalueOfCell) || (lowerCaseIndex)) {
+                if (args.searchBy === 'By Column') {
+                    ridx++;
+                }
+                else {
+                    cidx++;
+                }
+                count++;
+            }
+        }
+        if (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex) {
+            if (activecell[0] > sheet.usedRange.rowIndex && activecell[1] <= sheet.usedRange.colIndex) {
+                ridx = 0;
+                cidx = activecell[1];
+            }
+            else if (activecell[0] <= sheet.usedRange.rowIndex && activecell[1] > sheet.usedRange.colIndex) {
+                ridx = activecell[0];
+                cidx = 0;
+            }
+            else {
+                ridx = 0;
+                cidx = 0;
+            }
+        }
+        var findNextArgs = {
+            rowIndex: ridx, colIndex: cidx, usedRange: usedRange, endRow: endRow, endColumn: endColumn, startRow: startRow,
+            mode: args.mode, loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
+            sheetIndex: sheetIndex, startColumn: startColumn, sheets: sheets
+        };
+        if (args.searchBy === 'By Row') {
+            this.findNxtRow(findNextArgs);
+        }
+        if (args.searchBy === 'By Column') {
+            this.findNxtCol(findNextArgs);
+        }
+    };
+    WorkbookFindAndReplace.prototype.findNxtRow = function (findNextArgs) {
+        var usedRange;
+        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        var sheetsLen = this.parent.sheets.length;
+        var activecell = getCellIndexes(sheet.activeCell);
+        if (findNextArgs.colIndex >= findNextArgs.usedRange.colIndex + 1) {
+            findNextArgs.colIndex = 0;
+            findNextArgs.rowIndex++;
+        }
+        for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.endRow + 1; findNextArgs.rowIndex++) {
+            if (findNextArgs.rowIndex > findNextArgs.endRow) {
+                if (findNextArgs.mode === 'Workbook') {
+                    var noCellfound = this.parent.activeSheetTab;
+                    findNextArgs.sheetIndex++;
+                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
+                        findNextArgs.sheetIndex = 1;
+                    }
+                    if (noCellfound === findNextArgs.sheetIndex) {
+                        if (findNextArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    usedRange = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findNextArgs.rowIndex = 0;
+                    findNextArgs.colIndex = 0;
+                    findNextArgs.endColumn = usedRange.colIndex;
+                    findNextArgs.endRow = usedRange.rowIndex;
+                }
+                if (findNextArgs.colIndex === 0 && findNextArgs.rowIndex > findNextArgs.endRow) {
+                    if ((activecell[0] === 0 && activecell[1] === 0) ||
+                        (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex)) {
+                        if (findNextArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    else if ((activecell[0] !== 0 && activecell[1] !== 0) || (activecell[0] !== 0 || activecell[1] !== 0)) {
+                        findNextArgs.startColumn = 0;
+                        findNextArgs.startRow = 0;
+                        findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
+                        findNextArgs.endRow = activecell[0];
+                        findNextArgs.rowIndex = findNextArgs.startRow;
+                        findNextArgs.colIndex = findNextArgs.startColumn;
+                        findNextArgs.loopCount++;
+                    }
+                }
+            }
+            if (findNextArgs.count > 0) {
+                if (findNextArgs.usedRange.rowIndex < findNextArgs.rowIndex) {
+                    findNextArgs.rowIndex = 0;
+                    if (findNextArgs.rowIndex === 0) {
+                        findNextArgs.colIndex = 0;
+                    }
+                }
+            }
+            if (sheet.rows[findNextArgs.rowIndex]) {
+                var row = sheet.rows[findNextArgs.rowIndex];
+                for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.endColumn; findNextArgs.colIndex++) {
+                    if (row) {
+                        if (row.cells[findNextArgs.colIndex]) {
+                            var checkTrue = this.nextCommon(findNextArgs);
+                            if (checkTrue) {
+                                return;
+                            }
+                        }
+                    }
+                }
+                if (findNextArgs.colIndex > findNextArgs.endColumn) {
+                    findNextArgs.colIndex = 0;
+                }
+                if (findNextArgs.loopCount > 0) {
+                    if (activecell[0] === findNextArgs.rowIndex) {
+                        this.parent.notify(showDialog, null);
+                        return;
+                    }
+                }
+            }
+        }
+        if (findNextArgs.count === 0) {
+            this.parent.notify(showDialog, null);
+            return;
+        }
+    };
+    WorkbookFindAndReplace.prototype.findNxtCol = function (findNextArgs) {
+        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        var noFound;
+        var activecell = getCellIndexes(sheet.activeCell);
+        var sheetsLen = this.parent.sheets.length;
+        if (findNextArgs.rowIndex >= findNextArgs.usedRange.rowIndex) {
+            findNextArgs.rowIndex = 0;
+            findNextArgs.colIndex++;
+        }
+        for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.usedRange.colIndex + 1; findNextArgs.colIndex++) {
+            if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
+                if (findNextArgs.mode === 'Workbook') {
+                    noFound = this.parent.activeSheetTab;
+                    findNextArgs.sheetIndex++;
+                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
+                        findNextArgs.sheetIndex = 1;
+                    }
+                    if (noFound === findNextArgs.sheetIndex) {
+                        if (findNextArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    findNextArgs.usedRange = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findNextArgs.colIndex = 0;
+                    findNextArgs.rowIndex = 0;
+                    findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
+                    findNextArgs.endRow = findNextArgs.usedRange.rowIndex;
+                }
+            }
+            if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
+                findNextArgs.colIndex = 0;
+            }
+            if (findNextArgs.rowIndex > findNextArgs.endRow && findNextArgs.colIndex === 0) {
+                if ((activecell[0] === 0 && activecell[1] === 0) ||
+                    (activecell[1] > sheet.usedRange.rowIndex || activecell[0] > sheet.usedRange.colIndex)) {
+                    if (findNextArgs.count === 0) {
+                        this.parent.notify(showDialog, null);
+                        return;
+                    }
+                }
+                else if ((activecell[1] !== 0 || activecell[0] !== 0) || (activecell[1] !== 0 && activecell[0] !== 0)) {
+                    findNextArgs.startRow = 0;
+                    findNextArgs.startColumn = 0;
+                    findNextArgs.endRow = activecell[0];
+                    findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
+                    findNextArgs.colIndex = findNextArgs.startColumn;
+                    findNextArgs.rowIndex = findNextArgs.startRow;
+                    findNextArgs.loopCount++;
+                }
+            }
+            if (findNextArgs.count > 0) {
+                if (findNextArgs.usedRange.colIndex + 1 < findNextArgs.colIndex) {
+                    findNextArgs.colIndex = 0;
+                    findNextArgs.rowIndex = 0;
+                }
+            }
+            if (findNextArgs.rowIndex >= findNextArgs.endRow) {
+                findNextArgs.rowIndex = 0;
+            }
+            if (findNextArgs.colIndex <= findNextArgs.usedRange.colIndex) {
+                for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.usedRange.rowIndex; findNextArgs.rowIndex++) {
+                    if (sheet.rows[findNextArgs.rowIndex]) {
+                        if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
+                            var checkTrue = this.nextCommon(findNextArgs);
+                            if (checkTrue) {
+                                return;
+                            }
+                        }
+                    }
+                }
+                if (findNextArgs.loopCount > 0) {
+                    if (activecell[1] === findNextArgs.colIndex) {
+                        this.parent.notify(showDialog, null);
+                        return;
+                    }
+                }
+            }
+        }
+        if (findNextArgs.count === 0) {
+            this.parent.notify(showDialog, null);
+            return;
+        }
+    };
+    WorkbookFindAndReplace.prototype.nextCommon = function (findNextArgs) {
+        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        if (sheet.rows[findNextArgs.rowIndex]) {
+            if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
+                var cellTyp = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+                if (cellTyp) {
+                    var cellTypeVal = cellTyp.format;
+                    var cellval = void 0;
+                    if (cellTypeVal) {
+                        var displayTxt = this.parent.getDisplayText(sheet.rows[findNextArgs.rowIndex].
+                            cells[findNextArgs.colIndex]);
+                        cellval = displayTxt;
+                    }
+                    else {
+                        cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
+                    }
+                    if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                        if (cellval === findNextArgs.stringValue) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                        var index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        var lowerCase = cellval.toString().toLowerCase();
+                        if ((cellval === findNextArgs.stringValue) || (index)) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
+                        findNextArgs.val = cellval.toString().toLowerCase();
+                        if (findNextArgs.val === findNextArgs.stringValue) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
+                        findNextArgs.val = cellval.toString().toLowerCase();
+                        var index = cellval.indexOf(findNextArgs.args.value) > -1;
+                        var lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
+                        if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
+                            (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findNextArgs.count++;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    };
+    WorkbookFindAndReplace.prototype.findPrevious = function (args) {
+        var sheets = this.parent.sheets;
+        var sheetIndex = args.sheetIndex;
+        var sheet = sheets[sheetIndex - 1];
+        var valueOfCell;
+        var cellFormat;
+        var val;
+        var activecell = getCellIndexes(sheet.activeCell);
+        var loopCount = 0;
+        var count = 0;
+        var endRow = sheet.usedRange.rowIndex;
+        var endColumn = sheet.usedRange.colIndex;
+        var stringValue = args.value.toString();
+        var cidx = activecell[1];
+        var ridx = activecell[0];
+        var startColumn = cidx;
+        var startRow = ridx;
+        if (sheet.rows[ridx]) {
+            if (sheet.rows[ridx].cells[cidx]) {
+                cellFormat = sheet.rows[ridx].cells[cidx].format;
+                if (cellFormat) {
+                    var displayTxt = this.parent.getDisplayText(sheet.rows[ridx].cells[cidx]);
+                    valueOfCell = displayTxt.toString();
+                }
+                else {
+                    valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
+                }
+            }
+        }
+        if (valueOfCell) {
+            var lcValue = valueOfCell.toLowerCase();
+            var ivalue = valueOfCell.indexOf(args.value) > -1;
+            var lowerCaseIndex = lcValue.indexOf(args.value) > -1;
+            if ((stringValue === valueOfCell) || (stringValue === lcValue) || (ivalue) || (lowerCaseIndex)) {
+                if (args.searchBy === 'By Row') {
+                    cidx--;
+                }
+                if (args.searchBy === 'By Column') {
+                    ridx--;
+                }
+                count++;
+            }
+        }
+        if (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex) {
+            if (activecell[0] > sheet.usedRange.rowIndex && activecell[1] <= sheet.usedRange.colIndex) {
+                ridx = sheet.usedRange.rowIndex;
+                cidx = activecell[1];
+            }
+            else if (activecell[0] <= sheet.usedRange.rowIndex && activecell[1] > sheet.usedRange.colIndex) {
+                ridx = activecell[0];
+                cidx = sheet.usedRange.colIndex;
+            }
+            else {
+                ridx = sheet.usedRange.rowIndex;
+                cidx = sheet.usedRange.colIndex;
+            }
+        }
+        var findPrevArgs = {
+            rowIndex: ridx, colIndex: cidx, endRow: endRow, endColumn: endColumn, startRow: startRow,
+            loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
+            sheets: sheets, sheetIndex: sheetIndex, startColumn: startColumn,
+        };
+        if (args.searchBy === 'By Row') {
+            this.findPreRow(findPrevArgs);
+        }
+        if (args.searchBy === 'By Column') {
+            this.findPreCol(findPrevArgs);
+        }
+    };
+    WorkbookFindAndReplace.prototype.findPreRow = function (findPrevArgs) {
+        var usedRan;
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        var sheetsLength = this.parent.sheets.length;
+        var noValueBoolean = false;
+        var activecell = getCellIndexes(sheet.activeCell);
+        if (findPrevArgs.colIndex === -1) {
+            findPrevArgs.colIndex = findPrevArgs.endColumn;
+            findPrevArgs.rowIndex--;
+        }
+        for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= -1; findPrevArgs.rowIndex--) {
+            if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
+                if (findPrevArgs.args.mode === 'Workbook') {
+                    var noCellfound = this.parent.activeSheetTab;
+                    findPrevArgs.sheetIndex--;
+                    if (findPrevArgs.sheetIndex === 0) {
+                        findPrevArgs.sheetIndex = sheetsLength;
+                    }
+                    if (noCellfound === findPrevArgs.sheetIndex) {
+                        if (findPrevArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    usedRan = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findPrevArgs.rowIndex = usedRan.rowIndex;
+                    findPrevArgs.colIndex = usedRan.colIndex;
+                    findPrevArgs.endColumn = 0;
+                    findPrevArgs.endRow = 0;
+                }
+                noValueBoolean = this.commonCondition(findPrevArgs, activecell);
+            }
+            if (!noValueBoolean) {
+                if (findPrevArgs.args.mode !== 'Workbook') {
+                    if (findPrevArgs.count > 0) {
+                        if (findPrevArgs.rowIndex === -1) {
+                            findPrevArgs.rowIndex = findPrevArgs.endRow;
+                        }
+                    }
+                }
+                if (findPrevArgs.rowIndex === -1) {
+                    findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
+                    findPrevArgs.colIndex = sheet.usedRange.colIndex;
+                }
+                if (sheet.rows[findPrevArgs.rowIndex]) {
+                    if (findPrevArgs.colIndex === -1) {
+                        findPrevArgs.colIndex = sheet.usedRange.colIndex;
+                    }
+                    for (findPrevArgs.colIndex; findPrevArgs.colIndex >= 0; findPrevArgs.colIndex--) {
+                        if (sheet.rows[findPrevArgs.rowIndex]) {
+                            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                                var checkTrue = this.prevCommon(findPrevArgs);
+                                if (checkTrue) {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    if (findPrevArgs.loopCount > 0) {
+                        if (activecell[0] === findPrevArgs.rowIndex) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        if (!noValueBoolean) {
+            if (findPrevArgs.count === 0) {
+                this.parent.notify(showDialog, null);
+                return;
+            }
+        }
+    };
+    WorkbookFindAndReplace.prototype.findPreCol = function (findPrevArgs) {
+        var usedRange;
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        var sheetsLen = this.parent.sheets.length;
+        var noValueBoolean = false;
+        var activecell = getCellIndexes(sheet.activeCell);
+        for (findPrevArgs.colIndex; findPrevArgs.colIndex >= -1; findPrevArgs.colIndex--) {
+            if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
+                if (findPrevArgs.args.mode === 'Workbook') {
+                    var noCellfound = this.parent.activeSheetTab;
+                    findPrevArgs.sheetIndex--;
+                    if (findPrevArgs.sheetIndex === 0) {
+                        findPrevArgs.sheetIndex = sheetsLen;
+                    }
+                    if (noCellfound === findPrevArgs.sheetIndex) {
+                        if (findPrevArgs.count === 0) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    usedRange = sheet.usedRange;
+                    activecell = getCellIndexes(sheet.activeCell);
+                    findPrevArgs.rowIndex = usedRange.rowIndex;
+                    findPrevArgs.colIndex = usedRange.colIndex;
+                    findPrevArgs.endColumn = 0;
+                    findPrevArgs.endRow = 0;
+                }
+                noValueBoolean = this.commonCondition(findPrevArgs, activecell);
+            }
+            if (!noValueBoolean) {
+                if (findPrevArgs.count > 0) {
+                    if (findPrevArgs.colIndex < 0) {
+                        findPrevArgs.colIndex = findPrevArgs.endColumn;
+                    }
+                }
+                if (findPrevArgs.rowIndex < 0) {
+                    findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
+                }
+                if (findPrevArgs.colIndex < -1) {
+                    findPrevArgs.colIndex = sheet.usedRange.colIndex;
+                    findPrevArgs.rowIndex--;
+                }
+                if (sheet.rows[findPrevArgs.rowIndex]) {
+                    if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                        if (findPrevArgs.rowIndex === -1) {
+                            findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
+                        }
+                    }
+                }
+                for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= 0; findPrevArgs.rowIndex--) {
+                    if (sheet.rows[findPrevArgs.rowIndex]) {
+                        if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                            var check = this.prevCommon(findPrevArgs);
+                            if (check) {
+                                return;
+                            }
+                        }
+                    }
+                    if (findPrevArgs.loopCount > 0) {
+                        if (activecell[1] === findPrevArgs.colIndex) {
+                            this.parent.notify(showDialog, null);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        if (!noValueBoolean) {
+            if (findPrevArgs.count === 0) {
+                this.parent.notify(showDialog, null);
+                return;
+            }
+        }
+    };
+    WorkbookFindAndReplace.prototype.commonCondition = function (findPrevArgs, activecell) {
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        var isTrue;
+        if ((activecell[0] !== findPrevArgs.endRow && activecell[1] !== findPrevArgs.endColumn) ||
+            (activecell[0] !== findPrevArgs.endRow || activecell[1] !== findPrevArgs.endColumn)) {
+            findPrevArgs.startColumn = sheet.usedRange.colIndex;
+            findPrevArgs.startRow = sheet.usedRange.rowIndex;
+            findPrevArgs.endColumn = 0;
+            findPrevArgs.endRow = activecell[0];
+            findPrevArgs.rowIndex = findPrevArgs.startRow;
+            findPrevArgs.colIndex = findPrevArgs.startColumn;
+            findPrevArgs.loopCount++;
+            isTrue = false;
+        }
+        else if ((activecell[0] === sheet.usedRange.rowIndex && activecell[1] === sheet.usedRange.colIndex) ||
+            (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex)) {
+            this.parent.notify(showDialog, null);
+            isTrue = true;
+        }
+        return isTrue;
+    };
+    WorkbookFindAndReplace.prototype.prevCommon = function (findPrevArgs) {
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        if (sheet.rows[findPrevArgs.rowIndex]) {
+            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
+                var cellTyp = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+                if (cellTyp) {
+                    var cellTypeVal = cellTyp.format;
+                    var cellval = void 0;
+                    if (cellTypeVal) {
+                        var displayTxt = this.parent.getDisplayText(sheet.rows[findPrevArgs.rowIndex]
+                            .cells[findPrevArgs.colIndex]);
+                        cellval = displayTxt;
+                    }
+                    else {
+                        cellval = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
+                    }
+                    if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                        if (cellval === findPrevArgs.stringValue) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                        var index = cellval.indexOf(findPrevArgs.args.value) > -1;
+                        var lowerCase = cellval.toString().toLowerCase();
+                        if ((cellval === findPrevArgs.stringValue) || (index)) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
+                        findPrevArgs.val = cellval.toString().toLowerCase();
+                        if (findPrevArgs.val === findPrevArgs.stringValue) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                    else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
+                        findPrevArgs.val = cellval.toString().toLowerCase();
+                        var index = cellval.indexOf(findPrevArgs.args.value) > -1;
+                        var lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
+                        if ((cellval === findPrevArgs.stringValue) || ((cellval === findPrevArgs.stringValue) ||
+                            (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
+                            var sheetName = sheet.name;
+                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            this.parent.notify(goto, { address: address });
+                            findPrevArgs.count++;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    };
+    WorkbookFindAndReplace.prototype.replace = function (args) {
+        if (this.parent.getActiveSheet().isProtected) {
+            this.parent.notify(workBookeditAlert, null);
+            return;
+        }
+        var sheet = this.parent.getActiveSheet();
+        var activecell = getCellIndexes(sheet.activeCell);
+        var currentCell = sheet.rows[activecell[0]].cells[activecell[1]].value.toString();
+        var index = currentCell.indexOf(args.value) > -1;
+        var lowerCaseIndex = currentCell.toLowerCase().indexOf(args.value) > -1;
+        var val = currentCell.toString().toLowerCase();
+        if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
+            args.findOpt = 'next';
+            this.findNext(args);
+        }
+        this.parent.getActiveSheet();
+        var activecel = getCellIndexes(sheet.activeCell);
+        var address = sheet.activeCell;
+        var cell = sheet.rows[activecel[0]].cells[activecel[1]];
+        var cellFormat = sheet.rows[activecel[0]].cells[activecel[1]].format;
+        var compareVal;
+        var sheetName = sheet.name;
+        var undoRedoOpt = 'before';
+        var replaceAddress = sheetName + '!' + getCellAddress(activecel[0], activecel[1]);
+        if (cellFormat) {
+            var dispTxt = this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]);
+            compareVal = dispTxt.toString();
+        }
+        else {
+            compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
+        }
+        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: compareVal });
+        var lcValueOfCell = compareVal.toLowerCase();
+        var ivalueOfCell = compareVal.indexOf(args.value) > -1;
+        var caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
+        if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
+            sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
+            this.parent.updateCell(cell, address);
+            var undoRedoOpt_1 = 'after';
+            this.parent.notify(findUndoRedo, { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: undoRedoOpt_1 });
+        }
+        else if (ivalueOfCell) {
+            var newValue = compareVal.replace(args.value, args.replaceValue);
+            sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
+            this.parent.updateCell(cell, address);
+            var undoRedoOpt_2 = 'after';
+            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt_2, address: replaceAddress, compareVal: args.replaceValue });
+        }
+        else if (caseInSensitive) {
+            var regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+            var updateValue = compareVal.replace(regx, args.replaceValue);
+            sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
+            this.parent.updateCell(cell, address);
+            var undoRedoOpt_3 = 'after';
+            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt_3, address: replaceAddress, compareVal: args.replaceValue });
+        }
+    };
+    WorkbookFindAndReplace.prototype.replaceAll = function (args) {
+        var startSheet = 0;
+        var sheet = this.parent.sheets[startSheet];
+        var endRow = sheet.usedRange.rowIndex;
+        var count = 0;
+        var startRow = 0;
+        var endColumn = sheet.usedRange.colIndex;
+        var startColumn = 0;
+        var undoRedoOpt = 'beforeReplaceAll';
+        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
+        for (startRow; startRow <= endRow; startRow++) {
+            if (startColumn > endColumn && startRow === endRow) {
+                if (args.mode === 'Workbook') {
+                    startSheet++;
+                    sheet = this.parent.sheets[startSheet];
+                    if (sheet) {
+                        startColumn = 0;
+                        startRow = 0;
+                        endColumn = sheet.usedRange.colIndex;
+                        endRow = sheet.usedRange.rowIndex;
+                        sheet = sheet;
+                    }
+                }
+            }
+            if (sheet) {
+                if (sheet.rows[startRow]) {
+                    var row = sheet.rows[startRow];
+                    if (startColumn === endColumn + 1) {
+                        startColumn = 0;
+                    }
+                    for (startColumn; startColumn <= endColumn; startColumn++) {
+                        var cell = sheet.rows[startRow].cells[startColumn];
+                        var srow = startRow;
+                        var scol = startColumn;
+                        // let address: string = getCellAddress(srow, scol);
+                        var address = sheet.name + '!' + getCellAddress(srow, scol);
+                        if (row) {
+                            if (row.cells[startColumn]) {
+                                var cellTyp = sheet.rows[startRow].cells[startColumn];
+                                if (cellTyp) {
+                                    var cellTypeVal = cellTyp.format;
+                                    var cellval = void 0;
+                                    if (cellTypeVal) {
+                                        var displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
+                                            cells[startColumn]);
+                                        cellval = displayTxt.toString();
+                                    }
+                                    else {
+                                        cellval = sheet.rows[startRow].cells[startColumn].value.toString();
+                                    }
+                                    if (args.isCSen && args.isEMatch) {
+                                        if (cellval === args.value) {
+                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (args.isCSen && !args.isEMatch) {
+                                        var index = cellval.indexOf(args.value) > -1;
+                                        if ((cellval === args.value) || (index)) {
+                                            var newValue = cellval.replace(args.value, args.replaceValue);
+                                            sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && args.isEMatch) {
+                                        var val = cellval.toString().toLowerCase();
+                                        if (val === args.value) {
+                                            sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (!args.isCSen && !args.isEMatch) {
+                                        var val = cellval.toString().toLowerCase();
+                                        var index = cellval.indexOf(args.value) > -1;
+                                        var lowerCaseValue = val.indexOf(args.value) > -1;
+                                        if (((cellval === args.value) || (index)) || (val === args.value) || (cellval === args.value) ||
+                                            (lowerCaseValue)) {
+                                            var regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+                                            var newValue = cellval.replace(regExepression, args.replaceValue);
+                                            sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            this.parent.updateCell(cell, address);
+                                            count++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        var countNumber = count;
+        this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
+        undoRedoOpt = 'afterReplaceAll';
+        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
+    };
+    WorkbookFindAndReplace.prototype.totalCount = function (args) {
+        var startSheet = 0;
+        var sheet = this.parent.sheets[startSheet];
+        var endRow = sheet.usedRange.rowIndex;
+        var count = 0;
+        var rowIndex = 0;
+        var endColumn = sheet.usedRange.colIndex;
+        var columnIndex = 0;
+        for (rowIndex; rowIndex <= endRow; rowIndex++) {
+            if (sheet.rows[rowIndex]) {
+                var row = sheet.rows[rowIndex];
+                if (columnIndex === endColumn + 1) {
+                    columnIndex = 0;
+                }
+                for (columnIndex; columnIndex <= endColumn; columnIndex++) {
+                    if (row) {
+                        if (row.cells[columnIndex]) {
+                            var cellType = sheet.rows[rowIndex].cells[columnIndex];
+                            if (cellType) {
+                                var cellFormat = cellType.format;
+                                var cellvalue = void 0;
+                                if (cellFormat) {
+                                    var displayTxt = this.parent.getDisplayText(sheet.rows[rowIndex].
+                                        cells[columnIndex]);
+                                    cellvalue = displayTxt.toString();
+                                }
+                                else {
+                                    cellvalue = cellType.value.toString();
+                                }
+                                if (args.isCSen && args.isEMatch) {
+                                    if (cellvalue === args.value) {
+                                        count++;
+                                    }
+                                }
+                                else if (args.isCSen && !args.isEMatch) {
+                                    var index = cellvalue.indexOf(args.value) > -1;
+                                    if ((cellvalue === args.value) || (index)) {
+                                        count++;
+                                    }
+                                }
+                                else if (!args.isCSen && args.isEMatch) {
+                                    var val = cellvalue.toString().toLowerCase();
+                                    if (val === args.value) {
+                                        count++;
+                                    }
+                                }
+                                else if (!args.isCSen && !args.isEMatch) {
+                                    var val = cellvalue.toString().toLowerCase();
+                                    var index = cellvalue.indexOf(args.value) > -1;
+                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || ((cellvalue === args.value))) {
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        var totalCount = count;
+        var requiredCount = this.requiredCount(args) - 1;
+        count = totalCount - requiredCount - 1;
+        args.findCount = count + 'of' + totalCount;
+        return;
+    };
+    WorkbookFindAndReplace.prototype.requiredCount = function (args) {
+        var sheetIndex = this.parent.activeSheetTab;
+        var sheet = this.parent.sheets[sheetIndex - 1];
+        var activecel = getCellIndexes(sheet.activeCell);
+        var endRow = sheet.usedRange.rowIndex;
+        var requiredCount = 0;
+        var startRow = activecel[0];
+        var endColumn = sheet.usedRange.colIndex;
+        var startColumn = activecel[1];
+        for (startRow; startRow <= endRow; startRow++) {
+            if (sheet.rows[startRow]) {
+                var row = sheet.rows[startRow];
+                if (startColumn === endColumn + 1) {
+                    startColumn = 0;
+                }
+                for (startColumn; startColumn <= endColumn; startColumn++) {
+                    if (row) {
+                        if (row.cells[startColumn]) {
+                            var cellTyp = sheet.rows[startRow].cells[startColumn];
+                            if (cellTyp) {
+                                var cellTypeVal = cellTyp.format;
+                                var cellval = void 0;
+                                if (cellTypeVal) {
+                                    var displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
+                                        cells[startColumn]);
+                                    cellval = displayTxt.toString();
+                                }
+                                else {
+                                    cellval = cellTyp.value.toString();
+                                }
+                                if (args.isCSen && !args.isEMatch) {
+                                    var index = cellval.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || (index)) {
+                                        requiredCount++;
+                                    }
+                                }
+                                else if (args.isCSen && args.isEMatch) {
+                                    if (cellval === args.value) {
+                                        requiredCount++;
+                                    }
+                                }
+                                else if (!args.isCSen && args.isEMatch) {
+                                    var val = cellval.toString().toLowerCase();
+                                    if (val === args.value) {
+                                        requiredCount++;
+                                    }
+                                }
+                                else if (!args.isCSen && !args.isEMatch) {
+                                    var val = cellval.toString().toLowerCase();
+                                    var index = cellval.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value)) {
+                                        requiredCount++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return requiredCount;
+    };
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    WorkbookFindAndReplace.prototype.getModuleName = function () {
+        return 'workbookfindAndReplace';
+    };
+    return WorkbookFindAndReplace;
+}());
+
+/**
+ * The `WorkbookSpreadSheet` module is used to handle the Protecting functionalities in Workbook.
+ */
+var WorkbookProtectSheet = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for edit module in Workbook.
+     * @private
+     */
+    function WorkbookProtectSheet(workbook) {
+        this.parent = workbook;
+        this.addEventListener();
+    }
+    WorkbookProtectSheet.prototype.protectsheetHandler = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        sheet.protectSettings.selectCells = args.selectCells;
+        sheet.protectSettings.formatCells = args.formatCells;
+        sheet.protectSettings.formatColumns = args.formatColumns;
+        sheet.protectSettings.formatRows = args.formatRows;
+        sheet.protectSettings.insertLink = args.insertLink;
+        this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
+        this.parent.notify(updateToggle, { props: 'Protect' });
+    };
+    /**
+     * To destroy the edit module.
+     * @return {void}
+     * @hidden
+     */
+    WorkbookProtectSheet.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    WorkbookProtectSheet.prototype.addEventListener = function () {
+        this.parent.on(protectsheetHandler, this.protectsheetHandler, this);
+    };
+    WorkbookProtectSheet.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(protectsheetHandler, this.protectsheetHandler);
+        }
+    };
+    /**
+     * Get the module name.
+     * @returns string
+     * @private
+     */
+    WorkbookProtectSheet.prototype.getModuleName = function () {
+        return 'workbookProtectSheet';
+    };
+    return WorkbookProtectSheet;
+}());
+
+/**
  * Export Workbook action modules
  */
 
@@ -8643,7 +10512,7 @@ var WorkbookBasicModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function WorkbookBasicModule() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation);
     }
     /**
      * For internal use only - Get the module name.
@@ -8672,7 +10541,7 @@ var WorkbookAllModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function WorkbookAllModule() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation);
     }
     /**
      * For internal use only - Get the module name.
@@ -8702,6 +10571,10 @@ function getWorkbookRequiredModules(context, modules) {
     modules.push({ member: 'workbookAll', args: [] });
     modules.push({
         member: 'dataBind',
+        args: [context]
+    });
+    modules.push({
+        member: 'workbookProtectSheet',
         args: [context]
     });
     if (context.allowSave) {
@@ -8747,10 +10620,22 @@ function getWorkbookRequiredModules(context, modules) {
     if (context.allowFiltering) {
         modules.push({ member: 'workbookFilter', args: [context] });
     }
+    if (context.allowFindAndReplace) {
+        modules.push({ member: 'workbookfindAndReplace', args: [context] });
+    }
+    if (context.allowInsert) {
+        modules.push({ member: 'workbookinsert', args: [context] });
+    }
+    if (context.allowDelete) {
+        modules.push({ member: 'workbookdelete', args: [context] });
+    }
+    if (context.allowDataValidation) {
+        modules.push({ member: 'workbookDataValidation', args: [context] });
+    }
     return modules;
 }
 
-var __extends$6 = (undefined && undefined.__extends) || (function () {
+var __extends$4 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8763,7 +10648,7 @@ var __extends$6 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8773,76 +10658,144 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
  * Represents the cell style.
  */
 var CellStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(CellStyle, _super);
+    __extends$4(CellStyle, _super);
     function CellStyle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$5([
+    __decorate$3([
         Property('Calibri')
     ], CellStyle.prototype, "fontFamily", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('bottom')
     ], CellStyle.prototype, "verticalAlign", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('left')
     ], CellStyle.prototype, "textAlign", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('0pt')
     ], CellStyle.prototype, "textIndent", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('#000000')
     ], CellStyle.prototype, "color", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('#ffffff')
     ], CellStyle.prototype, "backgroundColor", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('normal')
     ], CellStyle.prototype, "fontWeight", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('normal')
     ], CellStyle.prototype, "fontStyle", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('11pt')
     ], CellStyle.prototype, "fontSize", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('none')
     ], CellStyle.prototype, "textDecoration", void 0);
+    __decorate$3([
+        Property('')
+    ], CellStyle.prototype, "border", void 0);
+    __decorate$3([
+        Property('')
+    ], CellStyle.prototype, "borderTop", void 0);
+    __decorate$3([
+        Property('')
+    ], CellStyle.prototype, "borderBottom", void 0);
+    __decorate$3([
+        Property('')
+    ], CellStyle.prototype, "borderLeft", void 0);
+    __decorate$3([
+        Property('')
+    ], CellStyle.prototype, "borderRight", void 0);
     return CellStyle;
 }(ChildProperty));
 /**
  * Represents the DefineName.
  */
 var DefineName = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(DefineName, _super);
+    __extends$4(DefineName, _super);
     function DefineName() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$5([
+    __decorate$3([
         Property('')
     ], DefineName.prototype, "name", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('')
     ], DefineName.prototype, "scope", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('')
     ], DefineName.prototype, "comment", void 0);
-    __decorate$5([
+    __decorate$3([
         Property('')
     ], DefineName.prototype, "refersTo", void 0);
     return DefineName;
 }(ChildProperty));
 /**
+ * Configures the Protect behavior for the spreadsheet.
+ */
+var ProtectSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$4(ProtectSettings, _super);
+    function ProtectSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(false)
+    ], ProtectSettings.prototype, "selectCells", void 0);
+    __decorate$3([
+        Property(false)
+    ], ProtectSettings.prototype, "formatCells", void 0);
+    __decorate$3([
+        Property(false)
+    ], ProtectSettings.prototype, "formatRows", void 0);
+    __decorate$3([
+        Property(false)
+    ], ProtectSettings.prototype, "formatColumns", void 0);
+    __decorate$3([
+        Property(false)
+    ], ProtectSettings.prototype, "insertLink", void 0);
+    return ProtectSettings;
+}(ChildProperty));
+/**
  * Represents the Hyperlink.
  */
 var Hyperlink = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(Hyperlink, _super);
+    __extends$4(Hyperlink, _super);
     function Hyperlink() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$5([
+    __decorate$3([
         Property('')
     ], Hyperlink.prototype, "address", void 0);
     return Hyperlink;
+}(ChildProperty));
+/**
+ * Represents the DataValidation.
+ */
+var Validation = /** @__PURE__ @class */ (function (_super) {
+    __extends$4(Validation, _super);
+    function Validation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('WholeNumber')
+    ], Validation.prototype, "type", void 0);
+    __decorate$3([
+        Property('Between')
+    ], Validation.prototype, "operator", void 0);
+    __decorate$3([
+        Property('0')
+    ], Validation.prototype, "value1", void 0);
+    __decorate$3([
+        Property('0')
+    ], Validation.prototype, "value2", void 0);
+    __decorate$3([
+        Property(true)
+    ], Validation.prototype, "ignoreBlank", void 0);
+    __decorate$3([
+        Property(true)
+    ], Validation.prototype, "inCellDropDown", void 0);
+    return Validation;
 }(ChildProperty));
 
 /**
@@ -8867,7 +10820,214 @@ var localeData = {
  * Common tasks.
  */
 
-var __extends$3 = (undefined && undefined.__extends) || (function () {
+/**
+ * Update data source to Sheet and returns Sheet
+ * @hidden
+ */
+function getData(context, address, columnWiseData, valueOnly) {
+    return new Promise(function (resolve, reject) {
+        resolve((function () {
+            var i;
+            var row;
+            var data = new Map();
+            var sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
+            var sheet = getSheet(context, sheetIdx);
+            var indexes = getIndexesFromAddress(address);
+            var sRow = indexes[0];
+            var index = 0;
+            var args = {
+                sheet: sheet, indexes: indexes, promise: new Promise(function (resolve, reject) { resolve((function () { })()); })
+            };
+            context.notify(updateSheetFromDataSource, args);
+            return args.promise.then(function () {
+                while (sRow <= indexes[2]) {
+                    if (!valueOnly && isHiddenRow(sheet, sRow)) {
+                        sRow++;
+                        continue;
+                    }
+                    var cells = {};
+                    row = getRow(sheet, sRow);
+                    i = indexes[1];
+                    while (i <= indexes[3]) {
+                        if (columnWiseData) {
+                            if (data instanceof Map) {
+                                data = [];
+                            }
+                            var key = getColumnHeaderText(i + 1);
+                            var rowKey = '__rowIndex';
+                            if (valueOnly) {
+                                cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
+                            }
+                            else {
+                                cells[key] = row ? getCell(sRow, i, sheet) : null;
+                            }
+                            if (indexes[3] < i + 1) {
+                                cells[rowKey] = (sRow + 1).toString();
+                            }
+                            data[index.toString()] = cells;
+                        }
+                        else {
+                            if (!valueOnly && isHiddenCol(sheet, i)) {
+                                i++;
+                                continue;
+                            }
+                            var cellObj = {};
+                            Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
+                            if (cellObj.style) {
+                                var style = {};
+                                Object.assign(style, cellObj.style);
+                                cellObj.style = style;
+                            }
+                            var eventArgs = { cell: cellObj, address: getCellAddress(sRow, i) };
+                            context.trigger(queryCellInfo, eventArgs);
+                            data.set(eventArgs.address, eventArgs.cell);
+                        }
+                        i++;
+                    }
+                    sRow++;
+                    index++;
+                }
+                return data;
+            });
+        })());
+    });
+}
+function getValueFromFormat(context, rowIndex, colIndex, sheetIdx, sheet) {
+    var cell = getCell(rowIndex, colIndex, sheet);
+    if (cell) {
+        if (cell.format) {
+            var args = {
+                value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
+                sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
+            };
+            context.notify(checkDateFormat, args);
+            if (args.isDate) {
+                return args.dateObj;
+            }
+            else {
+                return cell.value;
+            }
+        }
+        else {
+            return cell.value;
+        }
+    }
+    else {
+        return '';
+    }
+}
+/**
+ * @hidden
+ */
+function getModel(model, idx) {
+    var diff;
+    var j;
+    var prevIdx;
+    if (isUndefined(model[idx]) || !(model[idx] && model[idx].index === idx)) {
+        for (var i = 0; i <= idx; i++) {
+            if (model && model[i]) {
+                diff = model[i].index - i;
+                if (diff > 0) {
+                    model.forEach(function (value, index) {
+                        if (value && value.index) {
+                            prevIdx = value.index;
+                            j = 1;
+                        }
+                        if (value && !value.index && index !== 0) {
+                            value.index = prevIdx + j;
+                        }
+                        j++;
+                    });
+                    while (diff--) {
+                        model.splice(i, 0, null);
+                    }
+                    i += diff;
+                }
+            }
+            else if (model) {
+                model[i] = null;
+            }
+            else {
+                model = [];
+            }
+        }
+    }
+    return model[idx];
+}
+/**
+ * @hidden
+ */
+function processIdx(model, isSheet, context) {
+    var j;
+    var diff = 0;
+    var cnt;
+    var len = model.length;
+    var _loop_1 = function (i) {
+        if (!isNullOrUndefined(model[i]) && !isUndefined(model[i].index)) {
+            cnt = diff = model[i].index - i;
+            delete model[i].index;
+        }
+        if (diff > 0) {
+            j = 0;
+            while (diff--) {
+                if (isSheet) {
+                    context.createSheet(i + j);
+                    j++;
+                }
+                else {
+                    model.splice(i, 0, null);
+                }
+            }
+            i += cnt;
+            len += cnt;
+        }
+        if (isSheet) {
+            if (model[i].id < 1) {
+                model[i].id = getMaxSheetId(context.sheets);
+            }
+            if (!model[i].name) {
+                model[i].name = 'Sheet' + getSheetNameCount(context);
+            }
+            var cellCnt_1 = 0;
+            model[i].rows.forEach(function (row) {
+                cellCnt_1 = Math.max(cellCnt_1, (row && row.cells && row.cells.length - 1) || 0);
+            });
+            model[i].usedRange = { rowIndex: model[i].rows.length - 1, colIndex: cellCnt_1 };
+        }
+        out_i_1 = i;
+    };
+    var out_i_1;
+    for (var i = 0; i < len; i++) {
+        _loop_1(i);
+        i = out_i_1;
+    }
+}
+/**
+ * @hidden
+ */
+function clearRange(context, address, sheetIdx, valueOnly) {
+    var sheet = getSheet(context, sheetIdx - 1);
+    var range = getIndexesFromAddress(address);
+    var sRIdx = range[0];
+    var eRIdx = range[2];
+    var sCIdx;
+    var eCIdx;
+    for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
+        sCIdx = range[1];
+        eCIdx = range[3];
+        for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
+            var cell = getCell(sRIdx, sCIdx, sheet);
+            if (!isNullOrUndefined(cell) && valueOnly) {
+                delete cell.value;
+                if (!isNullOrUndefined(cell.formula)) {
+                    delete cell.formula;
+                }
+            }
+        }
+    }
+}
+
+var __extends$6 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8880,7 +11040,7 @@ var __extends$3 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8890,28 +11050,34 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  * Represents the cell.
  */
 var Cell = /** @__PURE__ @class */ (function (_super) {
-    __extends$3(Cell, _super);
+    __extends$6(Cell, _super);
     function Cell() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$3([
+    __decorate$5([
         Property('')
     ], Cell.prototype, "value", void 0);
-    __decorate$3([
+    __decorate$5([
         Property('')
     ], Cell.prototype, "formula", void 0);
-    __decorate$3([
+    __decorate$5([
         Property(0)
     ], Cell.prototype, "index", void 0);
-    __decorate$3([
+    __decorate$5([
         Property('General')
     ], Cell.prototype, "format", void 0);
-    __decorate$3([
+    __decorate$5([
         Complex({}, CellStyle)
     ], Cell.prototype, "style", void 0);
-    __decorate$3([
+    __decorate$5([
         Property('')
     ], Cell.prototype, "hyperlink", void 0);
+    __decorate$5([
+        Property(false)
+    ], Cell.prototype, "wrap", void 0);
+    __decorate$5([
+        Property('')
+    ], Cell.prototype, "validation", void 0);
     return Cell;
 }(ChildProperty));
 /**
@@ -8932,7 +11098,7 @@ function getCell(rowIndex, colIndex, sheet, isInitRow) {
             return null;
         }
     }
-    return sheet.rows[rowIndex].cells[colIndex];
+    return sheet.rows[rowIndex].cells[colIndex] || null;
 }
 /**
  * @hidden
@@ -8969,7 +11135,8 @@ function getCellPosition(sheet, indexes) {
 /** @hidden */
 function skipDefaultValue(style, defaultKey) {
     var defaultProps = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
-        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' };
+        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
+        border: '', borderLeft: '', borderTop: '', borderRight: '', borderBottom: '' };
     var changedProps = {};
     Object.keys(defaultKey ? defaultProps : style).forEach(function (propName) {
         if (style[propName] !== defaultProps[propName]) {
@@ -8978,8 +11145,22 @@ function skipDefaultValue(style, defaultKey) {
     });
     return changedProps;
 }
+/** @hidden */
+function wrap(address, wrap, context) {
+    if (wrap === void 0) { wrap = true; }
+    var addressInfo = context.getAddressInfo(address);
+    var rng = addressInfo.indices;
+    var sheet = getSheet(context, addressInfo.sheetIndex);
+    for (var i = rng[0]; i <= rng[2]; i++) {
+        for (var j = rng[1]; j <= rng[3]; j++) {
+            setCell(i, j, sheet, { wrap: wrap }, true);
+        }
+    }
+    context.setProperties({ sheets: context.sheets }, true);
+    context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
+}
 
-var __extends$2 = (undefined && undefined.__extends) || (function () {
+var __extends$5 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8992,7 +11173,7 @@ var __extends$2 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9017,23 +11198,23 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var Row = /** @__PURE__ @class */ (function (_super) {
-    __extends$2(Row, _super);
+    __extends$5(Row, _super);
     function Row() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$2([
+    __decorate$4([
         Collection([], Cell)
     ], Row.prototype, "cells", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(0)
     ], Row.prototype, "index", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(20)
     ], Row.prototype, "height", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(false)
     ], Row.prototype, "customHeight", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(false)
     ], Row.prototype, "hidden", void 0);
     return Row;
@@ -9156,12 +11337,22 @@ function getColumn(sheet, colIndex) {
     }
     return sheet.columns[colIndex];
 }
+/** @hidden */
+function setColumn(sheet, colIndex, column) {
+    var curColumn = getColumn(sheet, colIndex);
+    Object.keys(column).forEach(function (key) {
+        curColumn[key] = column[key];
+    });
+}
 /**
  * @hidden
  */
-function getColumnWidth(sheet, index) {
-    if (sheet && sheet.columns && sheet.columns[index] && (sheet.columns[index].width || sheet.columns[index].customWidth)) {
-        return sheet.columns[index].width;
+function getColumnWidth(sheet, index, skipHidden) {
+    if (sheet && sheet.columns && sheet.columns[index]) {
+        if (!skipHidden && sheet.columns[index].hidden) {
+            return 0;
+        }
+        return (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
     }
     else {
         return 64;
@@ -9185,190 +11376,7 @@ function getColumnsWidth(sheet, startCol, endCol) {
 }
 /** @hidden */
 function isHiddenCol(sheet, index) {
-    return sheet.columns[index] && (sheet.columns[index].hidden || (sheet.columns[index].width !== undefined &&
-        sheet.columns[index].width === 0));
-}
-
-/**
- * Update data source to Sheet and returns Sheet
- * @hidden
- */
-function getData(context, address, columnWiseData, valueOnly) {
-    return new Promise(function (resolve, reject) {
-        resolve((function () {
-            var i;
-            var row;
-            var data = new Map();
-            var sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
-            var sheet = getSheet(context, sheetIdx);
-            var indexes = getIndexesFromAddress(address);
-            var sRow = indexes[0];
-            var index = 0;
-            var args = {
-                sheet: sheet, indexes: indexes, promise: new Promise(function (resolve, reject) { resolve((function () { })()); })
-            };
-            context.notify(updateSheetFromDataSource, args);
-            return args.promise.then(function () {
-                while (sRow <= indexes[2]) {
-                    if (!valueOnly && isHiddenRow(sheet, sRow)) {
-                        sRow++;
-                        continue;
-                    }
-                    var cells = {};
-                    row = getRow(sheet, sRow);
-                    i = indexes[1];
-                    while (i <= indexes[3]) {
-                        if (columnWiseData) {
-                            if (data instanceof Map) {
-                                data = [];
-                            }
-                            var key = getColumnHeaderText(i + 1);
-                            var rowKey = '__rowIndex';
-                            if (valueOnly) {
-                                cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
-                            }
-                            else {
-                                cells[key] = row ? getCell(sRow, i, sheet) : null;
-                            }
-                            if (indexes[3] < i + 1) {
-                                cells[rowKey] = (sRow + 1).toString();
-                            }
-                            data[index.toString()] = cells;
-                        }
-                        else {
-                            data.set(getCellAddress(sRow, i), row ? getCell(sRow, i, sheet) : null);
-                        }
-                        i++;
-                    }
-                    sRow++;
-                    index++;
-                }
-                return data;
-            });
-        })());
-    });
-}
-function getValueFromFormat(context, rowIndex, colIndex, sheetIdx, sheet) {
-    var cell = getCell(rowIndex, colIndex, sheet);
-    if (cell) {
-        if (cell.format) {
-            var args = {
-                value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
-                sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
-            };
-            context.notify(checkDateFormat, args);
-            if (args.isDate) {
-                return args.dateObj;
-            }
-            else {
-                return cell.value;
-            }
-        }
-        else {
-            return cell.value;
-        }
-    }
-    else {
-        return '';
-    }
-}
-/**
- * @hidden
- */
-function getModel(model, idx) {
-    var diff;
-    var j;
-    var prevIdx;
-    if (isUndefined(model[idx]) || !(model[idx] && model[idx].index === idx)) {
-        for (var i = 0; i <= idx; i++) {
-            if (model && model[i]) {
-                diff = model[i].index - i;
-                if (diff > 0) {
-                    model.forEach(function (value, index) {
-                        if (value && value.index) {
-                            prevIdx = value.index;
-                            j = 1;
-                        }
-                        if (value && !value.index && index !== 0) {
-                            value.index = prevIdx + j;
-                        }
-                        j++;
-                    });
-                    while (diff--) {
-                        model.splice(i, 0, null);
-                    }
-                    i += diff;
-                }
-            }
-            else if (model) {
-                model[i] = null;
-            }
-            else {
-                model = [];
-            }
-        }
-    }
-    return model[idx];
-}
-/**
- * @hidden
- */
-function processIdx(model, isSheet, context) {
-    var j;
-    var diff;
-    var cnt;
-    var len = model.length;
-    for (var i = 0; i < len; i++) {
-        cnt = diff = model[i].index - i;
-        model[i].index = null;
-        if (diff > 0) {
-            j = 0;
-            while (diff--) {
-                if (isSheet) {
-                    context.createSheet(i + j);
-                    j++;
-                }
-                else {
-                    model.splice(i, 0, null);
-                }
-            }
-            i += cnt;
-            len += cnt;
-        }
-        if (isSheet) {
-            model[i].id = getMaxSheetId(context.sheets);
-            if (!model[i].name) {
-                model[i].name = 'Sheet' + getSheetNameCount(context);
-            }
-        }
-    }
-    if (isSheet) {
-        context.setProperties({ 'sheets': context.sheets }, true);
-    }
-}
-/**
- * @hidden
- */
-function clearRange(context, address, sheetIdx, valueOnly) {
-    var sheet = getSheet(context, sheetIdx - 1);
-    var range = getIndexesFromAddress(address);
-    var sRIdx = range[0];
-    var eRIdx = range[2];
-    var sCIdx;
-    var eCIdx;
-    for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
-        sCIdx = range[1];
-        eCIdx = range[3];
-        for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-            var cell = getCell(sRIdx, sCIdx, sheet);
-            if (!isNullOrUndefined(cell) && valueOnly) {
-                delete cell.value;
-                if (!isNullOrUndefined(cell.formula)) {
-                    delete cell.formula;
-                }
-            }
-        }
-    }
+    return sheet.columns[index] && sheet.columns[index].hidden;
 }
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -9469,6 +11477,9 @@ var Sheet = /** @__PURE__ @class */ (function (_super) {
         Collection([], Column)
     ], Sheet.prototype, "columns", void 0);
     __decorate$1([
+        Complex({}, ProtectSettings)
+    ], Sheet.prototype, "protectSettings", void 0);
+    __decorate$1([
         Collection([], RangeSetting)
     ], Sheet.prototype, "rangeSettings", void 0);
     __decorate$1([
@@ -9502,8 +11513,14 @@ var Sheet = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Sheet.prototype, "showGridLines", void 0);
     __decorate$1([
+        Property(false)
+    ], Sheet.prototype, "isProtected", void 0);
+    __decorate$1([
         Property('Visible')
     ], Sheet.prototype, "state", void 0);
+    __decorate$1([
+        Property([])
+    ], Sheet.prototype, "maxHgts", void 0);
     return Sheet;
 }(ChildProperty));
 /**
@@ -9539,7 +11556,7 @@ function getSheetIndexFromId(context, id) {
  * @hidden
  */
 function getSheetNameFromAddress(address) {
-    return address.split('!')[0];
+    return address.split('!')[0].replace(/\'/gi, '');
 }
 /**
  * To get sheet index from sheet name.
@@ -9561,7 +11578,6 @@ function getSheetIndexByName(context, name, info) {
 function updateSelectedRange(context, range, sheet) {
     if (sheet === void 0) { sheet = {}; }
     sheet.selectedRange = range;
-    context.setProperties({ 'sheets': context.sheets }, true);
 }
 /**
  * get selected range
@@ -9607,16 +11623,44 @@ function getMaxSheetId(sheets) {
 /**
  * @hidden
  */
-function initSheet(context) {
-    context.sheets.forEach(function (sheet) {
+function initSheet(context, sheet) {
+    var sheets = sheet ? sheet : context.sheets;
+    sheets.forEach(function (sheet) {
+        sheet.id = sheet.id || 0;
+        sheet.name = sheet.name || '';
+        sheet.rowCount = isUndefined(sheet.rowCount) ? 100 : sheet.rowCount;
+        sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
+        sheet.topLeftCell = sheet.topLeftCell || 'A1';
+        sheet.activeCell = sheet.activeCell || 'A1';
+        sheet.selectedRange = sheet.selectedRange || 'A1';
+        sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
+        sheet.rangeSettings = sheet.rangeSettings ? initRangeSettings(sheet.rangeSettings) : [];
+        sheet.rows = sheet.rows || [];
+        sheet.columns = sheet.columns || [];
+        sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
+        sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
+        sheet.state = sheet.state || 'Visible';
+        sheet.maxHgts = [];
+        sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
+            insertLink: false };
+        sheet.isProtected = sheet.isProtected || false;
         processIdx(sheet.columns);
         initRow(sheet.rows);
     });
-    processIdx(context.sheets, true, context);
+    processIdx(sheets, true, context);
+}
+function initRangeSettings(rangeSettings) {
+    rangeSettings.forEach(function (rangeSetting) {
+        rangeSetting.startCell = rangeSetting.startCell || 'A1';
+        rangeSetting.range = rangeSetting.range || 'A1';
+        rangeSetting.template = rangeSetting.template || '';
+        rangeSetting.showFieldAsHeader = isUndefined(rangeSetting.showFieldAsHeader) ? true : rangeSetting.showFieldAsHeader;
+    });
+    return rangeSettings;
 }
 function initRow(rows) {
     rows.forEach(function (row) {
-        if (row.cells) {
+        if (row && row.cells) {
             processIdx(row.cells);
         }
     });
@@ -9707,7 +11751,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
          * @hidden
          */
         _this.isOpen = false;
-        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet);
         _this.commonCellStyle = {};
         if (options && options.cellStyle) {
             _this.commonCellStyle = options.cellStyle;
@@ -9796,17 +11840,14 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * Used to create new sheet.
      * @hidden
      */
-    Workbook.prototype.createSheet = function (index) {
-        var sheet = new Sheet(this, 'sheets', { id: getMaxSheetId(this.sheets), name: 'Sheet' + getSheetNameCount(this) }, true);
-        if (index > -1) {
-            this.sheets.splice(index, 0, sheet);
-        }
-        else {
-            this.sheets.push(sheet);
-        }
-        this.setProperties({ 'sheet': this.sheets }, true);
-        this.notify(sheetCreated, { sheetIndex: index | 0 });
-        this.notify(workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index });
+    Workbook.prototype.createSheet = function (index, sheets) {
+        if (index === void 0) { index = this.sheets.length; }
+        if (sheets === void 0) { sheets = [{}]; }
+        var _a;
+        (_a = this.sheets).splice.apply(_a, [index, 0].concat(sheets));
+        initSheet(this, sheets);
+        this.notify(sheetCreated, { sheetIndex: index, sheets: sheets });
+        this.notify(workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index, sheetCount: index + sheets.length });
     };
     /**
      * Used to remove sheet.
@@ -9836,6 +11877,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
                 case 'cellStyle':
                     merge(this.commonCellStyle, skipDefaultValue(newProp.cellStyle));
                     break;
+                case 'sheets':
+                    initSheet(this);
+                    break;
             }
         }
     };
@@ -9849,25 +11893,102 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     /**
      * Used to hide/show the rows in spreadsheet.
      * @param {number} startRow - Specifies the start row index.
-     * @param {number} endRow - Specifies the end row index.
-     * @param {boolean} hide - To hide/show the rows in specified range.
-     * @hidden
+     * @param {number} endRow? - Specifies the end row index.
+     * @param {boolean} hide? - To hide/show the rows in specified range.
+     * @returns void
      */
-    Workbook.prototype.showHideRow = function (hide, startRow, endRow) {
-        if (endRow === void 0) { endRow = startRow; }
+    Workbook.prototype.hideRow = function (startIndex, endIndex, hide) {
+        if (endIndex === void 0) { endIndex = startIndex; }
+        if (hide === void 0) { hide = true; }
         var sheet = this.getActiveSheet();
-        for (var i = startRow; i < endRow; i++) {
+        for (var i = startIndex; i <= endIndex; i++) {
             setRow(sheet, i, { hidden: hide });
         }
-        this.setProperties({ 'sheets': this.sheets }, true);
+    };
+    /**
+     * Used to hide/show the columns in spreadsheet.
+     * @param {number} startIndex - Specifies the start column index.
+     * @param {number} endIndex? - Specifies the end column index.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the columns.
+     * @returns void
+     */
+    Workbook.prototype.hideColumn = function (startIndex, endIndex, hide) {
+        if (endIndex === void 0) { endIndex = startIndex; }
+        if (hide === void 0) { hide = true; }
+        var sheet = this.getActiveSheet();
+        for (var i = startIndex; i <= endIndex; i++) {
+            setColumn(sheet, i, { hidden: hide });
+        }
+    };
+    /**
+     * Sets the border to specified range of cells.
+     * @param {CellStyleModel} style? - Specifies the style property which contains border value.
+     * @param {string} range? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @param {BorderType} type? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @returns void
+     */
+    Workbook.prototype.setBorder = function (style, range, type) {
+        this.notify(setCellFormat, { style: style, borderType: type, range: range || this.getActiveSheet().selectedRange });
+    };
+    /**
+     * Used to insert rows in to the spreadsheet.
+     * @param {number | RowModel[]} startRow? - Specifies the start row index / row model which needs to be inserted.
+     * @param {number} endRow? - Specifies the end row index.
+     * @returns void
+     */
+    Workbook.prototype.insertRow = function (startRow, endRow) {
+        this.notify(insertModel, { model: this.getActiveSheet(), start: startRow, end: endRow, modelType: 'Row' });
+    };
+    /**
+     * Used to insert columns in to the spreadsheet.
+     * @param {number | ColumnModel[]} startColumn? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endColumn? - Specifies the end column index.
+     * @returns void
+     */
+    Workbook.prototype.insertColumn = function (startColumn, endColumn) {
+        this.notify(insertModel, { model: this.getActiveSheet(), start: startColumn, end: endColumn,
+            modelType: 'Column' });
+    };
+    /**
+     * Used to insert sheets in to the spreadsheet.
+     * @param {number | SheetModel[]} startSheet? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endSheet? - Specifies the end column index.
+     * @returns void
+     */
+    Workbook.prototype.insertSheet = function (startSheet, endSheet) {
+        this.notify(insertModel, { model: this, start: startSheet, end: endSheet, modelType: 'Sheet' });
+    };
+    /**
+     * Used to delete rows, columns and sheets from the spreadsheet.
+     * @param {number | RowModel[]} startIndex? - Specifies the start sheet / row / column index.
+     * @param {number} endIndex? - Specifies the end sheet / row / column index.
+     * @param {ModelType} model? - Specifies the delete model type. By default, the model is considered as `Sheet`. The possible values are,
+     * - Row: To delete rows.
+     * - Column: To delete columns.
+     * - Sheet: To delete sheets.
+     * @returns void
+     */
+    Workbook.prototype.delete = function (startIndex, endIndex, model) {
+        this.notify(deleteModel, { model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start: startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet' });
+    };
+    /**
+     * Used to compute the specified expression/formula.
+     * @param {string} formula - Specifies the formula(=SUM(A1:A3)) or expression(2+3).
+     * @returns string | number
+     */
+    Workbook.prototype.computeExpression = function (formula) {
+        var args = {
+            action: 'computeExpression', formula: formula
+        };
+        this.notify(workbookFormulaOperation, args);
+        return args.calcValue;
     };
     Workbook.prototype.initEmptySheet = function () {
-        var len = this.sheets.length;
-        if (len) {
-            initSheet(this);
+        if (!this.sheets.length) {
+            this.createSheet();
         }
         else {
-            this.createSheet();
+            initSheet(this);
         }
     };
     /** @hidden */
@@ -9882,12 +12003,10 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         var sheet = this.getActiveSheet();
         if (rowIdx > sheet.usedRange.rowIndex) {
             sheet.usedRange.rowIndex = rowIdx;
-            this.setProperties({ 'sheets': this.sheets }, true);
             this.notify(updateUsedRange, { index: rowIdx, update: 'row' });
         }
         if (colIdx > sheet.usedRange.colIndex) {
             sheet.usedRange.colIndex = colIdx;
-            this.setProperties({ 'sheets': this.sheets }, true);
             this.notify(updateUsedRange, { index: colIdx, update: 'col' });
         }
     };
@@ -9990,6 +12109,37 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         this.notify(setLinkModel, args);
     };
     /**
+     * To find the specified cell value.
+     * @param args - options for find.
+     */
+    Workbook.prototype.findHandler = function (args) {
+        if (args.findOpt === 'next') {
+            this.notify(findNext, args);
+        }
+        else if (args.findOpt === 'prev') {
+            this.notify(findPrevious, args);
+        }
+    };
+    /**
+     * To replace the specified cell or entire match value.
+     * @param args - options for replace.
+     */
+    Workbook.prototype.replaceHandler = function (args) {
+        if (args.replaceBy === 'replace') {
+            this.notify(replaceHandler, args);
+        }
+        else {
+            this.notify(replaceAllHandler, args);
+        }
+    };
+    /**
+     * Protect the active sheet based on the protect sheetings.
+     * @param protectSettings - Specifies the protect settings of the sheet.
+     */
+    Workbook.prototype.protectSheet = function (protectSettings) {
+        this.notify(protectsheetHandler, protectSettings);
+    };
+    /**
      * Sorts the range of cells in the active Spreadsheet.
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
@@ -10008,6 +12158,35 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         this.notify(initiateSort, sortArgs);
         return sortArgs.promise;
     };
+    Workbook.prototype.addDataValidation = function (rules, range) {
+        range = range ? range : this.getActiveSheet().selectedRange;
+        var eventArgs = {
+            range: range, type: rules.type, operator: rules.operator, value1: rules.value1,
+            value2: rules.value2, ignoreBlank: rules.ignoreBlank, inCellDropDown: rules.inCellDropDown, cancel: false
+        };
+        this.notify(beginAction, { eventArgs: eventArgs, action: 'validation' });
+        if (!eventArgs.cancel) {
+            range = eventArgs.range;
+            rules.type = eventArgs.type;
+            rules.operator = eventArgs.operator;
+            rules.value1 = eventArgs.value1;
+            rules.value2 = eventArgs.value2;
+            rules.ignoreBlank = eventArgs.ignoreBlank;
+            rules.inCellDropDown = eventArgs.inCellDropDown;
+            this.notify(setValidation, { rules: rules, range: range });
+            delete eventArgs.cancel;
+            this.notify(completeAction, { eventArgs: eventArgs, action: 'validation' });
+        }
+    };
+    Workbook.prototype.removeDataValidation = function (range) {
+        this.notify(removeValidation, { range: range });
+    };
+    Workbook.prototype.addInvalidHighlight = function (range) {
+        this.notify(addHighlight, { range: range });
+    };
+    Workbook.prototype.removeInvalidHighlight = function (range) {
+        this.notify(removeHighlight, { range: range });
+    };
     /**
      * To update a cell properties.
      * @param {CellModel} cell - Cell properties.
@@ -10020,9 +12199,19 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         if (cell.value) {
             this.notify(workbookEditOperation, {
                 action: 'updateCellValue', address: range, value: cell.value,
-                sheetIndex: sheetIdx
+                sheetIndex: sheetIdx + 1
             });
         }
+    };
+    /**
+     * This method is used to wrap/unwrap the text content of the cell.
+     * @param address - Address of the cell to be wrapped.
+     * @param wrap - Set `false` if the text content of the cell to be unwrapped.
+     * @returns void
+     */
+    Workbook.prototype.wrap = function (address, wrap$$1) {
+        if (wrap$$1 === void 0) { wrap$$1 = true; }
+        wrap(address, wrap$$1, this);
     };
     /**
      * Adds the defined name to the Spreadsheet.
@@ -10121,9 +12310,15 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
             return cell.value ? cell.value.toString() : '';
         }
     };
+    /**
+     * @hidden
+     */
+    Workbook.prototype.getAddressInfo = function (address) {
+        return getAddressInfo(this, address);
+    };
     var Workbook_1;
     __decorate([
-        Collection([], Sheet)
+        Property([])
     ], Workbook.prototype, "sheets", void 0);
     __decorate([
         Property(1)
@@ -10131,6 +12326,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('100%')
     ], Workbook.prototype, "height", void 0);
+    __decorate([
+        Property(true)
+    ], Workbook.prototype, "allowFindAndReplace", void 0);
     __decorate([
         Property('100%')
     ], Workbook.prototype, "width", void 0);
@@ -10168,6 +12366,15 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Workbook.prototype, "allowHyperlink", void 0);
     __decorate([
+        Property(true)
+    ], Workbook.prototype, "allowInsert", void 0);
+    __decorate([
+        Property(true)
+    ], Workbook.prototype, "allowDelete", void 0);
+    __decorate([
+        Property(true)
+    ], Workbook.prototype, "allowDataValidation", void 0);
+    __decorate([
         Complex({}, CellStyle)
     ], Workbook.prototype, "cellStyle", void 0);
     __decorate([
@@ -10194,6 +12401,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event$1()
     ], Workbook.prototype, "beforeCellFormat", void 0);
+    __decorate([
+        Event$1()
+    ], Workbook.prototype, "queryCellInfo", void 0);
     Workbook = Workbook_1 = __decorate([
         NotifyPropertyChanges
     ], Workbook);
@@ -10326,6 +12536,10 @@ function pushBasicModules(context, modules) {
         member: 'collaborativeEditing',
         args: [context]
     });
+    modules.push({
+        member: 'protectSheet',
+        args: [context]
+    });
     if (context.allowHyperlink) {
         modules.push({
             member: 'spreadsheetHyperlink',
@@ -10340,6 +12554,21 @@ function pushBasicModules(context, modules) {
     }
     if (context.allowFiltering) {
         modules.push({ member: 'filter', args: [context] });
+    }
+    if (context.allowWrap) {
+        modules.push({ member: 'wrapText', args: [context] });
+    }
+    if (context.allowInsert) {
+        modules.push({ member: 'insert', args: [context] });
+    }
+    if (context.allowDelete) {
+        modules.push({ member: 'delete', args: [context] });
+    }
+    if (context.allowDataValidation) {
+        modules.push({ member: 'dataValidation', args: [context] });
+    }
+    if (context.allowFindAndReplace) {
+        modules.push({ member: 'findAndReplace', args: [context] });
     }
 }
 
@@ -10365,7 +12594,7 @@ function removeAllChildren(parent, index) {
     }
 }
 /**
- * The function used to remove the dom element children.
+ * The function used to get colgroup width based on the row index.
  * @param  parent -
  * @hidden
  */
@@ -10465,12 +12694,13 @@ function inView(context, range, isModify) {
 function locateElem(ele, range, sheet, isRtl) {
     var swapRange = getSwapRange(range);
     var cellPosition = getCellPosition(sheet, swapRange);
+    var startIndex = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     var attrs = {
-        'top': (swapRange[0] === 0 ? cellPosition.top : cellPosition.top - 1) + 'px',
-        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === 0 ? 0 : 1) + 'px',
-        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === 0 ? 0 : 1) + 'px'
+        'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - 1) + 'px',
+        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === startIndex[0] ? 0 : 1) + 'px',
+        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + 'px'
     };
-    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === 0 ? cellPosition.left : cellPosition.left - 1) + 'px';
+    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
     setStyleAttribute$1([{ element: ele, attrs: attrs }]);
 }
 /**
@@ -10970,8 +13200,9 @@ function findMaxValue(table, text, isCol, parent) {
 /**
  * @hidden
  */
-/* tslint:disable no-any */
-function updateAction(options, spreadsheet, isCutRedo) {
+// tslint:disable-next-line
+function updateAction(options, spreadsheet, isRedo) {
+    /* tslint:disable-next-line no-any */
     var eventArgs = options.eventArgs;
     switch (options.action) {
         case 'sorting':
@@ -11003,7 +13234,7 @@ function updateAction(options, spreadsheet, isCutRedo) {
             }
             break;
         case 'clipboard':
-            if (eventArgs.copiedInfo.isCut && !isCutRedo) {
+            if (eventArgs.copiedInfo.isCut && !isRedo) {
                 return;
             }
             var clipboardPromise = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
@@ -11021,17 +13252,21 @@ function updateAction(options, spreadsheet, isCutRedo) {
         case 'resize':
         case 'resizeToFit':
             if (eventArgs.isCol) {
-                spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                if (eventArgs.hide === undefined) {
+                    spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                }
+                else {
+                    spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
+                }
             }
             else {
-                spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx);
+                if (eventArgs.hide === undefined) {
+                    spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx);
+                }
+                else {
+                    spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
+                }
             }
-            break;
-        case 'addSheet':
-            spreadsheet.notify(addSheetTab, {
-                text: eventArgs.text, isAction: true, count: eventArgs.sheetCount,
-                previousIndex: eventArgs.previousIndex
-            });
             break;
         case 'renameSheet':
             spreadsheet.sheets[eventArgs.index - 1].name = eventArgs.value;
@@ -11043,6 +13278,49 @@ function updateAction(options, spreadsheet, isCutRedo) {
                 count: eventArgs.sheetCount,
                 clicked: true
             });
+            break;
+        case 'wrap':
+            wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
+            break;
+        case 'hideShow':
+            eventArgs.isCol ? spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide) :
+                spreadsheet.hideRow(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+            break;
+        case 'replace':
+            spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
+            break;
+        case 'insert':
+            if (isRedo === false) {
+                spreadsheet.delete(options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
+            }
+            else {
+                spreadsheet.notify(insertModel, { model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                        spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index + (options.eventArgs.model
+                        .length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount: options.eventArgs.sheetCount,
+                    activeSheetTab: options.eventArgs.activeSheetTab });
+            }
+            break;
+        case 'delete':
+            if (isRedo === false) {
+                spreadsheet.notify(insertModel, { model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
+                        spreadsheet.getActiveSheet(), start: options.eventArgs.deletedModel, modelType: options.eventArgs.modelType,
+                    isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel });
+            }
+            else {
+                spreadsheet.delete(options.eventArgs.startIndex, options.eventArgs.endIndex, options.eventArgs.modelType);
+            }
+            break;
+        case 'validation':
+            if (isRedo) {
+                var rules = {
+                    type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1,
+                    value2: eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown
+                };
+                spreadsheet.notify(setValidation, { rules: rules, range: eventArgs.range });
+            }
+            else {
+                spreadsheet.notify(removeValidation, { range: eventArgs.range });
+            }
             break;
     }
 }
@@ -11062,6 +13340,123 @@ function hasTemplate(workbook, rowIdx, colIdx, sheetIdx) {
         }
     }
     return false;
+}
+/**
+ * Setting row height in view an model.
+ * @hidden
+ */
+function setRowEleHeight(parent, sheet, height, rowIdx, row, hRow, notifyRowHgtChange) {
+    if (notifyRowHgtChange === void 0) { notifyRowHgtChange = true; }
+    var prevHgt = getRowHeight(sheet, rowIdx);
+    (row || parent.getRow(rowIdx)).style.height = height + "px";
+    if (sheet.showHeaders) {
+        (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = height + "px";
+    }
+    setRowHeight(sheet, rowIdx, height);
+    parent.setProperties({ sheets: parent.sheets }, true);
+    if (notifyRowHgtChange) {
+        parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - prevHgt });
+    }
+}
+/** @hidden */
+function getTextHeight(context, style, lines) {
+    if (lines === void 0) { lines = 1; }
+    var fontSize = (style && style.fontSize) || context.cellStyle.fontSize;
+    var fontSizePx = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
+    return Math.ceil(fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines);
+}
+/** @hidden */
+function getTextWidth(text, style, parentStyle) {
+    if (!style) {
+        style = parentStyle;
+    }
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    context.font = (style.fontStyle || parentStyle.fontStyle) + ' ' + (style.fontWeight || parentStyle.fontWeight) + ' '
+        + (style.fontSize || parentStyle.fontSize) + ' ' + (style.fontFamily || parentStyle.fontFamily);
+    return context.measureText(text).width;
+}
+/**
+ * @hidden
+ */
+function getLines(text, colwidth, style, parentStyle) {
+    var width;
+    var prevWidth = 0;
+    var textArr = text.toString().split(' ');
+    var spaceWidth = getTextWidth(' ', style, parentStyle);
+    var lines;
+    var cnt = 0;
+    colwidth -= 5; // for padding
+    textArr.forEach(function (txt) {
+        var lWidth = 0;
+        var cWidth = 0;
+        width = getTextWidth(txt, style, parentStyle);
+        lines = (prevWidth + width) / colwidth;
+        if (lines >= 1) {
+            if (prevWidth) {
+                cnt++;
+            }
+            if (width / colwidth >= 1) {
+                txt.split('').forEach(function (val) {
+                    cWidth = getTextWidth(val, style, parentStyle);
+                    lWidth += cWidth;
+                    if (lWidth > colwidth) {
+                        cnt++;
+                        lWidth = cWidth;
+                    }
+                });
+                prevWidth = lWidth + spaceWidth;
+            }
+            else {
+                prevWidth = width + spaceWidth;
+            }
+        }
+        else {
+            prevWidth += (width + spaceWidth);
+        }
+    });
+    if (prevWidth) {
+        cnt += Math.ceil((prevWidth - spaceWidth) / colwidth);
+    }
+    return cnt;
+}
+/**
+ * Setting maximum height while doing formats and wraptext
+ * @hidden
+ */
+function setMaxHgt(sheet, rIdx, cIdx, hgt) {
+    if (!sheet.maxHgts[rIdx]) {
+        sheet.maxHgts[rIdx] = {};
+    }
+    sheet.maxHgts[rIdx][cIdx] = hgt;
+}
+/**
+ * Getting maximum height by comparing each cell's modified height.
+ * @hidden
+ */
+function getMaxHgt(sheet, rIdx) {
+    var maxHgt = 0;
+    var rowHgt = sheet.maxHgts[rIdx];
+    if (rowHgt) {
+        Object.keys(rowHgt).forEach(function (key) {
+            if (rowHgt[key] > maxHgt) {
+                maxHgt = rowHgt[key];
+            }
+        });
+    }
+    return maxHgt;
+}
+/** @hidden */
+function skipHiddenIdx(sheet, index, increase, layout) {
+    if (layout === void 0) { layout = 'rows'; }
+    if (index < 0) {
+        index = -1;
+    }
+    if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+        increase ? index++ : index--;
+        index = skipHiddenIdx(sheet, index, increase, layout);
+    }
+    return index;
 }
 
 /**
@@ -11127,9 +13522,17 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         }
     };
     Clipboard.prototype.cMenuBeforeOpenHandler = function (e) {
-        if (e.target === 'Content' || e.target === 'Header') {
-            var l10n = this.parent.serviceLocator.getService(locale);
-            this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], this.copiedInfo ? true : false);
+        var sheet = this.parent.getActiveSheet();
+        var l10n = this.parent.serviceLocator.getService(locale);
+        if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
+            this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !sheet.isProtected) ? true : false);
+            this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!sheet.isProtected) ? true : false);
+        }
+        if ((e.target === 'Content') && sheet.isProtected) {
+            this.parent.enableContextMenuItems([l10n.getConstant('Cut'), l10n.getConstant('Filter'), l10n.getConstant('Sort')], false);
+        }
+        if ((e.target === 'Content') && (sheet.isProtected && !sheet.protectSettings.insertLink)) {
+            this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
         }
     };
     Clipboard.prototype.rowHeightChanged = function (args) {
@@ -11231,7 +13634,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                         }
                     }
                     if (!isExternal && this.copiedInfo.isCut) {
-                        this.setCell(i, j, prevSheet, getCell(i, j, prevSheet), false, true);
+                        this.setCell(i, j, prevSheet, null, false, true);
                     }
                 }
                 rowIdx++;
@@ -11277,11 +13680,22 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 colIndex: cIdx, sheetIndex: this.parent.activeSheetTab, isFormula: true
             });
         }
-        if (isCut && cell && cell.style) {
-            this.parent.notify(applyCellFormat, {
-                style: extend({}, this.getEmptyStyle(cell.style), this.parent.commonCellStyle), rowIdx: rIdx, colIdx: cIdx, cell: null,
-                lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
+        if (cell && !cell.formula) {
+            this.parent.notify(workbookEditOperation, {
+                action: 'updateCellValue', address: [rIdx, cIdx, rIdx,
+                    cIdx], value: cell.value
             });
+        }
+        if (isCut && cell) {
+            if (cell.style) {
+                this.parent.notify(applyCellFormat, {
+                    style: extend({}, this.getEmptyStyle(cell.style), this.parent.commonCellStyle), rowIdx: rIdx, colIdx: cIdx, cell: null,
+                    lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
+                });
+            }
+            if (cell.wrap) {
+                this.parent.notify(wrapEvent, { range: [rIdx, cIdx, rIdx, cIdx], wrap: false, sheet: sheet });
+            }
         }
     };
     Clipboard.prototype.getEmptyStyle = function (cellStyle) {
@@ -11375,6 +13789,9 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         });
     };
     Clipboard.prototype.hidePaste = function (isShow) {
+        if (this.parent.getActiveSheet().isProtected) {
+            isShow = false;
+        }
         this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_paste'], enable: isShow || false }]);
     };
     Clipboard.prototype.setExternalCells = function (args) {
@@ -11518,11 +13935,11 @@ var Clipboard = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * The `Edit` module is used to handle the editing functionalities in Spreadsheet.
+ * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
 var Edit = /** @__PURE__ @class */ (function () {
     /**
-     * Constructor for edit module in Spreadsheet.
+     * Constructor for protect-sheet module in Spreadsheet.
      * @private
      */
     function Edit(parent) {
@@ -11645,49 +14062,68 @@ var Edit = /** @__PURE__ @class */ (function () {
     Edit.prototype.keyDownHandler = function (e) {
         var trgtElem = e.target;
         var keyCode = e.keyCode;
-        if (this.isEdit) {
-            if (this.isCellEdit) {
-                this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
-            }
-            switch (keyCode) {
-                case this.keyCodes.ENTER:
-                    if (Browser.isWindows) {
-                        e.preventDefault();
+        if (!closest(e.target, '.e-findtool-dlg') && !closest(e.target, '.e-validationerror-dlg')) {
+            if (!this.parent.getActiveSheet().isProtected || closest(e.target, '.e-sheet-rename')) {
+                if (this.isEdit) {
+                    if (this.isCellEdit) {
+                        this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                     }
-                    this.endEdit();
-                    break;
-                case this.keyCodes.TAB:
-                    if (!this.hasFormulaSuggSelected()) {
-                        this.endEdit();
+                    switch (keyCode) {
+                        case this.keyCodes.ENTER:
+                            if (Browser.isWindows) {
+                                e.preventDefault();
+                            }
+                            this.endEdit(false, e);
+                            break;
+                        case this.keyCodes.TAB:
+                            if (!this.hasFormulaSuggSelected()) {
+                                this.endEdit(false, e);
+                            }
+                            break;
+                        case this.keyCodes.ESC:
+                            this.cancelEdit(true, true, e);
+                            break;
                     }
-                    break;
-                case this.keyCodes.ESC:
-                    this.cancelEdit();
-                    break;
-            }
-        }
-        else {
-            if (!this.isEdit && (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel'))) {
-                var isAlphabet = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET);
-                var isNumeric = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
-                var isNumpadKeys = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
-                var isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND);
-                if (!isSymbolkeys) {
-                    isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
                 }
-                var isFirefoxExceptionkeys = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
-                    (keyCode === this.keyCodes.FIREFOXMINUS);
-                var isF2Edit = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
-                var isBackSpace = keyCode === this.keyCodes.BACKSPACE;
-                if ((!e.ctrlKey && !e.altKey && ((!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
-                    isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys))) || isF2Edit || isBackSpace) {
-                    if (isF2Edit) {
-                        this.isNewValueEdit = false;
+                else {
+                    if (!this.isEdit && (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel'))) {
+                        var isAlphabet = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET);
+                        var isNumeric = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
+                        var isNumpadKeys = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
+                        var isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETONESTART &&
+                            keyCode <= this.keyCodes.SYMBOLSETONEEND);
+                        if (!isSymbolkeys) {
+                            isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
+                        }
+                        var isFirefoxExceptionkeys = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
+                            (keyCode === this.keyCodes.FIREFOXMINUS);
+                        var isF2Edit = (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2);
+                        var isBackSpace = keyCode === this.keyCodes.BACKSPACE;
+                        if ((!e.ctrlKey && !e.altKey && ((!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
+                            isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys))) || isF2Edit || isBackSpace) {
+                            if (isF2Edit) {
+                                this.isNewValueEdit = false;
+                            }
+                            this.startEdit();
+                        }
+                        if (keyCode === this.keyCodes.DELETE) {
+                            this.editingHandler('delete');
+                        }
                     }
-                    this.startEdit();
                 }
-                if (keyCode === this.keyCodes.DELETE) {
-                    this.editingHandler('delete');
+            }
+            else {
+                if (((keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET) ||
+                    (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER)
+                    || (keyCode === this.keyCodes.DELETE) || (keyCode === this.keyCodes.BACKSPACE) || (keyCode === this.keyCodes.SPACE)
+                    || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
+                    (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
+                    || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2))
+                    && (keyCode !== 67)) {
+                    if (this.parent.getActiveSheet().protectSettings.insertLink && keyCode === 75) {
+                        return;
+                    }
+                    this.parent.notify(editAlert, null);
                 }
             }
         }
@@ -11773,25 +14209,35 @@ var Edit = /** @__PURE__ @class */ (function () {
         }
     };
     Edit.prototype.mouseDownHandler = function (e) {
-        if (this.isEdit) {
-            var trgtElem = e.target;
-            this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
-            if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
-                trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
-                this.endEdit();
+        if (!closest(e.target, '.e-findtool-dlg')) {
+            if (this.isEdit) {
+                var trgtElem = e.target;
+                this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
+                if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
+                    trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
+                    this.endEdit(false, e);
+                }
             }
         }
     };
     Edit.prototype.dblClickHandler = function (e) {
         var trgtElem = e.target;
-        if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
-            || closest(trgtElem, '.e-main-content')) {
-            if (this.isEdit) {
-                this.endEdit();
+        var target = e.target;
+        if (!this.parent.getActiveSheet().isProtected) {
+            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
+                || closest(trgtElem, '.e-main-content')) {
+                if (this.isEdit) {
+                    this.endEdit();
+                }
+                else {
+                    this.isNewValueEdit = false;
+                    this.startEdit();
+                }
             }
-            else {
-                this.isNewValueEdit = false;
-                this.startEdit();
+        }
+        else {
+            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')) {
+                this.parent.notify(editAlert, null);
             }
         }
     };
@@ -11870,6 +14316,7 @@ var Edit = /** @__PURE__ @class */ (function () {
     Edit.prototype.positionEditor = function () {
         var tdElem = this.editCellData.element;
         tdElem.classList.add('e-ss-edited');
+        var cell = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
         var left = this.editCellData.position.left + 1;
         var top = this.editCellData.position.top + 1;
         var minHeight = this.editCellData.element.offsetHeight - 3;
@@ -11878,7 +14325,8 @@ var Edit = /** @__PURE__ @class */ (function () {
         var editWidth = mainContElement.offsetWidth - left - 28;
         //let editHeight: number = mainContElement.offsetHeight - top - 28;
         var inlineStyles = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;height:' + minHeight + 'px;';
+            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'min-height:' : 'height:') +
+            minHeight + 'px;' + ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '');
         inlineStyles += tdElem.style.cssText;
         this.editorElem.setAttribute('style', inlineStyles);
         if (tdElem.classList.contains('e-right-align')) {
@@ -11892,22 +14340,48 @@ var Edit = /** @__PURE__ @class */ (function () {
         if (tdRefresh === void 0) { tdRefresh = true; }
         var oldCellValue = this.editCellData.oldValue;
         var oldValue = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
+        var isValidate = true;
+        var address = this.editCellData.addr;
+        var cellIndex = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        var sheet = this.parent.getActiveSheet();
+        var cell = getCell(cellIndex[0], cellIndex[1], sheet);
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
-        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
-            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
-            var cellIndex = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        if (this.parent.allowDataValidation && cell && cell.validation) {
+            var value = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].innerText;
+            var isCell = true;
+            var sheetIdx = this.parent.activeSheetTab;
+            var range = void 0;
+            if (typeof address === 'string') {
+                range = getRangeIndexes(address);
+            }
+            else {
+                range = address;
+            }
+            this.parent.notify(isValidation, { value: value, range: range, sheetIdx: sheetIdx, isCell: isCell });
+            isValidate = this.parent.allowDataValidation;
+            this.editCellData.value = isValidate ? value : this.editCellData.value;
+            this.parent.allowDataValidation = true;
+        }
+        if ((oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
+            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
+            var sheet_1 = this.parent.getActiveSheet();
+            var cellIndex_1 = getRangeIndexes(sheet_1.activeCell);
             this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
-            var cell = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet(), true);
-            var eventArgs = this.getRefreshNodeArgs(cell);
+            var cell_1 = getCell(cellIndex_1[0], cellIndex_1[1], sheet_1, true);
+            var eventArgs = this.getRefreshNodeArgs(cell_1);
             this.editCellData.value = eventArgs.value;
-            if (cell.formula) {
-                this.editCellData.formula = cell.formula;
+            if (cell_1.formula) {
+                this.editCellData.formula = cell_1.formula;
+            }
+            if (cell_1.wrap) {
+                this.parent.notify(wrapEvent, { range: cellIndex_1, wrap: true, sheet: sheet_1 });
             }
             if (tdRefresh) {
                 this.parent.refreshNode(this.editCellData.element, eventArgs);
             }
         }
+        return isValidate;
     };
     Edit.prototype.refreshDependentCellValue = function (rowIdx, colIdx, sheetIdx) {
         if (rowIdx && colIdx) {
@@ -11944,22 +14418,31 @@ var Edit = /** @__PURE__ @class */ (function () {
         };
         return args;
     };
-    Edit.prototype.endEdit = function (refreshFormulaBar) {
+    Edit.prototype.endEdit = function (refreshFormulaBar, event) {
         if (refreshFormulaBar === void 0) { refreshFormulaBar = false; }
         if (refreshFormulaBar) {
             this.refreshEditor(this.editCellData.oldValue, false, true, false, false);
         }
-        this.updateEditedValue();
-        this.triggerEvent('cellSave');
-        this.resetEditState();
-        this.focusElement();
+        if (this.triggerEvent('beforeCellSave')) {
+            event.preventDefault();
+            return;
+        }
+        var isValidate = this.updateEditedValue();
+        if (isValidate) {
+            this.triggerEvent('cellSave', event);
+            this.resetEditState();
+            this.focusElement();
+        }
+        else {
+            event.preventDefault();
+        }
     };
-    Edit.prototype.cancelEdit = function (refreshFormulaBar, trigEvent) {
+    Edit.prototype.cancelEdit = function (refreshFormulaBar, trigEvent, event) {
         if (refreshFormulaBar === void 0) { refreshFormulaBar = true; }
         if (trigEvent === void 0) { trigEvent = true; }
         this.refreshEditor(this.editCellData.oldValue, refreshFormulaBar, false, false, false);
         if (trigEvent) {
-            this.triggerEvent('cellSave');
+            this.triggerEvent('cellSave', event);
         }
         this.resetEditState();
         this.focusElement();
@@ -11968,7 +14451,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.parent.element.focus();
         this.parent.notify(enableToolbarItems, [{ enable: true }]);
     };
-    Edit.prototype.triggerEvent = function (eventName) {
+    Edit.prototype.triggerEvent = function (eventName, event) {
         var eventArgs = {
             element: this.editCellData.element,
             value: this.editCellData.value,
@@ -11979,6 +14462,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             if (this.editCellData.formula) {
                 eventArgs.formula = this.editCellData.formula;
             }
+            eventArgs.originalEvent = event;
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
         }
         if (eventName !== 'cellSave') {
@@ -12049,6 +14533,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.parent.on(selectRange, this.selectRange, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
         this.parent.on(colWidthChanged, this.colWidthChanged, this);
+        this.parent.on(protectSelection, this.protectHandler, this);
     };
     Selection.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
@@ -12059,6 +14544,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.parent.off(selectRange, this.selectRange);
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
             this.parent.off(colWidthChanged, this.colWidthChanged);
+            this.parent.off(protectSelection, this.protectHandler);
         }
     };
     Selection.prototype.rowHeightChanged = function (args) {
@@ -12115,6 +14601,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.selectRangeByIdx(this.parent.selectionSettings.mode === 'Single' ? indexes.slice(0, 2).concat(indexes.slice(0, 2)) : indexes);
     };
     Selection.prototype.init = function () {
+        var isInit = true;
+        var sheet = this.parent.getActiveSheet();
         var range = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
         var sRange = getSwapRange(range);
         var actRange = getCellIndexes(this.parent.getActiveSheet().activeCell);
@@ -12122,6 +14610,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             && sRange[3] >= actRange[1];
         this.createSelectionElement();
         this.selectRangeByIdx(range, null, null, inRange);
+        this.selectRangeByIdx(range, null, null, inRange, isInit);
     };
     Selection.prototype.createSelectionElement = function () {
         var cont = this.parent.getMainContent();
@@ -12132,69 +14621,74 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.mouseDownHandler = function (e) {
         if (!this.parent.isEdit) {
-            if (this.getSheetElement().contains(e.target) && !e.target.classList.contains('e-colresize')
-                && !e.target.classList.contains('e-rowresize')) {
-                var sheet = this.parent.getActiveSheet();
-                var mode = this.parent.selectionSettings.mode;
-                var rowIdx = this.getRowIdxFromClientY(getClientY(e));
-                var colIdx = this.getColIdxFromClientX(getClientX(e));
-                var activeIdx = getCellIndexes(sheet.activeCell);
-                var isRowSelected = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target);
-                var isColSelected = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target);
-                if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
-                    return;
-                }
-                if (mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
-                    (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
-                    document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
-                    if (!Browser.isPointer) {
-                        document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
+            if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
+                return;
+            }
+            if (!closest(e.target, '.e-findtool-dlg')) {
+                if (this.getSheetElement().contains(e.target) && !e.target.classList.contains('e-colresize')
+                    && !e.target.classList.contains('e-rowresize')) {
+                    var sheet = this.parent.getActiveSheet();
+                    var mode = this.parent.selectionSettings.mode;
+                    var rowIdx = this.getRowIdxFromClientY(getClientY(e));
+                    var colIdx = this.getColIdxFromClientX(getClientX(e));
+                    var activeIdx = getCellIndexes(sheet.activeCell);
+                    var isRowSelected = sheet.showHeaders && this.parent.getRowHeaderContent().contains(e.target);
+                    var isColSelected = sheet.showHeaders && this.parent.getColumnHeaderContent().contains(e.target);
+                    if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {
+                        return;
                     }
-                }
-                if (!isTouchEnd(e)) {
-                    EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
-                }
-                if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
-                    this.touchEvt = e;
-                    return;
-                }
-                if (isRowSelected) {
-                    this.isRowSelected = true;
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [rowIdx, 0];
+                    if (mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
+                        (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
+                        document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
+                        if (!Browser.isPointer) {
+                            document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
+                        }
                     }
-                    this.selectRangeByIdx([this.startCell[0], 0, rowIdx, sheet.colCount - 1], e);
-                }
-                else if (isColSelected) {
-                    this.isColSelected = true;
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [0, colIdx];
+                    if (!isTouchEnd(e)) {
+                        EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
                     }
-                    this.selectRangeByIdx([0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
-                }
-                else if (e.target.classList.contains('e-selectall')) {
-                    this.startCell = [0, 0];
-                    this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
-                }
-                else if (!e.target.classList.contains('e-main-content')) {
-                    if (!e.shiftKey || mode === 'Single') {
-                        this.startCell = [rowIdx, colIdx];
+                    if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
+                        this.touchEvt = e;
+                        return;
                     }
-                    this.selectRangeByIdx([].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
-                }
-                if (this.parent.isMobileView()) {
-                    this.parent.element.classList.add('e-mobile-focused');
-                    this.parent.renderModule.setSheetPanelSize();
+                    if (isRowSelected) {
+                        this.isRowSelected = true;
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [rowIdx, 0];
+                        }
+                        this.selectRangeByIdx([this.startCell[0], 0, rowIdx, sheet.colCount - 1], e);
+                    }
+                    else if (isColSelected) {
+                        this.isColSelected = true;
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [0, colIdx];
+                        }
+                        this.selectRangeByIdx([0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
+                    }
+                    else if (e.target.classList.contains('e-selectall')) {
+                        this.startCell = [0, 0];
+                        this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
+                    }
+                    else if (!e.target.classList.contains('e-main-content')) {
+                        if (!e.shiftKey || mode === 'Single') {
+                            this.startCell = [rowIdx, colIdx];
+                        }
+                        this.selectRangeByIdx([].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+                    }
+                    if (this.parent.isMobileView()) {
+                        this.parent.element.classList.add('e-mobile-focused');
+                        this.parent.renderModule.setSheetPanelSize();
+                    }
                 }
             }
         }
     };
     Selection.prototype.mouseMoveHandler = function (e) {
         var _this = this;
+        var sheet = this.parent.getActiveSheet();
         if (isTouchMove(e)) {
             e.preventDefault();
         }
-        var sheet = this.parent.getActiveSheet();
         var cont = this.getScrollContent();
         var clientRect = cont.getBoundingClientRect();
         var clientX = getClientX(e);
@@ -12281,6 +14775,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         return this.parent.scrollModule ? this.parent.scrollModule.prevScroll.scrollLeft : 0;
     };
     Selection.prototype.cellNavigateHandler = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+            return;
+        }
         this.selectRangeByIdx(args.range.concat(args.range));
     };
     Selection.prototype.getColIdxFromClientX = function (clientX) {
@@ -12307,7 +14805,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Selection.prototype.selectRangeByIdx = function (range, e, isScrollRefresh, isActCellChanged) {
+    Selection.prototype.selectRangeByIdx = function (range, e, isScrollRefresh, isActCellChanged, isInit) {
         var ele = this.getSelectionElement();
         var sheet = this.parent.getActiveSheet();
         var args = { range: getRangeAddress(range), cancel: false };
@@ -12326,7 +14824,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range);
+            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range, isInit);
         }
         if (isNullOrUndefined(e)) {
             e = { type: 'mousedown' };
@@ -12338,15 +14836,19 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.isRowSelected = (indexes[1] === 0 && indexes[3] === sheet.colCount - 1);
         this.isColSelected = (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1);
     };
-    Selection.prototype.updateActiveCell = function (range) {
+    Selection.prototype.updateActiveCell = function (range, isInit) {
         var sheet = this.parent.getActiveSheet();
         var topLeftIdx = getRangeIndexes(sheet.topLeftCell);
         var rowIdx = this.isColSelected ? topLeftIdx[0] : range[0];
         var colIdx = this.isRowSelected ? topLeftIdx[1] : range[1];
-        sheet.activeCell = getCellAddress(rowIdx, colIdx);
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-        locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
-        this.parent.notify(activeCellChanged, null);
+        if (sheet.activeCell !== getCellAddress(rowIdx, colIdx) || isInit) {
+            sheet.activeCell = getCellAddress(rowIdx, colIdx);
+            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+            this.parent.notify(activeCellChanged, null);
+        }
+        else {
+            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+        }
     };
     Selection.prototype.getSelectionElement = function () {
         return this.parent.element.getElementsByClassName('e-selection')[0];
@@ -12361,6 +14863,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (isRowRefresh === void 0) { isRowRefresh = true; }
         if (isColRefresh === void 0) { isColRefresh = true; }
         if (this.parent.getActiveSheet().showHeaders) {
+            var sheet = this.parent.getActiveSheet();
             var rowHdr = [];
             var colHdr = [];
             var swapRange = getSwapRange(range);
@@ -12375,7 +14878,12 @@ var Selection = /** @__PURE__ @class */ (function () {
             if (isColRefresh) {
                 colHdr = [].slice.call(this.parent.getColumnHeaderContent().querySelectorAll('th')).slice(swapRange[1], swapRange[3] + 1);
             }
-            addClass([].concat(rowHdr, colHdr), 'e-highlight');
+            if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+                removeClass([].concat(rowHdr, colHdr), 'e-highlight');
+            }
+            else {
+                addClass([].concat(rowHdr, colHdr), 'e-highlight');
+            }
             if (rowHdr.length && rowHdr[0].parentElement.previousElementSibling) {
                 rowHdr[0].parentElement.previousElementSibling.classList.add('e-prev-highlight');
             }
@@ -12383,7 +14891,12 @@ var Selection = /** @__PURE__ @class */ (function () {
                 colHdr[0].previousElementSibling.classList.add('e-prev-highlight');
             }
             if (this.isRowSelected && this.isColSelected) {
-                document.getElementById(this.parent.element.id + "_select_all").classList.add('e-highlight');
+                if (sheet.isProtected && !sheet.protectSettings.selectCells) {
+                    document.getElementById(this.parent.element.id + "_select_all").classList.remove('e-highlight');
+                }
+                else {
+                    document.getElementById(this.parent.element.id + "_select_all").classList.add('e-highlight');
+                }
             }
             if (swapRange[0] === 0) {
                 selectAll$$1.classList.add('e-prev-highlight-bottom');
@@ -12393,18 +14906,27 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    Selection.prototype.protectHandler = function () {
+        var range = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        var swapRange = getSwapRange(range);
+        var actRange = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        var inRange = swapRange[0] <= actRange[0] && swapRange[2] >= actRange[0] && swapRange[1] <= actRange[1]
+            && swapRange[3] >= actRange[1];
+        this.selectRangeByIdx(range, null, null, inRange);
+    };
     Selection.prototype.getHdrIndexes = function (range) {
         if (this.parent.scrollSettings.enableVirtualization) {
             var indexes = [];
-            var hiddenRowCount = this.parent.hiddenRowsCount(this.parent.viewport.topIndex, range[0]);
+            var hiddenRowCount = this.parent.hiddenCount(this.parent.viewport.topIndex, range[0]);
+            var hiddenColCount = this.parent.hiddenCount(this.parent.viewport.leftIndex, range[1], 'columns');
             indexes[0] = this.isColSelected ? range[0] : (range[0] - this.parent.viewport.topIndex) < 0
                 ? 0 : ((range[0] - hiddenRowCount) - this.parent.viewport.topIndex);
             indexes[1] = this.isRowSelected ? range[1] : (range[1] - this.parent.viewport.leftIndex) < 0
-                ? 0 : (range[1] - this.parent.viewport.leftIndex);
+                ? 0 : ((range[1] - hiddenColCount) - this.parent.viewport.leftIndex);
             indexes[2] = this.isColSelected ? this.parent.viewport.rowCount + this.parent.getThreshold('row') * 2 : range[2] -
-                this.parent.hiddenRowsCount(range[0], range[2]) - hiddenRowCount - this.parent.viewport.topIndex;
-            indexes[3] = this.isRowSelected ? this.parent.viewport.colCount + this.parent.getThreshold('col') * 2 : indexes[1] === 0
-                ? range[3] - this.parent.viewport.leftIndex : range[3] - range[1] + indexes[1];
+                this.parent.hiddenCount(range[0], range[2]) - hiddenRowCount - this.parent.viewport.topIndex;
+            indexes[3] = this.isRowSelected ? this.parent.viewport.colCount + this.parent.getThreshold('col') * 2 :
+                range[3] - this.parent.hiddenCount(range[1], range[3], 'columns') - hiddenColCount - this.parent.viewport.leftIndex;
             return indexes;
         }
         return range;
@@ -12447,7 +14969,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         if (this.prevScroll.scrollLeft !== left) {
             var scrollRight = left > this.prevScroll.scrollLeft;
             prevSize = this.offset.left.size;
-            this.offset.left = this.getColOffset(left, scrollRight);
+            this.offset.left = this.getColOffset(left, scrollRight, e.skipHidden);
             if (this.parent.getActiveSheet().showHeaders) {
                 this.parent.getColumnHeaderContent().scrollLeft = scrollLeft;
             }
@@ -12455,7 +14977,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
                 cur: this.offset.left, prev: { idx: this.leftIndex, size: prevSize }, increase: scrollRight, preventScroll: e.preventScroll
             };
             this.parent.notify(onHorizontalScroll, scrollArgs);
-            this.updateTopLeftCell();
+            this.updateTopLeftCell(scrollRight);
             if (!this.parent.scrollSettings.enableVirtualization && scrollRight && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualCols();
             }
@@ -12473,7 +14995,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
                 cur: this.offset.top, prev: { idx: this.topIndex, size: prevSize }, increase: scrollDown, preventScroll: e.preventScroll
             };
             this.parent.notify(onVerticalScroll, scrollArgs);
-            this.updateTopLeftCell();
+            this.updateTopLeftCell(scrollDown);
             if (!this.parent.scrollSettings.enableVirtualization && scrollDown && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualRows();
             }
@@ -12487,7 +15009,6 @@ var Scroll = /** @__PURE__ @class */ (function () {
         if (this.offset.top.idx > sheet.rowCount - (this.parent.viewport.rowCount + threshold)) {
             this.parent.renderModule.refreshUI({ colIndex: 0, direction: 'first', refresh: 'RowPart' }, getCellAddress(sheet.rowCount, 0) + ":" + getCellAddress(sheet.rowCount + threshold - 1, sheet.colCount - 1));
             sheet.rowCount += threshold;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
     };
     Scroll.prototype.updateNonVirtualCols = function () {
@@ -12496,12 +15017,17 @@ var Scroll = /** @__PURE__ @class */ (function () {
         if (this.offset.left.idx > sheet.colCount - (this.parent.viewport.colCount + threshold)) {
             this.parent.renderModule.refreshUI({ rowIndex: 0, colIndex: sheet.colCount, direction: 'first', refresh: 'ColumnPart' }, getCellAddress(0, sheet.colCount) + ":" + getCellAddress(sheet.rowCount - 1, sheet.colCount + threshold - 1));
             sheet.colCount += threshold;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
     };
-    Scroll.prototype.updateTopLeftCell = function () {
-        this.parent.getActiveSheet().topLeftCell = getCellAddress(this.offset.top.idx, this.offset.left.idx);
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+    Scroll.prototype.updateTopLeftCell = function (increase) {
+        var top = this.offset.top.idx;
+        var left = this.offset.left.idx;
+        if (!increase) {
+            var sheet = this.parent.getActiveSheet();
+            top = skipHiddenIdx(sheet, top, true);
+            left = skipHiddenIdx(sheet, left, true, 'columns');
+        }
+        this.parent.getActiveSheet().topLeftCell = getCellAddress(top, left);
     };
     Scroll.prototype.getRowOffset = function (scrollTop, scrollDown) {
         var temp = this.offset.top.size;
@@ -12550,7 +15076,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         }
         return { idx: this.offset.top.idx, size: this.offset.top.size };
     };
-    Scroll.prototype.getColOffset = function (scrollLeft, increase) {
+    Scroll.prototype.getColOffset = function (scrollLeft, increase, skipHidden) {
         var temp = this.offset.left.size;
         var sheet = this.parent.getActiveSheet();
         var i = increase ? this.offset.left.idx + 1 : this.offset.left.idx - 1;
@@ -12566,12 +15092,12 @@ var Scroll = /** @__PURE__ @class */ (function () {
         }
         while (i < count) {
             if (increase) {
-                temp += getColumnWidth(sheet, i - 1);
+                temp += getColumnWidth(sheet, i - 1, skipHidden);
                 if (temp === scrollLeft) {
                     return { idx: i, size: temp };
                 }
                 if (temp > scrollLeft) {
-                    return { idx: i - 1, size: temp - getColumnWidth(sheet, i - 1) };
+                    return { idx: i - 1, size: temp - getColumnWidth(sheet, i - 1, skipHidden) };
                 }
                 i++;
             }
@@ -12579,14 +15105,14 @@ var Scroll = /** @__PURE__ @class */ (function () {
                 if (temp === 0) {
                     return { idx: 0, size: 0 };
                 }
-                temp -= getColumnWidth(sheet, i);
+                temp -= getColumnWidth(sheet, i, skipHidden);
                 if (temp === scrollLeft) {
                     return { idx: i, size: temp };
                 }
                 if (temp < scrollLeft) {
-                    temp += getColumnWidth(sheet, i);
+                    temp += getColumnWidth(sheet, i, skipHidden);
                     if (temp > scrollLeft) {
-                        return { idx: i, size: temp - getColumnWidth(sheet, i) };
+                        return { idx: i, size: temp - getColumnWidth(sheet, i, skipHidden) };
                     }
                     else {
                         return { idx: i + 1, size: temp };
@@ -12597,12 +15123,17 @@ var Scroll = /** @__PURE__ @class */ (function () {
         }
         return { idx: this.offset.left.idx, size: this.offset.left.size };
     };
-    Scroll.prototype.wireEvents = function () {
+    Scroll.prototype.contentLoaded = function () {
         this.onScroll = this.onContentScroll.bind(this);
-        EventHandler.add(this.parent.getMainContent(), 'scroll', this.onScroll, this);
+        this.setScrollEvent();
         if (this.parent.enableRtl) {
             this.initScrollValue = this.parent.getMainContent().scrollLeft;
         }
+    };
+    Scroll.prototype.setScrollEvent = function (args) {
+        if (args === void 0) { args = { set: true }; }
+        args.set ? EventHandler.add(this.parent.getMainContent(), 'scroll', this.onScroll, this) :
+            EventHandler.remove(this.parent.getMainContent(), 'scroll', this.onScroll);
     };
     Scroll.prototype.initProps = function () {
         this.topIndex = 0;
@@ -12637,10 +15168,11 @@ var Scroll = /** @__PURE__ @class */ (function () {
         }
     };
     Scroll.prototype.addEventListener = function () {
-        this.parent.on(contentLoaded, this.wireEvents, this);
+        this.parent.on(contentLoaded, this.contentLoaded, this);
         this.parent.on(onContentScroll, this.onContentScroll, this);
         this.parent.on(deInitProperties, this.initProps, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
+        this.parent.on(setScrollEvent, this.setScrollEvent, this);
     };
     Scroll.prototype.destroy = function () {
         EventHandler.remove(this.parent.getMainContent(), 'scroll', this.onScroll);
@@ -12648,10 +15180,11 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.parent = null;
     };
     Scroll.prototype.removeEventListener = function () {
-        this.parent.off(contentLoaded, this.wireEvents);
+        this.parent.off(contentLoaded, this.contentLoaded);
         this.parent.off(onContentScroll, this.onContentScroll);
         this.parent.off(deInitProperties, this.initProps);
         this.parent.off(spreadsheetDestroyed, this.destroy);
+        this.parent.off(setScrollEvent, this.setScrollEvent);
     };
     return Scroll;
 }());
@@ -12681,40 +15214,49 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
             this.initScroll();
         }
         var domCount = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
-        if (sheet.rowCount > domCount || sheet.usedRange.rowIndex > domCount) {
-            if (sheet.rowCount < sheet.usedRange.rowIndex) {
-                sheet.rowCount = sheet.usedRange.rowIndex;
+        if (sheet.rowCount > domCount || sheet.usedRange.rowIndex > domCount - 1) {
+            if (!this.parent.scrollSettings.isFinite && sheet.rowCount <= sheet.usedRange.rowIndex) {
+                sheet.rowCount = sheet.usedRange.rowIndex + 1;
             }
             this.setScrollCount(sheet.rowCount, 'row');
             height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
         }
         else {
-            this.scroll[this.parent.activeSheetTab - 1].rowCount = sheet.rowCount = domCount;
+            if (!this.parent.scrollSettings.isFinite) {
+                sheet.rowCount = domCount;
+            }
+            this.scroll[this.parent.activeSheetTab - 1].rowCount = sheet.rowCount;
             height = 1;
         }
         domCount = this.parent.viewport.colCount + 1 + (this.parent.getThreshold('col') * 2);
-        var size = getColumnsWidth(sheet, 0, domCount - 1);
-        if (sheet.colCount > domCount) {
-            if (sheet.colCount < sheet.usedRange.colIndex) {
-                sheet.colCount = sheet.usedRange.colIndex;
+        var size;
+        if (sheet.colCount > domCount || sheet.usedRange.colIndex > domCount - 1) {
+            if (!this.parent.scrollSettings.isFinite && sheet.colCount <= sheet.usedRange.colIndex) {
+                sheet.colCount = sheet.usedRange.colIndex + 1;
             }
+            size = getColumnsWidth(sheet, 0, domCount - 1);
             this.setScrollCount(sheet.colCount, 'col');
             width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetTab - 1].colCount - 1);
         }
         else {
-            this.scroll[this.parent.activeSheetTab - 1].colCount = sheet.colCount = domCount;
+            if (!this.parent.scrollSettings.isFinite) {
+                sheet.colCount = domCount;
+            }
+            size = getColumnsWidth(sheet, 0, sheet.colCount - 1);
+            this.scroll[this.parent.activeSheetTab - 1].colCount = sheet.colCount;
             width = size;
         }
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         if (args.startColIdx) {
             size = getColumnsWidth(sheet, args.startColIdx, args.startColIdx + domCount - 1);
         }
-        if (isNullOrUndefined(this.translateX)) {
+        if (isNullOrUndefined(this.parent.viewport.leftIndex)) {
             this.parent.viewport.leftIndex = 0;
-            this.translateX = 0;
         }
         if (isNullOrUndefined(this.parent.viewport.topIndex)) {
             this.parent.viewport.topIndex = 0;
+        }
+        if (isNullOrUndefined(this.translateX)) {
+            this.translateX = 0;
         }
         if (isNullOrUndefined(this.translateY)) {
             this.translateY = 0;
@@ -12750,17 +15292,17 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
             i++;
         }
     };
-    VirtualScroll.prototype.setScrollCount = function (count, layout) {
+    VirtualScroll.prototype.setScrollCount = function (count$$1, layout) {
         var activeSheetIdx = this.parent.activeSheetTab - 1;
         if (!this.scroll[activeSheetIdx][layout + 'Count']) {
-            this.scroll[activeSheetIdx][layout + 'Count'] = count;
+            this.scroll[activeSheetIdx][layout + 'Count'] = count$$1;
         }
     };
-    VirtualScroll.prototype.getAddress = function (topIdx) {
-        return getCellAddress(topIdx[0], this.parent.viewport.leftIndex) + ":" + getCellAddress(topIdx[1], this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2));
+    VirtualScroll.prototype.getRowAddress = function (indexes) {
+        return getRangeAddress([indexes[0], this.parent.viewport.leftIndex, indexes[1], this.parent.viewport.rightIndex]);
     };
-    VirtualScroll.prototype.getColAddress = function (leftIdx) {
-        return getCellAddress(this.parent.viewport.topIndex, leftIdx[0]) + ":" + getCellAddress(this.parent.viewport.topIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2), leftIdx[1]);
+    VirtualScroll.prototype.getColAddress = function (indexes) {
+        return getRangeAddress([this.parent.viewport.topIndex, indexes[0], this.parent.viewport.bottomIndex, indexes[1]]);
     };
     VirtualScroll.prototype.updateScrollCount = function (idx, layout, threshold) {
         if (threshold === void 0) { threshold = idx; }
@@ -12775,7 +15317,6 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
         if (!this.parent.scrollSettings.isFinite) {
             sheet[layout + 'Count'] = rowCount;
-            this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
     };
     VirtualScroll.prototype.onVerticalScroll = function (args) {
@@ -12796,17 +15337,21 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
                         if (!args.preventScroll) {
                             if (idxDiff < this.parent.viewport.rowCount + threshold) {
                                 lastIdx = this.parent.viewport.topIndex - 1;
-                                startIdx = this.parent.skipHiddenRows(0, lastIdx)[0];
+                                startIdx = this.parent.skipHidden(0, lastIdx)[0];
                                 this.parent.viewport.topIndex = startIdx;
-                                var hiddenCount = this.checkHiddenCount(startIdx, lastIdx);
-                                var skippedHiddenIdx = this.checkHiddenIndex(this.parent.getActiveSheet(), (this.parent.viewport.bottomIndex - ((lastIdx - startIdx + 1) - hiddenCount)), args.increase);
+                                var hiddenCount = this.hiddenCount(startIdx, lastIdx);
+                                var skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.bottomIndex - ((lastIdx - startIdx + 1) - hiddenCount)), args.increase);
                                 this.parent.viewport.bottomIndex -= (((lastIdx - startIdx + 1) - hiddenCount) +
-                                    (this.checkHiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
-                                this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: 'last', refresh: 'RowPart' }, this.getAddress([0, lastIdx]));
+                                    (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
+                                this.parent.renderModule.refreshUI({
+                                    colIndex: this.parent.viewport.leftIndex, rowIndex: startIdx, direction: 'last', refresh: 'RowPart',
+                                    skipUpdateOnFirst: true
+                                }, this.getRowAddress([0, this.skipHiddenIdx(lastIdx, false)]));
                             }
                             else {
-                                this.parent.renderModule.refreshUI({ rowIndex: 0, colIndex: this.parent.viewport.leftIndex, refresh: 'Row' });
+                                this.parent.renderModule.refreshUI({ rowIndex: 0, colIndex: this.parent.viewport.leftIndex, refresh: 'Row', skipUpdateOnFirst: true });
                             }
+                            this.parent.element.focus();
                         }
                     }
                     this.updateScrollCount(threshold, 'row');
@@ -12828,54 +15373,56 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
                         if (args.increase) {
                             startIdx = this.parent.viewport.bottomIndex + 1;
                             lastIdx = this.parent.viewport.bottomIndex + (this.parent.viewport.topIndex - prevTopIdx);
-                            lastIdx -= this.checkHiddenCount(prevTopIdx, this.parent.viewport.topIndex - 1);
-                            this.parent.viewport.topIndex = this.checkHiddenIndex(this.parent.getActiveSheet(), this.parent.viewport.topIndex, args.increase);
-                            if (lastIdx === this.parent.viewport.bottomIndex) {
+                            lastIdx -= this.hiddenCount(prevTopIdx, this.parent.viewport.topIndex - 1);
+                            this.parent.viewport.topIndex = this.skipHiddenIdx(this.parent.viewport.topIndex, args.increase);
+                            if (lastIdx <= this.parent.viewport.bottomIndex) {
                                 return;
                             }
-                            var indexes = this.parent.skipHiddenRows(startIdx, lastIdx);
+                            var indexes = this.parent.skipHidden(startIdx, lastIdx);
                             startIdx = indexes[0];
-                            lastIdx = indexes[1];
-                            lastIdx = this.checkLastIdx(lastIdx, 'row');
+                            lastIdx = this.checkLastIdx(indexes[1], 'row');
                             this.parent.viewport.bottomIndex = lastIdx;
-                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: 'first', refresh: 'RowPart' }, this.getAddress([startIdx, lastIdx]));
+                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, rowIndex: startIdx, direction: 'first', refresh: 'RowPart' }, this.getRowAddress([startIdx, lastIdx]));
                         }
                         else {
                             startIdx = this.parent.viewport.topIndex;
                             lastIdx = startIdx + idxDiff - 1;
-                            var hiddenCount = this.checkHiddenCount(startIdx, lastIdx);
-                            var skippedHiddenIdx = this.checkHiddenIndex(this.parent.getActiveSheet(), (this.parent.viewport.bottomIndex - ((lastIdx - startIdx) - hiddenCount)), args.increase);
+                            var hiddenCount = this.hiddenCount(startIdx, lastIdx);
+                            var skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.bottomIndex - ((lastIdx - startIdx) - hiddenCount)), args.increase);
                             this.parent.viewport.bottomIndex -= ((idxDiff - hiddenCount) +
-                                (this.checkHiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
-                            startIdx = this.parent.skipHiddenRows(startIdx, lastIdx)[0];
+                                (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex)));
+                            startIdx = this.parent.skipHidden(startIdx, lastIdx)[0];
                             this.parent.viewport.topIndex = startIdx;
-                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: 'last', refresh: 'RowPart' }, this.getAddress([startIdx, lastIdx]));
+                            this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, rowIndex: startIdx, direction: 'last', refresh: 'RowPart' }, this.getRowAddress([startIdx, lastIdx]));
                         }
                     }
                     else {
                         this.parent.renderModule.refreshUI({
-                            rowIndex: this.parent.viewport.topIndex,
-                            colIndex: this.parent.viewport.leftIndex, refresh: 'Row'
+                            rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row'
                         });
                     }
                     this.updateScrollCount(idx, 'row', threshold);
+                    this.parent.element.focus();
                 }
             }
             args.prev.idx = idx;
         }
     };
-    VirtualScroll.prototype.checkHiddenIndex = function (sheet, index, increase) {
-        if (isHiddenRow(sheet, index)) {
+    VirtualScroll.prototype.skipHiddenIdx = function (index, increase, layout, sheet) {
+        if (layout === void 0) { layout = 'rows'; }
+        if (sheet === void 0) { sheet = this.parent.getActiveSheet(); }
+        if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
             increase ? index++ : index--;
-            index = this.checkHiddenIndex(sheet, index, increase);
+            index = this.skipHiddenIdx(index, increase, layout, sheet);
         }
         return index;
     };
-    VirtualScroll.prototype.checkHiddenCount = function (startIdx, endIdx) {
+    VirtualScroll.prototype.hiddenCount = function (startIdx, endIdx, layout) {
+        if (layout === void 0) { layout = 'rows'; }
         var index = 0;
         var sheet = this.parent.getActiveSheet();
         for (var i = startIdx; i <= endIdx; i++) {
-            if (isHiddenRow(sheet, i)) {
+            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
                 index++;
             }
         }
@@ -12883,9 +15430,9 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
     };
     VirtualScroll.prototype.checkLastIdx = function (idx, layout) {
         if (this.parent.scrollSettings.isFinite) {
-            var count = this.parent.getActiveSheet()[layout + 'Count'] - 1;
-            if (idx > count) {
-                idx = count;
+            var count$$1 = this.parent.getActiveSheet()[layout + 'Count'] - 1;
+            if (idx > count$$1) {
+                idx = count$$1;
             }
         }
         return idx;
@@ -12897,51 +15444,81 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var idxDiff = Math.abs(idx - prevIdx);
         var threshold = this.parent.getThreshold('col');
         if (idxDiff > Math.round(threshold / 2)) {
+            var startIdx = void 0;
+            var endIdx = void 0;
+            var prevLeftIdx = void 0;
             if (idx <= threshold) {
                 if (!args.increase) {
-                    this.updateScrollCount(threshold, 'col');
                     if (this.translateX && prevIdx > threshold) {
                         this.translateX = 0;
                         this.parent.viewport.leftIndex = prevIdx - threshold;
-                        if (idxDiff < this.parent.viewport.rowCount + threshold) {
-                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: 0, direction: 'last', refresh: 'ColumnPart' }, this.getColAddress([0, this.parent.viewport.leftIndex - 1]));
+                        if (!args.preventScroll) {
+                            if (idxDiff < this.parent.viewport.colCount + threshold) {
+                                endIdx = this.parent.viewport.leftIndex - 1;
+                                startIdx = this.parent.skipHidden(0, endIdx, 'columns')[0];
+                                this.parent.viewport.leftIndex = startIdx;
+                                var hiddenCount = this.hiddenCount(startIdx, endIdx, 'columns');
+                                var skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.rightIndex - ((endIdx - startIdx + 1) - hiddenCount)), args.increase, 'columns');
+                                this.parent.viewport.rightIndex -= (((endIdx - startIdx + 1) - hiddenCount) +
+                                    (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.rightIndex, 'columns')));
+                                this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: startIdx, direction: 'last', refresh: 'ColumnPart',
+                                    skipUpdateOnFirst: true }, this.getColAddress([0, this.skipHiddenIdx(endIdx, false, 'columns')]));
+                            }
+                            else {
+                                this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: 0, refresh: 'Column', skipUpdateOnFirst: true });
+                            }
+                            this.parent.element.focus();
                         }
-                        else {
-                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: 0, refresh: 'Column' });
-                        }
-                        this.parent.viewport.leftIndex = 0;
                     }
+                    this.updateScrollCount(threshold, 'col');
                 }
             }
             if (prevIdx < threshold) {
                 idxDiff = Math.abs(idx - threshold);
             }
             if (idx > threshold) {
-                this.updateScrollCount(args.cur.idx, 'col', threshold);
+                prevLeftIdx = this.parent.viewport.leftIndex;
                 this.parent.viewport.leftIndex = idx - threshold;
+                if (args.increase && prevLeftIdx > this.parent.viewport.leftIndex) {
+                    this.parent.viewport.leftIndex = prevLeftIdx;
+                    return;
+                }
                 this.translateX = width - this.getThresholdWidth(this.parent.viewport.leftIndex, threshold);
                 if (!args.preventScroll) {
                     if (idxDiff < this.parent.viewport.colCount + threshold) {
                         if (args.increase) {
-                            var lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (threshold * 2);
-                            this.parent.renderModule.refreshUI({
-                                rowIndex: this.parent.viewport.topIndex, colIndex: lastIdx - idxDiff + 1,
-                                direction: 'first', refresh: 'ColumnPart'
-                            }, this.getColAddress([lastIdx - idxDiff + 1, this.checkLastIdx(lastIdx, 'col')]));
+                            startIdx = this.parent.viewport.rightIndex + 1;
+                            endIdx = this.parent.viewport.rightIndex + (this.parent.viewport.leftIndex - prevLeftIdx);
+                            endIdx -= this.hiddenCount(prevLeftIdx, this.parent.viewport.leftIndex - 1, 'columns');
+                            this.parent.viewport.leftIndex = this.skipHiddenIdx(this.parent.viewport.leftIndex, args.increase, 'columns');
+                            if (endIdx <= this.parent.viewport.rightIndex) {
+                                return;
+                            }
+                            var indexes = this.parent.skipHidden(startIdx, endIdx, 'columns');
+                            startIdx = indexes[0];
+                            endIdx = this.checkLastIdx(indexes[1], 'col');
+                            this.parent.viewport.rightIndex = endIdx;
+                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: startIdx, direction: 'first', refresh: 'ColumnPart' }, this.getColAddress([startIdx, endIdx]));
                         }
                         else {
-                            this.parent.renderModule.refreshUI({
-                                rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex,
-                                direction: 'last', refresh: 'ColumnPart'
-                            }, this.getColAddress([this.parent.viewport.leftIndex, this.parent.viewport.leftIndex + idxDiff - 1]));
+                            startIdx = this.parent.viewport.leftIndex;
+                            endIdx = startIdx + idxDiff - 1;
+                            var hiddenCount = this.hiddenCount(startIdx, endIdx, 'columns');
+                            var skippedHiddenIdx = this.skipHiddenIdx((this.parent.viewport.rightIndex - ((endIdx - startIdx) - hiddenCount)), args.increase, 'columns');
+                            this.parent.viewport.rightIndex -= ((idxDiff - hiddenCount) +
+                                (this.hiddenCount(skippedHiddenIdx, this.parent.viewport.rightIndex, 'columns')));
+                            startIdx = this.parent.skipHidden(startIdx, endIdx, 'columns')[0];
+                            this.parent.viewport.leftIndex = startIdx;
+                            this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: startIdx, direction: 'last', refresh: 'ColumnPart' }, this.getColAddress([startIdx, endIdx]));
                         }
                     }
                     else {
                         this.parent.renderModule.refreshUI({
-                            rowIndex: this.parent.viewport.topIndex,
-                            colIndex: this.parent.viewport.leftIndex, refresh: 'Column'
+                            rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column'
                         });
                     }
+                    this.updateScrollCount(idx, 'col', threshold);
+                    this.parent.element.focus();
                 }
             }
             args.prev.idx = idx;
@@ -12995,9 +15572,14 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
         var sheet = this.parent.getActiveSheet();
         if (args.update === 'row') {
-            if (args.index > this.scroll[this.parent.activeSheetTab - 1].rowCount) {
+            if (args.index !== this.scroll[this.parent.activeSheetTab - 1].rowCount - 1) {
                 var height = this.getVTrackHeight('height');
-                height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetTab - 1].rowCount, args.index);
+                if (args.index >= this.scroll[this.parent.activeSheetTab - 1].rowCount) {
+                    height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetTab - 1].rowCount, args.index);
+                }
+                else {
+                    height -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
+                }
                 this.scroll[this.parent.activeSheetTab - 1].rowCount = args.index + 1;
                 this.updateVTrack(this.rowHeader, height, 'height');
                 if (this.scroll[this.parent.activeSheetTab - 1].rowCount > sheet.rowCount) {
@@ -13036,7 +15618,15 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         container.appendChild(colVTrack);
     };
     VirtualScroll.prototype.getVTrackHeight = function (str) {
-        return parseInt(this.content.nextElementSibling.style[str], 10);
+        var height = this.content.nextElementSibling.style[str];
+        if (height.includes('e+')) {
+            height = height.split('px')[0];
+            var heightArr = height.split('e+');
+            return Number(heightArr[0]) * Math.pow(10, Number(heightArr[1]));
+        }
+        else {
+            return parseInt(height, 10);
+        }
     };
     VirtualScroll.prototype.updateVTrackHeight = function (args) {
         var domCount = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
@@ -13045,9 +15635,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
     };
     VirtualScroll.prototype.updateVTrackWidth = function (args) {
-        var threshold = this.parent.getThreshold('col');
-        var lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (threshold * 2);
-        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= lastIdx) {
+        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex) {
             var hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
             hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
             var cntVTrack = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0];
@@ -13072,12 +15660,13 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         this.translateY = null;
     };
     VirtualScroll.prototype.updateScrollProps = function (args) {
-        if (args === void 0) { args = { sheetIndex: 0 }; }
+        var _this = this;
+        if (args === void 0) { args = { sheetIndex: 0, sheets: this.parent.sheets }; }
         if (this.scroll.length === 0) {
             this.initScroll();
         }
         else {
-            this.scroll.splice(args.sheetIndex, 0, { rowCount: 0, colCount: 0 });
+            args.sheets.forEach(function () { _this.scroll.splice(args.sheetIndex, 0, { rowCount: 0, colCount: 0 }); });
         }
     };
     VirtualScroll.prototype.sliceScrollProps = function (args) {
@@ -13222,7 +15811,6 @@ var KeyboardNavigation = /** @__PURE__ @class */ (function () {
             if (isNavigate) {
                 this.scrollNavigation(scrollIdxes || actIdxes, scrollIdxes ? true : false);
                 sheet.activeCell = getRangeAddress(actIdxes);
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.parent.notify(cellNavigate, { range: actIdxes });
             }
         }
@@ -13312,26 +15900,9 @@ var KeyboardShortcut = /** @__PURE__ @class */ (function () {
     };
     KeyboardShortcut.prototype.keyDownHandler = function (e) {
         if (e.ctrlKey) {
-            if ([79, 83, 65].indexOf(e.keyCode) > -1) {
-                e.preventDefault();
-            }
-            if (e.keyCode === 75) {
-                var sheet = this.parent.getActiveSheet();
-                var indexes = getCellIndexes(sheet.activeCell);
-                var row = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
-                var cell = void 0;
-                if (!isNullOrUndefined(row)) {
-                    cell = row.cells[indexes[1]];
-                }
-                if (isNullOrUndefined(cell)) {
-                    setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
-                }
-                e.preventDefault();
-                if (cell && cell.hyperlink) {
-                    this.parent.notify(editHyperlink, null);
-                }
-                else {
-                    this.parent.notify(initiateHyperlink, null);
+            if (!closest(e.target, '.e-find-dlg')) {
+                if ([79, 83, 65].indexOf(e.keyCode) > -1) {
+                    e.preventDefault();
                 }
             }
             if (e.keyCode === 79) {
@@ -13342,52 +15913,88 @@ var KeyboardShortcut = /** @__PURE__ @class */ (function () {
                     this.parent.save();
                 }
             }
-            else if (e.keyCode === 88) {
-                this.parent.notify(cut, { promise: Promise });
-            }
             else if (e.keyCode === 67) {
                 this.parent.notify(copy, { promise: Promise });
             }
-            else if (e.keyCode === 86) {
-                this.parent.notify(paste, { isAction: true });
-            }
-            else if (e.keyCode === 66) {
+            else if (e.keyCode === 75) {
+                var sheet = this.parent.getActiveSheet();
+                var indexes = getCellIndexes(sheet.activeCell);
+                var row = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+                var cell = void 0;
                 e.preventDefault();
-                var value = this.parent.getCellStyleValue(['fontWeight'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontWeight;
-                value = value === 'bold' ? 'normal' : 'bold';
-                this.parent.notify(setCellFormat, { style: { fontWeight: value }, onActionUpdate: true, refreshRibbon: true });
-            }
-            else if (e.keyCode === 73) {
-                e.preventDefault();
-                var value = this.parent.getCellStyleValue(['fontStyle'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontStyle;
-                value = value === 'italic' ? 'normal' : 'italic';
-                this.parent.notify(setCellFormat, { style: { fontStyle: value }, onActionUpdate: true, refreshRibbon: true });
-            }
-            else if (e.keyCode === 85) {
-                e.preventDefault();
-                this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'underline' }, refreshRibbon: true });
-            }
-            else if (e.keyCode === 53) {
-                e.preventDefault();
-                this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'line-through' }, refreshRibbon: true });
-            }
-            else if (e.keyCode === 90) { /* Ctrl + Z */
-                if (!this.parent.isEdit) {
-                    e.preventDefault();
-                    this.parent.notify(performUndoRedo, { isUndo: true });
+                if (!isNullOrUndefined(row)) {
+                    cell = row.cells[indexes[1]];
+                }
+                if (isNullOrUndefined(cell)) {
+                    setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
+                }
+                if (cell && cell.hyperlink) {
+                    this.parent.notify(editHyperlink, null);
+                }
+                else {
+                    this.parent.notify(initiateHyperlink, null);
                 }
             }
-            else if (e.keyCode === 89) { /* Ctrl + Y */
-                if (!this.parent.isEdit) {
+            if (!this.parent.getActiveSheet().isProtected) {
+                if (e.keyCode === 70) {
                     e.preventDefault();
-                    this.parent.notify(performUndoRedo, { isUndo: false });
+                    var toolBarElem = document.querySelector('.e-spreadsheet-find-ddb');
+                    if (!isNullOrUndefined(toolBarElem)) {
+                        toolBarElem.click();
+                    }
                 }
-            }
-            if (e.shiftKey) {
-                if (e.keyCode === 76) { /* Ctrl + Shift + L */
+                else if (e.keyCode === 71) {
+                    e.preventDefault();
+                    this.parent.notify(gotoDlg, null);
+                }
+                else if (e.keyCode === 72) {
+                    e.preventDefault();
+                    this.parent.notify(findDlg, null);
+                }
+                else if (e.keyCode === 88) {
+                    this.parent.notify(cut, { promise: Promise });
+                }
+                else if (e.keyCode === 86) {
+                    this.parent.notify(paste, { isAction: true });
+                }
+                else if (e.keyCode === 66) {
+                    e.preventDefault();
+                    var value = this.parent.getCellStyleValue(['fontWeight'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontWeight;
+                    value = value === 'bold' ? 'normal' : 'bold';
+                    this.parent.notify(setCellFormat, { style: { fontWeight: value }, onActionUpdate: true, refreshRibbon: true });
+                }
+                else if (e.keyCode === 73) {
+                    e.preventDefault();
+                    var value = this.parent.getCellStyleValue(['fontStyle'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontStyle;
+                    value = value === 'italic' ? 'normal' : 'italic';
+                    this.parent.notify(setCellFormat, { style: { fontStyle: value }, onActionUpdate: true, refreshRibbon: true });
+                }
+                else if (e.keyCode === 85) {
+                    e.preventDefault();
+                    this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'underline' }, refreshRibbon: true });
+                }
+                else if (e.keyCode === 53) {
+                    e.preventDefault();
+                    this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'line-through' }, refreshRibbon: true });
+                }
+                else if (e.keyCode === 90) { /* Ctrl + Z */
                     if (!this.parent.isEdit) {
                         e.preventDefault();
-                        this.parent.applyFilter();
+                        this.parent.notify(performUndoRedo, { isUndo: true });
+                    }
+                }
+                else if (e.keyCode === 89) { /* Ctrl + Y */
+                    if (!this.parent.isEdit) {
+                        e.preventDefault();
+                        this.parent.notify(performUndoRedo, { isUndo: false });
+                    }
+                }
+                if (e.shiftKey) {
+                    if (e.keyCode === 76) { /* Ctrl + Shift + L */
+                        if (!this.parent.isEdit) {
+                            e.preventDefault();
+                            this.parent.applyFilter();
+                        }
                     }
                 }
             }
@@ -13412,100 +16019,97 @@ var KeyboardShortcut = /** @__PURE__ @class */ (function () {
 var CellFormat = /** @__PURE__ @class */ (function () {
     function CellFormat(parent) {
         this.checkHeight = false;
-        //Spreadsheet.Inject(WorkbookCellFormat);
         this.parent = parent;
         this.row = parent.createElement('tr', { className: 'e-row' });
-        this.addEventListener();
+        this.parent.on(initialLoad, this.addEventListener, this);
     }
     CellFormat.prototype.applyCellFormat = function (args) {
         var keys = Object.keys(args.style);
-        if (args.lastCell && !this.row.childElementCount && !keys.length) {
+        var sheet = this.parent.getActiveSheet();
+        if (args.lastCell && getMaxHgt(sheet, args.rowIdx) <= 20 && !keys.length) {
             return;
         }
         var cell = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
-            Object.assign(cell.style, args.style);
-            if (args.isHeightCheckNeeded) {
-                if (!args.manualUpdate) {
-                    if (this.isHeightCheckNeeded(args.style)) {
-                        var clonedCell = cell.cloneNode(true);
-                        if (!clonedCell.innerHTML) {
-                            clonedCell.textContent = 'Test';
-                        }
-                        this.row.appendChild(clonedCell);
-                    }
-                    if (args.lastCell && this.row.childElementCount) {
-                        var sheet = this.parent.getActiveSheet();
-                        var row = this.parent.getRow(args.rowIdx) || args.row;
-                        var prevHeight = getRowHeight(sheet, args.rowIdx);
-                        var height = this.getRowHeightOnInit();
-                        if (height > prevHeight) {
-                            row.style.height = height + "px";
-                            if (sheet.showHeaders) {
-                                (this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable()) || args.hRow).style.height =
-                                    height + "px";
-                            }
-                            setRowHeight(sheet, args.rowIdx, height);
-                        }
-                        this.row.innerHTML = '';
-                    }
+            if (args.style.border !== undefined || args.style.borderTop !== undefined || args.style.borderLeft !== undefined) {
+                var curStyle_1 = {};
+                Object.keys(args.style).forEach(function (key) { curStyle_1[key] = args.style[key]; });
+                if (curStyle_1.border !== undefined) {
+                    Object.assign(cell.style, { borderRight: args.style.border, borderBottom: args.style.border });
+                    this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    this.setTopBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first, args.lastCell, args.manualUpdate);
+                    delete curStyle_1.border;
                 }
-                else {
-                    var idx = void 0;
-                    if (this.parent.scrollSettings.enableVirtualization) {
-                        idx = args.rowIdx - this.parent.viewport.topIndex;
+                if (curStyle_1.borderTop !== undefined) {
+                    this.setTopBorder(args.style.borderTop, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first, args.lastCell, args.manualUpdate);
+                    delete curStyle_1.borderTop;
+                }
+                if (curStyle_1.borderLeft !== undefined) {
+                    this.setLeftBorder(args.style.borderLeft, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    delete curStyle_1.borderLeft;
+                }
+                if (Object.keys(curStyle_1).length) {
+                    if (curStyle_1.borderBottom !== undefined) {
+                        this.setThickBorderHeight(curStyle_1.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell, args.manualUpdate);
                     }
-                    if (!this.checkHeight) {
-                        this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
-                    }
-                    if (isNullOrUndefined(this.parent.getActiveSheet().rows[idx]) ||
-                        isNullOrUndefined(this.parent.getActiveSheet().rows[idx].customHeight)) {
-                        this.updateRowHeight(cell, args.rowIdx, args.lastCell, args.onActionUpdate);
+                    Object.assign(cell.style, curStyle_1);
+                }
+            }
+            else {
+                if (args.style.borderBottom !== undefined) {
+                    this.setThickBorderHeight(args.style.borderBottom, args.rowIdx, args.colIdx, cell, args.row, args.hRow, args.onActionUpdate, args.lastCell, args.manualUpdate);
+                }
+                Object.assign(cell.style, args.style);
+            }
+            if (args.isHeightCheckNeeded) {
+                if (!sheet.rows[args.rowIdx] || !sheet.rows[args.rowIdx].customHeight) {
+                    if (!args.manualUpdate) {
+                        var cellModel = getCell(args.rowIdx, args.colIdx, sheet);
+                        if (!(cellModel && cellModel.wrap) && this.isHeightCheckNeeded(args.style)) {
+                            setMaxHgt(sheet, args.rowIdx, args.colIdx, getTextHeight(this.parent, args.style));
+                        }
+                        if (args.lastCell) {
+                            var height = getMaxHgt(sheet, args.rowIdx);
+                            if (height > 20 && height > getRowHeight(sheet, args.rowIdx)) {
+                                setRowEleHeight(this.parent, sheet, height, args.rowIdx, args.row, args.hRow, false);
+                            }
+                        }
                     }
                     else {
-                        cell.parentElement.style.lineHeight = parseInt(cell.parentElement.style.height, 10) - 1 + 'px';
+                        if (!this.checkHeight) {
+                            this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
+                        }
+                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
                     }
                 }
             }
         }
         else {
-            this.updateRowHeight(cell, args.rowIdx, true, args.onActionUpdate);
+            this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate);
         }
     };
-    CellFormat.prototype.updateRowHeight = function (cell, rowIdx, isLastCell, onActionUpdate) {
-        if (this.checkHeight && isLastCell) {
+    CellFormat.prototype.updateRowHeight = function (rowIdx, colIdx, isLastCell, onActionUpdate, borderSize) {
+        if (borderSize === void 0) { borderSize = 0; }
+        if (this.checkHeight) {
             this.checkHeight = false;
+            var hgt = 0;
+            var maxHgt = void 0;
             var sheet = this.parent.getActiveSheet();
-            var row = this.parent.getRow(rowIdx);
-            if (!row) {
-                return;
-            }
-            if (!cell) {
-                cell = row.lastElementChild;
-            }
-            var test = false;
-            row.style.height = '';
-            if (!cell.innerHTML) {
-                cell.textContent = 'test';
-                test = true;
-            }
-            var height = Math.ceil(row.getBoundingClientRect().height);
-            if (test) {
-                cell.textContent = '';
-            }
-            height = height < 20 ? 20 : height;
-            var prevHeight = getRowHeight(sheet, rowIdx);
-            var heightChanged = onActionUpdate ? height !== prevHeight : height > prevHeight;
-            if (heightChanged) {
-                row.style.height = height + "px";
-                if (sheet.showHeaders) {
-                    this.parent.getRow(rowIdx, this.parent.getRowHeaderTable()).style.height = height + "px";
+            var cell = getCell(rowIdx, colIdx, sheet);
+            hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
+                getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
+            setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
+            if (isLastCell) {
+                var row = this.parent.getRow(rowIdx);
+                if (!row) {
+                    return;
                 }
-                setRowHeight(sheet, rowIdx, height);
-                this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - prevHeight });
-            }
-            else {
-                row.style.height = prevHeight + "px";
+                var prevHeight = getRowHeight(sheet, rowIdx);
+                maxHgt = getMaxHgt(sheet, rowIdx);
+                var heightChanged = onActionUpdate ? maxHgt !== prevHeight : maxHgt > prevHeight;
+                if (heightChanged) {
+                    setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row);
+                }
             }
         }
     };
@@ -13514,21 +16118,81 @@ var CellFormat = /** @__PURE__ @class */ (function () {
         return (onActionUpdate ? keys.indexOf('fontSize') > -1 : keys.indexOf('fontSize') > -1
             && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1;
     };
-    CellFormat.prototype.getRowHeightOnInit = function () {
-        var table = this.parent.createElement('table', { className: 'e-table e-test-table' });
-        var tBody = table.appendChild(this.parent.createElement('tbody'));
-        tBody.appendChild(this.row);
-        this.parent.element.appendChild(table);
-        var height = Math.round(this.row.getBoundingClientRect().height);
-        this.parent.element.removeChild(table);
-        return height < 20 ? 20 : height;
+    CellFormat.prototype.setLeftBorder = function (border, cell, rowIdx, colIdx, row, actionUpdate, first) {
+        if (first.includes('Column')) {
+            return;
+        }
+        var prevCell = this.parent.getCell(rowIdx, colIdx - 1, row);
+        if (prevCell) {
+            if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
+                this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
+            }
+            prevCell.style.borderRight = border;
+        }
+        else {
+            cell.style.borderLeft = border;
+        }
+    };
+    CellFormat.prototype.setTopBorder = function (border, cell, rowIdx, colIdx, pRow, pHRow, actionUpdate, first, lastCell, manualUpdate) {
+        if (first.includes('Row')) {
+            return;
+        }
+        var prevCell = this.parent.getCell(rowIdx - 1, colIdx, pRow);
+        if (prevCell) {
+            if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
+                var index = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
+                if (this.parent.getCellStyleValue(['bottomPriority'], index).bottomPriority) {
+                    return;
+                }
+            }
+            if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes("" + (rowIdx + 1))) {
+                this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
+            }
+            this.setThickBorderHeight(border, rowIdx - 1, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+            prevCell.style.borderBottom = border;
+        }
+        else {
+            cell.style.borderTop = border;
+        }
+    };
+    CellFormat.prototype.setThickBorderHeight = function (border, rowIdx, colIdx, cell, row, hRow, actionUpdate, lastCell, manualUpdate) {
+        var size = border ? this.getBorderSize(border) : 1;
+        var sheet = this.parent.getActiveSheet();
+        if (size > 2 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+            if (manualUpdate) {
+                if (!this.checkHeight) {
+                    this.checkHeight = true;
+                }
+                this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+            }
+            else {
+                var prevHeight = getRowHeight(sheet, rowIdx);
+                var height = Math.ceil(this.parent.calculateHeight(this.parent.getCellStyleValue(['fontFamily', 'fontSize'], [rowIdx, colIdx]), 1, 3));
+                if (height > prevHeight) {
+                    setRowEleHeight(this.parent, sheet, height, rowIdx, row, hRow, false);
+                    this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - 20 });
+                }
+            }
+        }
+        if (actionUpdate && (lastCell || !this.checkHeight) && size < 3 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+            if (!this.checkHeight) {
+                this.checkHeight = true;
+            }
+            this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+        }
+    };
+    CellFormat.prototype.getBorderSize = function (border) {
+        var size = border.split(' ')[0];
+        return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
+            (parseInt(size, 10) ? parseInt(size, 10) : 1)));
     };
     CellFormat.prototype.addEventListener = function () {
-        this.parent.on(applyCellFormat, this.applyCellFormat.bind(this));
+        this.parent.on(applyCellFormat, this.applyCellFormat, this);
     };
     CellFormat.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
-            this.parent.on(applyCellFormat, this.applyCellFormat.bind(this));
+            this.parent.off(initialLoad, this.addEventListener);
+            this.parent.off(applyCellFormat, this.applyCellFormat);
         }
     };
     /**
@@ -13568,11 +16232,11 @@ var Resize = /** @__PURE__ @class */ (function () {
         this.parent.on(setAutoFit, this.setAutoFitHandler, this);
     };
     Resize.prototype.autoFit = function (args) {
-        args.isRow = args.isRow ? false : true;
-        var rowHdrTable = this.parent.getRowHeaderTable();
+        var element = args.isRow ? this.parent.getRowHeaderTable() : this.parent.getColHeaderTable().rows[0];
         for (var i = args.startIndex; i <= args.endIndex; i++) {
-            this.trgtEle = this.parent.getRow(i, rowHdrTable);
-            this.setAutofit(i, args.isRow);
+            this.trgtEle = args.isRow ? this.parent.getRow(i, element) :
+                this.parent.getCell(null, i, element);
+            this.setAutofit(i, !args.isRow);
         }
     };
     Resize.prototype.wireEvents = function (args) {
@@ -13632,11 +16296,11 @@ var Resize = /** @__PURE__ @class */ (function () {
     Resize.prototype.mouseDownHandler = function (e) {
         this.event = e;
         this.trgtEle = e.target;
-        if (this.trgtEle.parentElement.classList.contains('e-hide-end')) {
-            var offset = this.trgtEle.offsetHeight;
-            var offsetY = e.offsetY;
-            if ((offset >= 10 && offsetY < 5) || (offset - 2 < 8 && offsetY < Math.ceil((offset - 2) / 2))) {
-                this.trgtEle.parentElement.classList.add('e-skip-resize');
+        if (this.trgtEle.parentElement.classList.contains('e-hide-end') || this.trgtEle.classList.contains('e-hide-end')) {
+            var offsetSize = this.trgtEle.offsetHeight;
+            var offset = e.offsetY;
+            if ((offsetSize >= 10 && offset < 5) || (offsetSize - 2 < 8 && offset < Math.ceil((offset - 2) / 2))) {
+                this.trgtEle.classList.add('e-skip-resize');
             }
         }
         this.updateTarget(e, this.trgtEle);
@@ -13665,22 +16329,40 @@ var Resize = /** @__PURE__ @class */ (function () {
     Resize.prototype.dblClickHandler = function (e) {
         this.trgtEle = e.target;
         this.updateTarget(e, this.trgtEle);
-        var trgt = this.trgtEle;
-        if (trgt.classList.contains('e-colresize') || trgt.classList.contains('e-rowresize')) {
-            var colIndx = parseInt(trgt.getAttribute('aria-colindex'), 10) - 1;
+        if (this.trgtEle.classList.contains('e-colresize')) {
+            var colIndx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+            var prevWidth = getColumnWidth(this.parent.getActiveSheet(), colIndx) + "px";
+            if (this.trgtEle.classList.contains('e-unhide-column')) {
+                this.showHiddenColumns(colIndx - 1);
+            }
+            else {
+                this.setAutofit(colIndx, true, prevWidth);
+            }
+        }
+        else if (this.trgtEle.classList.contains('e-rowresize')) {
             var rowIndx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
-            if (trgt.classList.contains('e-colresize')) {
-                var prevWdt = getColumnWidth(this.parent.getActiveSheet(), colIndx) + "px";
-                this.setAutofit(colIndx, true, prevWdt);
-            }
-            else if (trgt.classList.contains('e-rowresize')) {
-                var prevHgt = getRowHeight(this.parent.getActiveSheet(), rowIndx) + "px";
-                this.setAutofit(rowIndx, false, prevHgt);
-            }
+            var prevHeight = getRowHeight(this.parent.getActiveSheet(), rowIndx) + "px";
+            this.setAutofit(rowIndx, false, prevHeight);
         }
     };
     Resize.prototype.setTarget = function (e) {
         var trgt = e.target;
+        var sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected && (!sheet.protectSettings.formatColumns || !sheet.protectSettings.formatRows)) {
+            if (!sheet.protectSettings.formatRows && !sheet.protectSettings.formatColumns) {
+                return;
+            }
+            if (sheet.protectSettings.formatRows) {
+                if (closest(trgt, '.e-colhdr-table')) {
+                    return;
+                }
+            }
+            if (sheet.protectSettings.formatColumns) {
+                if (closest(trgt, '.e-rowhdr-table')) {
+                    return;
+                }
+            }
+        }
         var newTrgt;
         var tOffsetV;
         var eOffsetV;
@@ -13689,23 +16371,26 @@ var Resize = /** @__PURE__ @class */ (function () {
             eOffsetV = e.offsetX;
             tOffsetV = trgt.offsetWidth;
             tClass = 'e-colresize';
-            if (!isNullOrUndefined(trgt.previousElementSibling)) {
+            if (trgt.previousElementSibling) {
                 newTrgt = trgt.previousElementSibling;
+            }
+            else {
+                if (Number(trgt.getAttribute('aria-colindex')) > 1) {
+                    newTrgt = trgt;
+                }
             }
         }
         else if (closest(trgt, '.e-row')) {
             eOffsetV = e.offsetY;
             tOffsetV = trgt.offsetHeight;
             tClass = 'e-rowresize';
-            if (isNullOrUndefined(trgt.parentElement.previousElementSibling)) {
-                var idx = Number(trgt.parentElement.getAttribute('aria-rowindex'));
-                if (idx > 1) {
-                    newTrgt = trgt;
-                }
+            if (trgt.parentElement.previousElementSibling) {
+                newTrgt = trgt.parentElement.previousElementSibling.firstElementChild;
             }
             else {
-                newTrgt =
-                    trgt.parentElement.previousElementSibling.firstElementChild;
+                if (Number(trgt.parentElement.getAttribute('aria-rowindex')) > 1) {
+                    newTrgt = trgt;
+                }
             }
         }
         if (tOffsetV - 2 < 8 && eOffsetV !== Math.ceil((tOffsetV - 2) / 2)) {
@@ -13735,8 +16420,17 @@ var Resize = /** @__PURE__ @class */ (function () {
     Resize.prototype.updateTarget = function (e, trgt) {
         if (closest(trgt, '.e-header-row')) {
             if ((trgt.offsetWidth < 10 && e.offsetX < Math.ceil((trgt.offsetWidth - 2) / 2)) || (e.offsetX < 5 &&
-                trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize') && trgt.previousElementSibling) {
-                this.trgtEle = trgt.previousElementSibling;
+                trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize')) {
+                var sheet = this.parent.getActiveSheet();
+                var prevIdx = Number(this.trgtEle.getAttribute('aria-colindex')) - 2;
+                if (trgt.previousElementSibling && !isHiddenCol(sheet, prevIdx)) {
+                    this.trgtEle = trgt.previousElementSibling;
+                }
+                else {
+                    if (prevIdx > -1) {
+                        this.trgtEle.classList.add('e-unhide-column');
+                    }
+                }
             }
         }
         else {
@@ -13745,17 +16439,16 @@ var Resize = /** @__PURE__ @class */ (function () {
                 var sheet = this.parent.getActiveSheet();
                 var prevIdx = Number(trgt.parentElement.getAttribute('aria-rowindex')) - 2;
                 if (trgt.parentElement.previousElementSibling || isHiddenRow(sheet, prevIdx)) {
-                    if (e.type === 'dblclick' && isHiddenRow(sheet, prevIdx) && trgt.parentElement.classList.contains('e-skip-resize')) {
+                    if (e.type === 'dblclick' && isHiddenRow(sheet, prevIdx)) {
                         var selectRange = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                         var eventArgs = void 0;
                         if (prevIdx <= selectRange[2] && prevIdx > selectRange[0]) {
-                            eventArgs = { startRow: selectRange[0], endRow: selectRange[2], hide: false, autoFit: true };
+                            eventArgs = { startIndex: selectRange[0], endIndex: selectRange[2], hide: false, autoFit: true };
                         }
                         else {
-                            eventArgs = { startRow: prevIdx, endRow: prevIdx, hide: false, autoFit: true };
+                            eventArgs = { startIndex: prevIdx, endIndex: prevIdx, hide: false, autoFit: true };
                         }
-                        this.parent.notify(hideShowRow, eventArgs);
-                        trgt.parentElement.classList.remove('e-skip-resize');
+                        this.parent.notify(hideShow, eventArgs);
                     }
                     else {
                         if (!isHiddenRow(sheet, prevIdx)) {
@@ -13772,22 +16465,10 @@ var Resize = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line:max-func-body-length
     Resize.prototype.setAutofit = function (idx, isCol, prevData) {
         var index = 0;
-        var oldIdx = idx;
         var sheet = this.parent.getActiveSheet();
         var mainContent = this.parent.getMainContent();
-        var oldValue;
-        if ((isCol && this.parent.viewport.leftIndex <= idx) && (!isCol && this.parent.viewport.topIndex <= idx)) {
-            if (this.parent.scrollSettings.enableVirtualization) {
-                idx = isCol ? idx - this.parent.viewport.leftIndex :
-                    idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
-            }
-            oldValue = isCol ?
-                mainContent.getElementsByTagName('col')[idx].style.width : mainContent.getElementsByTagName('tr')[idx].style.height;
-        }
-        else {
-            oldValue = isCol ? getColumnWidth(this.parent.getActiveSheet(), idx) + "px" :
-                getRowHeight(this.parent.getActiveSheet(), idx) + "px";
-        }
+        var oldValue = isCol ? getColumnWidth(this.parent.getActiveSheet(), idx) + "px" :
+            getRowHeight(this.parent.getActiveSheet(), idx) + "px";
         var headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
         var contentClone = [];
         var contentTable = mainContent.getElementsByClassName('e-content-table')[0];
@@ -13795,13 +16476,13 @@ var Resize = /** @__PURE__ @class */ (function () {
         if (isCol) {
             var rowLength = sheet.rows.length;
             for (var rowIdx = 0; rowIdx < rowLength; rowIdx++) {
-                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[oldIdx]) {
+                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[idx]) {
                     var td = this.parent.createElement('td', {
                         className: 'e-cell',
-                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[oldIdx])
+                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
                     });
-                    if (sheet.rows[rowIdx].cells[oldIdx].style) {
-                        var style = sheet.rows[rowIdx].cells[oldIdx].style;
+                    if (sheet.rows[rowIdx].cells[idx].style) {
+                        var style = sheet.rows[rowIdx].cells[idx].style;
                         if (style.fontFamily) {
                             td.style.fontFamily = style.fontFamily;
                         }
@@ -13815,15 +16496,15 @@ var Resize = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            var colLength = sheet.rows[oldIdx] && sheet.rows[oldIdx].cells ? sheet.rows[oldIdx].cells.length : 0;
+            var colLength = sheet.rows[idx] && sheet.rows[idx].cells ? sheet.rows[idx].cells.length : 0;
             for (var colIdx = 0; colIdx < colLength; colIdx++) {
-                if (sheet.rows[oldIdx] && sheet.rows[oldIdx].cells[colIdx]) {
-                    var style = sheet.rows[oldIdx].cells[colIdx].style;
+                if (sheet.rows[idx] && sheet.rows[idx].cells[colIdx]) {
+                    var style = sheet.rows[idx].cells[colIdx].style;
                     var td = this.parent.createElement('td', {
-                        innerHTML: this.parent.getDisplayText(sheet.rows[oldIdx].cells[colIdx])
+                        innerHTML: this.parent.getDisplayText(sheet.rows[idx].cells[colIdx])
                     });
-                    if (sheet.rows[oldIdx].cells[colIdx].style) {
-                        var style_1 = sheet.rows[oldIdx].cells[colIdx].style;
+                    if (sheet.rows[idx].cells[colIdx].style) {
+                        var style_1 = sheet.rows[idx].cells[colIdx].style;
                         if (style_1.fontFamily) {
                             td.style.fontFamily = style_1.fontFamily;
                         }
@@ -13837,19 +16518,20 @@ var Resize = /** @__PURE__ @class */ (function () {
             }
         }
         var contentFit = findMaxValue(contentTable, contentClone, isCol, this.parent);
+        if (isCol) {
+            contentFit = this.getFloatingElementWidth(contentFit, idx);
+        }
         var autofitValue = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
         var threshold = parseInt(oldValue, 10) > autofitValue ?
             -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
         if (isCol) {
-            var colThreshold = this.parent.getThreshold('col');
-            var lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (colThreshold * 2);
-            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= lastIdx) {
-                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
-                this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: oldIdx });
-                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            if (idx >= this.parent.viewport.leftIndex && idx <= this.parent.viewport.rightIndex) {
+                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+                this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
+                this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
             }
             else {
-                var oldWidth = getColumnWidth(sheet, oldIdx);
+                var oldWidth = getColumnWidth(sheet, idx);
                 var threshold_1;
                 if (autofitValue > 0) {
                     threshold_1 = -(oldWidth - autofitValue);
@@ -13857,18 +16539,19 @@ var Resize = /** @__PURE__ @class */ (function () {
                 else {
                     threshold_1 = -oldWidth;
                 }
-                this.parent.notify(colWidthChanged, { threshold: threshold_1, colIdx: oldIdx });
-                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
+                this.parent.notify(colWidthChanged, { threshold: threshold_1, colIdx: idx });
+                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
             }
         }
         else if (!isCol) {
-            if (oldIdx >= this.parent.viewport.topIndex && oldIdx <= this.parent.viewport.bottomIndex) {
-                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
-                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
-                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            if (idx >= this.parent.viewport.topIndex && idx <= this.parent.viewport.bottomIndex) {
+                autofitValue = autofitValue > 20 ? autofitValue : 20;
+                setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
             }
             else {
-                var oldHeight = getRowHeight(sheet, oldIdx);
+                var oldHeight = getRowHeight(sheet, idx);
                 var threshold_2;
                 if (autofitValue > 0) {
                     threshold_2 = -(oldHeight - autofitValue);
@@ -13876,8 +16559,8 @@ var Resize = /** @__PURE__ @class */ (function () {
                 else {
                     threshold_2 = -oldHeight;
                 }
-                this.parent.notify(rowHeightChanged, { threshold: threshold_2, rowIdx: oldIdx });
-                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
+                this.parent.notify(rowHeightChanged, { threshold: threshold_2, rowIdx: idx });
+                setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
             }
         }
     };
@@ -13897,24 +16580,67 @@ var Resize = /** @__PURE__ @class */ (function () {
         this.parent.element.getElementsByClassName('e-sheet-panel')[0].appendChild(editor);
         this.updateCursor(this.event);
     };
-    Resize.prototype.setColWidth = function (index, width, prevData) {
+    Resize.prototype.setColWidth = function (index, viewportIdx, width, curWidth) {
         var sheet = this.parent.getActiveSheet();
-        var mIndex = index;
-        if (this.parent.scrollSettings.enableVirtualization) {
-            mIndex = mIndex + this.parent.viewport.leftIndex;
+        var threshold = width - curWidth;
+        if (threshold < 0 && curWidth < -(threshold)) {
+            threshold = -curWidth;
         }
-        var eleWidth = parseInt(this.parent.getMainContent().getElementsByTagName('col')[index].style.width, 10);
-        var colWidth = width;
-        var threshold = parseInt(colWidth, 10) - eleWidth;
-        if (threshold < 0 && eleWidth < -(threshold)) {
-            threshold = -eleWidth;
+        if (width > 0) {
+            if (this.isMouseMoved && this.trgtEle.classList.contains('e-unhide-column')) {
+                this.showHiddenColumns(index, width);
+                this.parent.notify(completeAction, {
+                    eventArgs: {
+                        index: index, width: 0 + "px", isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: curWidth + "px",
+                        hide: false
+                    }, action: 'resize'
+                });
+                return;
+            }
+            this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: index });
+            this.resizeStart(index, viewportIdx, width + "px", true, false, curWidth + "px");
+            setColumn(sheet, index, { width: width, customWidth: true });
         }
-        var oldIdx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
-        this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: oldIdx });
-        this.resizeStart(index, index, colWidth, true, false, prevData);
-        getColumn(sheet, mIndex).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
-        sheet.columns[mIndex].customWidth = true;
-        this.parent.setProperties({ sheets: this.parent.sheets }, true);
+        else {
+            if (this.isMouseMoved) {
+                this.parent.hideColumn(index);
+                this.parent.notify(completeAction, {
+                    eventArgs: {
+                        index: index, width: 0 + "px", isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: curWidth + "px",
+                        hide: true
+                    }, action: 'resize'
+                });
+            }
+        }
+    };
+    Resize.prototype.showHiddenColumns = function (index, width) {
+        var sheet = this.parent.getActiveSheet();
+        var selectedRange = getRangeIndexes(sheet.selectedRange);
+        var startIdx;
+        var endIdx;
+        var colgroup;
+        if (index >= selectedRange[1] && index <= selectedRange[3] && selectedRange[2] === sheet.rowCount - 1 &&
+            getCellIndexes(sheet.activeCell)[0] === getCellIndexes(sheet.topLeftCell)[0]) {
+            startIdx = selectedRange[1];
+            endIdx = selectedRange[3];
+            colgroup = this.parent.getMainContent().querySelector('colgroup');
+        }
+        else {
+            startIdx = endIdx = index;
+        }
+        if (width !== undefined) {
+            for (var i = startIdx; i <= endIdx; i++) {
+                setColumn(sheet, i, { width: width, customWidth: true });
+                if (i >= this.parent.viewport.leftIndex && i <= this.parent.viewport.rightIndex && !isHiddenCol(sheet, i)) {
+                    colgroup.children[this.parent.getViewportIndex(i, true)].style.width = width + "px";
+                }
+            }
+        }
+        this.trgtEle.classList.remove('e-unhide-column');
+        this.parent.hideColumn(startIdx, endIdx, false);
+        if (width === undefined) {
+            this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx });
+        }
     };
     Resize.prototype.setRowHeight = function (rowIdx, viewportIdx, height, prevData) {
         var sheet = this.parent.getActiveSheet();
@@ -13924,10 +16650,9 @@ var Resize = /** @__PURE__ @class */ (function () {
         if (threshold < 0 && eleHeight < -(threshold)) {
             threshold = -eleHeight;
         }
-        this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: rowIdx });
+        this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: rowIdx, isCustomHgt: true });
         this.resizeStart(rowIdx, viewportIdx, rowHeight, false, false, prevData);
         setRow(sheet, rowIdx, { height: parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0, customHeight: true });
-        this.parent.setProperties({ sheets: this.parent.sheets }, true);
     };
     Resize.prototype.resizeOn = function (e) {
         var idx;
@@ -13935,11 +16660,11 @@ var Resize = /** @__PURE__ @class */ (function () {
         if (this.trgtEle.classList.contains('e-rowresize')) {
             var sheet = this.parent.getActiveSheet();
             var prevIdx = Number(this.trgtEle.parentElement.getAttribute('aria-rowindex')) - 2;
-            if (this.isMouseMoved && isHiddenRow(sheet, prevIdx) && this.trgtEle.parentElement.classList.contains('e-skip-resize') &&
+            if (this.isMouseMoved && isHiddenRow(sheet, prevIdx) && this.trgtEle.classList.contains('e-skip-resize') &&
                 e.clientY > this.trgtEle.getBoundingClientRect().top) {
-                this.trgtEle.parentElement.classList.remove('e-skip-resize');
-                var eventArgs = { startRow: prevIdx, endRow: prevIdx, hide: false, skipAppend: true };
-                this.parent.notify(hideShowRow, eventArgs);
+                this.trgtEle.classList.remove('e-skip-resize');
+                var eventArgs = { startIndex: prevIdx, endIndex: prevIdx, hide: false, skipAppend: true };
+                this.parent.notify(hideShow, eventArgs);
                 var rTbody = this.parent.getRowHeaderTable().tBodies[0];
                 var tbody = this.parent.getContentTable().tBodies[0];
                 eventArgs.hdrRow.style.display = 'none';
@@ -13950,23 +16675,25 @@ var Resize = /** @__PURE__ @class */ (function () {
                 eventArgs.hdrRow.nextElementSibling.classList.remove('e-hide-end');
             }
             else {
-                if (this.trgtEle.parentElement.classList.contains('e-skip-resize')) {
-                    this.trgtEle.parentElement.classList.remove('e-skip-resize');
-                    return;
+                if (this.trgtEle.classList.contains('e-skip-resize')) {
+                    this.trgtEle.classList.remove('e-skip-resize');
+                    if ((!this.isMouseMoved && isHiddenRow(sheet, prevIdx)) || !this.trgtEle.parentElement.previousElementSibling) {
+                        return;
+                    }
+                    this.trgtEle = this.trgtEle.parentElement.previousElementSibling.getElementsByClassName('e-header-cell')[0];
                 }
             }
             actualIdx = idx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
-            if (this.parent.scrollSettings.enableVirtualization) {
-                idx = idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
-            }
+            idx = this.parent.getViewportIndex(actualIdx);
             var prevData = this.parent.getMainContent().getElementsByClassName('e-row')[idx].style.height;
             var rowHeight = e.clientY - this.event.clientY + parseInt(prevData, 10);
             if (rowHeight <= 0) {
-                this.parent.showHideRow(true, actualIdx);
+                this.parent.hideRow(actualIdx);
                 setRow(sheet, actualIdx, { height: 0, customHeight: true });
-                this.parent.setProperties({ sheets: this.parent.sheets }, true);
-                this.parent.notify(completeAction, { eventArgs: { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
-                    action: 'resize' });
+                this.parent.notify(completeAction, {
+                    eventArgs: { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
+                    action: 'resize'
+                });
                 return;
             }
             this.setRowHeight(actualIdx, idx, rowHeight + "px", prevData);
@@ -13993,11 +16720,15 @@ var Resize = /** @__PURE__ @class */ (function () {
                                 this.parent.getRow(i, this.parent.getRowHeaderTable()).style.height = rowHeight + "px";
                             }
                         }
-                        this.parent.notify(completeAction, { eventArgs: { index: i, height: rowHeight + "px", isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
-                            action: 'resize' });
+                        this.parent.notify(completeAction, {
+                            eventArgs: {
+                                index: i, height: rowHeight + "px", isCol: false,
+                                sheetIdx: this.parent.activeSheetTab, oldHeight: prevData
+                            },
+                            action: 'resize'
+                        });
                     }
-                    this.parent.setProperties({ sheets: this.parent.sheets }, true);
-                    this.parent.showHideRow(false, selectedRange[0], actualIdx - 1);
+                    this.parent.hideRow(selectedRange[0], actualIdx - 1, false);
                     idx += Math.abs(actualIdx - count);
                 }
                 else {
@@ -14016,14 +16747,23 @@ var Resize = /** @__PURE__ @class */ (function () {
             }
         }
         else if (this.trgtEle.classList.contains('e-colresize')) {
-            var mIndex = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
-            idx = mIndex;
-            if (this.parent.scrollSettings.enableVirtualization) {
-                idx = idx - this.parent.viewport.leftIndex;
+            if (this.isMouseMoved && this.trgtEle.classList.contains('e-unhide-column') &&
+                e.clientX < this.trgtEle.getBoundingClientRect().left) {
+                this.trgtEle.classList.remove('e-unhide-column');
+                if (this.trgtEle.previousElementSibling) {
+                    this.trgtEle = this.trgtEle.previousElementSibling;
+                }
             }
-            var colWidth = e.clientX - this.event.clientX +
-                parseInt(this.parent.getMainContent().getElementsByTagName('col')[idx].style.width, 10) + 'px';
-            this.setColWidth(idx, colWidth, this.parent.getMainContent().getElementsByTagName('col')[idx].style.width);
+            idx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+            var curWidth = void 0;
+            if (this.trgtEle.classList.contains('e-unhide-column')) {
+                idx -= 1;
+                curWidth = 0;
+            }
+            else {
+                curWidth = getColumnWidth(this.parent.getActiveSheet(), idx);
+            }
+            this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (e.clientX - this.event.clientX) + curWidth, curWidth);
         }
     };
     Resize.prototype.setWidthAndHeight = function (trgt, value, isCol) {
@@ -14035,16 +16775,6 @@ var Resize = /** @__PURE__ @class */ (function () {
         }
     };
     Resize.prototype.resizeStart = function (idx, viewportIdx, value, isCol, isFit, prevData) {
-        if (!isCol) {
-            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.topIndex < viewportIdx) {
-                viewportIdx = viewportIdx - this.parent.viewport.topIndex;
-            }
-        }
-        else {
-            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.leftIndex < viewportIdx) {
-                viewportIdx = viewportIdx - this.parent.viewport.leftIndex;
-            }
-        }
         setResize(viewportIdx, value, isCol, this.parent);
         var action = isFit ? 'resizeToFit' : 'resize';
         var eventArgs;
@@ -14074,6 +16804,18 @@ var Resize = /** @__PURE__ @class */ (function () {
         else if (this.parent.element.classList.contains('e-row-resizing')) {
             this.parent.element.classList.remove('e-row-resizing');
         }
+    };
+    // To get the floating element width like filter
+    Resize.prototype.getFloatingElementWidth = function (oldWidth, colIdx) {
+        var floatingWidth = oldWidth;
+        var eventArgs = { filterRange: [], hasFilter: false };
+        this.parent.notify(getFilterRange, eventArgs);
+        if (eventArgs.hasFilter && eventArgs.filterRange) {
+            if (eventArgs.filterRange[1] <= colIdx && eventArgs.filterRange[3] >= colIdx) {
+                floatingWidth = oldWidth + 22; // default width and padding for button 
+            }
+        }
+        return floatingWidth;
     };
     /**
      * To destroy the resize module.
@@ -14142,16 +16884,31 @@ var ShowHide = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.addEventListener();
     }
+    ShowHide.prototype.hideShow = function (args) {
+        if (args.startIndex > args.endIndex) {
+            var temp = args.startIndex;
+            args.startIndex = args.endIndex;
+            args.endIndex = temp;
+        }
+        if (args.actionUpdate) {
+            this.parent.notify(beginAction, { eventArgs: args, action: 'hideShow' });
+        }
+        args.isCol ? this.hideCol(args) : this.hideRow(args);
+        if (args.actionUpdate) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'hideShow' });
+        }
+    };
     // tslint:disable-next-line
-    ShowHide.prototype.showHideRow = function (args) {
+    ShowHide.prototype.hideRow = function (args) {
         var sheet = this.parent.getActiveSheet();
         var count = 0;
         var idx;
+        var nextIdx;
         if (args.hide) {
             var content = void 0;
             var rowHdr = void 0;
             var row = void 0;
-            for (var i = args.startRow; i <= args.endRow; i++) {
+            for (var i = args.startIndex; i <= args.endIndex; i++) {
                 if (isHiddenRow(sheet, i)) {
                     continue;
                 }
@@ -14160,7 +16917,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                         rowHdr = this.parent.getRowHeaderTable();
                     }
                     content = this.parent.getContentTable();
-                    idx = this.getViewportIdx(i);
+                    idx = this.parent.getViewportIndex(i);
                     count = 0;
                 }
                 setRow(sheet, i, { hidden: true });
@@ -14171,34 +16928,61 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                     }
                     detach(row);
                     count++;
+                    row = content.rows[idx];
+                    if (row && i === args.endIndex) {
+                        var cell = void 0;
+                        nextIdx = skipHiddenIdx(sheet, i + 1, true);
+                        var first = nextIdx !== skipHiddenIdx(sheet, 0, true) && nextIdx ===
+                            (this.parent.viewport.topIndex >= args.startIndex ? args.endIndex + 1 : this.parent.viewport.topIndex) ? 'Row' : '';
+                        for (var j = this.parent.viewport.leftIndex; j <= this.parent.viewport.rightIndex; j++) {
+                            var borderTop = this.parent.getCellStyleValue(['borderTop'], [nextIdx, j]).borderTop;
+                            if (borderTop !== '') {
+                                cell = row.cells[j];
+                                this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: nextIdx, colIdx: j,
+                                    style: { borderTop: borderTop }, row: row, pRow: row.previousElementSibling,
+                                    first: first, cell: cell });
+                            }
+                        }
+                    }
                 }
                 else {
-                    count--;
+                    if (i <= this.parent.viewport.bottomIndex) {
+                        count++;
+                    }
+                    else {
+                        count--;
+                    }
                 }
             }
             if (!count) {
                 return;
             }
             this.parent.selectRange(sheet.selectedRange);
-            if (this.parent.viewport.topIndex >= args.startRow) {
-                this.parent.viewport.topIndex = args.endRow + 1;
-            }
             if (this.parent.scrollSettings.enableVirtualization) {
-                args.startRow = this.parent.viewport.bottomIndex + 1;
-                args.endRow = args.startRow + count - 1;
-                var indexes = this.parent.skipHiddenRows(args.startRow, args.endRow);
-                args.startRow = indexes[0];
-                args.endRow = indexes[1];
-                this.parent.viewport.bottomIndex = args.endRow;
-                this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: '', refresh: 'RowPart' }, getCellAddress(args.startRow, this.parent.viewport.leftIndex) + ":" + getCellAddress(args.endRow, this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2)));
+                if (this.parent.viewport.topIndex >= args.startIndex) {
+                    this.parent.viewport.topIndex = args.endIndex + 1;
+                }
+                args.startIndex = this.parent.viewport.bottomIndex + 1;
+                args.endIndex = args.startIndex + count - 1;
+                var indexes = this.parent.skipHidden(args.startIndex, args.endIndex);
+                args.startIndex = indexes[0];
+                args.endIndex = indexes[1];
+                this.parent.viewport.bottomIndex = args.endIndex;
+                this.parent.renderModule.refreshUI({ colIndex: this.parent.viewport.leftIndex, direction: '', refresh: 'RowPart' }, getCellAddress(args.startIndex, this.parent.viewport.leftIndex) + ":" + getCellAddress(args.endIndex, this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2)));
             }
             if (sheet.showHeaders) {
                 if (idx === 0) {
-                    rowHdr.rows[0].classList.add('e-hide-end');
+                    if (rowHdr.rows[0]) {
+                        rowHdr.rows[0].classList.add('e-hide-end');
+                    }
                 }
                 else {
-                    rowHdr.rows[idx - 1].classList.add('e-hide-start');
-                    rowHdr.rows[idx].classList.add('e-hide-end');
+                    if (rowHdr.rows[idx - 1]) {
+                        rowHdr.rows[idx - 1].classList.add('e-hide-start');
+                    }
+                    if (rowHdr.rows[idx]) {
+                        rowHdr.rows[idx].classList.add('e-hide-end');
+                    }
                 }
             }
         }
@@ -14206,14 +16990,16 @@ var ShowHide = /** @__PURE__ @class */ (function () {
             var hFrag = void 0;
             var frag = void 0;
             var hRow = void 0;
+            var row = void 0;
             var rowRenderer = void 0;
             var rTBody = void 0;
             var tBody = void 0;
-            var endRow = args.startRow - 1;
+            var startRow = void 0;
+            var endRow = args.startIndex - 1;
             var newStartRow = void 0;
-            for (var i = args.startRow, len = args.endRow; i <= len; i++) {
+            for (var i = args.startIndex, len = args.endIndex; i <= len; i++) {
                 if (!isHiddenRow(sheet, i)) {
-                    if (args.startRow === args.endRow) {
+                    if (args.startIndex === args.endIndex) {
                         return;
                     }
                     if (idx === undefined) {
@@ -14230,7 +17016,13 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                 }
                 if (i > this.parent.viewport.bottomIndex) {
                     setRow(sheet, i, { hidden: false });
+                    if (startRow === undefined) {
+                        return;
+                    }
                     continue;
+                }
+                if (startRow === undefined) {
+                    startRow = i;
                 }
                 setRow(sheet, i, { hidden: false });
                 if (idx === undefined) {
@@ -14248,38 +17040,61 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                         idx = 0;
                     }
                     else {
-                        idx = this.getViewportIdx(i);
+                        idx = this.parent.getViewportIndex(i);
                     }
                 }
                 endRow++;
-                hRow = rowRenderer.refresh(i);
-                hFrag.appendChild(hRow);
-                frag.appendChild(rowRenderer.refresh(i, hRow));
                 if (sheet.showHeaders) {
+                    hRow = rowRenderer.refresh(i, null, null, true);
+                    hFrag.appendChild(hRow);
                     detach(rTBody.lastElementChild);
                 }
+                row = frag.appendChild(rowRenderer.refresh(i, row, hRow));
                 detach(tBody.lastElementChild);
             }
             this.parent.viewport.bottomIndex = this.parent.viewport.topIndex + this.parent.viewport.rowCount +
                 (this.parent.getThreshold('row') * 2);
-            count = this.parent.hiddenRowsCount(this.parent.viewport.topIndex, args.startRow) +
-                this.parent.hiddenRowsCount(args.endRow + 1, this.parent.viewport.bottomIndex);
+            count = this.parent.hiddenCount(this.parent.viewport.topIndex, args.startIndex) +
+                this.parent.hiddenCount(args.endIndex + 1, this.parent.viewport.bottomIndex);
             this.parent.viewport.bottomIndex += count;
             args.insertIdx = idx;
             args.row = frag.querySelector('.e-row');
             if (sheet.showHeaders) {
                 args.hdrRow = hFrag.querySelector('.e-row');
-                if (idx !== 0 && !isHiddenRow(sheet, endRow - 1)) {
+                if (idx !== 0 && !isHiddenRow(sheet, endRow - 1) && rTBody.children[idx - 1]) {
                     rTBody.children[idx - 1].classList.remove('e-hide-start');
                 }
-                if (args.startRow !== 0 && isHiddenRow(sheet, args.startRow - 1)) {
+                if (args.startIndex !== 0 && isHiddenRow(sheet, args.startIndex - 1)) {
                     args.hdrRow.classList.add('e-hide-end');
                 }
                 if (isHiddenRow(sheet, endRow + 1)) {
                     hFrag.lastElementChild.classList.add('e-hide-start');
                 }
                 else {
-                    rTBody.children[idx].classList.remove('e-hide-end');
+                    if (rTBody.children[idx]) {
+                        rTBody.children[idx].classList.remove('e-hide-end');
+                    }
+                }
+            }
+            if (row && tBody.children[idx]) {
+                nextIdx = skipHiddenIdx(sheet, endRow + 1, true);
+                for (var i = this.parent.viewport.leftIndex; i <= this.parent.viewport.rightIndex; i++) {
+                    var borderTop = this.parent.getCellStyleValue(['borderTop'], [nextIdx, i]).borderTop;
+                    if (borderTop !== '') {
+                        this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: nextIdx, colIdx: i,
+                            style: { borderTop: borderTop }, pRow: row, cell: tBody.children[idx].children[i],
+                            first: '' });
+                        var prevIdx = skipHiddenIdx(sheet, startRow - 1, false);
+                        if (prevIdx > -1) {
+                            if (tBody.children[idx - 1] && !this.parent.getCellStyleValue(['borderBottom'], [prevIdx, i]).borderBottom &&
+                                !this.parent.getCellStyleValue(['borderTop'], [startRow, i]).borderTop) {
+                                tBody.children[idx - 1].children[i].style.borderBottom = '';
+                            }
+                        }
+                        else {
+                            tBody.children[idx].children[i].style.borderTop = '';
+                        }
+                    }
                 }
             }
             if (args.skipAppend) {
@@ -14291,27 +17106,280 @@ var ShowHide = /** @__PURE__ @class */ (function () {
             tBody.insertBefore(frag, tBody.children[idx]);
             this.parent.selectRange(sheet.selectedRange);
             if (args.autoFit && sheet.showHeaders) {
-                this.parent.notify(autoFit, { startIndex: args.startRow, endIndex: args.endRow, isRow: true });
+                this.parent.notify(autoFit, { startIndex: args.startIndex, endIndex: args.endIndex, isRow: true });
             }
-            if (newStartRow !== undefined && newStartRow !== args.endRow) {
-                args.startRow = newStartRow;
-                this.showHideRow(args);
+            if (newStartRow !== undefined && newStartRow !== args.endIndex) {
+                args.startIndex = newStartRow;
+                this.hideRow(args);
             }
         }
     };
-    ShowHide.prototype.showHideCol = function () {
-        /** */
+    ShowHide.prototype.hideCol = function (args) {
+        var _this = this;
+        var sheet = this.parent.getActiveSheet();
+        var hiddenIndex = [];
+        var beforeViewportIdx = [];
+        var topLeftCell = getCellIndexes(sheet.topLeftCell);
+        var scrollable;
+        for (var i = args.startIndex; i <= args.endIndex; i++) {
+            if (args.hide ? isHiddenCol(sheet, i) : !isHiddenCol(sheet, i)) {
+                continue;
+            }
+            setColumn(sheet, i, { hidden: args.hide });
+            if (this.parent.scrollSettings.enableVirtualization && (i < this.parent.viewport.leftIndex ||
+                i > this.parent.viewport.rightIndex)) {
+                if (i < this.parent.viewport.leftIndex) {
+                    beforeViewportIdx.push(i);
+                }
+                continue;
+            }
+            hiddenIndex.push(i);
+            if (args.hide && topLeftCell[1] === i) {
+                scrollable = true;
+            }
+        }
+        if (!beforeViewportIdx.length && !hiddenIndex.length) {
+            return;
+        }
+        if (args.hide) {
+            if (!hiddenIndex.length) {
+                return;
+            }
+            if (hiddenIndex.length <= this.parent.getThreshold('col') || !this.parent.scrollSettings.enableVirtualization) {
+                this.removeCell(sheet, hiddenIndex);
+            }
+            if (this.parent.scrollSettings.enableVirtualization) {
+                if (hiddenIndex[0] === this.parent.viewport.leftIndex) {
+                    this.parent.viewport.leftIndex = skipHiddenIdx(sheet, hiddenIndex[hiddenIndex.length - 1] + 1, true, 'columns');
+                }
+                if (scrollable) {
+                    var scrollWidth_1 = 0;
+                    hiddenIndex.slice(0, hiddenIndex.indexOf(topLeftCell[1])).forEach(function (colIdx) {
+                        scrollWidth_1 += getColumnWidth(sheet, colIdx, true);
+                    });
+                    if (scrollWidth_1) {
+                        this.parent.notify(setScrollEvent, { set: false });
+                        var content = this.parent.getMainContent();
+                        content.scrollLeft -= scrollWidth_1;
+                        this.parent.notify(onContentScroll, { scrollLeft: content.scrollLeft, preventScroll: true, skipHidden: true });
+                        getUpdateUsingRaf(function () { return _this.parent.notify(setScrollEvent, { set: true }); });
+                    }
+                }
+                if (this.parent.scrollSettings.isFinite) {
+                    var colCount = skipHiddenIdx(sheet, sheet.colCount - 1, false, 'columns');
+                    var startIdx = this.parent.viewport.leftIndex;
+                    var endIndex = this.parent.viewport.rightIndex;
+                    if (endIndex + hiddenIndex.length >= colCount) {
+                        var index = skipHiddenIdx(sheet, startIdx - ((endIndex + hiddenIndex.length) - colCount), false, 'columns');
+                        if (index > -1) {
+                            this.parent.viewport.leftIndex = index;
+                            this.parent.viewport.leftIndex -= this.parent.hiddenCount(endIndex, colCount);
+                        }
+                        this.parent.viewport.rightIndex = colCount;
+                        if (startIdx !== this.parent.viewport.leftIndex || endIndex !== this.parent.viewport.rightIndex) {
+                            this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column' });
+                        }
+                        this.parent.selectRange(sheet.selectedRange);
+                        return;
+                    }
+                }
+                if (hiddenIndex.length <= this.parent.getThreshold('col')) {
+                    var indexes = this.parent.skipHidden(this.parent.viewport.rightIndex + 1, this.parent.viewport.rightIndex + hiddenIndex.length, 'columns');
+                    this.parent.viewport.rightIndex = indexes[1];
+                    this.parent.renderModule.refreshUI({ rowIndex: this.parent.viewport.topIndex, colIndex: indexes[0], direction: '', refresh: 'ColumnPart' }, "" + getRangeAddress([this.parent.viewport.topIndex, indexes[0], this.parent.viewport.bottomIndex, indexes[1]]));
+                }
+                else {
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex,
+                        refresh: 'Column' });
+                }
+            }
+            this.parent.selectRange(sheet.selectedRange);
+        }
+        else {
+            if (beforeViewportIdx.length) {
+                beforeViewportIdx.sort(function (i, j) { return i - j; });
+                if (this.parent.scrollSettings.enableVirtualization && beforeViewportIdx[0] < this.parent.getThreshold('col')) {
+                    var rowIdx = getCellIndexes(sheet.topLeftCell)[0] + 1;
+                    sheet.topLeftCell = "A" + rowIdx;
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: this.parent.viewport.topIndex, colIndex: 0,
+                        refresh: 'Column' });
+                    this.parent.selectRange(sheet.selectedRange);
+                }
+                else {
+                    this.parent.goTo(getCellAddress(this.parent.viewport.topIndex, beforeViewportIdx[0]));
+                }
+                return;
+            }
+            if (hiddenIndex.length <= this.parent.getThreshold('col') || !this.parent.scrollSettings.enableVirtualization) {
+                this.appendCell(sheet, hiddenIndex);
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    this.parent.notify(virtualContentLoaded, { refresh: 'Column' });
+                }
+            }
+            else {
+                this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex,
+                    refresh: 'Column' });
+            }
+            this.parent.selectRange(sheet.selectedRange);
+        }
     };
-    ShowHide.prototype.getViewportIdx = function (index) {
+    ShowHide.prototype.removeCell = function (sheet, indexes) {
+        var _this = this;
+        var startIdx;
+        var endIdx;
+        var hRow;
+        var row;
+        var hColgrp;
+        var colgrp;
+        var rowIdx = 0;
+        var cellIdx = this.parent.getViewportIndex(indexes[0], true) + 1;
         if (this.parent.scrollSettings.enableVirtualization) {
-            index -= this.parent.hiddenRowsCount(this.parent.viewport.topIndex, index);
-            index -= this.parent.viewport.topIndex;
+            startIdx = this.parent.viewport.topIndex;
+            endIdx = this.parent.viewport.bottomIndex;
         }
-        return index;
+        else {
+            startIdx = 0;
+            endIdx = sheet.rowCount - 1;
+        }
+        var table = this.parent.getContentTable();
+        var nextIdx;
+        colgrp = table.getElementsByTagName('colgroup')[0];
+        if (sheet.showHeaders) {
+            var hTable = this.parent.getColHeaderTable();
+            hColgrp = hTable.getElementsByTagName('colgroup')[0];
+            hRow = hTable.rows[0];
+        }
+        while (startIdx <= endIdx) {
+            if (isHiddenRow(sheet, startIdx)) {
+                startIdx++;
+                continue;
+            }
+            row = table.rows[rowIdx];
+            indexes.forEach(function (idx, index) {
+                detach(row.cells[cellIdx]);
+                if (rowIdx === 0) {
+                    if (sheet.showHeaders) {
+                        detach(hRow.cells[cellIdx]);
+                        detach(hColgrp.children[cellIdx]);
+                    }
+                    detach(colgrp.children[cellIdx]);
+                }
+                if (index === indexes.length - 1) {
+                    nextIdx = skipHiddenIdx(sheet, idx + 1, true, 'columns');
+                    var borderLeft = _this.parent.getCellStyleValue(['borderLeft'], [rowIdx, nextIdx]).borderLeft;
+                    if (borderLeft !== '') {
+                        _this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: rowIdx, colIdx: nextIdx,
+                            style: { borderLeft: borderLeft }, row: row, first: '' });
+                    }
+                }
+            });
+            startIdx++;
+            rowIdx++;
+        }
+        if (cellIdx - 1 > -1) {
+            if (sheet.showHeaders && hRow.cells[cellIdx - 1]) {
+                hRow.cells[cellIdx - 1].classList.add('e-hide-start');
+            }
+        }
+        if (hRow.cells[cellIdx]) {
+            hRow.cells[cellIdx].classList.add('e-hide-end');
+        }
+    };
+    ShowHide.prototype.appendCell = function (sheet, indexes) {
+        var _this = this;
+        var startIdx;
+        var endIdx;
+        var hRow;
+        var row;
+        var hColgrp;
+        var colgrp;
+        var rowIdx = 0;
+        var prevIdx;
+        var hFrag = document.createDocumentFragment();
+        var frag = document.createDocumentFragment();
+        var colFrag = document.createDocumentFragment();
+        if (this.parent.scrollSettings.enableVirtualization) {
+            startIdx = this.parent.viewport.topIndex;
+            endIdx = this.parent.viewport.bottomIndex;
+        }
+        else {
+            startIdx = 0;
+            endIdx = sheet.rowCount - 1;
+        }
+        var table = this.parent.getContentTable();
+        var hTable = this.parent.getColHeaderTable();
+        colgrp = table.getElementsByTagName('colgroup')[0];
+        if (sheet.showHeaders) {
+            hColgrp = hTable.getElementsByTagName('colgroup')[0];
+            hRow = hTable.rows[0];
+        }
+        var cellRenderer = this.parent.serviceLocator.getService('cell');
+        indexes.sort(function (i, j) { return i - j; });
+        var cellIdx = [];
+        var cell;
+        var refCell;
+        while (startIdx <= endIdx) {
+            if (isHiddenRow(sheet, startIdx)) {
+                startIdx++;
+                continue;
+            }
+            row = table.rows[rowIdx];
+            indexes.forEach(function (idx, index) {
+                if (rowIdx === 0) {
+                    cellIdx[index] = _this.parent.getViewportIndex(idx, true);
+                    if (colgrp.children[cellIdx[index]]) {
+                        colgrp.insertBefore(_this.parent.sheetModule.updateCol(sheet, idx), colgrp.children[cellIdx[index]]);
+                        if (sheet.showHeaders) {
+                            refCell = hRow.cells[cellIdx[index]];
+                            if (index === 0 && indexes[index] && !isHiddenCol(sheet, indexes[index] - 1)) {
+                                refCell.previousElementSibling.classList.remove('e-hide-start');
+                            }
+                            hRow.insertBefore(cellRenderer.renderColHeader(idx), refCell);
+                            if (index === indexes.length - 1) {
+                                refCell.classList.remove('e-hide-end');
+                            }
+                        }
+                    }
+                    else {
+                        colgrp.appendChild(_this.parent.sheetModule.updateCol(sheet, idx));
+                        if (sheet.showHeaders) {
+                            hRow.appendChild(cellRenderer.renderColHeader(idx));
+                        }
+                    }
+                    detach(colgrp.lastChild);
+                    if (sheet.showHeaders) {
+                        detach(hRow.lastChild);
+                        if (index === indexes.length - 1) {
+                            detach(hColgrp);
+                            hTable.insertBefore(colgrp.cloneNode(true), hTable.tHead[0]);
+                        }
+                    }
+                }
+                detach(row.lastChild);
+                refCell = row.cells[cellIdx[index]];
+                cell = cellRenderer.render({ rowIdx: startIdx, colIdx: idx, cell: getCell(startIdx, idx, sheet),
+                    address: getCellAddress(startIdx, idx), lastCell: idx === indexes.length - 1, isHeightCheckNeeded: true,
+                    first: idx !== skipHiddenIdx(sheet, 0, true, 'columns') && idx === _this.parent.viewport.leftIndex ? 'Column' : '',
+                    checkNextBorder: index === indexes.length - 1 ? 'Column' : '' });
+                refCell ? row.insertBefore(cell, refCell) : row.appendChild(cell);
+                if (index === 0 && cell.previousSibling) {
+                    var borderLeft = _this.parent.getCellStyleValue(['borderLeft'], [rowIdx, skipHiddenIdx(sheet, indexes[indexes.length - 1] + 1, true, 'columns')]).borderLeft;
+                    if (borderLeft !== '') {
+                        prevIdx = skipHiddenIdx(sheet, indexes[0] - 1, false, 'columns');
+                        if (prevIdx > -1 && !_this.parent.getCellStyleValue(['borderRight'], [rowIdx, prevIdx]).borderRight &&
+                            !_this.parent.getCellStyleValue(['borderLeft'], [rowIdx, indexes[0]]).borderLeft) {
+                            cell.previousSibling.style.borderRight = '';
+                        }
+                    }
+                }
+            });
+            startIdx++;
+            rowIdx++;
+        }
+        this.parent.viewport.rightIndex = skipHiddenIdx(sheet, this.parent.viewport.rightIndex - indexes.length, false, 'columns');
     };
     ShowHide.prototype.addEventListener = function () {
-        this.parent.on(hideShowRow, this.showHideRow, this);
-        this.parent.on(hideShowCol, this.showHideCol, this);
+        this.parent.on(hideShow, this.hideShow, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     };
     ShowHide.prototype.destroy = function () {
@@ -14319,8 +17387,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
         this.parent = null;
     };
     ShowHide.prototype.removeEventListener = function () {
-        this.parent.off(hideShowRow, this.showHideRow);
-        this.parent.off(hideShowCol, this.showHideCol);
+        this.parent.off(hideShow, this.hideShow);
         this.parent.off(spreadsheetDestroyed, this.destroy);
     };
     return ShowHide;
@@ -14350,7 +17417,7 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
         this.parent.on(editHyperlink, this.editHyperlinkHandler, this);
         this.parent.on(removeHyperlink, this.removeHyperlinkHandler, this);
         this.parent.on(openHyperlink, this.openHyperlinkHandler, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.hyperlinkClickHandler, this);
         this.parent.on(createHyperlinkElement, this.createHyperlinkElementHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
     };
@@ -14360,7 +17427,7 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
             this.parent.off(editHyperlink, this.editHyperlinkHandler);
             this.parent.off(removeHyperlink, this.removeHyperlinkHandler);
             this.parent.off(openHyperlink, this.openHyperlinkHandler);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.hyperlinkClickHandler);
             this.parent.off(createHyperlinkElement, this.createHyperlinkElementHandler);
             this.parent.off(keyUp, this.keyUpHandler);
         }
@@ -14396,6 +17463,11 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
     SpreadsheetHyperlink.prototype.initiateHyperlinkHandler = function () {
         var _this = this;
         var l10n = this.parent.serviceLocator.getService(locale);
+        var sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected && !sheet.protectSettings.insertLink) {
+            this.parent.notify(editAlert, null);
+            return;
+        }
         if (!this.parent.element.querySelector('.e-dlg-container')) {
             var dialogInst_1 = this.parent.serviceLocator.getService(dialog);
             dialogInst_1.show({
@@ -14609,9 +17681,9 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
             this.parent.trigger(afterHyperlinkClick, aftArgs);
         }
     };
-    SpreadsheetHyperlink.prototype.clickHandler = function (e) {
+    SpreadsheetHyperlink.prototype.hyperlinkClickHandler = function (e) {
         var trgt = e.target;
-        if (closest(trgt, '.e-dlg-content') && closest(trgt, '.e-toolbar-item')) {
+        if (closest(trgt, '.e-link-dialog') && closest(trgt, '.e-toolbar-item')) {
             var dlgEle = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
             var ftrEle = dlgEle.getElementsByClassName('e-footer-content')[0];
             var insertBut = ftrEle.firstChild;
@@ -14683,7 +17755,7 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
         var rowIdx = args.rowIdx;
         var colIdx = args.colIdx;
         var hyperEle = this.parent.createElement('a', { className: 'e-hyperlink' });
-        if (!isNullOrUndefined(cell.hyperlink)) {
+        if (!isNullOrUndefined(cell.hyperlink) && !td.querySelector('a')) {
             var hyperlink = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
                 if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('https://') === -1 &&
@@ -14711,7 +17783,12 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                 else if (hyperlink.address.includes('=') || hyperlink.address.includes('!')) {
                     hyperEle.setAttribute('ref', hyperlink.address);
                 }
-                hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink.address;
+                if (getTypeFromFormat(cell.format) === 'Accounting') {
+                    hyperEle.innerHTML = td.innerHTML;
+                }
+                else {
+                    hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink.address;
+                }
                 td.textContent = '';
                 td.innerText = '';
                 td.appendChild(hyperEle);
@@ -15020,12 +18097,18 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 if (address[0] === address[2] && (address[2] - address[0]) === 0) { //if selected range is a single cell 
                     address[0] = 0;
                     address[1] = 0;
-                    address[2] = sheet.usedRange.rowIndex - 1;
+                    address[2] = sheet.usedRange.rowIndex;
                     address[3] = sheet.usedRange.colIndex;
                 }
                 break;
             case 'beforeCellSave':
                 address = getRangeIndexes(eventArgs.address);
+                break;
+            case 'beforeWrap':
+                address = this.parent.getAddressInfo(eventArgs.address).indices;
+                break;
+            case 'beforeReplace':
+                address = this.parent.getAddressInfo(eventArgs.address).indices;
                 break;
         }
         cells = this.getCellDetails(address, sheet);
@@ -15042,6 +18125,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 case 'cellSave':
                 case 'format':
                 case 'sorting':
+                case 'wrap':
                     undoRedoArgs = this.performOperation(undoRedoArgs);
                     break;
                 case 'clipboard':
@@ -15049,6 +18133,22 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                     break;
                 case 'resize':
                     undoRedoArgs = this.undoForResize(undoRedoArgs);
+                    break;
+                case 'hideShow':
+                    undoRedoArgs.eventArgs.hide = !undoRedoArgs.eventArgs.hide;
+                    updateAction(undoRedoArgs, this.parent);
+                    break;
+                case 'replace':
+                    undoRedoArgs = this.performOperation(undoRedoArgs);
+                    break;
+                case 'insert':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'delete':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'validation':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
@@ -15068,13 +18168,18 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         }
     };
     UndoRedo.prototype.updateUndoRedoCollection = function (options) {
-        var actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit'];
+        var actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
+            'validation'];
+        if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
+            actionList.push(options.args.action);
+        }
         var action = options.args.action;
         if (actionList.indexOf(action) === -1 && !options.isPublic) {
             return;
         }
         var eventArgs = options.args.eventArgs;
-        if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave') {
+        if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
+            action === 'wrap' || action === 'replace' || action === 'validation') {
             var beforeActionDetails = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -15121,29 +18226,36 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     };
     UndoRedo.prototype.undoForResize = function (args) {
         var eventArgs = args.eventArgs;
-        if (eventArgs.isCol) {
-            var temp = eventArgs.oldWidth;
-            eventArgs.oldWidth = eventArgs.width;
-            eventArgs.width = temp;
+        if (eventArgs.hide === undefined) {
+            if (eventArgs.isCol) {
+                var temp = eventArgs.oldWidth;
+                eventArgs.oldWidth = eventArgs.width;
+                eventArgs.width = temp;
+            }
+            else {
+                var temp = eventArgs.oldHeight;
+                eventArgs.oldHeight = eventArgs.height;
+                eventArgs.height = temp;
+            }
         }
         else {
-            var temp = eventArgs.oldHeight;
-            eventArgs.oldHeight = eventArgs.height;
-            eventArgs.height = temp;
+            eventArgs.hide = !eventArgs.hide;
         }
         updateAction(args, this.parent);
         return args;
     };
     UndoRedo.prototype.performOperation = function (args) {
         var eventArgs = args.eventArgs;
-        var address = (args.action === 'cellSave') ? eventArgs.address.split('!') : eventArgs.range.split('!');
+        var address = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace') ?
+            eventArgs.address.split('!')
+            : eventArgs.range.split('!');
         var range = getRangeIndexes(address[1]);
         var sheetIndex = getSheetIndex(this.parent, address[0]);
         var sheet = getSheet(this.parent, sheetIndex);
         var actionData = eventArgs.beforeActionData;
         var isRefresh = this.checkRefreshNeeded(sheetIndex);
         if (this.isUndo) {
-            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
         }
         else {
             updateAction(args, this.parent);
@@ -15161,23 +18273,31 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 cell = getCell(i, j, sheet);
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
-                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : ''
+                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
+                    wrap: cell && cell.wrap
                 });
             }
         }
         return cells;
     };
-    UndoRedo.prototype.updateCellDetails = function (cells, sheet, range, isRefresh) {
+    UndoRedo.prototype.updateCellDetails = function (cells, sheet, range, isRefresh, args) {
         var len = cells.length;
         for (var i = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format,
-                style: cells[i].style, formula: cells[i].formula
+                style: cells[i].style, formula: cells[i].formula,
+                wrap: cells[i].wrap
             });
             if (cells[i].formula) {
                 this.parent.notify(workbookEditOperation, {
                     action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
                         cells[i].colIndex], value: cells[i].formula
+                });
+            }
+            if (args && args.action === 'wrap' && args.eventArgs.wrap) {
+                this.parent.notify(wrapEvent, {
+                    range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
+                        cells[i].colIndex], wrap: false, sheet: sheet
                 });
             }
         }
@@ -15200,6 +18320,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         this.parent.on(setActionData, this.setActionData, this);
         this.parent.on(getBeforeActionData, this.getBeforeActionData, this);
         this.parent.on(clearUndoRedoCollection, this.clearUndoRedoCollection, this);
+        this.parent.on(setUndoRedo, this.updateUndoRedoIcons, this);
     };
     UndoRedo.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
@@ -15208,6 +18329,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             this.parent.off(setActionData, this.setActionData);
             this.parent.off(getBeforeActionData, this.getBeforeActionData);
             this.parent.off(clearUndoRedoCollection, this.clearUndoRedoCollection);
+            this.parent.off(setUndoRedo, this.updateUndoRedoIcons);
         }
     };
     /**
@@ -15224,6 +18346,1854 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         return 'undoredo';
     };
     return UndoRedo;
+}());
+
+/**
+ * Represents Wrap Text support for Spreadsheet.
+ */
+var WrapText = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Spreadsheet Wrap Text module.
+     * @private
+     */
+    function WrapText(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    WrapText.prototype.addEventListener = function () {
+        this.parent.on(ribbonClick, this.ribbonClickHandler, this);
+        this.parent.on(wrapEvent, this.wrapTextHandler, this);
+        this.parent.on(rowHeightChanged, this.rowHeightChangedHandler, this);
+    };
+    WrapText.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(ribbonClick, this.ribbonClickHandler);
+            this.parent.off(wrapEvent, this.wrapTextHandler);
+            this.parent.off(rowHeightChanged, this.rowHeightChangedHandler);
+        }
+    };
+    WrapText.prototype.wrapTextHandler = function (args) {
+        if (inView(this.parent, args.range, true)) {
+            var ele = void 0;
+            var cell = void 0;
+            var colwidth = void 0;
+            var isCustomHgt = void 0;
+            var maxHgt = void 0;
+            var hgt = void 0;
+            for (var i = args.range[0]; i <= args.range[2]; i++) {
+                maxHgt = 0;
+                isCustomHgt = getRow(args.sheet, i).customHeight;
+                for (var j = args.range[1]; j <= args.range[3]; j++) {
+                    ele = args.initial ? args.td : this.parent.getCell(i, j);
+                    if (ele) {
+                        args.wrap ? ele.classList.add(WRAPTEXT) : ele.classList.remove(WRAPTEXT);
+                        if (isCustomHgt) {
+                            ele.innerHTML
+                                = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                        }
+                    }
+                    if (!isCustomHgt) {
+                        colwidth = getColumnWidth(args.sheet, j);
+                        cell = getCell(i, j, args.sheet);
+                        var displayText = this.parent.getDisplayText(cell);
+                        if (displayText) {
+                            if (args.wrap) {
+                                var lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
+                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, lines) + 1;
+                                maxHgt = Math.max(maxHgt, hgt);
+                                setMaxHgt(args.sheet, i, j, hgt);
+                            }
+                            else {
+                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, 1);
+                                setMaxHgt(args.sheet, i, j, hgt);
+                                maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
+                            }
+                        }
+                        else if (!args.wrap) {
+                            setMaxHgt(args.sheet, i, j, 20);
+                            maxHgt = 20;
+                        }
+                        if (j === args.range[3] && ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || (!args.wrap
+                            && getMaxHgt(args.sheet, i) < getRowHeight(args.sheet, i) && getRowHeight(args.sheet, i) > 20))) {
+                            setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    WrapText.prototype.ribbonClickHandler = function (args) {
+        var target = closest(args.originalEvent.target, '.e-btn');
+        if (target && target.id === this.parent.element.id + '_wrap') {
+            var wrap$$1 = target.classList.contains('e-active');
+            var address = getAddressFromSelectedRange(this.parent.getActiveSheet());
+            var eventArgs = { address: address, wrap: wrap$$1, cancel: false };
+            this.parent.notify(beginAction, { action: 'beforeWrap', eventArgs: eventArgs });
+            if (!eventArgs.cancel) {
+                wrap(this.parent.getActiveSheet().selectedRange, wrap$$1, this.parent);
+                this.parent.notify(completeAction, { action: 'wrap', eventArgs: { address: address, wrap: wrap$$1 } });
+            }
+        }
+    };
+    WrapText.prototype.getTextWidth = function (text, style) {
+        if (style === void 0) { style = this.parent.cellStyle; }
+        var defaultStyle = this.parent.cellStyle;
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        context.font = (style.fontStyle || defaultStyle.fontStyle) + ' ' + (style.fontWeight || defaultStyle.fontWeight) + ' '
+            + (style.fontSize || defaultStyle.fontSize) + ' ' + (style.fontFamily || defaultStyle.fontFamily);
+        return context.measureText(text).width;
+    };
+    WrapText.prototype.rowHeightChangedHandler = function (args) {
+        if (args.isCustomHgt) {
+            var sheet = this.parent.getActiveSheet();
+            var leftIdx = this.parent.viewport.leftIndex;
+            var rightIdx = leftIdx + this.parent.viewport.colCount + this.parent.getThreshold('col') * 2;
+            for (var i = leftIdx; i < rightIdx; i++) {
+                var cell = getCell(args.rowIdx, i, sheet);
+                if (cell && cell.wrap) {
+                    var ele = this.parent.getCell(args.rowIdx, i);
+                    ele.innerHTML = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                }
+            }
+        }
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    WrapText.prototype.getModuleName = function () {
+        return 'wrapText';
+    };
+    WrapText.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    return WrapText;
+}());
+
+/**
+ * The `Insert` module is used to insert cells, rows, columns and sheets in to the spreadsheet.
+ */
+var Insert = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Spreadsheet insert module.
+     * @private
+     */
+    function Insert(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    Insert.prototype.insert = function (args) {
+        var isAction;
+        if (args.isAction) {
+            isAction = true;
+            delete args.isAction;
+        }
+        if (isAction) {
+            this.parent.notify(beginAction, { eventArgs: args, action: 'insert' });
+        }
+        switch (args.modelType) {
+            case 'Sheet':
+                this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1) });
+                this.parent.renderModule.refreshSheet();
+                this.parent.element.focus();
+                break;
+            case 'Row':
+                if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.bottomIndex) {
+                    if (this.parent.scrollSettings.enableVirtualization) {
+                        if (args.index < this.parent.viewport.topIndex) {
+                            this.parent.viewport.topIndex += args.model.length;
+                        }
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row' });
+                    }
+                    else {
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: args.index, colIndex: 0, refresh: 'Row' });
+                    }
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+                }
+                break;
+            case 'Column':
+                if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.rightIndex) {
+                    if (this.parent.scrollSettings.enableVirtualization) {
+                        if (args.index < this.parent.viewport.leftIndex) {
+                            this.parent.viewport.leftIndex += args.model.length;
+                        }
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Column' });
+                    }
+                    else {
+                        this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, rowIndex: 0, colIndex: args.index, refresh: 'Column' });
+                    }
+                    this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+                }
+                break;
+        }
+        if (isAction) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'insert' });
+        }
+    };
+    Insert.prototype.addEventListener = function () {
+        this.parent.on(insert, this.insert, this);
+    };
+    /**
+     * Destroy insert module.
+     */
+    Insert.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    Insert.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(insert, this.insert);
+        }
+    };
+    /**
+     * Get the insert module name.
+     */
+    Insert.prototype.getModuleName = function () {
+        return 'insert';
+    };
+    return Insert;
+}());
+
+/**
+ * The `Delete` module is used to delete cells, rows, columns and sheets from the spreadsheet.
+ */
+var Delete = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Spreadsheet insert module.
+     * @private
+     */
+    function Delete(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    Delete.prototype.delete = function (args) {
+        var isAction;
+        if (args.isAction) {
+            isAction = true;
+            delete args.isAction;
+        }
+        if (isAction) {
+            this.parent.notify(beginAction, { eventArgs: args, action: 'delete' });
+        }
+        if (args.modelType === 'Sheet') {
+            // Delete sheet code
+        }
+        else if (args.modelType === 'Row') {
+            if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    if (args.startIndex < this.parent.viewport.topIndex) {
+                        this.parent.viewport.topIndex -= args.model.length;
+                    }
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.topIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true), rowIndex: this.parent.viewport.topIndex, refresh: 'Row',
+                        colIndex: this.parent.viewport.leftIndex });
+                }
+                else {
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Row', rowIndex: args.startIndex, colIndex: 0 });
+                }
+            }
+            this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+        }
+        else {
+            if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.rightIndex) {
+                if (this.parent.scrollSettings.enableVirtualization) {
+                    if (args.startIndex < this.parent.viewport.leftIndex) {
+                        this.parent.viewport.leftIndex -= args.model.length;
+                    }
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: this.parent.viewport.leftIndex === skipHiddenIdx(this.parent.getActiveSheet(), 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, refresh: 'Column',
+                        colIndex: this.parent.viewport.leftIndex });
+                }
+                else {
+                    this.parent.renderModule.refreshUI({ skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0,
+                        colIndex: args.startIndex });
+                }
+            }
+            this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+        }
+        if (isAction) {
+            this.parent.notify(completeAction, { eventArgs: args, action: 'delete' });
+        }
+    };
+    Delete.prototype.addEventListener = function () {
+        this.parent.on(deleteAction, this.delete, this);
+    };
+    /**
+     * Destroy delete module.
+     */
+    Delete.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    Delete.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(deleteAction, this.delete);
+        }
+    };
+    /**
+     * Get the delete module name.
+     */
+    Delete.prototype.getModuleName = function () {
+        return 'delete';
+    };
+    return Delete;
+}());
+
+/**
+ * Represents Data Validation support for Spreadsheet.
+ */
+var DataValidation = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Spreadsheet Data Validation module.
+     */
+    function DataValidation(parent) {
+        this.data = [];
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the Data Validation module.
+     * @return {void}
+     */
+    DataValidation.prototype.destroy = function () {
+        this.removeEventListener();
+        var dataValPopup = document.querySelector('#' + this.parent.element.id + '_datavalidation-popup');
+        if (dataValPopup) {
+            dataValPopup.remove();
+        }
+        this.parent = null;
+    };
+    DataValidation.prototype.addEventListener = function () {
+        EventHandler.add(this.parent.element, 'dblclick', this.listOpen, this);
+        EventHandler.add(document, 'mousedown', this.mouseDownHandler, this);
+        this.parent.on(initiateDataValidation, this.initiateDataValidationHandler, this);
+        this.parent.on(invalidData, this.invalidDataHandler, this);
+        this.parent.on(isValidation, this.checkDataValidation, this);
+        this.parent.on(activeCellChanged, this.listHandler, this);
+        this.parent.on(keyUp, this.keyUpHandler, this);
+    };
+    DataValidation.prototype.removeEventListener = function () {
+        EventHandler.remove(this.parent.element, 'dblclick', this.listOpen);
+        EventHandler.remove(document, 'mousedown', this.mouseDownHandler);
+        if (!this.parent.isDestroyed) {
+            this.parent.off(initiateDataValidation, this.initiateDataValidationHandler);
+            this.parent.off(invalidData, this.invalidDataHandler);
+            this.parent.off(isValidation, this.checkDataValidation);
+            this.parent.off(activeCellChanged, this.listHandler);
+            this.parent.on(keyUp, this.keyUpHandler, this);
+        }
+    };
+    DataValidation.prototype.mouseDownHandler = function (e) {
+        var target = e.target;
+        var parEle = closest(target, '.e-ddl');
+        if (parEle && parEle.getAttribute('id') === 'listValid_popup') {
+            this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: target.innerText });
+        }
+    };
+    DataValidation.prototype.keyUpHandler = function (e) {
+        var target = e.target;
+        var dlgEle = this.parent.element.querySelector('.e-datavalidation-dlg');
+        if (closest(target, '.e-values') && dlgEle && e.keyCode !== 13) {
+            var valuesCont = dlgEle.querySelector('.e-values');
+            var errorEle = valuesCont.querySelector('.e-dlg-error');
+            var footerCont = dlgEle.querySelector('.e-footer-content');
+            var primaryBut = footerCont.querySelector('.e-primary');
+            if (primaryBut.hasAttribute('disabled')) {
+                primaryBut.removeAttribute('disabled');
+            }
+            if (errorEle) {
+                valuesCont.removeChild(errorEle);
+            }
+        }
+    };
+    DataValidation.prototype.listOpen = function (e) {
+        var target = e.target;
+        if (this.listObj && target.classList.contains('e-cell') && target.querySelector('.e-validation-list')) {
+            this.listObj.showPopup();
+        }
+    };
+    DataValidation.prototype.invalidDataHandler = function (args) {
+        if (args.isRemoveHighlight) {
+            this.parent.removeInvalidHighlight();
+        }
+        else {
+            this.parent.addInvalidHighlight();
+        }
+    };
+    DataValidation.prototype.listHandler = function () {
+        var _this = this;
+        if (this.parent.allowDataValidation) {
+            var sheet = this.parent.getActiveSheet();
+            var mainCont = this.parent.getMainContent();
+            var indexes = getCellIndexes(sheet.activeCell);
+            var colIdx = indexes[1];
+            var rowIdx = indexes[0];
+            if (this.parent.scrollSettings.enableVirtualization) {
+                rowIdx = rowIdx >= this.parent.viewport.topIndex ?
+                    rowIdx - this.parent.viewport.topIndex : rowIdx;
+                colIdx = colIdx >= this.parent.viewport.leftIndex ?
+                    colIdx - this.parent.viewport.leftIndex : colIdx;
+            }
+            var cell_1 = getCell(rowIdx, colIdx, sheet);
+            var tr = mainCont.getElementsByTagName('tr')[rowIdx];
+            if (cell_1 && tr) {
+                var tdEle_1 = tr.getElementsByClassName('e-cell')[colIdx];
+                if (!tdEle_1) {
+                    return;
+                }
+                if (document.getElementsByClassName('e-validation-list')[0]) {
+                    remove(document.getElementsByClassName('e-validation-list')[0]);
+                    this.data = [];
+                }
+                if (cell_1.validation && cell_1.validation.type === 'List') {
+                    cell_1.validation.ignoreBlank = !isNullOrUndefined(cell_1.validation.ignoreBlank) ? cell_1.validation.ignoreBlank : true;
+                    cell_1.validation.inCellDropDown = !isNullOrUndefined(cell_1.validation.inCellDropDown) ?
+                        cell_1.validation.inCellDropDown : true;
+                    if (cell_1.validation.inCellDropDown) {
+                        var ddlCont = this.parent.createElement('div', { className: 'e-validation-list' });
+                        var ddlEle = this.parent.createElement('input', { id: 'listValid' });
+                        ddlCont.appendChild(ddlEle);
+                        if (!cell_1.validation.inCellDropDown) {
+                            ddlCont.style.display = 'none';
+                        }
+                        tdEle_1.insertBefore(ddlCont, tdEle_1.firstChild);
+                        this.listObj = new DropDownList({
+                            index: 0,
+                            dataSource: this.data,
+                            fields: { text: 'text', value: 'id' },
+                            width: '0px',
+                            popupWidth: '200px',
+                            popupHeight: '200px',
+                            beforeOpen: function () {
+                                _this.listObj.popupWidth = tdEle_1.offsetWidth - 1;
+                                _this.data = [];
+                                _this.updateDataSource(_this.listObj, cell_1);
+                            },
+                            change: function () { _this.listValueChange(_this.listObj.text); },
+                            open: function (args) {
+                                args.popup.offsetX = -(tdEle_1.offsetWidth - 20) + 4;
+                                args.popup.offsetY = -13;
+                            }
+                        });
+                        this.listObj.appendTo('#listValid');
+                    }
+                }
+            }
+        }
+    };
+    DataValidation.prototype.updateDataSource = function (listObj, cell) {
+        var count$$1 = 0;
+        var sheet = this.parent.getActiveSheet();
+        var value = cell.validation.value1.toUpperCase();
+        var isRange = value.indexOf('=') !== -1 ? true : false;
+        if (isRange) {
+            var indexes = getRangeIndexes(value);
+            for (var rowIdx = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+                if (!sheet.rows[rowIdx]) {
+                    setRow(sheet, rowIdx, {});
+                }
+                for (var colIdx = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                    if (!sheet.rows[rowIdx].cells) {
+                        setCell(rowIdx, colIdx, sheet, {});
+                    }
+                    count$$1 += 1;
+                    cell = sheet.rows[rowIdx].cells[colIdx];
+                    var data = this.parent.getDisplayText(cell) ? this.parent.getDisplayText(cell) : '';
+                    this.data.push({ text: data, id: 'list-' + count$$1 });
+                }
+            }
+        }
+        else {
+            var listValues = cell.validation.value1.split(',');
+            for (var idx = 0; idx < listValues.length; idx++) {
+                count$$1 += 1;
+                this.data.push({ text: listValues[idx], id: 'list-' + count$$1 });
+            }
+        }
+        listObj.dataSource = this.data;
+    };
+    DataValidation.prototype.listValueChange = function (value) {
+        var cellIdx = getIndexesFromAddress(this.parent.getActiveSheet().activeCell);
+        this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: this.parent.getActiveSheet().activeCell, value: value });
+        this.parent.serviceLocator.getService('cell').refreshRange(cellIdx);
+    };
+    DataValidation.prototype.initiateDataValidationHandler = function () {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var type;
+        var operator;
+        var value1;
+        var value2;
+        var ignoreBlank = true;
+        var inCellDropDown = true;
+        var isNew = true;
+        var sheet = this.parent.getActiveSheet();
+        var cell;
+        var indexes = getRangeIndexes(sheet.selectedRange);
+        for (var rowIdx = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+            if (sheet.rows[rowIdx]) {
+                for (var colIdx = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                    if (sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[colIdx]) {
+                        cell = sheet.rows[rowIdx].cells[colIdx];
+                        if (cell.validation) {
+                            isNew = false;
+                            type = cell.validation.type;
+                            operator = cell.validation.operator;
+                            value1 = cell.validation.value1;
+                            value2 = cell.validation.value2;
+                            ignoreBlank = cell.validation.ignoreBlank;
+                            inCellDropDown = cell.validation.inCellDropDown;
+                        }
+                    }
+                }
+            }
+        }
+        if (!this.parent.element.querySelector('.e-datavalidation-dlg')) {
+            var dialogInst_1 = this.parent.serviceLocator.getService(dialog);
+            dialogInst_1.show({
+                width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
+                header: l10n.getConstant('DataValidation'),
+                target: document.querySelector('.e-control.e-spreadsheet'),
+                beforeOpen: function () {
+                    dialogInst_1.dialogInstance.content =
+                        _this.dataValidationContent(isNew, type, operator, value1, value2, ignoreBlank, inCellDropDown);
+                    dialogInst_1.dialogInstance.dataBind();
+                    _this.parent.element.focus();
+                },
+                buttons: [{
+                        buttonModel: {
+                            content: l10n.getConstant('CLEARALL'),
+                            cssClass: 'e-btn e-clearall-btn e-flat'
+                        },
+                        click: function () {
+                            dialogInst_1.dialogInstance.content =
+                                _this.dataValidationContent(true, type, operator, value1, value2, ignoreBlank, inCellDropDown);
+                            dialogInst_1.dialogInstance.dataBind();
+                            _this.parent.element.focus();
+                        }
+                    },
+                    {
+                        buttonModel: {
+                            content: l10n.getConstant('APPLY'), isPrimary: true
+                        },
+                        click: function () {
+                            _this.dlgClickHandler(dialogInst_1);
+                        }
+                    }]
+            });
+            dialogInst_1.dialogInstance.refresh();
+        }
+    };
+    // tslint:disable-next-line:max-func-body-length
+    DataValidation.prototype.dataValidationContent = function (isNew, type, operator, val1, val2, ignoreBlank, inCellDropDown) {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var value1 = isNew ? '0' : val1;
+        var value2 = isNew ? '0' : val2;
+        var dlgContent = this.parent.createElement('div', { className: 'e-validation-dlg' });
+        var cellRangeCont = this.parent.createElement('div', { className: 'e-cellrange' });
+        var allowDataCont = this.parent.createElement('div', { className: 'e-allowdata' });
+        var valuesCont = this.parent.createElement('div', { className: 'e-values' });
+        var ignoreBlankCont = this.parent.createElement('div', { className: 'e-ignoreblank' });
+        dlgContent.appendChild(cellRangeCont);
+        dlgContent.appendChild(allowDataCont);
+        dlgContent.appendChild(valuesCont);
+        dlgContent.appendChild(ignoreBlankCont);
+        var cellRangeText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('CellRange') });
+        var cellRangeEle = this.parent.createElement('input', {
+            className: 'e-input',
+            attrs: { value: this.parent.getActiveSheet().selectedRange }
+        });
+        cellRangeCont.appendChild(cellRangeText);
+        cellRangeCont.appendChild(cellRangeEle);
+        var allowCont = this.parent.createElement('div', { className: 'e-allow' });
+        var dataCont = this.parent.createElement('div', { className: 'e-data' });
+        allowDataCont.appendChild(allowCont);
+        allowDataCont.appendChild(dataCont);
+        var allowText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Allow') });
+        this.typeData = [
+            { text: l10n.getConstant('WholeNumber'), id: 'type-1' },
+            { text: l10n.getConstant('Decimal'), id: 'type-2' },
+            { text: l10n.getConstant('Date'), id: 'type-3' },
+            { text: l10n.getConstant('Time'), id: 'type-4' },
+            { text: l10n.getConstant('TextLength'), id: 'type-5' },
+            { text: l10n.getConstant('List'), id: 'type-6' }
+        ];
+        this.operatorData = [
+            { text: l10n.getConstant('Between'), id: 'operator-1' },
+            { text: l10n.getConstant('NotBetween'), id: 'operator-2' },
+            { text: l10n.getConstant('EqualTo'), id: 'operator-3' },
+            { text: l10n.getConstant('NotEqualTo'), id: 'operator-4' },
+            { text: l10n.getConstant('Greaterthan'), id: 'operator-5' },
+            { text: l10n.getConstant('Lessthan'), id: 'operator-6' },
+            { text: l10n.getConstant('GreaterThanOrEqualTo'), id: 'operator-7' },
+            { text: l10n.getConstant('LessThanOrEqualTo'), id: 'operator-8' }
+        ];
+        var allowSelectEle = this.parent.createElement('input', { className: 'e-select' });
+        var allowIdx = 0;
+        if (!isNew) {
+            for (var idx = 0; idx < this.typeData.length; idx++) {
+                if (type === this.typeData[idx].text.replace(' ', '')) {
+                    allowIdx = idx;
+                    break;
+                }
+            }
+        }
+        if (isNew || type !== 'List') {
+            var dataIdx = 0;
+            var dataText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Data') });
+            var dataSelectEle = this.parent.createElement('input', { className: 'e-select' });
+            if (!isNew) {
+                for (var idx = 0; idx < this.operatorData.length; idx++) {
+                    if (operator === this.FormattedValue(this.operatorData[idx].text)) {
+                        dataIdx = idx;
+                        break;
+                    }
+                }
+            }
+            dataCont.appendChild(dataText);
+            dataCont.appendChild(dataSelectEle);
+            this.dataList = new DropDownList({
+                dataSource: this.operatorData,
+                index: dataIdx,
+                popupHeight: '200px',
+                change: function () { _this.userInput(listObj, _this.dataList); }
+            });
+            this.dataList.appendTo(dataSelectEle);
+        }
+        else {
+            var ignoreBlankEle_1 = this.parent.createElement('input', { className: 'e-checkbox' });
+            dataCont.appendChild(ignoreBlankEle_1);
+            var ignoreBlankObj_1 = new CheckBox({ label: l10n.getConstant('InCellDropDown'), checked: inCellDropDown });
+            ignoreBlankObj_1.appendTo(ignoreBlankEle_1);
+        }
+        allowCont.appendChild(allowText);
+        allowCont.appendChild(allowSelectEle);
+        var listObj = new DropDownList({
+            dataSource: this.typeData,
+            index: allowIdx,
+            popupHeight: '200px',
+            change: function () { _this.userInput(listObj, _this.dataList); }
+        });
+        listObj.appendTo(allowSelectEle);
+        if (isNew || (listObj.value !== 'List' && (this.dataList.value === 'Between' || this.dataList.value === 'Not between'))) {
+            var minimumCont = this.parent.createElement('div', { className: 'e-minimum' });
+            var maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
+            valuesCont.appendChild(minimumCont);
+            valuesCont.appendChild(maximumCont);
+            var minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
+            var maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            var minimumInp = this.parent.createElement('input', {
+                id: 'minvalue',
+                className: 'e-input', attrs: { value: value1 }
+            });
+            var maximumInp = this.parent.createElement('input', {
+                id: 'maxvalue',
+                className: 'e-input', attrs: { value: value2 }
+            });
+            minimumCont.appendChild(minimumText);
+            minimumCont.appendChild(minimumInp);
+            maximumCont.appendChild(maximumText);
+            maximumCont.appendChild(maximumInp);
+            var numericMin = new NumericTextBox({
+                value: 0
+            });
+            numericMin.appendTo('#minvalue');
+            var numericMax = new NumericTextBox({
+                value: 0
+            });
+            numericMax.appendTo('#maxvalue');
+        }
+        else if (!isNew || type === ' List') {
+            var valueText = this.parent.createElement('span', {
+                className: 'e-header', innerHTML: l10n.getConstant('Sources')
+            });
+            var valueEle = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
+            valuesCont.appendChild(valueText);
+            valuesCont.appendChild(valueEle);
+        }
+        else {
+            var valueText = this.parent.createElement('span', {
+                className: 'e-header', innerHTML: l10n.getConstant('Value')
+            });
+            var valueEle = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
+            valuesCont.appendChild(valueText);
+            valuesCont.appendChild(valueEle);
+        }
+        var isChecked = ignoreBlank;
+        var ignoreBlankEle = this.parent.createElement('input', { className: 'e-checkbox' });
+        ignoreBlankCont.appendChild(ignoreBlankEle);
+        var ignoreBlankObj = new CheckBox({ label: l10n.getConstant('IgnoreBlank'), checked: isChecked });
+        ignoreBlankObj.appendTo(ignoreBlankEle);
+        return dlgContent;
+    };
+    DataValidation.prototype.userInput = function (listObj, listObj1) {
+        var dlgEle = this.parent.element.querySelector('.e-datavalidation-dlg');
+        var dlgCont = dlgEle.querySelector('.e-validation-dlg');
+        var allowDataCont = dlgCont.querySelector('.e-allowdata');
+        var valuesCont = dlgCont.querySelector('.e-values');
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var dataCont = allowDataCont.querySelector('.e-data');
+        var opeEle = dataCont.querySelector('.e-valid-input');
+        while (valuesCont.lastChild) {
+            valuesCont.removeChild(valuesCont.lastChild);
+        }
+        if (listObj.value === 'List') {
+            while (dataCont.lastChild) {
+                dataCont.removeChild(dataCont.lastChild);
+            }
+            var ignoreBlankEle = this.parent.createElement('input', { className: 'e-checkbox' });
+            dataCont.appendChild(ignoreBlankEle);
+            var ignoreBlankObj = new CheckBox({ label: l10n.getConstant('InCellDropDown'), checked: true });
+            ignoreBlankObj.appendTo(ignoreBlankEle);
+        }
+        else {
+            if (dataCont.getElementsByClassName('e-checkbox-wrapper')[0]) {
+                while (dataCont.lastChild) {
+                    dataCont.removeChild(dataCont.lastChild);
+                }
+                var dataText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Data' });
+                var dataSelectEle = this.parent.createElement('input', { className: 'e-select' });
+                dataCont.appendChild(dataText);
+                dataCont.appendChild(dataSelectEle);
+                listObj1.appendTo(dataSelectEle);
+            }
+        }
+        if (listObj.value !== 'List' && (listObj1.value === 'Between' || listObj1.value === 'Not between')) {
+            var minimumCont = this.parent.createElement('div', { className: 'e-minimum' });
+            var maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
+            valuesCont.appendChild(minimumCont);
+            valuesCont.appendChild(maximumCont);
+            var minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
+            var maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            var minimumInp = this.parent.createElement('input', { id: 'min', className: 'e-input', attrs: { value: '0' } });
+            var maximumInp = this.parent.createElement('input', { id: 'max', className: 'e-input', attrs: { value: '0' } });
+            var numericMin = new NumericTextBox({
+                value: 0
+            });
+            numericMin.appendTo('min');
+            var numericMax = new NumericTextBox({
+                value: 0
+            });
+            numericMax.appendTo('max');
+            minimumCont.appendChild(minimumText);
+            minimumCont.appendChild(minimumInp);
+            maximumCont.appendChild(maximumText);
+            maximumCont.appendChild(maximumInp);
+        }
+        else {
+            var text = listObj.value === 'List' ? l10n.getConstant('Sources') : l10n.getConstant('Value');
+            var valueText = this.parent.createElement('span', { className: 'e-header', innerHTML: text });
+            var valueEle = listObj.value === 'List' ? this.parent.createElement('input', {
+                className: 'e-input',
+                attrs: { placeholder: 'Enter value' }
+            }) :
+                this.parent.createElement('input', { className: 'e-input', attrs: { value: '0' } });
+            valuesCont.appendChild(valueText);
+            valuesCont.appendChild(valueEle);
+        }
+    };
+    DataValidation.prototype.dlgClickHandler = function (dialogInst) {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var isValidList = true;
+        var errorMsg;
+        var dlgEle = this.parent.element.querySelector('.e-datavalidation-dlg');
+        var dlgFooter = dlgEle.querySelector('.e-footer-content');
+        var dlgContEle = dlgEle.getElementsByClassName('e-dlg-content')[0].
+            getElementsByClassName('e-validation-dlg')[0];
+        var allowData = dlgContEle.getElementsByClassName('e-allowdata')[0];
+        var allowEle = allowData.getElementsByClassName('e-allow')[0].getElementsByTagName('input')[0];
+        var dataEle = allowData.getElementsByClassName('e-data')[0].getElementsByTagName('input')[0];
+        var values = dlgContEle.getElementsByClassName('e-values')[0];
+        var value1 = values.getElementsByTagName('input')[0].value;
+        var value2 = values.getElementsByTagName('input')[1] ? values.getElementsByTagName('input')[1].value : '';
+        var ignoreBlank = dlgContEle.querySelector('.e-ignoreblank').querySelector('.e-checkbox-wrapper').
+            getAttribute('aria-checked') === 'true' ? true : false;
+        var inCellDropDown = allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper') ?
+            allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper').querySelector('.e-check') ? true : false : null;
+        var range = dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0].value;
+        var operator;
+        var type = allowEle.value;
+        if (dataEle) {
+            operator = dataEle.value;
+            operator = this.FormattedValue(operator);
+        }
+        if (type) {
+            type = type.replace(' ', '');
+        }
+        var rangeAdd = [];
+        var valArr = [];
+        if (value1 !== '') {
+            valArr.push(value1);
+        }
+        if (value2 !== '') {
+            valArr.push(value2);
+        }
+        if (type === 'List') {
+            if (value1.indexOf('=') !== -1) {
+                if (value1.indexOf(':') !== -1) {
+                    rangeAdd = value1.split(':');
+                    var arr1 = rangeAdd;
+                    var arr2 = rangeAdd;
+                    var isSingleCol = arr1[0].replace(/[0-9]/g, '').replace('=', '') ===
+                        arr1[1].replace(/[0-9]/g, '') ? true : false;
+                    var isSingleRow = arr2[0].replace(/\D/g, '').replace('=', '') === arr2[1].replace(/\D/g, '') ? true : false;
+                    isValidList = isSingleCol ? true : isSingleRow ? true : false;
+                    if (!isValidList) {
+                        errorMsg = l10n.getConstant('DialogError');
+                    }
+                }
+            }
+        }
+        if (type !== 'List' || isValidList) {
+            var sheet = this.parent.getActiveSheet();
+            var format = type;
+            var validDlg = this.isDialogValidator(valArr, format, operator);
+            errorMsg = validDlg.errorMsg;
+            isValidList = validDlg.isValidate;
+            if (isValidList) {
+                var indexes = getCellIndexes(this.parent.getActiveSheet().activeCell);
+                if (sheet && sheet.rows[indexes[0]] && sheet.rows[indexes[0]].cells[indexes[1]] &&
+                    sheet.rows[indexes[0]].cells[indexes[1]].validation &&
+                    sheet.rows[indexes[0]].cells[indexes[1]].validation.type === 'List') {
+                    var tdEle = this.parent.getMainContent().
+                        getElementsByTagName('tr')[indexes[0]].getElementsByClassName('e-cell')[indexes[1]];
+                    if (tdEle && tdEle.getElementsByClassName('e-validation-list')[0]) {
+                        tdEle.removeChild(tdEle.getElementsByClassName('e-validation-list')[0]);
+                        this.listObj.destroy();
+                    }
+                }
+                var rules = {
+                    type: type, operator: operator,
+                    value1: value1, value2: value2, ignoreBlank: ignoreBlank, inCellDropDown: inCellDropDown
+                };
+                this.parent.addDataValidation(rules, range);
+                if (type === 'List' && isValidList) {
+                    this.listHandler();
+                }
+                if (!document.getElementsByClassName('e-validationerror-dlg')[0]) {
+                    if (dialogInst.dialogInstance) {
+                        dialogInst.dialogInstance.hide();
+                    }
+                    else {
+                        dialogInst.hide();
+                    }
+                }
+            }
+        }
+        if (!isValidList) {
+            var errorEle = this.parent.createElement('div', {
+                className: 'e-dlg-error', id: 'e-invalid', innerHTML: errorMsg
+            });
+            values.appendChild(errorEle);
+            dlgFooter.querySelector('.e-primary').setAttribute('disabled', 'true');
+        }
+    };
+    DataValidation.prototype.FormattedValue = function (value) {
+        switch (value) {
+            case 'Between':
+                value = 'Between';
+                break;
+            case 'Not between':
+                value = 'NotBetween';
+                break;
+            case 'Equal to':
+                value = 'EqualTo';
+                break;
+            case 'Not equal to':
+                value = 'NotEqualTo';
+                break;
+            case 'Greater than':
+                value = 'GreaterThan';
+                break;
+            case 'Less than':
+                value = 'LessThan';
+                break;
+            case 'Greater than or equal to':
+                value = 'GreaterThanOrEqualTo';
+                break;
+            case 'Less than or equal to':
+                value = 'LessThanOrEqualTo';
+                break;
+            default:
+                value = 'Between';
+                break;
+        }
+        return value;
+    };
+    DataValidation.prototype.isDialogValidator = function (values, type, operator) {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var count$$1 = 0;
+        var isEmpty = false;
+        var formValidation;
+        if (type === 'List') {
+            isEmpty = values.length > 0 ? false : true;
+        }
+        else {
+            if (operator === 'Between' || operator === 'NotBetween') {
+                isEmpty = values.length === 2 ? false : true;
+            }
+            else {
+                isEmpty = values.length > 0 ? false : true;
+            }
+        }
+        if (!isEmpty) {
+            for (var idx = 0; idx < values.length; idx++) {
+                formValidation = this.formatValidation(values[idx], type);
+                if (formValidation.isValidate) {
+                    count$$1 = count$$1 + 1;
+                }
+                else {
+                    break;
+                }
+            }
+            formValidation.isValidate = count$$1 === values.length ? true : false;
+        }
+        else {
+            formValidation = { isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
+        }
+        return { isValidate: formValidation.isValidate, errorMsg: formValidation.errorMsg };
+    };
+    // tslint:disable-next-line:max-func-body-length
+    DataValidation.prototype.isValidationHandler = function (args) {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        args.value = args.value ? args.value : '';
+        var isValidate;
+        var errorMsg;
+        var enterValue = args.value;
+        var sheet = this.parent.sheets[args.sheetIdx - 1];
+        var cell = getCell(args.range[0], args.range[1], sheet);
+        var value = args.value;
+        var value1 = cell.validation.value1;
+        var value2 = cell.validation.value2;
+        var opt = cell.validation.operator;
+        var type = cell.validation.type;
+        var ignoreBlank = cell.validation.ignoreBlank;
+        var formValidation = this.formatValidation(args.value, type);
+        isValidate = formValidation.isValidate;
+        errorMsg = formValidation.errorMsg;
+        if (isValidate) {
+            isValidate = false;
+            if (type === 'Date' || type === 'Time') {
+                for (var idx = 0; idx <= 3; idx++) {
+                    args.value = idx === 0 ? args.value : idx === 1 ? cell.validation.value1 : cell.validation.value2;
+                    var dateEventArgs = {
+                        value: args.value,
+                        rowIndex: args.range[0],
+                        colIndex: args.range[1],
+                        sheetIndex: args.sheetIdx,
+                        updatedVal: ''
+                    };
+                    if (args.value !== '') {
+                        this.parent.notify(checkDateFormat, dateEventArgs);
+                    }
+                    var updatedVal = dateEventArgs.updatedVal;
+                    if (idx === 0) {
+                        value = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                    }
+                    else if (idx === 1) {
+                        value1 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                    }
+                    else {
+                        value2 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                    }
+                }
+            }
+            else if (cell.validation.type === 'TextLength') {
+                value = args.value.toString().length.toString();
+            }
+            if (type === 'List') {
+                if (value1.indexOf('=') !== -1) {
+                    for (var idx = 0; idx < this.data.length; idx++) {
+                        if (args.value === this.data[idx].text) {
+                            isValidate = true;
+                        }
+                    }
+                }
+                else {
+                    var values = value1.split(',');
+                    for (var idx = 0; idx < values.length; idx++) {
+                        if (args.value === values[idx]) {
+                            isValidate = true;
+                        }
+                    }
+                }
+            }
+            else {
+                if (type === 'Decimal') {
+                    value = parseFloat(value.toString());
+                    value1 = parseFloat(value1.toString());
+                    value2 = value2 ? parseFloat(value2.toString()) : null;
+                }
+                else {
+                    value = parseInt(value.toString(), 10);
+                    value1 = parseInt(value1.toString(), 10);
+                    value2 = value2 ? parseInt(value2.toString(), 10) : null;
+                }
+                switch (opt) {
+                    case 'EqualTo':
+                        if (value === value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'NotEqualTo':
+                        if (value !== value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'Between':
+                        if (value >= value1 && value <= value2) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'NotBetween':
+                        if (value >= value1 && value <= value2) {
+                            isValidate = false;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = true;
+                        }
+                        break;
+                    case 'GreaterThan':
+                        if (value > value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'LessThan':
+                        if (value < value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'GreaterThanOrEqualTo':
+                        if (value >= value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'LessThanOrEqualTo':
+                        if (value <= value1) {
+                            isValidate = true;
+                        }
+                        else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        }
+                        else {
+                            isValidate = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        errorMsg = l10n.getConstant('ValidationError');
+        if (isValidate && cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
+            cell.style.backgroundColor = '';
+            cell.style.color = '';
+            this.parent.notify(applyCellFormat, {
+                style: { backgroundColor: '', color: '' }, rowIdx: args.range[0],
+                colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
+                onActionUpdate: true
+            });
+        }
+        return { isValidate: isValidate, errorMsg: errorMsg };
+    };
+    DataValidation.prototype.checkDataValidation = function (args) {
+        var isValid = this.isValidationHandler({
+            value: args.value, range: args.range, sheetIdx: args.sheetIdx
+        });
+        if (!isValid.isValidate && args.isCell) {
+            this.validationErrorHandler(isValid.errorMsg);
+        }
+        this.parent.allowDataValidation = isValid.isValidate;
+    };
+    DataValidation.prototype.formatValidation = function (value, type) {
+        var sheetPanel = this.parent.element.getElementsByClassName('e-sheet-panel')[0];
+        var isValidate;
+        var errorMsg;
+        var formEle = this.parent.createElement('form', {
+            id: 'formId',
+            className: 'form-horizontal'
+        });
+        var inputEle = this.parent.createElement('input', {
+            id: 'e-validation', innerHTML: value
+        });
+        inputEle.setAttribute('name', 'validation');
+        inputEle.setAttribute('type', 'text');
+        inputEle.setAttribute('value', value);
+        formEle.appendChild(inputEle);
+        sheetPanel.appendChild(formEle);
+        var options;
+        switch (type) {
+            case 'Date':
+                options = {
+                    rules: {
+                        'validation': { date: true },
+                    },
+                    customPlacement: function (inputElement, error) {
+                        errorMsg = error.innerText;
+                    }
+                };
+                break;
+            case 'Decimal':
+                options = {
+                    rules: {
+                        'validation': { number: true },
+                    },
+                    customPlacement: function (inputElement, error) {
+                        errorMsg = error.innerText;
+                    }
+                };
+                break;
+            case 'WholeNumber':
+                options = {
+                    rules: {
+                        'validation': { regex: /^\d*\.?[0]*$/ },
+                    },
+                    customPlacement: function (inputElement, error) {
+                        errorMsg = error.innerText;
+                    }
+                };
+                break;
+            default:
+                break;
+        }
+        var formObj = new FormValidator('#formId', options);
+        isValidate = formObj.validate();
+        sheetPanel.removeChild(sheetPanel.getElementsByClassName('form-horizontal')[0]);
+        return { isValidate: isValidate, errorMsg: errorMsg };
+    };
+    DataValidation.prototype.validationErrorHandler = function (error) {
+        var _this = this;
+        var el = document.getElementsByClassName('e-spreadsheet-edit')[0];
+        var l10n = this.parent.serviceLocator.getService(locale);
+        if (!this.parent.element.querySelector('.e-validationerror-dlg')) {
+            var erroDialogInst_1 = this.parent.serviceLocator.getService(dialog);
+            var disableCancel = false;
+            var dlgModel = {
+                width: 400, height: 200, isModal: true, showCloseIcon: true, cssClass: 'e-validationerror-dlg',
+                target: document.querySelector('.e-control.e-spreadsheet'),
+                beforeOpen: function () {
+                    el.focus();
+                    erroDialogInst_1.dialogInstance.content = error;
+                    erroDialogInst_1.dialogInstance.dataBind();
+                },
+                buttons: [{
+                        buttonModel: {
+                            content: l10n.getConstant('Retry'), isPrimary: true,
+                        },
+                        click: function () {
+                            _this.errorDlgHandler(erroDialogInst_1, 'Retry');
+                        }
+                    },
+                    {
+                        buttonModel: {
+                            content: l10n.getConstant('Cancel'),
+                        },
+                        click: function () {
+                            _this.errorDlgHandler(erroDialogInst_1, 'Cancel');
+                        }
+                    }]
+            };
+            erroDialogInst_1.show(dlgModel, disableCancel);
+        }
+    };
+    DataValidation.prototype.errorDlgHandler = function (errorDialogInst, buttonName) {
+        if (buttonName === 'Retry') {
+            var el = document.getElementsByClassName('e-spreadsheet-edit')[0];
+            var mainCont = this.parent.getMainContent();
+            errorDialogInst.hide();
+            if (el.innerText) {
+                var range = document.createRange();
+                range.setStart(el.childNodes[0], 0);
+                range.setEnd(el.childNodes[0], el.innerText.length);
+                var selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                if (this.listObj) {
+                    this.listObj.showPopup();
+                }
+            }
+        }
+        else {
+            var indexes = getCellIndexes(this.parent.getActiveSheet().activeCell);
+            var value = this.parent.getDisplayText(this.parent.getActiveSheet().rows[indexes[0]].cells[indexes[1]]);
+            this.parent.notify(editOperation, {
+                action: 'cancelEdit', value: value, refreshFormulaBar: true,
+                refreshEditorElem: true, isAppend: false, trigEvent: true
+            });
+            errorDialogInst.hide();
+        }
+    };
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    DataValidation.prototype.getModuleName = function () {
+        return 'dataValidation';
+    };
+    return DataValidation;
+}());
+
+/**
+ * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
+ */
+var ProtectSheet = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for protectSheet module in Spreadsheet.
+     * @private
+     */
+    function ProtectSheet(parent) {
+        this.parent = parent;
+        this.init();
+    }
+    ProtectSheet.prototype.init = function () {
+        this.addEventListener();
+    };
+    /**
+     * To destroy the protectSheet module.
+     * @return {void}
+     * @hidden
+     */
+    ProtectSheet.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    ProtectSheet.prototype.addEventListener = function () {
+        this.parent.on(applyProtect, this.protect, this);
+        this.parent.on(protectSheet, this.protectSheetHandler, this);
+        this.parent.on(editAlert, this.editProtectedAlert, this);
+    };
+    ProtectSheet.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(applyProtect, this.protect);
+            this.parent.off(protectSheet, this.protectSheetHandler);
+            this.parent.off(editAlert, this.editProtectedAlert);
+        }
+    };
+    ProtectSheet.prototype.protect = function (args) {
+        this.parent.notify(clearCopy, null);
+        if (!args.isActive) {
+            this.createDialogue();
+        }
+        else {
+            this.parent.getActiveSheet().isProtected = false;
+            this.parent.notify(updateToggleItem, { props: 'Protect' });
+            this.parent.notify(protectSheet, { isActive: args.isActive });
+            this.parent.notify(protectSelection, null);
+        }
+    };
+    ProtectSheet.prototype.createDialogue = function () {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var listData = [
+            { text: l10n.getConstant('SelectCells'), id: '1' },
+            { text: l10n.getConstant('FormatCells'), id: '2' },
+            { text: l10n.getConstant('FormatRows'), id: '3' },
+            { text: l10n.getConstant('FormatColumns'), id: '4' },
+            { text: l10n.getConstant('InsertLinks'), id: '5' }
+        ];
+        this.optionList = new ListView({
+            width: '250px',
+            dataSource: listData,
+            showCheckBox: true,
+            select: this.dialogOpen.bind(this),
+        });
+        var protectHeaderCntent = this.parent.createElement('div', { className: 'e-protect-content',
+            innerHTML: l10n.getConstant('ProtectAllowUser') });
+        this.parent.getActiveSheet().isProtected = false;
+        var checkbox = new CheckBox({ checked: true, label: l10n.getConstant('ProtectContent'), cssClass: 'e-protect-checkbox' });
+        var listViewElement = this.parent.createElement('div', { className: 'e-protect-option-list',
+            id: this.parent.element.id + '_option_list' });
+        var headerContent = this.parent.createElement('div', { className: 'e-header-content', innerHTML: l10n.getConstant('ProtectSheet') });
+        var checkBoxElement = this.parent.createElement('input', { id: this.parent.element.id + '_protect_check', attrs: { type: 'checkbox' } });
+        this.dialog = this.parent.serviceLocator.getService('dialog');
+        this.dialog.show({
+            header: headerContent.outerHTML,
+            content: checkBoxElement.outerHTML + protectHeaderCntent.outerHTML + listViewElement.outerHTML,
+            showCloseIcon: true, isModal: true,
+            cssClass: 'e-protect-dlg',
+            beforeOpen: function () { return _this.parent.element.focus(); },
+            open: function () {
+                _this.okBtnFocus();
+            },
+            beforeClose: function () {
+                var checkboxElement = document.getElementById(_this.parent.element.id + '_protect_check');
+                EventHandler.remove(checkboxElement, 'focus', _this.okBtnFocus);
+                EventHandler.remove(checkbox.element, 'click', _this.checkBoxClickHandler);
+                _this.parent.element.focus();
+            },
+            buttons: [{ click: (this.selectOption.bind(this, this.dialog, this)),
+                    buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true } }]
+        });
+        checkbox.appendTo('#' + this.parent.element.id + '_protect_check');
+        this.optionList.appendTo('#' + this.parent.element.id + '_option_list');
+        this.optionList.selectMultipleItems([{ id: '1' }]);
+        EventHandler.add(checkbox.element, 'click', this.checkBoxClickHandler, this);
+    };
+    
+    ProtectSheet.prototype.okBtnFocus = function () {
+        var _this = this;
+        var checkboxElement = document.getElementById(this.parent.element.id + '_protect_check');
+        checkboxElement.addEventListener('focus', function () {
+            _this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
+        });
+    };
+    ProtectSheet.prototype.checkBoxClickHandler = function () {
+        var ch = document.getElementById(this.parent.element.id + '_protect_check');
+        if (ch.checked === false) {
+            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').disabled = true;
+        }
+        else {
+            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').disabled = false;
+            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
+        }
+    };
+    ProtectSheet.prototype.dialogOpen = function () {
+        this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
+    };
+    ProtectSheet.prototype.selectOption = function () {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var selectedItems = this.optionList.getSelectedItems();
+        this.parent.getActiveSheet().isProtected = true;
+        var protectSettings = { selectCells: selectedItems.text.indexOf(l10n.getConstant('SelectCells')) > -1,
+            formatCells: selectedItems.text.indexOf(l10n.getConstant('FormatCells')) > -1,
+            formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,
+            formatColumns: selectedItems.text.indexOf(l10n.getConstant('FormatColumns')) > -1,
+            insertLink: selectedItems.text.indexOf(l10n.getConstant('InsertLinks')) > -1 };
+        this.parent.protectSheet(protectSettings);
+        this.parent.notify(protectSelection, null);
+        this.dialog.hide();
+    };
+    ProtectSheet.prototype.protectSheetHandler = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        var id = this.parent.element.id;
+        var disableHomeBtnId = [id + '_undo', id + '_redo', id + '_cut', id + '_copy', id + '_paste', id + '_number_format',
+            id + '_font_name', id + '_font_size', id + '_bold', id + '_italic', id + '_line-through', id + '_underline',
+            id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_text_align',
+            id + '_vertical_align', id + '_wrap', id + '_sorting'];
+        var enableHomeBtnId = [id + '_cut', id + '_copy', id + '_number_format', id + '_font_name', id + '_font_size',
+            id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
+            id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting'];
+        var enableFrmlaBtnId = [id + '_insert_function'];
+        var enableInsertBtnId = [id + '_hyperlink'];
+        var findBtnId = [id + '_find'];
+        var dataValidationBtnId = [id + '_datavalidation'];
+        var sheetElement = document.getElementById(this.parent.element.id + '_sheet_panel');
+        if (sheetElement) {
+            if ((sheet.isProtected && sheet.protectSettings.selectCells)) {
+                {
+                    sheetElement.classList.remove('e-protected');
+                }
+            }
+            else {
+                sheetElement.classList.add('e-protected');
+            }
+            if (!sheet.isProtected) {
+                sheetElement.classList.remove('e-protected');
+            }
+        }
+        this.parent.dataBind();
+        this.parent.notify(protectCellFormat, { disableHomeBtnId: disableHomeBtnId,
+            enableHomeBtnId: enableHomeBtnId, enableFrmlaBtnId: enableFrmlaBtnId, enableInsertBtnId: enableInsertBtnId,
+            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId });
+        this.parent.notify(enableFormulaInput, null);
+        this.parent.notify(updateToggleItem, { props: 'Protect' });
+    };
+    ProtectSheet.prototype.editProtectedAlert = function () {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        this.dialog = this.parent.serviceLocator.getService('dialog');
+        if (!this.dialog.dialogInstance) {
+            this.dialog.show({
+                content: l10n.getConstant('EditAlert'),
+                isModal: true,
+                closeOnEscape: true,
+                showCloseIcon: true,
+                width: '400px',
+                beforeOpen: function () { return _this.parent.element.focus(); },
+                close: function () { return _this.parent.element.focus(); }
+            });
+        }
+    };
+    /**
+     * Get the module name.
+     * @returns string
+     *
+     * @private
+     */
+    ProtectSheet.prototype.getModuleName = function () {
+        return 'protectSheet';
+    };
+    return ProtectSheet;
+}());
+
+/**
+ * `FindAndReplace` module is used to handle the search action in Spreadsheet.
+ */
+var FindAndReplace = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for FindAndReplace module.
+     */
+    function FindAndReplace(parent) {
+        this.shortValue = '';
+        this.parent = parent;
+        this.addEventListener();
+    }
+    FindAndReplace.prototype.addEventListener = function () {
+        this.parent.on(findDlg, this.renderFindDlg, this);
+        this.parent.on(gotoDlg, this.renderGotoDlg, this);
+        this.parent.on(goto, this.gotoHandler, this);
+        this.parent.on(findHandler, this.findHandler, this);
+        this.parent.on(replace, this.replaceHandler, this);
+        this.parent.on(showDialog, this.showDialog, this);
+        this.parent.on(replaceAllDialog, this.replaceAllDialog, this);
+        this.parent.on(findUndoRedo, this.findUndoRedo, this);
+        this.parent.on(findKeyUp, this.findKeyUp, this);
+    };
+    FindAndReplace.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(findDlg, this.renderFindDlg);
+            this.parent.off(gotoDlg, this.renderGotoDlg);
+            this.parent.off(goto, this.gotoHandler);
+            this.parent.off(findHandler, this.findHandler);
+            this.parent.off(replace, this.replaceHandler);
+            this.parent.off(showDialog, this.showDialog);
+            this.parent.off(replaceAllDialog, this.replaceAllDialog);
+            this.parent.off(findUndoRedo, this.findUndoRedo);
+            this.parent.off(findKeyUp, this.findKeyUp);
+        }
+    };
+    FindAndReplace.prototype.findUndoRedo = function (options) {
+        var eventArgs = { address: options.address, compareVal: options.compareVal, cancel: false };
+        if (options.undoRedoOpt === 'before') {
+            this.parent.notify(beginAction, { action: 'beforeReplace', eventArgs: eventArgs });
+        }
+        else if (options.undoRedoOpt === 'after') {
+            if (!eventArgs.cancel) {
+                var eventArgs_1 = { address: options.address, compareVal: options.compareVal };
+                this.parent.notify(completeAction, { action: 'replace', eventArgs: eventArgs_1 });
+            }
+        }
+        else if (options.undoRedoOpt === 'beforeReplaceAll') {
+            if (!eventArgs.cancel) {
+                var eventArgs_2 = { replace: options.replace, replaceFor: options.replaceFor };
+                this.parent.notify(beginAction, { action: 'beforeReplaceAll', eventArgs: eventArgs_2 });
+            }
+        }
+        else if (options.undoRedoOpt === 'afterReplaceAll') {
+            if (!eventArgs.cancel) {
+                var eventArgs_3 = { replace: options.replace, replaceFor: options.replaceFor };
+                this.parent.notify(completeAction, { action: 'undoRedo', eventArgs: eventArgs_3 });
+            }
+        }
+    };
+    FindAndReplace.prototype.renderFindDlg = function () {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var findOpt;
+        var dialogInst = this.parent.serviceLocator.getService(dialog);
+        var cancelBtn = false;
+        var dlg = {
+            isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
+            header: l10n.getConstant('FindAndReplace'), closeOnEscape: true,
+            beforeOpen: function () {
+                dialogInst.dialogInstance.content = _this.findandreplaceContent();
+                dialogInst.dialogInstance.dataBind();
+                _this.parent.element.focus();
+            },
+            buttons: [{
+                    buttonModel: {
+                        content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious', disabled: true
+                    },
+                    click: function () {
+                        findOpt = 'prev';
+                        _this.findDlgClick(findOpt);
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('FindNextBtn'), isPrimary: true, cssClass: 'e-btn-findNext', disabled: true
+                    },
+                    click: function () {
+                        findOpt = 'next';
+                        _this.findDlgClick(findOpt);
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('ReplaceBtn'), isPrimary: true, cssClass: 'e-btn-replace', disabled: true
+                    },
+                    click: function () {
+                        var replace = 'replace';
+                        _this.findDlgClick(replace);
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('ReplaceAllBtn'), isPrimary: true, cssClass: 'e-btn-replaceAll', disabled: true
+                    },
+                    click: function () {
+                        var replace = 'replaceAll';
+                        _this.findDlgClick(replace);
+                    }
+                }], open: function () {
+                var findInput = _this.parent.element.querySelector('.e-text-findNext').value;
+                if (findInput) {
+                    var prevButton = _this.parent.element.querySelector('.e-btn-findPrevious');
+                    var prevButtonObj = getComponent(prevButton, 'btn');
+                    prevButtonObj.disabled = false;
+                    getComponent(_this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = false;
+                }
+            },
+        };
+        dialogInst.show(dlg, cancelBtn);
+    };
+    FindAndReplace.prototype.renderGotoDlg = function () {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var dialogInst = this.parent.serviceLocator.getService(dialog);
+        var cancelBtn = false;
+        var dlg = {
+            width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
+            header: l10n.getConstant('GotoHeader'),
+            beforeOpen: function () {
+                dialogInst.dialogInstance.content = _this.GotoContent();
+                dialogInst.dialogInstance.dataBind();
+                _this.parent.element.focus();
+            },
+            buttons: [{
+                    buttonModel: {
+                        content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+                    },
+                    click: function () {
+                        _this.gotoHandler();
+                    }
+                }]
+        };
+        dialogInst.show(dlg, cancelBtn);
+    };
+    FindAndReplace.prototype.findDlgClick = function (findDlgArgs) {
+        if (findDlgArgs === 'prev') {
+            this.findHandler({ findOption: findDlgArgs });
+        }
+        else if (findDlgArgs === 'next') {
+            this.findHandler({ findOption: findDlgArgs });
+        }
+        else {
+            this.replaceHandler({ findDlgArgs: findDlgArgs });
+        }
+    };
+    FindAndReplace.prototype.findHandler = function (findOpt) {
+        var findInput = this.parent.element.querySelector('.e-text-findNext');
+        if (!findInput) {
+            findInput = document.querySelector('.e-text-findNext-short');
+            if (!findInput) {
+                this.gotoAlert();
+            }
+        }
+        var value = findInput.value;
+        if (findInput.value !== '') {
+            var sheetIndex = this.parent.activeSheetTab;
+            var checkCase = this.parent.element.querySelector('.e-findnreplace-checkcase');
+            var isCSen = void 0;
+            if (!checkCase) {
+                isCSen = false;
+            }
+            else {
+                var caseCheckbox = getComponent(checkCase, 'checkbox');
+                isCSen = caseCheckbox.checked;
+            }
+            var checkmatch = this.parent.element.querySelector('.e-findnreplace-checkmatch');
+            var isEMatch = void 0;
+            if (!checkmatch) {
+                isEMatch = false;
+            }
+            else {
+                var entireMatchCheckbox = getComponent(checkmatch, 'checkbox');
+                isEMatch = entireMatchCheckbox.checked;
+            }
+            var searchitem = this.parent.element.querySelector('.e-findnreplace-searchby');
+            var searchBy = void 0;
+            if (!searchitem) {
+                searchBy = 'By Row';
+            }
+            else {
+                var searchDDL = getComponent(searchitem, 'dropdownlist');
+                searchBy = searchDDL.value.toString();
+            }
+            var modeitem = this.parent.element.querySelector('.e-findnreplace-searchwithin');
+            var mode = void 0;
+            if (!modeitem) {
+                mode = 'Sheet';
+            }
+            else {
+                var modeDDL = getComponent(modeitem, 'dropdownlist');
+                mode = modeDDL.value.toString();
+            }
+            var args = {
+                value: value, sheetIndex: sheetIndex, findOpt: findOpt.findOption, mode: mode, isCSen: isCSen,
+                isEMatch: isEMatch, searchBy: searchBy
+            };
+            if (findOpt.findOption === 'next' || findOpt.findOption === 'prev') {
+                this.parent.find(args);
+            }
+            else if (findOpt.countArgs.countOpt === 'count') {
+                this.parent.notify(count, args);
+                findOpt.countArgs.findCount = args.findCount;
+            }
+        }
+    };
+    FindAndReplace.prototype.replaceHandler = function (replace) {
+        var sheetIndex = this.parent.activeSheetTab;
+        var findInput = this.parent.element.querySelector('.e-text-findNext');
+        var replaceWith = this.parent.element.querySelector('.e-text-replaceInp');
+        var checkCase = this.parent.element.querySelector('.e-findnreplace-checkcase');
+        var caseCheckbox = getComponent(checkCase, 'checkbox');
+        var checkmatch = this.parent.element.querySelector('.e-findnreplace-checkmatch');
+        var eMatchCheckbox = getComponent(checkmatch, 'checkbox');
+        var searchitem = this.parent.element.querySelector('.e-findnreplace-searchby');
+        var searchDDL = getComponent(searchitem, 'dropdownlist');
+        var modeitem = this.parent.element.querySelector('.e-findnreplace-searchwithin');
+        var modeDDL = getComponent(modeitem, 'dropdownlist');
+        var findOption = 'next';
+        var args = {
+            value: findInput.value, mode: modeDDL.value.toString(), isCSen: caseCheckbox.checked,
+            isEMatch: eMatchCheckbox.checked, searchBy: searchDDL.value.toString(), findOpt: findOption, replaceValue: replaceWith.value,
+            replaceBy: replace.findDlgArgs ? replace.findDlgArgs : replace.replaceMode, sheetIndex: sheetIndex
+        };
+        this.parent.replace(args);
+    };
+    FindAndReplace.prototype.gotoHandler = function (address) {
+        if (address) {
+            this.parent.goTo(address.address);
+        }
+        else {
+            var item = this.parent.element.querySelector('.e-text-goto');
+            var gotoaddress = item.value;
+            var splitAddress = gotoaddress.split('');
+            if ((gotoaddress === '') || isNaN(parseInt(splitAddress[1], 10))) {
+                this.gotoAlert();
+                return;
+            }
+            else {
+                var address_1 = gotoaddress.toString().toUpperCase();
+                this.parent.goTo(address_1);
+            }
+        }
+    };
+    FindAndReplace.prototype.gotoAlert = function () {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var dialogInst = this.parent.serviceLocator.getService(dialog);
+        var dlg = {
+            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-goto-alert-dlg',
+            beforeOpen: function () {
+                dialogInst.dialogInstance.content = l10n.getConstant('InsertingEmptyValue');
+                dialogInst.dialogInstance.dataBind();
+                _this.parent.element.focus();
+            }
+        };
+        dialogInst.show(dlg);
+    };
+    FindAndReplace.prototype.showDialog = function () {
+        this.parent.serviceLocator.getService(dialog).show({
+            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-find-alert-dlg',
+            content: this.parent.serviceLocator.getService(locale).getConstant('NoElements')
+        });
+    };
+    FindAndReplace.prototype.replaceAllDialog = function (options) {
+        var l10n = (this.parent.serviceLocator.getService(locale));
+        this.parent.serviceLocator.getService(dialog).show({
+            height: 160, width: 300, isModal: true, showCloseIcon: true,
+            content: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
+        });
+    };
+    FindAndReplace.prototype.findKeyUp = function (e) {
+        {
+            var findValue_1 = document.querySelector('.e-text-findNext').value;
+            if (!isNullOrUndefined(findValue_1) && findValue_1 !== '') {
+                var prevButton = this.parent.element.querySelector('.e-btn-findPrevious');
+                var prevButtonObj = getComponent(prevButton, 'btn');
+                prevButtonObj.disabled = false;
+                getComponent(this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = false;
+            }
+            else {
+                getComponent(this.parent.element.querySelector('.e-btn-findPrevious'), 'btn').disabled = true;
+                getComponent(this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = true;
+            }
+        }
+        var findValue = document.querySelector('.e-text-findNext').value;
+        var replaceValue = document.querySelector('.e-text-replaceInp').value;
+        if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
+            getComponent(this.parent.element.querySelector('.e-btn-replace'), 'btn').disabled = false;
+            getComponent(this.parent.element.querySelector('.e-btn-replaceAll'), 'btn').disabled = false;
+        }
+        else {
+            getComponent(this.parent.element.querySelector('.e-btn-replace'), 'btn').disabled = true;
+            getComponent(this.parent.element.querySelector('.e-btn-replaceAll'), 'btn').disabled = true;
+        }
+    };
+    FindAndReplace.prototype.findandreplaceContent = function () {
+        if (document.querySelector('.e-text-findNext-short')) {
+            this.shortValue = document.querySelector('.e-text-findNext-short').value;
+        }
+        var dialogElem = this.parent.createElement('div', { className: 'e-link-dialog' });
+        var findElem = this.parent.createElement('div', { className: 'e-find' });
+        var findCheck = this.parent.createElement('div', { className: 'e-findCheck' });
+        var l10n = this.parent.serviceLocator.getService(locale);
+        dialogElem.appendChild(findElem);
+        var findTextE = this.parent.createElement('div', { className: 'e-cont' });
+        var findTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('FindWhat') });
+        var findTextIp = this.parent.createElement('input', {
+            className: 'e-input e-text-findNext', attrs: {
+                'type': 'Text', 'placeholder': l10n.getConstant('FindValue'),
+                'value': this.shortValue
+            }
+        });
+        findTextE.appendChild(findTextIp);
+        findTextE.insertBefore(findTextH, findTextIp);
+        findElem.appendChild(findTextE);
+        var findTextBox = new TextBox({ width: '70%' });
+        findTextBox.createElement = this.parent.createElement;
+        findTextBox.appendTo(findTextIp);
+        var replaceTextE = this.parent.createElement('div', { className: 'e-cont' });
+        var replaceTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('ReplaceWith') });
+        var replaceTextIp = this.parent.createElement('input', {
+            className: 'e-input e-text-replaceInp', attrs: { 'type': 'Text', 'placeholder': l10n.getConstant('ReplaceValue') }
+        });
+        replaceTextE.appendChild(replaceTextIp);
+        replaceTextE.insertBefore(replaceTextH, replaceTextIp);
+        findElem.appendChild(replaceTextE);
+        var replaceTextBox = new TextBox({ width: '70%' });
+        replaceTextBox.createElement = this.parent.createElement;
+        replaceTextBox.appendTo(replaceTextIp);
+        var withinData = [
+            { Id: 'Sheet', Within: l10n.getConstant('Sheet') },
+            { Id: 'Workbook', Within: l10n.getConstant('Workbook') }
+        ];
+        var withInDDL = new DropDownList({
+            dataSource: withinData,
+            cssClass: 'e-searchby',
+            fields: { value: 'Id', text: 'Within' }, width: '50%', index: 0
+        });
+        var withIn = this.parent.createElement('input', {
+            className: 'e-findnreplace-searchwithin', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
+        });
+        var withinTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchWithin') });
+        findElem.appendChild(withinTextH);
+        findElem.appendChild(withIn);
+        withInDDL.createElement = this.parent.createElement;
+        withInDDL.appendTo(withIn);
+        var searchData = [
+            { Id: 'By Row', Search: l10n.getConstant('ByRow') },
+            { Id: 'By Column', Search: l10n.getConstant('ByColumn') }
+        ];
+        var searchDDL = new DropDownList({
+            dataSource: searchData,
+            cssClass: 'e-searchby',
+            fields: { value: 'Id', text: 'Search' }, width: '50%', index: 0
+        });
+        var searchIn = this.parent.createElement('input', {
+            className: 'e-findnreplace-searchby', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
+        });
+        var searchTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchBy') });
+        findElem.appendChild(searchTextH);
+        findElem.appendChild(searchIn);
+        searchDDL.createElement = this.parent.createElement;
+        searchDDL.appendTo(searchIn);
+        var isCSen = new CheckBox({
+            label: l10n.getConstant('MatchCase'), checked: false,
+            cssClass: 'e-findnreplace-casecheckbox'
+        });
+        var caaseCheckbox = this.parent.createElement('input', {
+            className: 'e-findnreplace-checkcase', attrs: { type: 'checkbox' }
+        });
+        findCheck.appendChild(caaseCheckbox);
+        isCSen.createElement = this.parent.createElement;
+        isCSen.appendTo(caaseCheckbox);
+        var isEMatch = new CheckBox({
+            label: l10n.getConstant('MatchExactCellElements'), checked: false,
+            cssClass: 'e-findnreplace-exactmatchcheckbox',
+        });
+        var entirematchCheckbox = this.parent.createElement('input', {
+            className: 'e-findnreplace-checkmatch', attrs: { type: 'checkbox' }
+        });
+        findCheck.appendChild(entirematchCheckbox);
+        isEMatch.createElement = this.parent.createElement;
+        isEMatch.appendTo(entirematchCheckbox);
+        findElem.appendChild(findCheck);
+        return dialogElem;
+    };
+    FindAndReplace.prototype.GotoContent = function () {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var dialogElem = this.parent.createElement('div', { className: 'e-link-dialog' });
+        var gotoElem = this.parent.createElement('div', { className: 'e-goto' });
+        dialogElem.appendChild(gotoElem);
+        var gotoTextE = this.parent.createElement('div', { className: 'e-cont' });
+        var gotoTextH = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('Reference') });
+        var gotoTextBox = new TextBox({
+            placeholder: l10n.getConstant('EntercellAddress')
+        });
+        var gotoTextIp = this.parent.createElement('input', { className: 'e-text-goto', attrs: { 'type': 'Text' } });
+        gotoTextE.appendChild(gotoTextIp);
+        gotoTextE.insertBefore(gotoTextH, gotoTextIp);
+        gotoElem.appendChild(gotoTextE);
+        gotoTextBox.createElement = this.parent.createElement;
+        gotoTextBox.appendTo(gotoTextIp);
+        return dialogElem;
+    };
+    /**
+     * To destroy the find-and-replace module.
+     * @return {void}
+     */
+    FindAndReplace.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    FindAndReplace.prototype.getModuleName = function () {
+        return 'findAndReplace';
+    };
+    return FindAndReplace;
 }());
 
 /**
@@ -15389,7 +20359,7 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
                 _this.trigger('beforeOpen', args);
             },
             select: function (args) {
-                _this.trigger('fileItemSelect', args);
+                _this.trigger('fileMenuItemSelect', args);
             },
             beforeClose: function (args) {
                 if (args.event.type === 'mouseover' && !closest(args.event.target, '.e-menu-popup')) {
@@ -15402,7 +20372,7 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
                 }
             },
             beforeItemRender: function (args) {
-                _this.trigger('beforeFileItemRender', args);
+                _this.trigger('beforeFileMenuItemRender', args);
             }
         });
         menuObj.createElement = this.createElement;
@@ -15827,10 +20797,10 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
     ], Ribbon.prototype, "selecting", void 0);
     __decorate$7([
         Event$1()
-    ], Ribbon.prototype, "fileItemSelect", void 0);
+    ], Ribbon.prototype, "fileMenuItemSelect", void 0);
     __decorate$7([
         Event$1()
-    ], Ribbon.prototype, "beforeFileItemRender", void 0);
+    ], Ribbon.prototype, "beforeFileMenuItemRender", void 0);
     __decorate$7([
         Event$1()
     ], Ribbon.prototype, "beforeOpen", void 0);
@@ -15872,61 +20842,61 @@ var ColorPicker$1 = /** @__PURE__ @class */ (function () {
         var _this = this;
         var id = this.parent.element.id;
         var input = this.parent.createElement('input', { attrs: { 'type': 'color' } });
-        var fontColorPicker = new ColorPicker({
+        this.fontColorPicker = new ColorPicker({
             value: '#000000ff',
             mode: 'Palette',
             showButtons: false,
             presetColors: fontColor,
             enableOpacity: false,
-            beforeClose: function (args) { return _this.beforeCloseHandler(fontColorPicker); },
+            beforeClose: function (args) { return _this.beforeCloseHandler(_this.fontColorPicker); },
             open: this.openHandler.bind(this),
-            beforeModeSwitch: function (args) { return _this.beforeModeSwitch(fontColorPicker, args); },
+            beforeModeSwitch: function (args) { return _this.beforeModeSwitch(_this.fontColorPicker, args); },
             change: function (args) {
-                var color = fontColorPicker.getValue(args.currentValue.rgba);
+                var color = _this.fontColorPicker.getValue(args.currentValue.rgba);
                 var eventArgs = { style: { color: color }, onActionUpdate: true };
                 _this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
-                    fontColorPicker.setProperties({ 'value': fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                    _this.fontColorPicker.setProperties({ 'value': _this.fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 }
                 else {
-                    _this.updateSelectedColor(eventArgs.style.color, fontColorPicker.element);
+                    _this.updateSelectedColor(eventArgs.style.color, _this.fontColorPicker.element);
                 }
                 _this.parent.element.focus();
             },
-            created: function () { return _this.wireFocusEvent(fontColorPicker.element, '#000000'); }
+            created: function () { return _this.wireFocusEvent(_this.fontColorPicker.element, '#000000'); }
         });
-        fontColorPicker.createElement = this.parent.createElement;
+        this.fontColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
-        fontColorPicker.appendTo(input);
+        this.fontColorPicker.appendTo(input);
         input.parentElement.id = id + "_font_color_picker";
         addClass([input.nextElementSibling.getElementsByClassName('e-selected-color')[0]], ['e-icons', 'e-font-color']);
         input = this.parent.createElement('input', { attrs: { 'type': 'color' } });
-        var filColorPicker = new ColorPicker({
+        this.filColorPicker = new ColorPicker({
             value: '#ffff00ff',
             mode: 'Palette',
             presetColors: fillColor,
             showButtons: false,
             enableOpacity: false,
             open: this.openHandler.bind(this),
-            beforeClose: function (args) { return _this.beforeCloseHandler(filColorPicker); },
-            beforeModeSwitch: function (args) { return _this.beforeModeSwitch(filColorPicker, args); },
+            beforeClose: function (args) { return _this.beforeCloseHandler(_this.filColorPicker); },
+            beforeModeSwitch: function (args) { return _this.beforeModeSwitch(_this.filColorPicker, args); },
             change: function (args) {
-                var color = filColorPicker.getValue(args.currentValue.rgba);
+                var color = _this.filColorPicker.getValue(args.currentValue.rgba);
                 var eventArgs = { style: { backgroundColor: color }, onActionUpdate: true };
                 _this.parent.notify(setCellFormat, eventArgs);
                 if (eventArgs.cancel) {
-                    filColorPicker.setProperties({ 'value': filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                    _this.filColorPicker.setProperties({ 'value': _this.filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 }
                 else {
-                    _this.updateSelectedColor(eventArgs.style.backgroundColor, filColorPicker.element);
+                    _this.updateSelectedColor(eventArgs.style.backgroundColor, _this.filColorPicker.element);
                 }
                 _this.parent.element.focus();
             },
-            created: function () { return _this.wireFocusEvent(filColorPicker.element, '#ffff00'); }
+            created: function () { return _this.wireFocusEvent(_this.filColorPicker.element, '#ffff00'); }
         });
-        filColorPicker.createElement = this.parent.createElement;
+        this.filColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
-        filColorPicker.appendTo(input);
+        this.filColorPicker.appendTo(input);
         input.parentElement.id = id + "_fill_color_picker";
         addClass([input.nextElementSibling.getElementsByClassName('e-selected-color')[0]], ['e-icons', 'e-fill-color']);
     };
@@ -15969,27 +20939,24 @@ var ColorPicker$1 = /** @__PURE__ @class */ (function () {
         }
     };
     ColorPicker$$1.prototype.destroy = function () {
-        this.removeEventListener();
-        var id = this.parent.element.id;
-        this.destroyColorPicker(id + "_font_color_picker");
-        this.destroyColorPicker(id + "_fill_color_picker");
-        this.parent = null;
-    };
-    ColorPicker$$1.prototype.destroyColorPicker = function (id) {
-        var ele = document.getElementById(id);
-        if (ele) {
-            destroyComponent(ele.firstElementChild, ColorPicker);
+        if (this.parent) {
+            this.removeEventListener();
+            this.fontColorPicker.destroy();
+            this.fontColorPicker = null;
+            this.filColorPicker.destroy();
+            this.filColorPicker = null;
+            this.parent = null;
         }
     };
     ColorPicker$$1.prototype.addEventListener = function () {
         this.parent.on(beforeRibbonCreate, this.render, this);
+        this.parent.on('destroyRibbonComponents', this.destroy, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     };
     ColorPicker$$1.prototype.removeEventListener = function () {
-        if (!this.parent.isDestroyed) {
-            this.parent.off(beforeRibbonCreate, this.render);
-            this.parent.off(spreadsheetDestroyed, this.destroy);
-        }
+        this.parent.off(beforeRibbonCreate, this.render);
+        this.parent.off('destroyRibbonComponents', this.destroy);
+        this.parent.on(spreadsheetDestroyed, this.destroy, this);
     };
     return ColorPicker$$1;
 }());
@@ -15999,6 +20966,7 @@ var ColorPicker$1 = /** @__PURE__ @class */ (function () {
  */
 var Ribbon$$1 = /** @__PURE__ @class */ (function () {
     function Ribbon$$1(parent) {
+        this.border = '1px solid #000000';
         this.fontNameIndex = 5;
         this.numPopupWidth = 0;
         this.parent = parent;
@@ -16054,8 +21022,10 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                     { type: 'Separator', id: id + '_separator_1' },
                     { prefixIcon: 'e-cut-icon', tooltipText: l10n.getConstant('Cut') + " (Ctrl+X)", id: id + '_cut' },
                     { prefixIcon: 'e-copy-icon', tooltipText: l10n.getConstant('Copy') + " (Ctrl+C)", id: id + '_copy' },
-                    { tooltipText: l10n.getConstant('Paste') + " (Ctrl+V)", template: this.getPasteBtn(id), id: id + '_paste',
-                        disabled: true }, { type: 'Separator', id: id + '_separator_2' },
+                    {
+                        tooltipText: l10n.getConstant('Paste') + " (Ctrl+V)", template: this.getPasteBtn(id), id: id + '_paste',
+                        disabled: true
+                    }, { type: 'Separator', id: id + '_separator_2' },
                     { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
                     { type: 'Separator', id: id + '_separator_3' },
                     { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font'), id: id + '_font_name' },
@@ -16064,37 +21034,70 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                     { type: 'Separator', id: id + '_separator_5' },
                     { template: this.getBtn(id, 'bold'), tooltipText: l10n.getConstant('Bold') + " (Ctrl+B)", id: id + '_bold' },
                     { template: this.getBtn(id, 'italic'), tooltipText: l10n.getConstant('Italic') + " (Ctrl+I)", id: id + '_italic' },
-                    { template: this.getBtn(id, 'line-through'), tooltipText: l10n.getConstant('Strikethrough') + " (Ctrl+5)",
-                        id: id + '_line-through' },
-                    { template: this.getBtn(id, 'underline'), tooltipText: l10n.getConstant('Underline') + " (Ctrl+U)",
-                        id: id + '_underline' },
-                    { template: document.getElementById(id + "_font_color_picker"), tooltipText: l10n.getConstant('TextColor'),
-                        id: id + '_font_color_picker' }, { type: 'Separator', id: id + '_separator_6' },
-                    { template: document.getElementById(id + "_fill_color_picker"), tooltipText: l10n.getConstant('FillColor'),
-                        id: id + '_fill_color_picker' }, { type: 'Separator', id: id + '_separator_7' },
-                    { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align' }, { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' }
+                    {
+                        template: this.getBtn(id, 'line-through'), tooltipText: l10n.getConstant('Strikethrough') + " (Ctrl+5)",
+                        id: id + '_line-through'
+                    },
+                    {
+                        template: this.getBtn(id, 'underline'), tooltipText: l10n.getConstant('Underline') + " (Ctrl+U)",
+                        id: id + '_underline'
+                    },
+                    {
+                        template: document.getElementById(id + "_font_color_picker"), tooltipText: l10n.getConstant('TextColor'),
+                        id: id + '_font_color_picker'
+                    }, { type: 'Separator', id: id + '_separator_6' },
+                    {
+                        template: document.getElementById(id + "_fill_color_picker"), tooltipText: l10n.getConstant('FillColor'),
+                        id: id + '_fill_color_picker'
+                    }, {
+                        template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders'
+                    }, { type: 'Separator', id: id + '_separator_7' },
+                    {
+                        template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align'
+                    }, {
+                        template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align'
+                    }, {
+                        template: this.getBtn(id, 'wrap', false),
+                        tooltipText: "" + l10n.getConstant('WrapText'), id: id + '_wrap'
+                    }
                 ]
             },
             {
                 header: { text: l10n.getConstant('Insert') },
-                content: [{ prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
-                        id: id + '_hyperlink', click: function () { _this.getHyperlinkDlg(); } }]
+                content: [{
+                        prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
+                        id: id + '_hyperlink', click: function () { _this.getHyperlinkDlg(); }
+                    }]
             },
             {
                 header: { text: l10n.getConstant('Formulas') },
                 content: [{ prefixIcon: 'e-insert-function', text: l10n.getConstant('InsertFunction'), id: id + '_insert_function' }]
             },
             {
+                header: { text: l10n.getConstant('Data') },
+                content: [
+                    { prefixIcon: 'e-protect-icon', text: l10n.getConstant('ProtectSheet'), id: id + '_protect' },
+                    { type: 'Separator', id: id + '_separator_8' },
+                    { template: this.datavalidationDDB(id), tooltipText: l10n.getConstant('DataValidation'), id: id + '_datavalidation' }
+                ]
+            },
+            {
                 header: { text: l10n.getConstant('View') },
                 content: [
                     { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' },
-                    { type: 'Separator', id: id + '_separator_8' },
+                    { type: 'Separator', id: id + '_separator_9' },
                     { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines' }
                 ]
             }
         ];
         if (this.parent.allowSorting || this.parent.allowFiltering) {
-            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator', id: id + '_separator_9' }, { template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
+            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
+        }
+        if (this.parent.allowFindAndReplace) {
+            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({
+                template: this.getFindDDb(id), prefixIcon: 'e-tbar-search-icon tb-icons',
+                tooltipText: l10n.getConstant('FindReplaceTooltip'), id: id + '_find'
+            });
         }
         return items;
     };
@@ -16102,7 +21105,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         var _this = this;
         var btn = this.parent.element.appendChild(this.parent.createElement('button', { id: id + '_paste' }));
         var l10n = this.parent.serviceLocator.getService(locale);
-        var pasteSplitBtn = new SplitButton({
+        this.pasteSplitBtn = new SplitButton({
             iconCss: 'e-icons e-paste-icon',
             items: [
                 { text: l10n.getConstant('All'), id: 'All' },
@@ -16117,8 +21120,8 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             },
             close: function () { _this.parent.element.focus(); }
         });
-        pasteSplitBtn.createElement = this.parent.createElement;
-        pasteSplitBtn.appendTo(btn);
+        this.pasteSplitBtn.createElement = this.parent.createElement;
+        this.pasteSplitBtn.appendTo(btn);
         return btn.parentElement;
     };
     Ribbon$$1.prototype.getHyperlinkDlg = function () {
@@ -16156,20 +21159,38 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         }
         return text;
     };
+    Ribbon$$1.prototype.getLocaleProtectText = function (str, setClass) {
+        var text;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var sheet = this.parent.getActiveSheet();
+        if (sheet.isProtected) {
+            if (setClass) {
+                this.parent.getMainContent().classList.remove('e-hide-' + str.toLowerCase());
+            }
+            text = l10n.getConstant('Unprotect' + str);
+        }
+        else {
+            if (setClass) {
+                this.parent.getMainContent().classList.add('e-hide-' + str.toLowerCase());
+            }
+            text = l10n.getConstant('Protect' + str);
+        }
+        return text;
+    };
     Ribbon$$1.prototype.createRibbon = function (args) {
         var ribbonElement = this.parent.createElement('div', { id: this.parent.element.id + "_ribbon" });
         this.ribbon = new Ribbon$1({
             selectedTab: 0,
             menuItems: this.getRibbonMenuItems(),
             items: this.getRibbonItems(),
-            fileItemSelect: this.fileItemSelect.bind(this),
+            fileMenuItemSelect: this.fileMenuItemSelect.bind(this),
             beforeOpen: this.fileMenuBeforeOpen.bind(this),
             beforeClose: this.fileMenuBeforeClose.bind(this),
             clicked: this.toolbarClicked.bind(this),
             created: this.ribbonCreated.bind(this),
             selecting: this.tabSelecting.bind(this),
             expandCollapse: this.expandCollapseHandler.bind(this),
-            beforeFileItemRender: this.beforeRenderHandler.bind(this)
+            beforeFileMenuItemRender: this.beforeRenderHandler.bind(this)
         });
         this.ribbon.createElement = this.parent.createElement;
         if (args && args.uiUpdate) {
@@ -16209,7 +21230,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             beforeItemRender: function (args) { return _this.previewNumFormat(args); },
             close: function () { return _this.parent.element.focus(); },
             cssClass: 'e-flat e-numformat-ddb',
-            beforeOpen: this.tBarDdbBeforeOpen.bind(this)
+            beforeOpen: function (args) { return _this.tBarDdbBeforeOpen(args.element, args.items); }
         });
         this.numFormatDDB.createElement = this.parent.createElement;
         this.numFormatDDB.appendTo(numFormatBtn);
@@ -16224,7 +21245,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                 { text: '18' }, { text: '20' }, { text: '22' }, { text: '24' }, { text: '26' }, { text: '28' }, { text: '36' },
                 { text: '48' }, { text: '72' }],
             beforeOpen: function (args) {
-                _this.tBarDdbBeforeOpen(args);
+                _this.tBarDdbBeforeOpen(args.element, args.items);
                 _this.refreshSelected(_this.fontSizeDdb, args.element, 'content', 'text');
             },
             select: function (args) {
@@ -16241,6 +21262,165 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
         return this.fontSizeDdb.element;
     };
+    Ribbon$$1.prototype.getBordersDBB = function (id) {
+        var _this = this;
+        var cPickerWrapper;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        this.bordersMenu = new Menu({
+            cssClass: 'e-borders-menu',
+            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders') }, { iconCss: 'e-icons e-left-borders',
+                    text: l10n.getConstant('LeftBorders') }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders') }, {
+                    iconCss: 'e-icons e-bottom-borders', text: l10n.getConstant('BottomBorders')
+                }, { iconCss: 'e-icons e-all-borders', text: l10n.getConstant('AllBorders') }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders') }, {
+                    iconCss: 'e-icons e-vertical-borders', text: l10n.getConstant('VerticalBorders')
+                }, { iconCss: 'e-icons e-outside-borders',
+                    text: l10n.getConstant('OutsideBorders') }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders') },
+                { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders') }, { separator: true }, { text: l10n.getConstant('BorderColor'), items: [{ id: id + "_border_colors" }] }, { text: l10n.getConstant('BorderStyle'), items: [
+                        { iconCss: 'e-icons e-selected-icon', id: id + "_1px" }, { id: id + "_2px" }, { id: id + "_3px" }, { id: id + "_dashed" },
+                        { id: id + "_dotted" }, { id: id + "_double" }
+                    ] }],
+            orientation: 'Vertical',
+            beforeOpen: function (args) {
+                if (args.parentItem.text === 'Border Color') {
+                    _this.colorPicker.refresh();
+                    cPickerWrapper = _this.colorPicker.element.parentElement;
+                    args.element.firstElementChild.appendChild(cPickerWrapper);
+                    cPickerWrapper.style.display = 'inline-block';
+                    args.element.parentElement.classList.add('e-border-color');
+                }
+                else {
+                    args.element.classList.add('e-border-style');
+                }
+            },
+            beforeClose: function (args) {
+                if (args.parentItem.text === 'Border Color') {
+                    if (!closest(args.event.target, '.e-border-colorpicker') ||
+                        closest(args.event.target, '.e-apply') || closest(args.event.target, '.e-cancel')) {
+                        _this.colorPicker = getComponent(cPickerEle, 'colorpicker');
+                        if (_this.colorPicker.mode === 'Picker') {
+                            _this.colorPicker.mode = 'Palette';
+                            _this.colorPicker.dataBind();
+                        }
+                        cPickerWrapper.style.display = '';
+                        _this.parent.element.appendChild(cPickerWrapper);
+                    }
+                    else {
+                        args.cancel = true;
+                    }
+                }
+            },
+            onOpen: function (args) {
+                if (args.parentItem.text === 'Border Color') {
+                    args.element.parentElement.style.overflow = 'visible';
+                }
+            },
+            select: this.borderSelected.bind(this)
+        });
+        this.bordersMenu.createElement = this.parent.createElement;
+        var ul = this.parent.element.appendChild(this.parent.createElement('ul', {
+            id: id + '_borders_menu', styles: 'display: none;'
+        }));
+        this.bordersMenu.appendTo(ul);
+        ul.classList.add('e-ul');
+        var cPickerEle = this.parent.createElement('input', { id: id + "_cell_border_color", attrs: { 'type': 'color' } });
+        this.parent.element.appendChild(cPickerEle);
+        this.colorPicker = new ColorPicker({
+            cssClass: 'e-border-colorpicker',
+            mode: 'Palette',
+            inline: true,
+            change: function (args) {
+                var border = _this.border.split(' ');
+                border[2] = args.currentValue.hex;
+                _this.border = border.join(' ');
+            },
+            created: function () { cPickerWrapper = _this.colorPicker.element.parentElement; }
+        });
+        this.colorPicker.createElement = this.parent.createElement;
+        this.colorPicker.appendTo(cPickerEle);
+        this.bordersDdb = new DropDownButton({
+            iconCss: 'e-icons e-bottom-borders',
+            cssClass: 'e-borders-ddb',
+            target: this.bordersMenu.element.parentElement,
+            created: function () { _this.bordersMenu.element.style.display = ''; },
+            beforeOpen: function (args) { return _this.tBarDdbBeforeOpen(args.element.firstElementChild, _this.bordersMenu.items, 1); },
+            beforeClose: function (args) {
+                if (args.event && closest(args.event.target, '.e-borders-menu')) {
+                    args.cancel = true;
+                }
+            },
+            close: function () { return _this.parent.element.focus(); }
+        });
+        this.bordersDdb.createElement = this.parent.createElement;
+        this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
+        return this.bordersDdb.element;
+    };
+    Ribbon$$1.prototype.borderSelected = function (args) {
+        if (args.item.items.length || args.item.id === this.parent.element.id + "_border_colors") {
+            return;
+        }
+        if (!args.item.text) {
+            var id = this.parent.element.id;
+            var border = this.border.split(' ');
+            var prevStyleId_1 = border[1] === 'solid' ? id + "_" + border[0] : id + "_" + border[1];
+            if (prevStyleId_1 === args.item.id) {
+                return;
+            }
+            if (args.item.id === id + "_1px" || args.item.id === id + "_2px" || args.item.id === id + "_3px") {
+                border[0] = args.item.id.split(id + "_")[1];
+                border[1] = 'solid';
+            }
+            else {
+                border[1] = args.item.id.split(id + "_")[1];
+                border[0] = border[1] === 'double' ? '3px' : '1px';
+            }
+            this.border = border.join(' ');
+            this.bordersMenu.items[12].items.forEach(function (item) {
+                if (item.id === prevStyleId_1) {
+                    item.iconCss = null;
+                }
+                if (item.id === args.item.id) {
+                    item.iconCss = 'e-icons e-selected-icon';
+                }
+            });
+            this.bordersMenu.setProperties({ 'items': this.bordersMenu.items }, true);
+            return;
+        }
+        this.bordersDdb.toggle();
+        this.parent.showSpinner();
+        switch (args.item.text) {
+            case 'Top Borders':
+                this.parent.notify(setCellFormat, { style: { borderTop: this.border }, onActionUpdate: true });
+                break;
+            case 'Left Borders':
+                this.parent.notify(setCellFormat, { style: { borderLeft: this.border }, onActionUpdate: true });
+                break;
+            case 'Right Borders':
+                this.parent.notify(setCellFormat, { style: { borderRight: this.border }, onActionUpdate: true });
+                break;
+            case 'Bottom Borders':
+                this.parent.notify(setCellFormat, { style: { borderBottom: this.border }, onActionUpdate: true });
+                break;
+            case 'All Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true });
+                break;
+            case 'Horizontal Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Horizontal' });
+                break;
+            case 'Vertical Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Vertical' });
+                break;
+            case 'Outside Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Outer' });
+                break;
+            case 'Inside Borders':
+                this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Inner' });
+                break;
+            case 'No Borders':
+                this.parent.notify(setCellFormat, { style: { border: '' }, onActionUpdate: true });
+                break;
+        }
+        this.parent.hideSpinner();
+    };
     Ribbon$$1.prototype.getFontNameDDB = function (id) {
         var _this = this;
         var fontNameBtn = this.parent.createElement('button', { id: id + '_font_name' });
@@ -16256,18 +21436,58 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                 }
             },
             close: function () { return _this.parent.element.focus(); },
-            beforeOpen: this.tBarDdbBeforeOpen.bind(this)
+            beforeOpen: function (args) { return _this.tBarDdbBeforeOpen(args.element, args.items); }
         });
         this.fontNameDdb.createElement = this.parent.createElement;
         this.fontNameDdb.appendTo(fontNameBtn);
         return fontNameBtn;
     };
-    Ribbon$$1.prototype.getBtn = function (id, name) {
+    Ribbon$$1.prototype.getBtn = function (id, name, bindEvent) {
+        if (bindEvent === void 0) { bindEvent = true; }
         var btnObj = new Button({ iconCss: "e-icons e-" + name + "-icon", isToggle: true });
         btnObj.createElement = this.parent.createElement;
         btnObj.appendTo(this.parent.createElement('button', { id: id + "_" + name }));
-        btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
+        if (bindEvent) {
+            btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
+        }
         return btnObj.element;
+    };
+    Ribbon$$1.prototype.datavalidationDDB = function (id) {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        this.datavalidationDdb = new DropDownButton({
+            cssClass: 'e-datavalidation-ddb',
+            iconCss: 'e-datavalidation-icon e-icons',
+            items: [
+                { text: l10n.getConstant('DataValidation') },
+                { text: l10n.getConstant('HighlightInvalidData') },
+                { text: l10n.getConstant('ClearHighlight') }
+            ],
+            beforeOpen: function (args) {
+                _this.refreshSelected(_this.datavalidationDdb, args.element, 'iconCss');
+            },
+            select: function (args) {
+                switch (args.item.text) {
+                    case l10n.getConstant('DataValidation'):
+                        _this.parent.notify(initiateDataValidation, null);
+                        break;
+                    case l10n.getConstant('HighlightInvalidData'):
+                        _this.parent.notify(invalidData, { isRemoveHighlight: false });
+                        break;
+                    case l10n.getConstant('ClearHighlight'):
+                        _this.parent.notify(invalidData, { isRemoveHighlight: true });
+                        break;
+                    default:
+                        var direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
+                        _this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } } });
+                        break;
+                }
+            },
+            close: function () { return _this.parent.element.focus(); }
+        });
+        this.datavalidationDdb.createElement = this.parent.createElement;
+        this.datavalidationDdb.appendTo(this.parent.createElement('button', { id: id + '_datavalidation' }));
+        return this.datavalidationDdb.element;
     };
     Ribbon$$1.prototype.getTextAlignDDB = function (id) {
         var _this = this;
@@ -16376,6 +21596,158 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.sortingDdb.createElement = this.parent.createElement;
         this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting' }));
         return this.sortingDdb.element;
+    };
+    Ribbon$$1.prototype.getFindDDb = function (id) {
+        var _this = this;
+        var findToolbtn = this.parent.createElement('button', { id: id + '_findbtn' });
+        this.findDdb = new Button({
+            cssClass: 'e-spreadsheet-find-ddb e-caret-hide',
+            iconCss: 'e-icons e-search-icon'
+        });
+        this.findDdb.createElement = this.parent.createElement;
+        this.findDdb.appendTo(findToolbtn);
+        findToolbtn.onclick = function () {
+            _this.findToolDlg();
+        };
+        return this.findDdb.element;
+    };
+    Ribbon$$1.prototype.findToolDlg = function () {
+        var _this = this;
+        if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
+            var toolbarObj_1;
+            var findTextElement = this.parent.createElement('div');
+            var findTextInput_1 = this.parent.createElement('input', {
+                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' }
+            });
+            findTextInput_1.onkeyup = function () {
+                var countArgs = { countOpt: 'count', findCount: '' };
+                _this.parent.notify(findHandler, { countArgs: countArgs });
+                var element = document.querySelector('.e-text-findNext-short');
+                var value = element.value;
+                var nextElement = document.querySelector('.e-findRib-next');
+                var prevElement = document.querySelector('.e-findRib-prev');
+                if (isNullOrUndefined(value) || (value === '')) {
+                    toolbarObj_1.enableItems(nextElement, false);
+                    toolbarObj_1.enableItems(prevElement, false);
+                }
+                else if (!isNullOrUndefined(value)) {
+                    toolbarObj_1.enableItems(nextElement, true);
+                    toolbarObj_1.enableItems(prevElement, true);
+                }
+            };
+            findTextInput_1.onkeydown = function (e) {
+                _this.findOnKeyDown(e);
+            };
+            findTextElement.appendChild(findTextInput_1);
+            var toolItemModel = [
+                { type: 'Input', template: findTextElement },
+                {
+                    prefixIcon: 'e-icons e-prev-icon', tooltipText: 'Find Previous', type: 'Button', cssClass: 'e-findRib-prev',
+                    disabled: true
+                },
+                { prefixIcon: 'e-icons e-next-icon', tooltipText: 'Find Next', type: 'Button', cssClass: 'e-findRib-next', disabled: true },
+                { type: 'Separator' },
+                { prefixIcon: 'e-icons e-option-icon', tooltipText: 'More Options', type: 'Button', cssClass: 'e-findRib-more' },
+                { prefixIcon: 'e-icons e-close', tooltipText: 'Close', type: 'Button', cssClass: 'e-findRib-close' }
+            ];
+            toolbarObj_1 = new Toolbar({
+                clicked: function (args) {
+                    if (args.item.cssClass === 'e-findRib-next') {
+                        var findOption = 'next';
+                        var buttonArg = { findOption: findOption };
+                        _this.parent.notify(findHandler, buttonArg);
+                    }
+                    else if (args.item.cssClass === 'e-findRib-prev') {
+                        var findOption = 'prev';
+                        var buttonArg = { findOption: findOption };
+                        _this.parent.notify(findHandler, buttonArg);
+                    }
+                    else if (args.item.cssClass === 'e-findRib-more') {
+                        _this.parent.notify(findDlg, null);
+                        _this.findDialog.hide();
+                    }
+                }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
+            });
+            var l10n_1 = this.parent.serviceLocator.getService(locale);
+            var toolbarElement_1 = this.parent.createElement('div', { className: 'e-find-toolbar' });
+            var dialogDiv = this.parent.createElement('div', { className: 'e-dlg-div' });
+            this.findDialog = new Dialog({
+                isModal: false, showCloseIcon: false, cssClass: 'e-findtool-dlg', content: toolbarElement_1, visible: false,
+                allowDragging: true, target: this.parent.element.querySelector('.e-main-panel'),
+                beforeOpen: function () {
+                    EventHandler.add(document, 'click', _this.closeDialog, _this);
+                    var findTextBox = new TextBox({ placeholder: l10n_1.getConstant('FindValue') });
+                    findTextBox.createElement = _this.parent.createElement;
+                    findTextBox.appendTo(findTextInput_1);
+                },
+                open: function () {
+                    _this.textFocus(toolbarObj_1.element);
+                },
+                beforeClose: function () {
+                    toolbarObj_1.destroy();
+                    var element = document.querySelector('.e-find-toolbar');
+                    EventHandler.remove(element, 'focus', _this.textFocus);
+                    _this.parent.element.querySelector('.e-findtool-dlg').remove();
+                    _this.findDialog.destroy();
+                    _this.findDialog = null;
+                    EventHandler.remove(document, 'click', _this.closeDialog);
+                    _this.parent.element.focus();
+                },
+                created: function () {
+                    toolbarObj_1.createElement = _this.parent.createElement;
+                    toolbarObj_1.appendTo(toolbarElement_1);
+                    _this.findDialog.width = getComputedStyle(document.querySelector('.e-findtool-dlg')).width;
+                    var calculate = _this.parent.element.querySelector('.e-main-panel').getBoundingClientRect();
+                    var dialogWidth = _this.findDialog.width;
+                    var rightValue = calculate.width - parseInt(dialogWidth.toString(), 10) - 14; /** 14- width of scroll bar */
+                    /** 31- height of sheetHeader */
+                    var topValue = _this.parent.sheets[_this.parent.activeSheetTab - 1].showHeaders ? 31 : 0;
+                    _this.findDialog.position = { X: rightValue, Y: topValue };
+                    _this.findDialog.dataBind();
+                    _this.findDialog.show();
+                },
+            });
+            this.findDialog.createElement = this.parent.createElement;
+            this.findDialog.appendTo(dialogDiv);
+        }
+        else {
+            if (!isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
+                this.parent.element.querySelector('.e-findtool-dlg').remove();
+                this.findDialog.destroy();
+                this.findDialog = null;
+                this.parent.element.focus();
+            }
+        }
+    };
+    Ribbon$$1.prototype.findOnKeyDown = function (e) {
+        if (document.querySelector('.e-text-findNext-short').value) {
+            if (e.shiftKey) {
+                if (e.keyCode === 13) {
+                    var findOpt = 'prev';
+                    var buttonArgs = { findOption: findOpt };
+                    this.parent.notify(findHandler, buttonArgs);
+                }
+            }
+            else if (e.keyCode === 13) {
+                var findOption = 'next';
+                var buttonArg = { findOption: findOption };
+                this.parent.notify(findHandler, buttonArg);
+            }
+        }
+    };
+    Ribbon$$1.prototype.closeDialog = function (e) {
+        if ((closest(e.target, '.e-findRib-close')) || (!closest(e.target, '.e-spreadsheet'))) {
+            if (!isNullOrUndefined(this.findDialog)) {
+                this.findDialog.hide();
+            }
+        }
+    };
+    Ribbon$$1.prototype.textFocus = function (element) {
+        element = document.querySelector('.e-find-toolbar');
+        element.addEventListener('focus', function () {
+            var elements = document.querySelector('.e-text-findNext-short');
+            elements.focus();
+        });
     };
     Ribbon$$1.prototype.ribbonCreated = function () {
         this.ribbon.element.querySelector('.e-drop-icon').title
@@ -16510,13 +21882,24 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.refreshNumFormatSelection(args.item.text);
         this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
     };
-    Ribbon$$1.prototype.tBarDdbBeforeOpen = function (args) {
+    Ribbon$$1.prototype.tBarDdbBeforeOpen = function (element, items, separatorCount) {
+        if (separatorCount === void 0) { separatorCount = 0; }
         var viewportHeight = this.parent.viewport.height;
-        var actualHeight = (parseInt(getComputedStyle(args.element.firstElementChild).height, 10) * args.items.length) +
-            (parseInt(getComputedStyle(args.element).paddingTop, 10) * 2);
+        var actualHeight = (parseInt(getComputedStyle(element.firstElementChild).height, 10) * (items.length - separatorCount)) +
+            (parseInt(getComputedStyle(element).paddingTop, 10) * 2);
+        if (separatorCount) {
+            var separatorStyle = getComputedStyle(element.querySelector('.e-separator'));
+            actualHeight += (separatorCount * (parseInt(separatorStyle.borderBottomWidth, 10) + (parseInt(separatorStyle.marginTop, 10) * 2)));
+        }
         if (actualHeight > viewportHeight) {
-            args.element.style.height = viewportHeight + "px";
-            args.element.style.overflowY = 'auto';
+            element.style.height = viewportHeight + "px";
+            element.style.overflowY = 'auto';
+        }
+        else {
+            if (element.style.height) {
+                element.style.height = '';
+                element.style.overflowY = '';
+            }
         }
     };
     Ribbon$$1.prototype.numDDBOpen = function (args) {
@@ -16557,19 +21940,26 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         args.element.appendChild(numElem);
     };
     Ribbon$$1.prototype.refreshRibbonContent = function (activeTab) {
+        if (!this.ribbon) {
+            return;
+        }
         if (isNullOrUndefined(activeTab)) {
             activeTab = this.ribbon.selectedTab;
         }
         var l10n = this.parent.serviceLocator.getService(locale);
+        var sheet = this.parent.getActiveSheet();
         switch (this.ribbon.items[activeTab].header.text) {
             case l10n.getConstant('Home'):
-                this.refreshHomeTabContent(getCellIndexes(this.parent.getActiveSheet().activeCell));
+                this.refreshHomeTabContent(getCellIndexes(sheet.activeCell));
                 break;
             case l10n.getConstant('Insert'):
                 // Second tab functionality comes here
                 break;
             case l10n.getConstant('Formulas'):
                 // Third tab functionality comes here
+                break;
+            case l10n.getConstant('Data'):
+                this.refreshDataTabContent(activeTab);
                 break;
             case l10n.getConstant('View'):
                 this.refreshViewTabContent(activeTab);
@@ -16580,51 +21970,94 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(document.getElementById(this.parent.element.id + '_number_format'))) {
             this.numFormatDDB = getComponent(document.getElementById(this.parent.element.id + '_number_format'), DropDownButton);
         }
+        var sheet = this.parent.getActiveSheet();
         var actCell = getCellIndexes(this.parent.getActiveSheet().activeCell);
         var l10n = this.parent.serviceLocator.getService(locale);
-        var cell = getCell(actCell[0], actCell[1], this.parent.getActiveSheet(), true);
-        cell = cell ? cell : {};
+        var cell = getCell(actCell[0], actCell[1], this.parent.getActiveSheet()) || {};
         var type = getTypeFromFormat(cell.format ? cell.format : 'General');
         if (this.numFormatDDB) {
-            this.refreshNumFormatSelection(l10n.getConstant(type));
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                type = 'General';
+                this.refreshNumFormatSelection(type);
+            }
+            else {
+                this.refreshNumFormatSelection(l10n.getConstant(type));
+            }
         }
         if (this.fontNameDdb) {
-            this.refreshFontNameSelection(this.getCellStyleValue('fontFamily', indexes));
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.refreshFontNameSelection('Calibri');
+            }
+            else {
+                this.refreshFontNameSelection(this.getCellStyleValue('fontFamily', indexes));
+            }
         }
         if (this.fontSizeDdb) {
-            var value = this.getCellStyleValue('fontSize', indexes).split('pt')[0];
-            if (value !== this.fontSizeDdb.content) {
-                this.fontSizeDdb.content = value;
-                this.fontSizeDdb.dataBind();
+            var value = this.getCellStyleValue('fontSize', indexes);
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.fontSizeDdb.content = '11';
+            }
+            else {
+                value = value.includes('pt') ? value.split('pt')[0] : '11';
+                if (value !== this.fontSizeDdb.content) {
+                    this.fontSizeDdb.content = value;
+                    this.fontSizeDdb.dataBind();
+                }
             }
         }
         if (this.textAlignDdb) {
-            var value = "e-icons e-" + this.getCellStyleValue('textAlign', indexes).toLowerCase() + "-icon";
-            if (value !== this.textAlignDdb.iconCss) {
-                this.textAlignDdb.iconCss = value;
-                this.textAlignDdb.dataBind();
+            var style = this.getCellStyleValue('textAlign', indexes);
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.textAlignDdb.iconCss = 'e-icons e-left-icon';
+            }
+            else {
+                if (cell.value !== undefined && style === 'left' && (type === 'Accounting' || isNumber(cell.value))) {
+                    style = 'right';
+                }
+                var value = "e-icons e-" + style.toLowerCase() + "-icon";
+                if (value !== this.textAlignDdb.iconCss) {
+                    this.textAlignDdb.iconCss = value;
+                    this.textAlignDdb.dataBind();
+                }
             }
         }
         if (this.verticalAlignDdb) {
             var value = "e-icons e-" + this.getCellStyleValue('verticalAlign', indexes).toLowerCase() + "-icon";
-            if (value !== this.verticalAlignDdb.iconCss) {
-                this.verticalAlignDdb.iconCss = value;
-                this.verticalAlignDdb.dataBind();
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                this.verticalAlignDdb.iconCss = 'e-icons e-bottom-icon';
+            }
+            else {
+                if (value !== this.verticalAlignDdb.iconCss) {
+                    this.verticalAlignDdb.iconCss = value;
+                    this.verticalAlignDdb.dataBind();
+                }
             }
         }
         this.refreshToggleBtn(indexes);
     };
     Ribbon$$1.prototype.refreshToggleBtn = function (indexes) {
         var _this = this;
+        var sheet = this.parent.getActiveSheet();
         var btn;
         var id = this.parent.element.id;
         var value;
+        var isActive;
+        var cell = getCell(indexes[0], indexes[1], sheet);
         var fontProps = ['fontWeight', 'fontStyle', 'textDecoration', 'textDecoration'];
-        ['bold', 'italic', 'line-through', 'underline'].forEach(function (name, index) {
+        ['bold', 'italic', 'line-through', 'underline', 'wrap'].forEach(function (name, index) {
             btn = document.getElementById(id + "_" + name);
             if (btn) {
-                value = _this.getCellStyleValue(fontProps[index], indexes).toLowerCase();
-                if (value.indexOf(name) > -1) {
+                if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+                    btn.classList.remove('e-active');
+                }
+                else if (name === 'wrap') {
+                    isActive = cell && cell.wrap;
+                }
+                else {
+                    value = _this.getCellStyleValue(fontProps[index], indexes).toLowerCase();
+                    isActive = value.indexOf(name) > -1;
+                }
+                if (isActive) {
                     btn.classList.add('e-active');
                 }
                 else {
@@ -16662,10 +22095,10 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.numFormatDDB.element.firstElementChild.textContent = type;
         this.numFormatDDB.setProperties({ 'items': this.numFormatDDB.items }, true);
     };
-    Ribbon$$1.prototype.fileItemSelect = function (args) {
+    Ribbon$$1.prototype.fileMenuItemSelect = function (args) {
         var _this = this;
         var selectArgs = extend({ cancel: false }, args);
-        this.parent.trigger('fileItemSelect', selectArgs);
+        this.parent.trigger('fileMenuItemSelect', selectArgs);
         var id = this.parent.element.id;
         if (!selectArgs.cancel) {
             switch (args.item.id) {
@@ -16692,7 +22125,6 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                                     _this.parent.createSheet();
                                     dialogInst_1.hide();
                                     _this.parent.activeSheetTab = _this.parent.sheets.length;
-                                    _this.parent.setProperties({ 'activeSheetTab': _this.parent.sheets.length }, true);
                                     _this.parent.notify(refreshSheetTabs, {});
                                     _this.parent.notify(sheetsDestroyed, {});
                                     _this.parent.renderModule.refreshSheet();
@@ -16704,72 +22136,108 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Ribbon$$1.prototype.toolbarClicked = function (args) {
-        var parentId = this.parent.element.id;
-        var sheet = this.parent.getActiveSheet();
-        switch (args.item.id) {
-            case parentId + '_headers':
-                var evtHArgs = {
-                    isShow: !sheet.showHeaders,
-                    sheetIdx: this.parent.activeSheetTab,
-                    cancel: false
-                };
-                this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
-                if (evtHArgs.cancel) {
-                    return;
-                }
-                sheet.showHeaders = !sheet.showHeaders;
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-                this.parent.serviceLocator.getService('sheet').showHideHeaders();
-                this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
-                this.parent.element.focus();
-                break;
-            case parentId + '_gridlines':
-                var evtglArgs = {
-                    isShow: !sheet.showGridLines,
-                    sheetIdx: this.parent.activeSheetTab,
-                    cancel: false
-                };
-                this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
-                if (evtglArgs.cancel) {
-                    return;
-                }
-                sheet.showGridLines = !sheet.showGridLines;
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-                this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
-                this.parent.element.focus();
-                break;
-            case parentId + '_undo':
-                this.parent.notify(performUndoRedo, { isUndo: true });
-                break;
-            case parentId + '_redo':
-                this.parent.notify(performUndoRedo, { isUndo: false });
-                break;
+        if (!(args.item.id === 'spreadsheet_find')) {
+            var parentId = this.parent.element.id;
+            var sheet = this.parent.getActiveSheet();
+            switch (args.item.id) {
+                case parentId + '_headers':
+                    var evtHArgs = {
+                        isShow: !sheet.showHeaders,
+                        sheetIdx: this.parent.activeSheetTab,
+                        cancel: false
+                    };
+                    this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
+                    if (evtHArgs.cancel) {
+                        return;
+                    }
+                    sheet.showHeaders = !sheet.showHeaders;
+                    this.parent.serviceLocator.getService('sheet').showHideHeaders();
+                    this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
+                    this.parent.element.focus();
+                    break;
+                case parentId + '_gridlines':
+                    var evtglArgs = {
+                        isShow: !sheet.showGridLines,
+                        sheetIdx: this.parent.activeSheetTab,
+                        cancel: false
+                    };
+                    this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
+                    if (evtglArgs.cancel) {
+                        return;
+                    }
+                    sheet.showGridLines = !sheet.showGridLines;
+                    this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
+                    this.parent.element.focus();
+                    break;
+                case parentId + '_protect':
+                    sheet.isProtected = !sheet.isProtected;
+                    this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+                    var isActive = false;
+                    sheet.isProtected ? isActive = false : isActive = true;
+                    this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
+                    break;
+                case parentId + '_undo':
+                    this.parent.notify(performUndoRedo, { isUndo: true });
+                    break;
+                case parentId + '_redo':
+                    this.parent.notify(performUndoRedo, { isUndo: false });
+                    break;
+            }
+            this.parent.notify(ribbonClick, args);
         }
-        this.parent.notify(ribbonClick, args);
     };
     Ribbon$$1.prototype.toggleRibbonItems = function (args) {
-        var tabHeader = this.parent.serviceLocator.getService(locale).getConstant('View');
-        if (isNullOrUndefined(args.activeTab)) {
-            for (var i = 0; i < this.ribbon.items.length; i++) {
-                if (this.ribbon.items[i].header.text === tabHeader) {
-                    args.activeTab = i;
-                    break;
+        var viewtabHeader = this.parent.serviceLocator.getService(locale).getConstant('View');
+        var datatabHeader = this.parent.serviceLocator.getService(locale).getConstant('Data');
+        if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader) {
+            if (isNullOrUndefined(args.activeTab)) {
+                for (var i = 0, len_1 = this.ribbon.items.length; i < len_1; i++) {
+                    if (this.ribbon.items[i].header.text === viewtabHeader) {
+                        args.activeTab = i;
+                        break;
+                    }
                 }
             }
-        }
-        var text = this.getLocaleText(args.props, true);
-        var id = this.parent.element.id + "_" + args.props.toLowerCase();
-        for (var i = void 0; i < this.ribbon.items[args.activeTab].content.length; i++) {
-            if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
-                continue;
+            var text = this.getLocaleText(args.props, true);
+            var id = this.parent.element.id + "_" + args.props.toLowerCase();
+            var len = this.ribbon.items[args.activeTab].content.length;
+            for (var i = void 0; i < len; i++) {
+                if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
+                    continue;
+                }
+                if (this.ribbon.items[args.activeTab].content[i].id === id) {
+                    this.ribbon.items[args.activeTab].content[i].text = text;
+                    this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+                }
             }
-            if (this.ribbon.items[args.activeTab].content[i].id === id) {
-                this.ribbon.items[args.activeTab].content[i].text = text;
-                this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+            if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader) {
+                this.updateToggleText(args.props.toLowerCase(), text);
             }
         }
-        if (this.ribbon.items[this.ribbon.selectedTab].header.text === tabHeader) {
-            this.updateToggleText(args.props.toLowerCase(), text);
+        if (this.ribbon.items[this.ribbon.selectedTab].header.text === datatabHeader) {
+            if (isNullOrUndefined(args.activeTab)) {
+                for (var i = 0, len_2 = this.ribbon.items.length; i < len_2; i++) {
+                    if (this.ribbon.items[i].header.text === datatabHeader) {
+                        args.activeTab = i;
+                        break;
+                    }
+                }
+            }
+            var text = this.getLocaleProtectText('Sheet', true);
+            var id = this.parent.element.id + "_" + args.props.toLowerCase();
+            var len = this.ribbon.items[args.activeTab].content.length;
+            for (var i = void 0; i < len; i++) {
+                if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
+                    continue;
+                }
+                if (this.ribbon.items[args.activeTab].content[i].id === id) {
+                    this.ribbon.items[args.activeTab].content[i].text = text;
+                    this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+                }
+            }
+            if (this.ribbon.items[this.ribbon.selectedTab].header.text === datatabHeader) {
+                this.updateToggleText(args.props.toLowerCase(), text);
+            }
         }
     };
     Ribbon$$1.prototype.enableFileMenuItems = function (args) {
@@ -16835,6 +22303,42 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText(item.toLowerCase(), text);
     };
+    Ribbon$$1.prototype.refreshDataTabContent = function (activeTab) {
+        var id = this.parent.element.id;
+        var updated;
+        for (var j = 0; j < this.ribbon.items[activeTab].content.length; j++) {
+            if (this.ribbon.items[activeTab].content[j].type === 'Separator') {
+                continue;
+            }
+            if (this.ribbon.items[activeTab].content[j].id === id + "_protect") {
+                this.updateDataTabContent(activeTab, 'Sheet', j);
+                if (updated) {
+                    break;
+                }
+                updated = true;
+            }
+        }
+    };
+    Ribbon$$1.prototype.updateDataTabContent = function (activeTab, item, idx) {
+        var sheet = this.parent.getActiveSheet();
+        var l10n = this.parent.serviceLocator.getService(locale);
+        if (sheet.isProtected) {
+            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Protect' + item)) {
+                this.ribbon.items[activeTab].content[idx].cssClass = 'e-active';
+                this.updateProtectBtn('Unprotect', item, idx, activeTab);
+            }
+        }
+        else {
+            this.updateProtectBtn('Protect', item, idx, activeTab);
+        }
+    };
+    Ribbon$$1.prototype.updateProtectBtn = function (protectText, item, idx, activeTab) {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var text = l10n.getConstant(protectText + item);
+        this.ribbon.items[activeTab].content[idx].text = text;
+        this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+        this.updateToggleText('protect', text);
+    };
     Ribbon$$1.prototype.addToolbarItems = function (args) {
         this.ribbon.addToolbarItems(args.tab, args.items, args.index);
     };
@@ -16869,7 +22373,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                     enableRtl: true,
                     showItemOnClick: true,
                     items: _this.getRibbonMenuItems(),
-                    select: _this.fileItemSelect.bind(_this),
+                    select: _this.fileMenuItemSelect.bind(_this),
                     beforeOpen: function (args) {
                         args.element.parentElement.classList.remove('e-rtl');
                         _this.fileMenuBeforeOpen(args);
@@ -16972,6 +22476,37 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
     Ribbon$$1.prototype.hideToolbarItems = function (args) {
         this.ribbon.hideToolbarItems(args.tab, args.indexes, args.hide);
     };
+    Ribbon$$1.prototype.protectSheetHandler = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        var l10n = this.parent.serviceLocator.getService(locale);
+        if ((sheet.isProtected && sheet.protectSettings.formatCells) || !sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId, enable: true }]);
+            this.parent.notify(setUndoRedo, null);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.disableHomeBtnId, enable: false }]);
+        }
+        if ((sheet.isProtected && sheet.protectSettings.insertLink) || !sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: true }]);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: false }]);
+        }
+        if ((sheet.isProtected && sheet.protectSettings.selectCells) || !sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: true }]);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: false }]);
+        }
+        if (sheet.isProtected) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
+        }
+        else {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
+        }
+    };
     Ribbon$$1.prototype.addEventListener = function () {
         this.parent.on(ribbon, this.initRibbon, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
@@ -16985,21 +22520,38 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.parent.on(addFileMenuItems, this.addFileMenuItems, this);
         this.parent.on(hideToolbarItems, this.hideToolbarItems, this);
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
+        this.parent.on(protectCellFormat, this.protectSheetHandler, this);
     };
     Ribbon$$1.prototype.destroy = function () {
         var parentElem = this.parent.element;
         var ribbonEle = this.ribbon.element;
         var id = parentElem.id;
-        destroyComponent(parentElem.querySelector('#' + id + '_paste'), SplitButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_number_format'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_font_size'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_font_name'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_text_align'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_vertical_align'), DropDownButton);
-        destroyComponent(parentElem.querySelector('#' + id + '_sorting'), DropDownButton);
         ['bold', 'italic', 'line-through', 'underline'].forEach(function (name) {
             destroyComponent(parentElem.querySelector('#' + (id + "_" + name)), Button);
         });
+        this.pasteSplitBtn.destroy();
+        this.pasteSplitBtn = null;
+        this.numFormatDDB.destroy();
+        this.numFormatDDB = null;
+        this.fontSizeDdb.destroy();
+        this.fontSizeDdb = null;
+        this.fontNameDdb.destroy();
+        this.fontNameDdb = null;
+        this.textAlignDdb.destroy();
+        this.textAlignDdb = null;
+        this.verticalAlignDdb.destroy();
+        this.verticalAlignDdb = null;
+        this.sortingDdb.destroy();
+        this.sortingDdb = null;
+        this.colorPicker.destroy();
+        this.colorPicker = null;
+        this.bordersMenu.destroy();
+        this.bordersMenu = null;
+        this.bordersDdb.destroy();
+        this.bordersDdb = null;
+        this.findDdb.destroy();
+        this.findDdb = null;
+        this.parent.notify('destroyRibbonComponents', null);
         this.ribbon.destroy();
         if (ribbonEle) {
             detach(ribbonEle);
@@ -17021,6 +22573,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             this.parent.off(addFileMenuItems, this.addFileMenuItems);
             this.parent.off(hideToolbarItems, this.hideToolbarItems);
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
+            this.parent.off(protectCellFormat, this.protectSheetHandler);
         }
     };
     return Ribbon$$1;
@@ -17109,7 +22662,7 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
     };
     FormulaBar.prototype.keyDownHandler = function (e) {
         var trgtElem = e.target;
-        if (this.parent.isEdit) {
+        if (this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
             if (trgtElem.classList.contains('e-formula-bar')) {
                 this.parent.notify(editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
             }
@@ -17245,18 +22798,30 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
             this.comboBoxInstance.dataBind();
         }
     };
-    FormulaBar.prototype.clickHandler = function (e) {
+    FormulaBar.prototype.disabletextarea = function () {
+        var el = document.getElementById(this.parent.element.id + '_formula_input');
+        if (this.parent.getActiveSheet().isProtected) {
+            el.disabled = true;
+        }
+        else {
+            el.disabled = false;
+        }
+    };
+    FormulaBar.prototype.formulaBarClickHandler = function (e) {
         var _this = this;
         var target = e.target;
         if (target.classList.contains('e-drop-icon') && closest(target, '.e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
         }
         else if (target.classList.contains('e-formula-bar')) {
-            if (!this.parent.isEdit) {
+            if (!this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
                 this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
             }
+            else if (this.parent.getActiveSheet().isProtected) {
+                this.parent.notify(editAlert, null);
+            }
         }
-        else if (target.parentElement.classList.contains('e-name-box')) {
+        else if (target.parentElement && target.parentElement.classList.contains('e-name-box')) {
             if (target.classList.contains('e-ddl-icon')) {
                 var eventArgs = { action: 'getNames', names: [] };
                 this.parent.notify(formulaOperation, eventArgs);
@@ -17268,9 +22833,14 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
             }
         }
         if (!isNullOrUndefined(target.offsetParent) && ((target.offsetParent.classList.contains('e-insert-function')) ||
-            (target.classList.contains('e-insert-function')) || (this.parent.element.id + '_insert_function' === target.offsetParent.id) ||
-            (this.parent.element.id + '_insert_function' === target.id) || target.parentElement.classList.contains('e-insert-function') ||
-            (this.parent.element.id + '_insert_function' === target.parentElement.id))) {
+            (target.classList.contains('e-insert-function')) || (this.parent.element.id + '_insert_function' === target.offsetParent.id)
+            || (this.parent.element.id + '_insert_function' === target.id) ||
+            target.parentElement.classList.contains('e-insert-function')
+            || (this.parent.element.id + '_insert_function' === target.parentElement.id))) {
+            if (this.parent.getActiveSheet().isProtected) {
+                this.parent.notify(editAlert, null);
+                return;
+            }
             var isOpen = !this.parent.isEdit;
             var args = { action: 'getCurrentEditValue', editedValue: '' };
             if (!isOpen) {
@@ -17325,7 +22895,8 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
                     close: this.dialogClose.bind(this),
                     buttons: [
                         {
-                            click: (this.selectFormula.bind(this, this.dialog, this)), buttonModel: { content: 'OK', isPrimary: true }
+                            click: (this.selectFormula.bind(this, this.dialog, this)),
+                            buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true }
                         }
                     ]
                 });
@@ -17453,12 +23024,13 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
     };
     FormulaBar.prototype.addEventListener = function () {
         this.parent.on(formulaBar, this.createFormulaBar, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.formulaBarClickHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(selectionComplete, this.formulaBarUpdateHandler, this);
         this.parent.on(mouseUpAfterSelection, this.UpdateValueAfterMouseUp, this);
         this.parent.on(formulaBarOperation, this.editOperationHandler, this);
+        this.parent.on(enableFormulaInput, this.disabletextarea, this);
     };
     FormulaBar.prototype.destroy = function () {
         this.removeEventListener();
@@ -17474,19 +23046,20 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
     FormulaBar.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
             this.parent.off(formulaBar, this.createFormulaBar);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.formulaBarClickHandler);
             this.parent.off(keyDown, this.keyDownHandler);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(selectionComplete, this.formulaBarUpdateHandler);
             this.parent.off(mouseUpAfterSelection, this.UpdateValueAfterMouseUp);
             this.parent.off(formulaBarOperation, this.editOperationHandler);
+            this.parent.off(enableFormulaInput, this.disabletextarea);
         }
     };
     FormulaBar.prototype.editOperationHandler = function (args) {
         var action = args.action;
         switch (action) {
             case 'refreshFormulabar':
-                this.getFormulaBar().value = args.value;
+                this.getFormulaBar().value = isUndefined(args.value) ? '' : args.value;
                 break;
             case 'getPosition':
                 args.position = this.getFormulaBar().getBoundingClientRect();
@@ -17557,7 +23130,7 @@ var Formula = /** @__PURE__ @class */ (function () {
         this.parent.on(formulaOperation, this.performFormulaOperation, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.formulaClick, this);
         this.parent.on(refreshFormulaDatasource, this.refreshFormulaDatasource, this);
     };
     Formula.prototype.removeEventListener = function () {
@@ -17565,7 +23138,7 @@ var Formula = /** @__PURE__ @class */ (function () {
             this.parent.off(formulaOperation, this.performFormulaOperation);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(keyDown, this.keyDownHandler);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.formulaClick);
             this.parent.off(refreshFormulaDatasource, this.refreshFormulaDatasource);
         }
     };
@@ -17579,7 +23152,7 @@ var Formula = /** @__PURE__ @class */ (function () {
                 this.endEdit();
                 break;
             case 'addDefinedName':
-                this.addDefinedName(args.definedName);
+                args.isAdded = this.addDefinedName(args.definedName);
                 break;
             case 'getNames':
                 if (!args.sheetName) {
@@ -17734,7 +23307,7 @@ var Formula = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Formula.prototype.clickHandler = function (e) {
+    Formula.prototype.formulaClick = function (e) {
         if (this.parent.isEdit) {
             var trgtElem = e.target;
             this.isFormulaBar = trgtElem.classList.contains('e-formula-bar');
@@ -17864,6 +23437,8 @@ var Formula = /** @__PURE__ @class */ (function () {
         return name && name[0];
     };
     Formula.prototype.addDefinedName = function (definedName) {
+        var name = definedName.name;
+        var isAdded = false;
         if (!definedName.refersTo) {
             var sheet = getSheet(this.parent, this.parent.activeSheetTab - 1);
             var sheetName = getSheetName(this.parent);
@@ -17890,17 +23465,26 @@ var Formula = /** @__PURE__ @class */ (function () {
             definedName.refersTo = sheetName + '!' + selectRange$$1;
             definedName.scope = 'Workbook';
         }
-        var eventArgs = {
-            action: 'addDefinedName', definedName: definedName, isAdded: false
-        };
-        this.parent.notify(workbookFormulaOperation, eventArgs);
-        if (!eventArgs.isAdded) {
+        if (name.length > 0 && (/^([a-zA-Z_0-9.]){0,255}$/.test(name))) {
+            var eventArgs = {
+                action: 'addDefinedName', definedName: definedName, isAdded: false
+            };
+            this.parent.notify(workbookFormulaOperation, eventArgs);
+            isAdded = eventArgs.isAdded;
+            if (!eventArgs.isAdded) {
+                this.parent.serviceLocator.getService(dialog).show({
+                    content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameExists'),
+                    width: '300'
+                });
+            }
+        }
+        else {
             this.parent.serviceLocator.getService(dialog).show({
-                content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameExists'),
+                content: this.parent.serviceLocator.getService(locale).getConstant('DefineNameInValid'),
                 width: '300'
             });
         }
-        return true;
+        return isAdded;
     };
     return Formula;
 }());
@@ -17928,12 +23512,16 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
             className: 'e-sheet-tab-panel', id: this.parent.element.id + '_sheet_tab_panel'
         });
         var addBtn = this.parent.createElement('button', {
-            className: 'e-add-sheet-tab e-btn e-css e-flat e-icon-btn', attrs: { 'title': l10n.getConstant('AddSheet') }
+            className: 'e-add-sheet-tab e-btn e-css e-flat e-icon-btn' + (this.parent.allowInsert ? '' : ' e-disabled'),
+            attrs: { 'title': l10n.getConstant('AddSheet') }
         });
         addBtn.appendChild(this.parent.createElement('span', { className: 'e-btn-icon e-icons e-add-icon' }));
         addBtn.addEventListener('click', this.addSheetTab.bind(this));
+        addBtn.disabled = !this.parent.allowInsert;
         panel.appendChild(addBtn);
-        this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' });
+        if (this.parent.allowInsert) {
+            this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' });
+        }
         var ddb = this.parent.createElement('button', { attrs: { 'title': l10n.getConstant('ListAllSheets') } });
         panel.appendChild(ddb);
         this.parent.element.appendChild(panel);
@@ -17993,6 +23581,8 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
             var arg = { action: 'addSheet', sheetName: 'Sheet' + (i + 1), index: i + 1, visibleName: sheetName };
             this.parent.notify(workbookFormulaOperation, arg);
         }
+        this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
+        this.parent.notify(protectSheet, null);
     };
     SheetTabs.prototype.updateDropDownItems = function (curIdx, prevIdx) {
         if (prevIdx > -1) {
@@ -18046,39 +23636,20 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         this.tabInstance.selectedItem = this.parent.activeSheetTab - 1;
         this.tabInstance.dataBind();
     };
-    SheetTabs.prototype.addSheetTab = function (args) {
-        if (args.count && (args.count === this.parent.sheets.length)) {
-            return;
-        }
-        var idx = args.previousIndex ? args.previousIndex : args.text && args.text === 'Insert' ?
-            this.parent.activeSheetTab - 1 : this.parent.activeSheetTab;
-        this.parent.createSheet(idx);
-        var sheetName = this.parent.sheets[idx].name;
-        this.dropDownInstance.items.splice(idx, 0, { text: sheetName });
-        this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        this.tabInstance.addTab([{ header: { text: sheetName }, content: '' }], idx);
-        if (idx === this.parent.activeSheetTab - 1) {
-            this.parent.renderModule.refreshSheet();
-            this.updateDropDownItems(idx, idx + 1);
-        }
-        else {
-            if (!args.isAction) {
-                this.updateSheetTab({ idx: idx });
-            }
-        }
+    SheetTabs.prototype.addSheetTab = function () {
+        this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetTab, end: this.parent.activeSheetTab, modelType: 'Sheet', isAction: true, activeSheetTab: this.parent.activeSheetTab + 1 });
         this.parent.element.focus();
-        var index = this.parent.getActiveSheet().id;
-        var arg = { action: 'addSheet', visibleName: sheetName, sheetName: 'Sheet' + index, index: index };
-        this.parent.notify(workbookFormulaOperation, arg);
-        if (!args.isAction) {
-            var eventArgs = {
-                index: this.parent.getActiveSheet().id,
-                text: args.text,
-                sheetCount: this.parent.sheets.length,
-                previousIndex: idx
-            };
-            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addSheet' });
+    };
+    SheetTabs.prototype.insertSheetTab = function (args) {
+        this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
+        for (var i = args.startIdx; i <= args.endIdx; i++) {
+            var sheetName = this.parent.sheets[i].name;
+            this.dropDownInstance.items.splice(i, 0, { text: sheetName });
+            this.tabInstance.addTab([{ header: { text: sheetName }, content: '' }], i);
         }
+        this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
+        this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
+        this.updateSheetTab({ idx: args.startIdx });
     };
     SheetTabs.prototype.updateSheetTab = function (args) {
         if (args.name === 'activeSheetChanged') {
@@ -18087,7 +23658,6 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         else {
             if (this.parent.sheets[args.idx].state === 'Hidden') {
                 this.parent.sheets[args.idx].state = 'Visible';
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.tabInstance.items[args.idx].cssClass = '';
                 this.tabInstance.items = this.tabInstance.items;
                 this.tabInstance.dataBind();
@@ -18095,6 +23665,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         }
         this.tabInstance.selectedItem = args.idx;
         this.tabInstance.dataBind();
+        this.parent.notify(protectSheet, null);
     };
     SheetTabs.prototype.switchSheetTab = function (args) {
         var target = closest(args.event.target, '.e-toolbar-item');
@@ -18110,9 +23681,17 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
                 break;
             }
         }
-        if (args.element.classList.contains('e-contextmenu') && args.items[3] &&
-            args.items[3].id === this.parent.element.id + "_cmenu_sheet_hide" && this.skipHiddenSheets() === 1) {
-            args.element.children[3].classList.add('e-disabled');
+        if (args.element.classList.contains('e-contextmenu') && args.items[0] &&
+            args.items[0].id === this.parent.element.id + "_cmenu_insert_sheet") {
+            if (this.skipHiddenSheets() === 1) {
+                //let id: string = `${this.parent.element.id}_cmenu`;
+                //this.parent.enableFileMenuItems([`${id}_hide_sheet`, `${id}_delete_sheet`], false, true);
+                args.element.children[1].classList.add('e-disabled');
+                args.element.children[3].classList.add('e-disabled');
+            }
+            if (!this.parent.allowInsert) {
+                args.element.children[0].classList.add('e-disabled');
+            }
         }
     };
     SheetTabs.prototype.skipHiddenSheets = function () {
@@ -18183,7 +23762,6 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
                 var items = this.removeRenameInput(target);
                 if (this.tabInstance.items[idx].header.text !== value) {
                     this.parent.sheets[idx].name = value;
-                    this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
                 if (e.type === 'keydown' || (closest(e.target, '.e-spreadsheet'))) {
@@ -18221,7 +23799,6 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
     };
     SheetTabs.prototype.hideSheet = function () {
         this.parent.getActiveSheet().state = 'Hidden';
-        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         this.tabInstance.items[this.parent.activeSheetTab - 1].cssClass = 'e-hide';
         this.tabInstance.items = this.tabInstance.items;
         this.tabInstance.dataBind();
@@ -18277,7 +23854,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     dialogInst_1.show({
-                        height: 180, width: 400, isModal: true, showCloseIcon: true,
+                        height: 200, width: 400, isModal: true, showCloseIcon: true,
                         content: l10n.getConstant('DeleteSheetAlert'),
                         beforeOpen: function () { return _this.parent.element.focus(); },
                         buttons: [{
@@ -18334,7 +23911,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
         var activeIndex = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
-        this.parent.setProperties({ 'activeSheetTab': activeIndex + 1 }, true);
+        this.parent.activeSheetTab = activeIndex + 1;
         this.parent.renderModule.refreshSheet();
         this.tabInstance.selectedItem = activeIndex;
         this.tabInstance.dataBind();
@@ -18408,7 +23985,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
     SheetTabs.prototype.addEventListener = function () {
         this.parent.on(sheetTabs, this.createSheetTabs, this);
         this.parent.on(refreshSheetTabs, this.refreshSheetTab, this);
-        this.parent.on(addSheetTab, this.addSheetTab, this);
+        this.parent.on(insertSheetTab, this.insertSheetTab, this);
         this.parent.on(removeSheetTab, this.removeSheetTab, this);
         this.parent.on(renameSheetTab, this.renameSheetTab, this);
         this.parent.on(cMenuBeforeOpen, this.switchSheetTab, this);
@@ -18441,7 +24018,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         if (!this.parent.isDestroyed) {
             this.parent.off(sheetTabs, this.createSheetTabs);
             this.parent.off(refreshSheetTabs, this.refreshSheetTab);
-            this.parent.off(addSheetTab, this.addSheetTab);
+            this.parent.off(insertSheetTab, this.insertSheetTab);
             this.parent.off(removeSheetTab, this.removeSheetTab);
             this.parent.off(renameSheetTab, this.renameSheetTab);
             this.parent.off(cMenuBeforeOpen, this.switchSheetTab);
@@ -18653,13 +24230,14 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     /**
      * Select event handler.
      */
+    // tslint:disable-next-line
     ContextMenu$$1.prototype.selectHandler = function (args) {
         var selectArgs = extend({ cancel: false }, args);
         this.parent.trigger('contextMenuItemSelect', selectArgs);
+        var id = this.parent.element.id + '_cmenu';
         if (!selectArgs.cancel) {
             var l10n = this.parent.serviceLocator.getService(locale);
             var indexes = void 0;
-            var id = this.parent.element.id + '_cmenu';
             switch (args.item.id) {
                 case id + '_cut':
                     this.parent.notify(cut, { isAction: true, promise: Promise });
@@ -18679,13 +24257,14 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 case id + '_rename':
                     this.parent.notify(renameSheetTab, {});
                     break;
-                case id + '_delete':
+                case id + '_delete_sheet':
                     this.parent.notify(removeSheetTab, {});
                     break;
-                case id + '_insert':
-                    this.parent.notify(addSheetTab, { text: 'Insert' });
+                case id + '_insert_sheet':
+                    this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetTab - 1,
+                        end: this.parent.activeSheetTab - 1, modelType: 'Sheet', isAction: true });
                     break;
-                case id + '_sheet_hide':
+                case id + '_hide_sheet':
                     this.parent.notify(hideSheet, null);
                     break;
                 case id + '_ascending':
@@ -18707,13 +24286,39 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 case id + '_reapplyfilter':
                     this.parent.notify(reapplyFilter, null);
                     break;
-                case id + '_hiderow':
+                case id + '_hide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-                    this.parent.showHideRow(true, indexes[0], indexes[2]);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[0], endIndex: indexes[2], hide: true, isCol: false, actionUpdate: true
+                    });
                     break;
-                case id + '_unhiderow':
+                case id + '_unhide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-                    this.parent.showHideRow(false, indexes[0], indexes[2]);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[0], endIndex: indexes[2], hide: false, isCol: false, actionUpdate: true
+                    });
+                    break;
+                case id + '_hide_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[1], endIndex: indexes[3], hide: true, isCol: true, actionUpdate: true
+                    });
+                    break;
+                case id + '_unhide_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(hideShow, {
+                        startIndex: indexes[1], endIndex: indexes[3], hide: false, isCol: true, actionUpdate: true
+                    });
+                    break;
+                case id + '_insert_row':
+                case id + '_delete_row':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(args.item.id.substr(id.length + 1, 6) + "Model", { model: this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true });
+                    break;
+                case id + '_insert_column':
+                case id + '_delete_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(args.item.id.substr(id.length + 1, 6) + "Model", { model: this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true });
                     break;
                 case id + '_hyperlink':
                     this.parent.notify(initiateHyperlink, null);
@@ -18727,10 +24332,27 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 case id + '_removeHyperlink':
                     this.parent.removeHyperlink(this.parent.getActiveSheet().selectedRange);
                     break;
-                default:
-                // Rename functionality goes here
+                case id + '_protect':
+                    var sheet = this.parent.getActiveSheet();
+                    sheet.isProtected = !sheet.isProtected;
+                    var isActive = void 0;
+                    sheet.isProtected ? isActive = false : isActive = true;
+                    this.parent.notify(applyProtect, { isActive: isActive });
+                    break;
             }
         }
+    };
+    ContextMenu$$1.prototype.getInsertModel = function (startIndex, endIndex) {
+        var model = [];
+        for (var i = startIndex; i <= endIndex; i++) {
+            if (i === startIndex) {
+                model.push({ index: i });
+            }
+            else {
+                model.push({});
+            }
+        }
+        return model;
     };
     /**
      * Before open event handler.
@@ -18790,10 +24412,15 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
         else if (target === 'RowHeader') {
             this.setClipboardData(items, l10n, id);
-            //this.setHideShowItems(items, l10n, 'Row', id);
+            var indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
+            this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
         }
         else if (target === 'ColumnHeader') {
             this.setClipboardData(items, l10n, id);
+            var indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
+            this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
         }
         else if (target === 'SelectAll') {
             this.setClipboardData(items, l10n, id);
@@ -18802,19 +24429,33 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
         else if (target === 'Footer') {
             items.push({
-                text: l10n.getConstant('Insert'), id: id + '_insert'
+                text: l10n.getConstant('Insert'), id: id + '_insert_sheet'
             });
             items.push({
-                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete'
+                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete_sheet'
             });
             items.push({
                 text: l10n.getConstant('Rename'), id: id + '_rename'
             });
             items.push({
-                text: l10n.getConstant('Hide'), id: id + '_sheet_hide'
+                text: l10n.getConstant('Hide'), id: id + '_hide_sheet'
             });
+            this.setProtectSheetItems(items, id);
         }
         return items;
+    };
+    ContextMenu$$1.prototype.setProtectSheetItems = function (items, id) {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        if (this.parent.getActiveSheet().isProtected) {
+            items.push({
+                text: l10n.getConstant('UnprotectSheet'), id: id + '_protect', iconCss: 'e-icons e-protect-icon',
+            });
+        }
+        else {
+            items.push({
+                text: l10n.getConstant('ProtectSheet'), id: id + '_protect', iconCss: 'e-icons e-protect-icon',
+            });
+        }
     };
     /**
      * Sets sorting related items to the context menu.
@@ -18854,10 +24495,11 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
     };
     ContextMenu$$1.prototype.setHyperLink = function (items, id) {
+        var sheet = this.parent.getActiveSheet();
         if (this.parent.allowHyperlink) {
             var l10n = this.parent.serviceLocator.getService(locale);
-            if (!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
-                !document.activeElement.classList.contains('e-hyperlink')) {
+            if ((!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
+                !document.activeElement.classList.contains('e-hyperlink')) || (sheet.isProtected && !sheet.protectSettings.insertLink)) {
                 items.push({
                     text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
                 });
@@ -18890,17 +24532,26 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             });
         }
     };
-    ContextMenu$$1.prototype.setHideShowItems = function (items, l10n, layout, id) {
+    ContextMenu$$1.prototype.setInsertDeleteItems = function (items, l10n, layout, id, indexes) {
         items.push({ separator: true });
-        var indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-        if (indexes[0] === indexes[2] || indexes[1] === indexes[3]) {
-            items.push({ text: l10n.getConstant('Hide' + layout), id: id + '_hide' + layout.toLowerCase() });
+        ['Insert', 'Delete'].forEach(function (action) {
+            if (indexes[0] === indexes[1]) {
+                items.push({ text: l10n.getConstant("" + action + layout), id: id + ("_" + action.toLowerCase() + "_" + layout.toLowerCase()) });
+            }
+            else {
+                items.push({ text: l10n.getConstant("" + action + layout + "s"), id: id + ("_" + action.toLowerCase() + "_" + layout.toLowerCase()) });
+            }
+        });
+    };
+    ContextMenu$$1.prototype.setHideShowItems = function (items, l10n, layout, id, indexes) {
+        if (indexes[0] === indexes[1]) {
+            items.push({ text: l10n.getConstant("Hide" + layout), id: id + ("_hide_" + layout.toLowerCase()) });
         }
         else {
-            items.push({ text: l10n.getConstant('Hide' + layout + 's'), id: id + '_hide' + layout.toLowerCase() });
+            items.push({ text: l10n.getConstant("Hide" + layout + "s"), id: id + ("_hide_" + layout.toLowerCase()) });
         }
-        if (this.parent.hiddenRowsCount(indexes[0], indexes[2])) {
-            items.push({ text: l10n.getConstant('UnHide' + layout + 's'), id: id + '_unhide' + layout.toLowerCase() });
+        if (this.parent.hiddenCount(indexes[0], indexes[1], layout.toLowerCase() + "s")) {
+            items.push({ text: l10n.getConstant("UnHide" + layout + "s"), id: id + ("_unhide_" + layout.toLowerCase()) });
         }
     };
     /**
@@ -19056,7 +24707,7 @@ var Sort = /** @__PURE__ @class */ (function () {
     Sort.prototype.isValidSortRange = function () {
         var sheet = this.parent.getActiveSheet();
         var range = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+        if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             return false;
         }
         return true;
@@ -19437,7 +25088,7 @@ var Sort = /** @__PURE__ @class */ (function () {
             if (eventArgs.hasFilter && eventArgs.filterRange) {
                 range[0] = eventArgs.filterRange[0];
                 range[1] = 0;
-                range[2] = sheet.usedRange.rowIndex - 1;
+                range[2] = sheet.usedRange.rowIndex;
                 range[3] = sheet.usedRange.colIndex;
                 beforeArgs.sortOptions.containsHeader = true;
             }
@@ -19538,7 +25189,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      */
     Filter.prototype.isInValidFilterRange = function (sheet) {
         var selectedRange = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-        return selectedRange[0] > sheet.usedRange.rowIndex - 1 || selectedRange[1] > sheet.usedRange.colIndex;
+        return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex;
     };
     /**
      * Shows the range error alert dialog.
@@ -19595,7 +25246,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         if (predicates) {
             var range = this.filterRange.get(sheetIdx).slice();
             range[0] = range[0] + 1; // to skip first row.
-            range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+            range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             getData(this.parent, sheet.name + "!" + getRangeAddress(range), true, true).then(function (jsonData) {
                 _this.filterSuccessHandler(new DataManager(jsonData), { action: 'filtering', filterCollection: predicates, field: predicates[0].field });
                 predicates.forEach(function (predicate) {
@@ -19615,7 +25266,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
-            range[2] = sheet.usedRange.rowIndex - 1;
+            range[2] = sheet.usedRange.rowIndex;
             range[3] = sheet.usedRange.colIndex;
         }
         this.filterRange.set(sheetIdx, range);
@@ -19654,7 +25305,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
         var range = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         var field = getColumnHeaderText(cell[1] + 1);
         var type = this.getColumnType(sheet, cell[1] + 1, range);
         var predicates = [{
@@ -19837,7 +25488,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         var filterCell = getCell(range[0], colIndex - 1, sheet);
         var displayName = this.parent.getDisplayText(filterCell);
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         getData(this.parent, sheet.name + "!" + getRangeAddress(range), true, true).then(function (jsonData) {
             //to avoid undefined array data
             var checkBoxData;
@@ -19888,7 +25539,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         var sheet = this.parent.getActiveSheet();
         var range = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: sortOrder } }, range: getRangeAddress(range) });
         var cell = getIndexesFromAddress(sheet.activeCell);
         var field = getColumnHeaderText(cell[1] + 1);
@@ -19938,7 +25589,7 @@ var Filter = /** @__PURE__ @class */ (function () {
             datasource: dataSource,
             predicates: this.getPredicates(sheetIdx),
         };
-        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex - 1; //extend the range if filtered
+        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex; //extend the range if filtered
         this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)));
     };
     /**
@@ -19982,7 +25633,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         var str = 0;
         var date = 0;
         var time = 0;
-        for (var i = range[0]; i <= sheet.usedRange.rowIndex - 1; i++) {
+        for (var i = range[0]; i <= sheet.usedRange.rowIndex; i++) {
             var cell = getCell(i, colIndex - 1, sheet);
             if (cell) {
                 if (cell.format) {
@@ -20119,7 +25770,7 @@ var BasicModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function BasicModule() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace);
     }
     /**
      * For internal use only - Get the module name.
@@ -20148,7 +25799,7 @@ var AllModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function AllModule() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace);
     }
     /**
      * For internal use only - Get the module name.
@@ -20219,6 +25870,8 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
 /** @hidden */
 var DISABLED = 'e-disabled';
 /** @hidden */
+var WRAPTEXT = 'e-wraptext';
+/** @hidden */
 var locale = 'spreadsheetLocale';
 /** @hidden */
 var dialog = 'dialog';
@@ -20251,6 +25904,32 @@ var fillColor = {
  * @hidden
  */
 var defaultLocale = {
+    FindValue: 'Find value',
+    ReplaceValue: 'Replace value',
+    FindReplaceTooltip: 'Find & Replace',
+    InsertingEmptyValue: 'Reference value is not valid.',
+    ReplaceAllEnd: ' matches replaced with ',
+    ByRow: 'By Rows',
+    ByColumn: 'By Columns',
+    MatchCase: 'Match case   ',
+    MatchExactCellElements: 'Match exact cell contents',
+    Replace: 'Replace...',
+    Find: 'Find and Replace...',
+    Goto: 'Goto...',
+    EntercellAddress: 'Enter cell address',
+    GotoSpecial: 'GotoSpecial...',
+    FindAndReplace: 'Find and Replace',
+    FindNextBtn: 'Find Next',
+    FindPreviousBtn: 'Find Previous',
+    ReplaceBtn: 'Replace',
+    ReplaceAllBtn: 'Replace All',
+    GotoHeader: 'Go To',
+    GotoSpecialHeader: 'Go To Special',
+    Sheet: 'Sheet',
+    Workbook: 'Workbook',
+    NoElements: 'We couldn\'t find what you were looking for.',
+    FindWhat: 'Find what',
+    ReplaceWith: 'Replace with',
     Cut: 'Cut',
     Copy: 'Copy',
     Paste: 'Paste',
@@ -20282,6 +25961,20 @@ var defaultLocale = {
     AlignTop: 'Align Top',
     AlignMiddle: 'Align Middle',
     AlignBottom: 'Align Bottom',
+    WrapText: 'Wrap Text',
+    Borders: 'Borders',
+    TopBorders: 'Top Borders',
+    LeftBorders: 'Left Borders',
+    RightBorders: 'Right Borders',
+    BottomBorders: 'Bottom Borders',
+    AllBorders: 'All Borders',
+    HorizontalBorders: 'Horizontal Borders',
+    VerticalBorders: 'Vertical Borders',
+    OutsideBorders: 'Outside Borders',
+    InsideBorders: 'Inside Borders',
+    NoBorders: 'No Borders',
+    BorderColor: 'Border Color',
+    BorderStyle: 'Border Style',
     InsertFunction: 'Insert Function',
     Insert: 'Insert',
     Delete: 'Delete',
@@ -20338,6 +26031,14 @@ var defaultLocale = {
     HideColumn: 'Hide Column',
     HideColumns: 'Hide Columns',
     UnHideColumns: 'UnHide Columns',
+    InsertRow: 'Insert Row',
+    InsertRows: 'Insert Rows',
+    InsertColumn: 'Insert Column',
+    InsertColumns: 'Insert Columns',
+    DeleteRow: 'Delete Row',
+    DeleteRows: 'Delete Rows',
+    DeleteColumn: 'Delete Column',
+    DeleteColumns: 'Delete Columns',
     Ok: 'Ok',
     Close: 'Close',
     Cancel: 'Cancel',
@@ -20404,8 +26105,11 @@ var defaultLocale = {
     SUBTOTAL: 'Returns subtotal for a range using the given function number.',
     RADIANS: 'Converts degrees into radians.',
     MATCH: 'Returns the relative position of a specified value in given range.',
-    LN: 'Returns the natural logarithm of a number',
+    LN: 'Returns the natural logarithm of a number.',
+    INTERCEPT: 'Calculates the point of the Y-intercept line via linear regression.',
+    SLOPE: 'Returns the slope of the line from linear regression of the data points.',
     DefineNameExists: 'This name already exists, try different name.',
+    DefineNameInValid: 'The name that you entered is not valid.',
     CircularReference: 'When a formula refers to one or more circular references, this may result in an incorrect calculation.',
     ShowRowsWhere: 'Show rows where:',
     OR: 'OR',
@@ -20414,7 +26118,6 @@ var defaultLocale = {
     CustomFilterPlaceHolder: 'Enter the value',
     CustomFilter: 'Custom Filter',
     Between: 'Between',
-    MatchCase: 'Match Case',
     DateTimeFilter: 'DateTime Filters',
     Undo: 'Undo',
     Redo: 'Redo',
@@ -20440,7 +26143,52 @@ var defaultLocale = {
     FilterButton: 'Filter',
     CancelButton: 'Cancel',
     OKButton: 'OK',
-    Search: 'Search'
+    Search: 'Search',
+    ProtectSheet: 'Protect Sheet',
+    UnprotectSheet: 'Unprotect Sheet',
+    LockCells: 'Lock Cells',
+    SelectCells: 'Select cells',
+    FormatCells: 'Format cells',
+    FormatRows: 'Format rows',
+    FormatColumns: 'Format columns',
+    InsertLinks: 'Insert links',
+    ProtectContent: 'Protect the contents of locked cells',
+    ProtectAllowUser: ' Allow all users of this worksheet to:',
+    EditAlert: 'The cell you\'re trying to change is protected. To make change, unprotect the sheet.',
+    SearchWithin: 'Search within',
+    SearchBy: 'Search by',
+    Reference: 'Reference',
+    DataValidation: 'Data Validation',
+    CLEARALL: 'CLEAR ALL',
+    APPLY: 'APPLY',
+    CellRange: 'Cell Range',
+    Allow: 'Allow',
+    Data: 'Data',
+    Minimum: 'Minimum',
+    Maximum: 'Maximum',
+    IgnoreBlank: 'Ignore blank',
+    WholeNumber: 'Whole Number',
+    Decimal: 'Decimal',
+    Date: 'Date',
+    TextLength: 'Text Length',
+    List: 'List',
+    NotBetween: 'Not between',
+    EqualTo: 'Equal to',
+    NotEqualTo: 'Not equal to',
+    Greaterthan: 'Greater than',
+    Lessthan: 'Less than',
+    GreaterThanOrEqualTo: 'Greater than or equal to',
+    LessThanOrEqualTo: 'Less than or equal to',
+    InCellDropDown: 'In-cell-dropdown',
+    Sources: 'Sources',
+    Value: 'Value',
+    Retry: 'Retry',
+    EnterValue: 'Enter value',
+    DialogError: 'The list source must be a reference to single row or column.',
+    ValidationError: 'This value doesn' + '\'' + 't match the data validation restrictions defined for the cell.',
+    EmptyError: 'You must enter a value',
+    ClearHighlight: 'Clear Highlight',
+    HighlightInvalidData: 'Highlight Invalid Data'
 };
 
 /**
@@ -20459,6 +26207,7 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         this.col = parent.createElement('col');
         this.rowRenderer = parent.serviceLocator.getService('row');
         this.cellRenderer = parent.serviceLocator.getService('cell');
+        this.addEventListener();
     }
     SheetRender.prototype.refreshSelectALLContent = function () {
         var cell;
@@ -20561,12 +26310,13 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         table.appendChild(this.parent.createElement(tagName));
     };
     /**
-     * It is used to refresh the select all, row header, column header and content table contents.
+     * It is used to refresh the select all, row header, column header and content of the spreadsheet.
      */
-    SheetRender.prototype.renderTable = function (cells, rowIdx, colIdx, lastIdx, top, left) {
+    SheetRender.prototype.renderTable = function (args) {
         var _this = this;
         var indexes;
         var row;
+        var hRow;
         var sheet = this.parent.getActiveSheet();
         var frag = document.createDocumentFragment();
         this.createTable();
@@ -20585,48 +26335,51 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             cHdrTHead.appendChild(cHdrRow);
         }
         frag.appendChild(this.contentPanel);
-        this.parent.notify(beforeContentLoaded, { startColIdx: colIdx });
+        this.parent.notify(beforeContentLoaded, { startColIdx: args.indexes[1] });
         var colCount = sheet.colCount.toString();
         var rowCount = sheet.colCount.toString();
+        var layout = args.top && args.left ? 'RowColumn' : (args.top ? 'Row' : (args.left ? 'Column' : ''));
         if (sheet.showHeaders) {
             this.parent.getColHeaderTable().setAttribute('aria-colcount', colCount);
             this.parent.getRowHeaderTable().setAttribute('aria-rowcount', rowCount);
         }
         attributes(this.parent.getContentTable(), { 'aria-rowcount': rowCount, 'aria-colcount': colCount });
-        cells.forEach(function (value, key) {
+        args.cells.forEach(function (value, key) {
             indexes = getRangeIndexes(key);
-            if (indexes[0] === rowIdx) {
-                _this.updateCol(indexes[1], colGrp, sheet);
+            if (indexes[1] === args.indexes[1]) {
                 if (sheet.showHeaders) {
-                    cHdrRow.appendChild(_this.cellRenderer.renderColHeader(indexes[1]));
-                }
-            }
-            if (indexes[1] === colIdx) {
-                if (sheet.showHeaders) {
-                    row = _this.rowRenderer.render(indexes[0], true);
-                    rHdrTBody.appendChild(row);
-                    row.appendChild(_this.cellRenderer.renderRowHeader(indexes[0]));
+                    hRow = _this.rowRenderer.render(indexes[0], true);
+                    rHdrTBody.appendChild(hRow);
+                    hRow.appendChild(_this.cellRenderer.renderRowHeader(indexes[0]));
                 }
                 row = _this.rowRenderer.render(indexes[0]);
                 cTBody.appendChild(row);
             }
             row.appendChild(_this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[0], cell: value,
-                address: key, lastCell: indexes[1] === lastIdx, isHeightCheckNeeded: true }));
+                address: key, lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: true, row: row, hRow: hRow,
+                pRow: row.previousSibling, pHRow: sheet.showHeaders ? hRow.previousSibling : null,
+                first: layout ? (layout.includes('Row') ? (indexes[0] === args.indexes[0] ? 'Row' : (layout.includes('Column') ? (indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' }));
+            if (indexes[0] === args.indexes[0]) {
+                _this.updateCol(sheet, indexes[1], colGrp);
+                if (sheet.showHeaders) {
+                    cHdrRow.appendChild(_this.cellRenderer.renderColHeader(indexes[1]));
+                }
+            }
         });
         this.getContentTable().insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf(function () {
             var content = _this.parent.getMainContent();
             document.getElementById(_this.parent.element.id + '_sheet').appendChild(frag);
-            if (top) {
-                content.scrollTop = top;
+            if (args.top) {
+                content.scrollTop = args.top;
                 if (sheet.showHeaders) {
-                    _this.parent.getRowHeaderContent().scrollTop = top;
+                    _this.parent.getRowHeaderContent().scrollTop = args.top;
                 }
             }
-            if (left) {
-                content.scrollLeft = left;
+            if (args.left) {
+                content.scrollLeft = args.left;
                 if (sheet.showHeaders) {
-                    _this.parent.getColumnHeaderContent().scrollLeft = left;
+                    _this.parent.getColumnHeaderContent().scrollLeft = args.left;
                 }
             }
             _this.parent.notify(contentLoaded, null);
@@ -20636,9 +26389,35 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             }
             setAriaOptions(_this.parent.getMainContent(), { busy: false });
             _this.parent.trigger(dataBound, {});
+            if (args.initLoad) {
+                var triggerEvent = true;
+                if (_this.parent.scrollSettings.enableVirtualization) {
+                    for (var i = 0; i < sheet.rangeSettings.length; i++) {
+                        if (sheet.rangeSettings[i].info.count - 1 > _this.parent.viewport.bottomIndex) {
+                            triggerEvent = false;
+                            break;
+                        }
+                    }
+                }
+                if (triggerEvent) {
+                    _this.triggerCreatedEvent();
+                }
+            }
         });
     };
-    SheetRender.prototype.refreshColumnContent = function (cells, rowIndex, colIndex, lastIdx) {
+    SheetRender.prototype.triggerCreatedEvent = function () {
+        if (this.parent.createdHandler) {
+            if (this.parent.createdHandler.observers) {
+                this.parent[created].observers = this.parent.createdHandler.observers;
+            }
+            else {
+                this.parent.setProperties({ created: this.parent.createdHandler }, true);
+            }
+            this.parent.createdHandler = undefined;
+            this.parent.trigger(created, null);
+        }
+    };
+    SheetRender.prototype.refreshColumnContent = function (args) {
         var _this = this;
         var indexes;
         var row;
@@ -20660,26 +26439,29 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             hRow = tHead.querySelector('tr');
             hRow.innerHTML = '';
         }
-        cells.forEach(function (value, key) {
+        args.cells.forEach(function (value, key) {
             indexes = getRangeIndexes(key);
-            if (indexes[0] === rowIndex) {
-                _this.updateCol(indexes[1], colGrp, sheet);
+            if (indexes[0] === args.indexes[0]) {
+                _this.updateCol(sheet, indexes[1], colGrp);
                 if (sheet.showHeaders) {
                     hRow.appendChild(_this.cellRenderer.renderColHeader(indexes[1]));
                 }
             }
-            if (indexes[1] === colIndex) {
+            if (indexes[1] === args.indexes[1]) {
                 row = tBody.children[count];
                 if (row) {
-                    count++;
                     row.innerHTML = '';
+                    count++;
                 }
                 else {
                     return;
                 }
             }
             row.appendChild(_this.cellRenderer.render({
-                colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key
+                colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
+                first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : (_this.parent.scrollSettings.
+                    enableVirtualization && indexes[0] === args.indexes[0] && _this.parent.viewport.topIndex !== skipHiddenIdx(sheet, 0, true)
+                    ? 'Row' : '')
             }));
         });
         frag.insertBefore(colGrp.cloneNode(true), tBody);
@@ -20699,11 +26481,11 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             setAriaOptions(_this.parent.getMainContent(), { busy: false });
         });
     };
-    SheetRender.prototype.refreshRowContent = function (cells, startIndex, lastIdx) {
+    SheetRender.prototype.refreshRowContent = function (args) {
         var _this = this;
         var indexes;
         var row;
-        var hRow;
+        var hdrRow;
         var colGroupWidth = this.colGroupWidth;
         var sheet = this.parent.getActiveSheet();
         var hFrag;
@@ -20716,47 +26498,45 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             hFrag.appendChild(hTBody);
         }
         frag.appendChild(tBody);
-        cells.forEach(function (value, key) {
+        args.cells.forEach(function (value, key) {
             indexes = getRangeIndexes(key);
-            if (indexes[1] === startIndex) {
+            if (indexes[1] === args.indexes[1]) {
                 if (sheet.showHeaders) {
-                    hRow = _this.rowRenderer.render(indexes[0], true);
-                    hTBody.appendChild(hRow);
-                    hRow.appendChild(_this.cellRenderer.renderRowHeader(indexes[0]));
+                    hdrRow = _this.rowRenderer.render(indexes[0], true);
+                    hTBody.appendChild(hdrRow);
+                    hdrRow.appendChild(_this.cellRenderer.renderRowHeader(indexes[0]));
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                 }
                 row = _this.rowRenderer.render(indexes[0]);
                 tBody.appendChild(row);
             }
             row.appendChild(_this.cellRenderer.render({ rowIdx: indexes[0], colIdx: indexes[1], cell: value, address: key,
-                lastCell: indexes[1] === lastIdx, row: row, hRow: hRow, isHeightCheckNeeded: true }));
+                lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling, pHRow: sheet.showHeaders ?
+                    hdrRow.previousSibling : null, isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
+                    'Row' : (_this.parent.scrollSettings.enableVirtualization && indexes[1] === args.indexes[1] && _this.parent.viewport.leftIndex
+                    !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : '') }));
         });
-        getUpdateUsingRaf(function () {
-            if (_this.parent.isDestroyed) {
-                return;
-            }
-            if (_this.colGroupWidth !== colGroupWidth) {
-                _this.updateLeftColGroup(colGroupWidth);
-            }
-            if (sheet.showHeaders) {
-                detach(_this.contentPanel.querySelector('.e-row-header tbody'));
-                _this.getRowHeaderTable().appendChild(hFrag);
-            }
-            detach(_this.contentPanel.querySelector('.e-main-content tbody'));
-            _this.getContentTable().appendChild(frag);
-            _this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
-            if (!_this.parent.isOpen) {
-                _this.parent.hideSpinner();
-            }
-            setAriaOptions(_this.parent.getMainContent(), { busy: false });
-        });
+        if (this.colGroupWidth !== colGroupWidth) {
+            this.updateLeftColGroup(colGroupWidth);
+        }
+        if (sheet.showHeaders) {
+            detach(this.contentPanel.querySelector('.e-row-header tbody'));
+            this.getRowHeaderTable().appendChild(hFrag);
+        }
+        detach(this.contentPanel.querySelector('.e-main-content tbody'));
+        this.getContentTable().appendChild(frag);
+        this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
+        if (!this.parent.isOpen) {
+            this.parent.hideSpinner();
+        }
+        setAriaOptions(this.parent.getMainContent(), { busy: false });
     };
-    SheetRender.prototype.updateCol = function (idx, appendTo, sheet) {
+    SheetRender.prototype.updateCol = function (sheet, idx, appendTo) {
         var col = this.col.cloneNode();
         col.style.width = formatUnit(getColumnWidth(sheet, idx));
-        appendTo.appendChild(col);
+        return appendTo ? appendTo.appendChild(col) : col;
     };
-    SheetRender.prototype.updateColContent = function (cells, rowIdx, colIdx, lastIdx, direction) {
+    SheetRender.prototype.updateColContent = function (args) {
         var _this = this;
         getUpdateUsingRaf(function () {
             var indexes;
@@ -20775,17 +26555,15 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             }
             var colGrp = _this.parent.element.querySelector('.e-main-content colgroup');
             var colRefChild = colGrp.firstElementChild;
+            var skipRender;
             var tBody = _this.parent.element.querySelector('.e-main-content tbody');
-            cells.forEach(function (value, key) {
+            args.cells.forEach(function (value, key) {
+                if (skipRender) {
+                    return;
+                }
                 indexes = getRangeIndexes(key);
-                if (indexes[0] === rowIdx) {
-                    if (direction === 'first') {
-                        _this.updateCol(indexes[1], colGrp, sheet);
-                        if (sheet.showHeaders) {
-                            hRow.appendChild(_this.cellRenderer.renderColHeader(indexes[1]));
-                        }
-                    }
-                    else {
+                if (indexes[0] === args.indexes[0]) {
+                    if (args.direction === 'last') {
                         col = _this.col.cloneNode();
                         col.style.width = formatUnit(getColumnWidth(sheet, indexes[1]));
                         colGrp.insertBefore(col, colRefChild);
@@ -20793,31 +26571,43 @@ var SheetRender = /** @__PURE__ @class */ (function () {
                             hRow.insertBefore(_this.cellRenderer.renderColHeader(indexes[1]), hRefChild);
                         }
                     }
-                    if (_this.parent.scrollSettings.enableVirtualization) {
-                        // tslint:disable
-                        detach(colGrp[direction + 'ElementChild']);
+                    else {
+                        _this.updateCol(sheet, indexes[1], colGrp);
                         if (sheet.showHeaders) {
-                            detach(hRow[direction + 'ElementChild']);
+                            hRow.appendChild(_this.cellRenderer.renderColHeader(indexes[1]));
+                        }
+                    }
+                    if (_this.parent.scrollSettings.enableVirtualization && args.direction) {
+                        // tslint:disable
+                        detach(colGrp[args.direction + 'ElementChild']);
+                        if (sheet.showHeaders) {
+                            detach(hRow[args.direction + 'ElementChild']);
                         }
                         // tslint:enable
                     }
                 }
-                if (indexes[1] === colIdx) {
+                if (indexes[1] === args.indexes[1]) {
                     row = tBody.children[rowCount];
                     rowCount++;
+                    if (!row) {
+                        skipRender = true;
+                        return;
+                    }
                     refChild = row.firstElementChild;
                 }
                 cell = _this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key,
-                    lastCell: indexes[1] === lastIdx, isHeightCheckNeeded: direction === 'first' });
-                if (direction === 'first') {
-                    row.appendChild(cell);
-                }
-                else {
+                    lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: args.direction === 'first',
+                    first: args.direction === 'last' && !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : '',
+                    checkNextBorder: args.direction === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', });
+                if (args.direction === 'last') {
                     row.insertBefore(cell, refChild);
                 }
-                if (_this.parent.scrollSettings.enableVirtualization) {
+                else {
+                    row.appendChild(cell);
+                }
+                if (_this.parent.scrollSettings.enableVirtualization && args.direction) {
                     // tslint:disable-next-line:no-any
-                    detach(row[direction + 'ElementChild']);
+                    detach(row[args.direction + 'ElementChild']);
                 }
             });
             if (sheet.showHeaders) {
@@ -20834,7 +26624,7 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             setAriaOptions(_this.parent.getMainContent(), { busy: false });
         });
     };
-    SheetRender.prototype.updateRowContent = function (cells, startIndex, lastIdx, direction) {
+    SheetRender.prototype.updateRowContent = function (args) {
         var _this = this;
         var colGroupWidth = this.colGroupWidth;
         var row;
@@ -20850,54 +26640,54 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         var indexes;
         var frag = document.createDocumentFragment();
         this.parent.showSpinner();
-        cells.forEach(function (value, cKey) {
+        args.cells.forEach(function (value, cKey) {
             indexes = getRangeIndexes(cKey);
-            if (indexes[1] === startIndex) {
+            if (indexes[1] === args.indexes[1]) {
                 if (sheet.showHeaders) {
                     hRow = _this.rowRenderer.render(indexes[0], true);
                     rFrag.appendChild(hRow);
                     hRow.appendChild(_this.cellRenderer.renderRowHeader(indexes[0]));
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
-                    if (_this.parent.scrollSettings.enableVirtualization && direction) {
+                    if (_this.parent.scrollSettings.enableVirtualization && args.direction) {
                         // tslint:disable-next-line:no-any
-                        detach(rTBody[direction + 'ElementChild']);
+                        detach(rTBody[args.direction + 'ElementChild']);
                     }
                 }
                 row = _this.rowRenderer.render(indexes[0]);
                 frag.appendChild(row);
-                if (_this.parent.scrollSettings.enableVirtualization && direction) {
+                if (_this.parent.scrollSettings.enableVirtualization && args.direction) {
                     // tslint:disable-next-line:no-any
-                    detach(tBody[direction + 'ElementChild']);
+                    detach(tBody[args.direction + 'ElementChild']);
                 }
             }
-            row.appendChild(_this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: cKey,
-                lastCell: indexes[1] === lastIdx, row: row, hRow: hRow, isHeightCheckNeeded: direction === 'first' || direction === '' }));
+            row.appendChild(_this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address: cKey,
+                lastCell: indexes[1] === args.indexes[3], row: row, pHRow: sheet.showHeaders ? hRow.previousSibling : null,
+                checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,
+                isHeightCheckNeeded: args.direction === 'first' || args.direction === '', hRow: hRow, first: args.direction === 'last' &&
+                    !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '' }));
         });
-        var appendFn = function () {
-            if (_this.colGroupWidth !== colGroupWidth) {
-                _this.updateLeftColGroup(colGroupWidth);
+        if (this.colGroupWidth !== colGroupWidth) {
+            this.updateLeftColGroup(colGroupWidth);
+        }
+        if (args.direction === 'last') {
+            if (sheet.showHeaders) {
+                rTBody.insertBefore(rFrag, rTBody.firstElementChild);
             }
-            if (direction === 'last') {
-                if (sheet.showHeaders) {
-                    rTBody.insertBefore(rFrag, rTBody.firstElementChild);
-                }
-                tBody.insertBefore(frag, tBody.firstElementChild);
+            tBody.insertBefore(frag, tBody.firstElementChild);
+        }
+        else {
+            if (sheet.showHeaders) {
+                rTBody.appendChild(rFrag);
             }
-            else {
-                if (sheet.showHeaders) {
-                    rTBody.appendChild(rFrag);
-                }
-                tBody.appendChild(frag);
-            }
-            if (_this.parent.scrollSettings.enableVirtualization) {
-                _this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
-            }
-            if (!_this.parent.isOpen) {
-                _this.parent.hideSpinner();
-            }
-            setAriaOptions(_this.parent.getMainContent(), { busy: false });
-        };
-        direction ? getUpdateUsingRaf(appendFn) : appendFn();
+            tBody.appendChild(frag);
+        }
+        if (this.parent.scrollSettings.enableVirtualization) {
+            this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
+        }
+        if (!this.parent.isOpen) {
+            this.parent.hideSpinner();
+        }
+        setAriaOptions(this.parent.getMainContent(), { busy: false });
     };
     /**
      * Used to toggle row and column headers.
@@ -21025,6 +26815,18 @@ var SheetRender = /** @__PURE__ @class */ (function () {
     SheetRender.prototype.getContentPanel = function () {
         return this.contentPanel.getElementsByClassName('e-main-content')[0];
     };
+    SheetRender.prototype.addEventListener = function () {
+        this.parent.on(created, this.triggerCreatedEvent, this);
+        this.parent.on(spreadsheetDestroyed, this.destroy, this);
+    };
+    SheetRender.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    SheetRender.prototype.removeEventListener = function () {
+        this.parent.off(created, this.triggerCreatedEvent);
+        this.parent.off(spreadsheetDestroyed, this.destroy);
+    };
     return SheetRender;
 }());
 
@@ -21058,20 +26860,22 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
         }
         return row;
     };
-    RowRenderer.prototype.refresh = function (index, hRow) {
+    RowRenderer.prototype.refresh = function (index, pRow, hRow, header) {
         var row;
         var sheet = this.parent.getActiveSheet();
-        if (hRow) {
+        if (header) {
+            row = this.render(index, true, true);
+            row.appendChild(this.cellRenderer.renderRowHeader(index));
+        }
+        else {
             row = this.render(index);
             var len = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
             for (var i = this.parent.viewport.leftIndex; i <= len; i++) {
                 row.appendChild(this.cellRenderer.render({ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet),
-                    address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true }));
+                    address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow,
+                    first: index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ?
+                        'Row' : '' }));
             }
-        }
-        else {
-            row = this.render(index, true, true);
-            row.appendChild(this.cellRenderer.renderRowHeader(index));
         }
         return row;
     };
@@ -21093,6 +26897,13 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         var headerCell = this.th.cloneNode();
         attributes(headerCell, { 'role': 'columnheader', 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
         headerCell.innerHTML = getColumnHeaderText(index + 1);
+        var sheet = this.parent.getActiveSheet();
+        if (isHiddenCol(sheet, index + 1)) {
+            headerCell.classList.add('e-hide-start');
+        }
+        if (index !== 0 && isHiddenCol(sheet, index - 1)) {
+            headerCell.classList.add('e-hide-end');
+        }
         return headerCell;
     };
     CellRenderer.prototype.renderRowHeader = function (index) {
@@ -21103,17 +26914,16 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         return headerCell;
     };
     CellRenderer.prototype.render = function (args) {
-        var td = this.element.cloneNode();
-        td.className = 'e-cell';
-        attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
-        td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
-        this.updateCell(args.rowIdx, args.colIdx, td, args.cell, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
+        args.td = this.element.cloneNode();
+        args.td.className = 'e-cell';
+        attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        args.td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        args.isRefresh = false;
+        this.update(args);
         if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
-            this.parent.notify(renderFilterCell, { td: td, rowIndex: args.rowIdx, colIndex: args.colIdx });
+            this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
-        var evtArgs = {
-            cell: args.cell, element: td, address: args.address
-        };
+        var evtArgs = { cell: args.cell, element: args.td, address: args.address };
         this.parent.trigger('beforeCellRender', evtArgs);
         this.updateRowHeight({
             rowIdx: args.rowIdx,
@@ -21125,28 +26935,30 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         });
         return evtArgs.element;
     };
-    CellRenderer.prototype.updateCell = function (rowIdx, colIdx, td, cell, lastCell, row, hRow, isHeightCheckNeeded, isRefresh) {
-        if (cell && cell.formula && !cell.value) {
-            var isFormula = checkIsFormula(cell.formula);
+    CellRenderer.prototype.update = function (args) {
+        if (args.cell && args.cell.formula && !args.cell.value) {
+            var isFormula = checkIsFormula(args.cell.formula);
             var eventArgs = {
                 action: 'refreshCalculate',
-                value: cell.formula,
-                rowIndex: rowIdx,
-                colIndex: colIdx,
+                value: args.cell.formula,
+                rowIndex: args.rowIdx,
+                colIndex: args.colIdx,
                 isFormula: isFormula
             };
             this.parent.notify(workbookFormulaOperation, eventArgs);
+            args.cell.value = getCell(args.rowIdx, args.colIdx, this.parent.getActiveSheet()).value;
         }
         var formatArgs = {
-            type: cell && getTypeFromFormat(cell.format),
-            value: cell && cell.value, format: cell && cell.format ? cell.format : 'General',
-            formattedText: cell && cell.value, onLoad: true, isRightAlign: false, cell: cell
+            type: args.cell && getTypeFromFormat(args.cell.format),
+            value: args.cell && args.cell.value, format: args.cell && args.cell.format ? args.cell.format : 'General',
+            formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell,
+            rowIdx: args.rowIdx.toString(), colIdx: args.colIdx.toString()
         };
-        if (cell) {
+        if (args.cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        if (!isNullOrUndefined(td)) {
-            this.parent.refreshNode(td, {
+        if (!isNullOrUndefined(args.td)) {
+            this.parent.refreshNode(args.td, {
                 type: formatArgs.type,
                 result: formatArgs.formattedText,
                 curSymbol: getNumberDependable(this.parent.locale, 'USD'),
@@ -21155,48 +26967,62 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             });
         }
         var style = {};
-        if (cell && cell.style) {
-            if (cell.style.properties) {
-                style = skipDefaultValue(cell.style, true);
+        if (args.cell) {
+            if (args.cell.style) {
+                if (args.cell.style.properties) {
+                    style = skipDefaultValue(args.cell.style, true);
+                }
+                else {
+                    style = args.cell.style;
+                }
             }
-            else {
-                style = cell.style;
+            if (args.cell.hyperlink) {
+                this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
             }
-        }
-        if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || lastCell) {
-            if (isRefresh) {
-                this.removeStyle(td);
-                this.parent.notify(setCellFormat, { style: style, range: getCellAddress(rowIdx, colIdx) });
-            }
-            else {
-                this.parent.notify(applyCellFormat, {
-                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: td,
-                    lastCell: lastCell, row: row, hRow: hRow,
-                    isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
+            if (args.cell.wrap) {
+                this.parent.notify(wrapEvent, {
+                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet: this.parent.getActiveSheet(), initial: true, td: args.td, row: args.row, hRow: args.hRow
                 });
             }
         }
-        else {
-            if (isRefresh) {
-                this.removeStyle(td);
+        if (args.isRefresh) {
+            this.removeStyle(args.td, args.rowIdx, args.colIdx);
+        }
+        if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
+            this.parent.notify(applyCellFormat, {
+                style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
+                first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded: args.isHeightCheckNeeded, manualUpdate: args.manualUpdate
+            });
+        }
+        if (args.checkNextBorder === 'Row') {
+            var borderTop = this.parent.getCellStyleValue(['borderTop'], [Number(this.parent.getContentTable().rows[0].getAttribute('aria-rowindex')) - 1, args.colIdx]).borderTop;
+            if (borderTop !== '' && (!args.cell || !args.cell.style || !args.cell.style.bottomPriority)) {
+                this.parent.notify(applyCellFormat, { style: { borderBottom: borderTop }, rowIdx: args.rowIdx,
+                    colIdx: args.colIdx, cell: args.td });
             }
         }
-        if (cell && cell.hyperlink && !hasTemplate(this.parent, rowIdx, colIdx, this.parent.activeSheetTab - 1)) {
+        if (args.checkNextBorder === 'Column') {
+            var borderLeft = this.parent.getCellStyleValue(['borderLeft'], [args.rowIdx, args.colIdx + 1]).borderLeft;
+            if (borderLeft !== '' && (!args.cell || !args.cell.style || (!args.cell.style.borderRight && !args.cell.style.border))) {
+                this.parent.notify(applyCellFormat, { style: { borderRight: borderLeft }, rowIdx: args.rowIdx, colIdx: args.colIdx,
+                    cell: args.td });
+            }
+        }
+        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
             var address = void 0;
-            if (typeof (cell.hyperlink) === 'string') {
-                address = cell.hyperlink;
+            if (typeof (args.cell.hyperlink) === 'string') {
+                address = args.cell.hyperlink;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             }
             else {
-                address = cell.hyperlink.address;
+                address = args.cell.hyperlink.address;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                    cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                    args.cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
                 }
             }
-            var hArgs = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
-            this.parent.notify(createHyperlinkElement, hArgs);
+            this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
         }
     };
     CellRenderer.prototype.processTemplates = function (cell, rowIdx, colIdx) {
@@ -21261,9 +27087,23 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         this.parent.element.removeChild(tTable);
         return height < 20 ? 20 : height;
     };
-    CellRenderer.prototype.removeStyle = function (element) {
+    CellRenderer.prototype.removeStyle = function (element, rowIdx, colIdx) {
         if (element.style.length) {
             element.removeAttribute('style');
+        }
+        var prevRowCell = this.parent.getCell(rowIdx - 1, colIdx);
+        if (prevRowCell && prevRowCell.style.borderBottom) {
+            rowIdx = Number(prevRowCell.parentElement.getAttribute('aria-rowindex')) - 1;
+            if (!this.parent.getCellStyleValue(['borderBottom'], [rowIdx, colIdx]).borderBottom) {
+                prevRowCell.style.borderBottom = '';
+            }
+        }
+        var prevColCell = element.previousElementSibling;
+        if (prevColCell && prevColCell.style.borderRight) {
+            colIdx = Number(prevColCell.getAttribute('aria-colindex')) - 1;
+            if (!this.parent.getCellStyleValue(['borderRight'], [rowIdx, colIdx]).borderRight) {
+                prevColCell.style.borderRight = '';
+            }
         }
     };
     /** @hidden */
@@ -21278,7 +27118,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
                 for (var j = cRange[1]; j <= cRange[3]; j++) {
                     var cell = this.parent.getCell(i, j);
                     if (cell) {
-                        this.updateCell(i, j, cell, getCell(i, j, sheet), false, null, null, true, cell ? true : false);
+                        this.update({ rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), lastCell: j === cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' });
                         this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
                     }
                 }
@@ -21302,7 +27142,7 @@ var Render = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     Render.prototype.render = function () {
-        this.parent.setProperties({ 'activeSheetTab': this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1 }, true);
+        this.parent.activeSheetTab = this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1;
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
             this.parent.notify(formulaBar, null);
@@ -21314,19 +27154,27 @@ var Render = /** @__PURE__ @class */ (function () {
             sheetPanel.classList.add('e-rtl');
         }
         this.parent.element.appendChild(sheetPanel);
-        this.parent.notify(sheetTabs, null);
+        if (this.parent.showSheetTabs) {
+            this.parent.notify(sheetTabs, null);
+        }
+        else { // for formula calculation
+            var sheetName = getSheetName(this.parent, 1);
+            var arg = { action: 'addSheet', sheetName: 'Sheet1', index: 1, visibleName: sheetName };
+            this.parent.notify(workbookFormulaOperation, arg);
+            this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
+        }
         if (this.parent.isMobileView()) {
             this.parent.notify(formulaBar, null);
             this.parent.notify(ribbon, null);
         }
         this.setSheetPanelSize();
         this.renderSheet(sheetPanel);
-        this.checkTopLeftCell();
+        this.checkTopLeftCell(true);
     };
-    Render.prototype.checkTopLeftCell = function () {
+    Render.prototype.checkTopLeftCell = function (initLoad) {
         var sheet = this.parent.getActiveSheet();
         if (!this.parent.scrollSettings.enableVirtualization || sheet.topLeftCell === 'A1') {
-            this.refreshUI();
+            this.refreshUI({ rowIndex: 0, colIndex: 0, refresh: 'All' }, null, initLoad);
         }
         else {
             var indexes = getCellIndexes(sheet.topLeftCell);
@@ -21345,38 +27193,48 @@ var Render = /** @__PURE__ @class */ (function () {
         panel.appendChild(this.parent.createElement('div', { className: 'e-sheet', id: this.parent.element.id + '_sheet' }));
         this.parent.serviceLocator.getService('sheet').renderPanel();
     };
-    Render.prototype.refreshUI = function (args, address) {
-        if (args === void 0) { args = { rowIndex: 0, colIndex: 0, refresh: 'All' }; }
+    Render.prototype.refreshUI = function (args, address, initLoad) {
         var sheetModule = this.parent.serviceLocator.getService('sheet');
         var sheet = this.parent.getActiveSheet();
         var sheetName = getSheetName(this.parent);
         this.parent.showSpinner();
         if (!address) {
             if (this.parent.scrollSettings.enableVirtualization) {
-                var lastRowIdx = args.rowIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2);
+                var lastRow = args.rowIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2);
                 var count = sheet.rowCount - 1;
-                if (this.parent.scrollSettings.isFinite && lastRowIdx > count) {
-                    lastRowIdx = count;
+                if (this.parent.scrollSettings.isFinite && lastRow > count) {
+                    lastRow = count;
                 }
-                var lastColIdx = args.colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
+                var lastCol = args.colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
                 count = sheet.colCount - 1;
-                if (this.parent.scrollSettings.isFinite && lastColIdx > count) {
-                    lastColIdx = count;
+                if (this.parent.scrollSettings.isFinite && lastCol > count) {
+                    lastCol = count;
                 }
-                var indexes = this.parent.skipHiddenRows(args.rowIndex, lastRowIdx);
+                var indexes = this.parent.skipHidden(args.rowIndex, lastRow);
                 var startRow = args.rowIndex;
                 if (args.rowIndex !== indexes[0]) {
                     var topLeftCell = getCellIndexes(sheet.topLeftCell);
                     if (topLeftCell[0] === args.rowIndex) {
                         sheet.topLeftCell = getCellAddress(indexes[0], topLeftCell[1]);
-                        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                     }
                     args.rowIndex = indexes[0];
                 }
-                lastRowIdx = indexes[1];
+                lastRow = indexes[1];
+                indexes = this.parent.skipHidden(args.colIndex, lastCol, 'columns');
+                var startCol = args.colIndex;
+                if (args.colIndex !== indexes[0]) {
+                    var topLeftCell = getCellIndexes(sheet.topLeftCell);
+                    if (topLeftCell[1] === args.colIndex) {
+                        sheet.topLeftCell = getCellAddress(topLeftCell[0], indexes[0]);
+                    }
+                    args.colIndex = indexes[0];
+                }
+                lastCol = indexes[1];
                 this.parent.viewport.topIndex = args.rowIndex;
-                this.parent.viewport.bottomIndex = lastRowIdx;
-                address = getCellAddress(startRow, args.colIndex) + ":" + getCellAddress(lastRowIdx, lastColIdx);
+                this.parent.viewport.bottomIndex = lastRow;
+                this.parent.viewport.leftIndex = args.colIndex;
+                this.parent.viewport.rightIndex = lastCol;
+                address = getCellAddress(startRow, startCol) + ":" + getCellAddress(lastRow, lastCol);
             }
             else {
                 address = "A1:" + getCellAddress(sheet.rowCount - 1, sheet.colCount - 1);
@@ -21387,22 +27245,26 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         setAriaOptions(this.parent.getMainContent(), { busy: true });
         this.parent.getData(sheetName + "!" + address).then(function (values) {
-            var lastCellIdx = getCellIndexes(address.split(':')[1])[1];
+            var indexes = [args.rowIndex, args.colIndex].concat(getCellIndexes(address.split(':')[1]));
             switch (args.refresh) {
                 case 'All':
-                    sheetModule.renderTable(values, args.rowIndex, args.colIndex, lastCellIdx, args.top, args.left);
+                    sheetModule.renderTable({ cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad });
                     break;
                 case 'Row':
-                    sheetModule.refreshRowContent(values, args.colIndex, lastCellIdx);
+                    sheetModule.refreshRowContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });
                     break;
                 case 'Column':
-                    sheetModule.refreshColumnContent(values, args.rowIndex, args.colIndex, lastCellIdx);
+                    sheetModule.refreshColumnContent({ cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst });
                     break;
                 case 'RowPart':
-                    sheetModule.updateRowContent(values, args.colIndex, lastCellIdx, args.direction);
+                    sheetModule.updateRowContent({
+                        cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst
+                    });
                     break;
                 case 'ColumnPart':
-                    sheetModule.updateColContent(values, args.rowIndex, args.colIndex, lastCellIdx, args.direction);
+                    sheetModule.updateColContent({
+                        cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst
+                    });
                     break;
             }
         });
@@ -21434,10 +27296,10 @@ var Render = /** @__PURE__ @class */ (function () {
         else {
             height = offset.height - getSiblingsHeight(panel);
             panel.style.height = height + "px";
-            height -= 30;
+            height -= 32;
         }
         this.parent.viewport.height = height;
-        this.parent.viewport.width = offset.width;
+        this.parent.viewport.width = offset.width - 32;
         this.parent.viewport.rowCount = this.roundValue(height, 20);
         this.parent.viewport.colCount = this.roundValue(offset.width, 64);
     };
@@ -21489,9 +27351,10 @@ var Dialog$1 = /** @__PURE__ @class */ (function () {
     /**
      * To show dialog.
      */
-    Dialog$$1.prototype.show = function (dialogModel) {
+    Dialog$$1.prototype.show = function (dialogModel, cancelBtn) {
         var _this = this;
         var btnContent;
+        cancelBtn = isNullOrUndefined(cancelBtn) ? true : false;
         var closeHandler = dialogModel.close || null;
         var model = {
             header: 'Spreadsheet',
@@ -21508,22 +27371,27 @@ var Dialog$1 = /** @__PURE__ @class */ (function () {
             }
         };
         extend(model, dialogModel);
-        btnContent = this.parent.serviceLocator.getService(locale).getConstant(model.buttons.length ? 'Cancel' : 'Ok');
-        model.buttons.push({
-            buttonModel: { content: btnContent, isPrimary: model.buttons.length === 0 },
-            click: this.hide.bind(this),
-        });
+        if (cancelBtn) {
+            btnContent = this.parent.serviceLocator.getService(locale).getConstant(model.buttons.length ? 'Cancel' : 'Ok');
+            model.buttons.push({
+                buttonModel: { content: btnContent, isPrimary: model.buttons.length === 0 },
+                click: this.hide.bind(this),
+            });
+        }
         var div = this.parent.createElement('div');
         document.body.appendChild(div);
         this.dialogInstance = new Dialog(model);
         this.dialogInstance.createElement = this.parent.createElement;
         this.dialogInstance.appendTo(div);
+        this.dialogInstance.refreshPosition();
     };
     /**
      * To hide dialog.
      */
     Dialog$$1.prototype.hide = function () {
-        this.dialogInstance.hide();
+        if (this.dialogInstance) {
+            this.dialogInstance.hide();
+        }
     };
     /**
      * To clear private variables.
@@ -21591,7 +27459,8 @@ var ActionEvents = /** @__PURE__ @class */ (function () {
     };
     ActionEvents.prototype.actionBeginHandler = function (args) {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
-        if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave') {
+        if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
+            || args.action === 'beforeWrap' || args.action === 'beforeReplace') {
             this.parent.notify(setActionData, { args: args });
         }
     };
@@ -21660,10 +27529,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         /** @hidden */
         _this.viewport = {
             rowCount: 0, colCount: 0, height: 0, topIndex: 0, leftIndex: 0, width: 0,
-            bottomIndex: 0
+            bottomIndex: 0, rightIndex: 0
         };
         _this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace);
         if (element) {
             _this.appendTo(element);
         }
@@ -21675,11 +27544,11 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * @returns HTMLElement
      * @hidden
      */
-    Spreadsheet.prototype.getCell = function (rowIndex, colIndex) {
-        if (this.scrollSettings.enableVirtualization) {
-            colIndex = colIndex - this.viewport.leftIndex;
+    Spreadsheet.prototype.getCell = function (rowIndex, colIndex, row) {
+        colIndex = this.getViewportIndex(colIndex, true);
+        if (!row) {
+            row = this.getRow(rowIndex);
         }
-        var row = this.getRow(rowIndex);
         return row ? row.cells[colIndex] : row;
     };
     /**
@@ -21688,23 +27557,42 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Spreadsheet.prototype.getRow = function (index, table) {
-        if (this.scrollSettings.enableVirtualization) {
-            index -= this.hiddenRowsCount(this.viewport.topIndex, index);
-            index -= this.viewport.topIndex;
-        }
+        index = this.getViewportIndex(index);
         table = table || this.getContentTable();
         return table ? table.rows[index] : null;
     };
-    /** @hidden */
-    Spreadsheet.prototype.hiddenRowsCount = function (startIndex, endIndex) {
+    /**
+     * To get hidden row/column count between two specified index.
+     * Set `layout` as `columns` if you want to get column hidden count.
+     * @hidden
+     */
+    Spreadsheet.prototype.hiddenCount = function (startIndex, endIndex, layout) {
+        if (layout === void 0) { layout = 'rows'; }
         var sheet = this.getActiveSheet();
         var count = 0;
         for (var i = startIndex; i <= endIndex; i++) {
-            if (isHiddenRow(sheet, i)) {
+            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
                 count++;
             }
         }
         return count;
+    };
+    /**
+     * To get row/column viewport index.
+     * @hidden
+     */
+    Spreadsheet.prototype.getViewportIndex = function (index, isCol) {
+        if (this.scrollSettings.enableVirtualization) {
+            if (isCol) {
+                index -= this.hiddenCount(this.viewport.leftIndex, index, 'columns');
+                index -= this.viewport.leftIndex;
+            }
+            else {
+                index -= this.hiddenCount(this.viewport.topIndex, index);
+                index -= this.viewport.topIndex;
+            }
+        }
+        return index;
     };
     /**
      * To initialize the services;
@@ -21734,6 +27622,18 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         this.notify(initialLoad, null);
         this.renderSpreadsheet();
         this.wireEvents();
+        if (this.created) {
+            if (this[created].observers) {
+                if (this[created].observers.length > 0) {
+                    this.createdHandler = { observers: this[created].observers };
+                    this[created].observers = [];
+                }
+            }
+            else {
+                this.createdHandler = this.created;
+                this.setProperties({ created: undefined }, true);
+            }
+        }
     };
     Spreadsheet.prototype.renderSpreadsheet = function () {
         if (this.cssClass) {
@@ -21769,14 +27669,83 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     Spreadsheet.prototype.hideSpinner = function () {
         hideSpinner(this.element);
     };
+    Spreadsheet.prototype.protectSheet = function (protectSettings) {
+        this.getActiveSheet().isProtected = true;
+        _super.prototype.protectSheet.call(this, protectSettings);
+    };
     /**
-     * Selection will navigates to the specified cell address in active sheet.
-     * @param {string} address - Specifies the cell address which needs to navigate.
+     * To find the specified cell value.
+     * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
+     * @param {string} args.value - Specifies the value to be find.
+     * @param {FindModeType} args.mode - Specifies the value to be find within sheet or workbook.
+     * @param {string} args.searchBy - Specifies the value to be find by row or column.
+     * @param {boolean} args.isCSen - Specifies the find match with case sensitive or not.
+     * @param {boolean} args.isEMatch - Specifies the find match with entire match or not.
+     * @param {string} args.findOpt - Specifies the next or previous find match.
+     * @param {number} args.sheetIndex - Specifies the current sheet to find.
+     * @default { mode: 'Sheet', searchBy: 'By Row', isCSen: 'false', isEMatch:'false' }
+     * @return {void}
+     */
+    Spreadsheet.prototype.find = function (args) {
+        _super.prototype.findHandler.call(this, args);
+    };
+    /**
+     * To replace the specified cell value.
+     * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
+     * @param {string} args.replaceValue - Specifies the value to be replaced.
+     * @param {string} args.replaceBy - Specifies the value to be replaced for one or all.
+     * @return {void}
+     */
+    Spreadsheet.prototype.replace = function (args) {
+        _super.prototype.replaceHandler.call(this, args);
+    };
+    /**
+     * Used to navigate to cell address within workbook.
+     * @param {string} address - Specifies the cell address you need to navigate.
+     * You can specify the address in two formats,
+     * `{sheet name}!{cell address}` - Switch to specified sheet and navigate to specified cell address.
+     * `{cell address}` - Navigate to specified cell address with in the active sheet.
+     * @return {void}
      */
     Spreadsheet.prototype.goTo = function (address) {
+        if (address.includes('!')) {
+            var addrArr = address.split('!');
+            var idx = getSheetIndex(this, addrArr[0]);
+            if (idx === undefined) {
+                return;
+            }
+            if (idx + 1 !== this.activeSheetTab) {
+                var activeCell = addrArr[1].split(':')[0];
+                this.sheets[idx].activeCell = activeCell;
+                this.sheets[idx].selectedRange = addrArr[1];
+                var cellIndex = getCellIndexes(activeCell);
+                if (cellIndex[0] < this.viewport.rowCount) {
+                    cellIndex[0] = 0;
+                }
+                if (cellIndex[1] < this.viewport.colCount) {
+                    cellIndex[1] = 0;
+                }
+                this.sheets[idx].topLeftCell = getCellAddress(cellIndex[0], cellIndex[1]);
+                this.activeSheetTab = idx + 1;
+                this.dataBind();
+                return;
+            }
+        }
         var indexes = getRangeIndexes(address);
-        var content = this.getMainContent();
         var sheet = this.getActiveSheet();
+        var insideDomCount = indexes[0] >= this.viewport.topIndex && indexes[0] < this.viewport.bottomIndex && indexes[1] >=
+            this.viewport.leftIndex && indexes[1] < this.viewport.rightIndex;
+        if (insideDomCount) {
+            this.selectRange(address);
+            var viewportIndexes = getCellIndexes(sheet.topLeftCell);
+            viewportIndexes[2] = viewportIndexes[0] + this.viewport.rowCount;
+            viewportIndexes[3] = viewportIndexes[1] + this.viewport.colCount;
+            if (indexes[0] >= viewportIndexes[0] && indexes[0] < viewportIndexes[2] && indexes[1] >= viewportIndexes[1] &&
+                indexes[1] < viewportIndexes[3]) {
+                return;
+            }
+        }
+        var content = this.getMainContent();
         var vTrack;
         var cVTrack;
         var rVTrack;
@@ -21785,7 +27754,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         var vHeight;
         var scrollableSize;
         if (indexes[0] === 0) {
-            content.scrollTop = 0;
+            offset = getRowsHeight(sheet, 0);
         }
         else {
             offset = getRowsHeight(sheet, 0, indexes[0] - 1);
@@ -21808,10 +27777,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     });
                 }
             }
-            content.scrollTop = offset;
         }
+        content.scrollTop = offset;
         if (indexes[1] === 0) {
-            content.scrollLeft = 0;
+            offset = getColumnsWidth(sheet, 0);
         }
         else {
             offset = getColumnsWidth(sheet, 0, indexes[1] - 1);
@@ -21834,11 +27803,14 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     });
                 }
             }
-            content.scrollLeft = offset;
+        }
+        content.scrollLeft = offset;
+        if (!insideDomCount) {
+            this.selectRange(address);
         }
     };
     /**
-     * This method is used to resize the Spreadsheet component.
+     * Used to resize the Spreadsheet.
      */
     Spreadsheet.prototype.resize = function () {
         this.renderModule.setSheetPanelSize();
@@ -21950,7 +27922,6 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
             }
             getColumn(sheet, mIndex).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
             sheet.columns[mIndex].customWidth = true;
-            this.setProperties({ sheets: this.sheets }, true);
         }
     };
     /**
@@ -21997,7 +27968,6 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
             }
             setRowHeight(sheet, mIndex, parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0);
             sheet.rows[mIndex].customHeight = true;
-            this.setProperties({ sheets: this.sheets }, true);
         }
     };
     /**
@@ -22178,10 +28148,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     value = hyperlink.address;
                 }
                 var mCell = sheet.rows[cellIdx[0]].cells[cellIdx[1]];
-                if (displayText !== '') {
-                    mCell.value = displayText;
-                }
-                else if (isNullOrUndefined(mCell.value) || mCell.value === '') {
+                if (isNullOrUndefined(mCell.value) || mCell.value === '') {
                     
                 }
                 if (!isMethod) {
@@ -22192,6 +28159,35 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+    };
+    /**
+     * This method is used to add data validation.
+     * @param {ValidationModel} rules - specifies the validation rules.
+     * @param {string} range - range that needs to be add validation.
+     */
+    Spreadsheet.prototype.addDataValidation = function (rules, range) {
+        _super.prototype.addDataValidation.call(this, rules, range);
+    };
+    /**
+     * This method is used for remove validation.
+     * @param {string} range - range that needs to be remove validation.
+     */
+    Spreadsheet.prototype.removeDataValidation = function (range) {
+        _super.prototype.removeDataValidation.call(this, range);
+    };
+    /**
+     * This method is used to highlight the invalid data.
+     * @param {string} range - range that needs to be highlight the invalid data.
+     */
+    Spreadsheet.prototype.addInvalidHighlight = function (range) {
+        _super.prototype.addInvalidHighlight.call(this, range);
+    };
+    /**
+     * This method is used for remove highlight from invalid data.
+     * @param {string} range - range that needs to be remove invalid highlight.
+     */
+    Spreadsheet.prototype.removeInvalidHighlight = function (range) {
+        _super.prototype.removeInvalidHighlight.call(this, range);
     };
     /** @hidden */
     Spreadsheet.prototype.setPanelSize = function () {
@@ -22212,9 +28208,26 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /** @hidden */
-    Spreadsheet.prototype.showHideRow = function (hide, startRow, endRow) {
-        if (endRow === void 0) { endRow = startRow; }
-        this.notify(hideShowRow, { startRow: startRow, endRow: endRow, hide: hide });
+    Spreadsheet.prototype.hideRow = function (startIndex, endIndex, hide) {
+        if (endIndex === void 0) { endIndex = startIndex; }
+        if (hide === void 0) { hide = true; }
+        if (this.renderModule) {
+            this.notify(hideShow, { startIndex: startIndex, endIndex: endIndex, hide: hide });
+        }
+        else {
+            _super.prototype.hideRow.call(this, startIndex, endIndex, hide);
+        }
+    };
+    /** @hidden */
+    Spreadsheet.prototype.hideColumn = function (startIndex, endIndex, hide) {
+        if (endIndex === void 0) { endIndex = startIndex; }
+        if (hide === void 0) { hide = true; }
+        if (this.renderModule) {
+            this.notify(hideShow, { startIndex: startIndex, endIndex: endIndex, hide: hide, isCol: true });
+        }
+        else {
+            _super.prototype.hideColumn.call(this, startIndex, endIndex, hide);
+        }
     };
     /**
      * Gets the row header div of the Spreadsheet.
@@ -22335,7 +28348,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     /** @hidden */
     Spreadsheet.prototype.refreshNode = function (td, args) {
         var value;
-        var spanElem = td.querySelector('.e-' + this.element.id + '_currency');
+        var spanElem = td.querySelector('#' + this.element.id + '_currency');
         var alignClass = 'e-right-align';
         if (args) {
             args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
@@ -22343,12 +28356,20 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                 detach(spanElem);
             }
             if (args.type === 'Accounting' && isNumber(args.value)) {
-                td.textContent = args.result.split(args.curSymbol).join('');
+                if (td.querySelector('a')) {
+                    td.querySelector('a').textContent = args.result.split(args.curSymbol).join('');
+                }
+                else {
+                    td.innerHTML = '';
+                }
                 td.appendChild(this.createElement('span', {
-                    className: 'e-' + this.element.id + '_currency',
-                    innerHTML: " " + args.curSymbol,
+                    id: this.element.id + '_currency',
+                    innerHTML: "" + args.curSymbol,
                     styles: 'float: left'
                 }));
+                if (!td.querySelector('a')) {
+                    td.innerHTML += args.result.split(args.curSymbol).join('');
+                }
                 td.classList.add(alignClass);
                 return;
             }
@@ -22377,14 +28398,32 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /** @hidden */
-    Spreadsheet.prototype.skipHiddenRows = function (startIdx, endIdx) {
+    Spreadsheet.prototype.calculateHeight = function (style, lines, borderWidth) {
+        if (lines === void 0) { lines = 1; }
+        if (borderWidth === void 0) { borderWidth = 1; }
+        var fontSize = (style && style.fontSize) || this.cellStyle.fontSize;
+        var threshold = style.fontFamily === 'Arial Black' ? 1.44 : 1.24;
+        return ((fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10)) * threshold * lines) +
+            (borderWidth * threshold);
+    };
+    /** @hidden */
+    Spreadsheet.prototype.skipHidden = function (startIdx, endIdx, layout) {
+        if (layout === void 0) { layout = 'rows'; }
         var sheet = this.getActiveSheet();
+        var totalCount;
+        if (this.scrollSettings.isFinite) {
+            totalCount = (layout === 'rows' ? sheet.rowCount : sheet.colCount) - 1;
+        }
         for (var i = startIdx; i <= endIdx; i++) {
-            if (isHiddenRow(sheet, i)) {
+            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
                 if (startIdx === i) {
                     startIdx++;
                 }
                 endIdx++;
+                if (totalCount && endIdx > totalCount) {
+                    endIdx = totalCount;
+                    break;
+                }
             }
         }
         return [startIdx, endIdx];
@@ -22395,7 +28434,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         var indicator = select(selector + " .e-tab-header .e-indicator", this.element);
         indicator.style.display = 'none';
         setStyleAttribute(indicator, { 'left': '', 'right': '' });
-        setStyleAttribute(indicator, { 'left': nextTab.offsetLeft + 'px', 'right': nextTab.parentElement.offsetWidth - (nextTab.offsetLeft + nextTab.offsetWidth) + 'px' });
+        setStyleAttribute(indicator, {
+            'left': nextTab.offsetLeft + 'px', 'right': nextTab.parentElement.offsetWidth - (nextTab.offsetLeft + nextTab.offsetWidth) + 'px'
+        });
         indicator.style.display = '';
     };
     /** @hidden */
@@ -22415,7 +28456,6 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         }
         if (hiddenCount === this.sheets.length) {
             this.sheets[0].state = 'Visible';
-            this.setProperties({ 'sheets': this.sheets }, true);
             return 0;
         }
         return index;
@@ -22445,7 +28485,13 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * @return {boolean} - Return the added status of the defined name.
      */
     Spreadsheet.prototype.addDefinedName = function (definedName) {
-        return _super.prototype.addDefinedName.call(this, definedName);
+        var eventArgs = {
+            action: 'addDefinedName',
+            isAdded: false,
+            definedName: definedName
+        };
+        this.notify(formulaOperation, eventArgs);
+        return eventArgs.isAdded;
     };
     /**
      * Removes the defined name from the Spreadsheet.
@@ -22463,10 +28509,17 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         this.notify(mouseDown, e);
     };
     Spreadsheet.prototype.keyUpHandler = function (e) {
-        this.notify(keyUp, e);
+        if (closest(e.target, '.e-find-dlg')) {
+            this.notify(findKeyUp, e);
+        }
+        else {
+            this.notify(keyUp, e);
+        }
     };
     Spreadsheet.prototype.keyDownHandler = function (e) {
-        this.notify(keyDown, e);
+        if (!closest(e.target, '.e-findtool-dlg')) {
+            this.notify(keyDown, e);
+        }
     };
     /**
      * Binding events to the element while component creation.
@@ -22709,28 +28762,35 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     this.renderModule.refreshSheet();
                     break;
                 case 'sheets':
-                    Object.keys(newProp.sheets).forEach(function (sheetIdx) {
-                        if (_this.activeSheetTab - 1 === Number(sheetIdx)) {
-                            if (newProp.sheets[sheetIdx].showGridLines !== undefined) {
-                                _this.notify(updateToggleItem, { props: 'GridLines', pos: 2 });
-                            }
-                            if (newProp.sheets[sheetIdx].showHeaders !== undefined) {
-                                _this.sheetModule.showHideHeaders();
-                                _this.notify(updateToggleItem, { props: 'Headers', pos: 0 });
-                            }
-                        }
-                        if (newProp.sheets[sheetIdx].name !== undefined) {
+                    // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
+                    // if (this.activeSheetTab - 1 === Number(sheetIdx)) {
+                    //     if (newProp.sheets[sheetIdx].showGridLines !== undefined) {
+                    //         this.notify(updateToggleItem, { props: 'GridLines', pos: 2 });
+                    //     }
+                    //     if (newProp.sheets[sheetIdx].showHeaders !== undefined) {
+                    //         this.sheetModule.showHideHeaders();
+                    //         this.notify(updateToggleItem, { props: 'Headers', pos: 0 });
+                    //     }
+                    // }
+                    // if (newProp.sheets[sheetIdx].name !== undefined) {
+                    //     this.notify(sheetNameUpdate, {
+                    //         items: this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
+                    //         value: newProp.sheets[sheetIdx].name,
+                    //         idx: sheetIdx
+                    //     });
+                    // }
+                    // if (newProp.sheets[sheetIdx].rangeSettings) {
+                    //     this.sheets[sheetIdx].rangeSettings = newProp.sheets[sheetIdx].rangeSettings;
+                    this.renderModule.refreshSheet();
+                    if (this.showSheetTabs) {
+                        Object.keys(newProp.sheets).forEach(function (sheetIdx) {
                             _this.notify(sheetNameUpdate, {
                                 items: _this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
                                 value: newProp.sheets[sheetIdx].name,
                                 idx: sheetIdx
                             });
-                        }
-                        if (newProp.sheets[sheetIdx].rangeSettings) {
-                            _this.sheets[sheetIdx].rangeSettings = newProp.sheets[sheetIdx].rangeSettings;
-                            _this.renderModule.refreshSheet();
-                        }
-                    });
+                        });
+                    }
                     break;
                 case 'locale':
                     this.refresh();
@@ -22815,6 +28875,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Spreadsheet.prototype, "allowUndoRedo", void 0);
     __decorate$9([
+        Property(true)
+    ], Spreadsheet.prototype, "allowWrap", void 0);
+    __decorate$9([
         Complex({}, SelectionSettings)
     ], Spreadsheet.prototype, "selectionSettings", void 0);
     __decorate$9([
@@ -22846,7 +28909,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     ], Spreadsheet.prototype, "contextMenuItemSelect", void 0);
     __decorate$9([
         Event$1()
-    ], Spreadsheet.prototype, "fileItemSelect", void 0);
+    ], Spreadsheet.prototype, "fileMenuItemSelect", void 0);
     __decorate$9([
         Event$1()
     ], Spreadsheet.prototype, "beforeDataBound", void 0);
@@ -22862,6 +28925,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     __decorate$9([
         Event$1()
     ], Spreadsheet.prototype, "cellSave", void 0);
+    __decorate$9([
+        Event$1()
+    ], Spreadsheet.prototype, "beforeCellSave", void 0);
     __decorate$9([
         Event$1()
     ], Spreadsheet.prototype, "created", void 0);
@@ -22910,5 +28976,5 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, Hyperlink, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, onSave, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShowRow, hideShowCol, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, workBookeditAlert, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es5.js.map

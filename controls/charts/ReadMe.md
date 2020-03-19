@@ -31,7 +31,7 @@ Following list of components are available in the package
       *	[Getting Started](https://ej2.syncfusion.com/documentation/rangenavigator/getting-started.html?lang=typescript)
       *	[View Online Demos](https://ej2.syncfusion.com/demos/#/material/rangenavigator/default.html)
       *	[Product Page](https://www.syncfusion.com/javascript-ui-controls/range-selector)
-*	Sparkline: Very small chart control drawn without axes or coordinates. The sparklines are easy to interpret and convey more information to users by visualizing data in a small amount of space.
+*	Sparkline: Very small chart control drawn without axes or coordinates. The sparklines are easy to interpret and convey more information to users by visualizing the data in a small amount of space.
       *	[Getting started](https://ej2.syncfusion.com/documentation/sparkline/getting-started.html?lang=typescript)
       *	[View online demos](https://ej2.syncfusion.com/demos/#/material/sparkline/default.html)
       *	[Product page](https://www.syncfusion.com/javascript-ui-controls/sparkline)

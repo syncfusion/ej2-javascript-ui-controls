@@ -57,6 +57,10 @@ export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
      * Define the options.
      */
     options: Object;
+    /**
+     * Defines the header text of the treemap item.
+     */
+    text: string;
 }
 
 /**
@@ -128,6 +132,10 @@ export interface IItemClickEventArgs extends ITreeMapEventArgs {
      * Defines the parent name of the treemap item.
      */
     groupName: string;
+    /**
+     * Defines the header name of the treemap item.
+     */
+    text: string;
 }
 
 export interface IItemDataEventArgs {
@@ -234,7 +242,6 @@ export interface IItemHighlightEventArgs extends ITreeMapEventArgs {
 
 /**
  * Specifies the Tooltip Rendering Event arguments.
- * @deprecated
  */
 export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
@@ -261,7 +268,6 @@ export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
 
 /**
  * Specifies the Tooltip Rendering Event arguments.
- * @deprecated
  */
 export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
     location: Object;

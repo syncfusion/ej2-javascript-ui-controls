@@ -21,4 +21,5 @@ export * from './utils/enum';
 export * from './utils/colorMapping';
 export * from './utils/colorMapping-model';
 export * from './utils/tooltip';
+export * from './utils/export';
 export * from './utils/helper'

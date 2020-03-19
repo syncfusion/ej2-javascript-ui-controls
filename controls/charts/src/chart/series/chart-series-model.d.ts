@@ -886,6 +886,18 @@ export interface SeriesModel extends SeriesBaseModel{
     selectionStyle?: string;
 
     /**
+     * Custom style for the deselected series or points.
+     * @default null
+     */
+    unSelectedStyle?: string;
+
+    /**
+     * Custom style for the non-highlighted series or points.
+     * @default null
+     */
+    nonHighlightStyle?: string;
+
+    /**
      * Minimum radius
      * @default 1
      */

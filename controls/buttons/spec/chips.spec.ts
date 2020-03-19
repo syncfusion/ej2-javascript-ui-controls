@@ -14,6 +14,7 @@ function fireEvent(ele: HTMLElement, type: string, key?: number) {
 let stringArray: string[] = ['chip1', 'chip2', 'chip3'];
 let numberArray: number[] = [1, 2, 3];
 let jsonArray: ChipModel[] = [{ text: 'chip1' }, { text: 'chip2' }, { text: 'chip3' }];
+let jsonArrayValue: ChipModel[] = [{ text: 'chip1', value:'11' }, { text: 'chip2', value:'22' }, { text: 'chip3', value:'33' }];
 
 describe('Chips', () => {
     let chips: ChipList;
@@ -1009,6 +1010,20 @@ describe('Chips', () => {
                 expect(resultantData.elements[1]).toBe(chipCollection[2]);
                 expect(resultantData.Indexes[1]).toBe(2);
                 expect(resultantData.texts[1]).toBe('chip3');
+            });
+            it('Multiple selection without value property', () => {
+                chips = new ChipList({ chips: deepCloning(jsonArray), selection: 'Multiple' }, '#chip');
+                let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                chips.select(chipCollection[1]);
+                let resultantData: SelectedItems = chips.getSelectedChips() as SelectedItems;
+                expect((resultantData.Indexes[0])).toBe(1);
+            });
+            it('Multiple selection using value property', () => {
+                chips = new ChipList({ chips: deepCloning(jsonArrayValue), selection: 'Multiple' }, '#chip');
+                let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                chips.select(chipCollection[1]);
+                let selectedValule1: string = `${chips.selectedChips}`;
+                expect(selectedValule1).toBe('22');
             });
         });
     });

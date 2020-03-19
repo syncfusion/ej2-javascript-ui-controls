@@ -156,9 +156,8 @@ var columnArray = [
         template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
     },
     {
-        field: '_fm_modified', headerText: 'DateModified',
-        format: { type: 'date', format: 'MMMM dd, yyyy HH:mm' },
-        minWidth: 120, width: '190'
+        field: '_fm_modified', headerText: 'DateModified', type: 'dateTime',
+        format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190'
     },
     {
         field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>'
@@ -2572,7 +2571,7 @@ function getOptions(parent, text, e, details, replaceItems) {
             break;
         case 'details':
             options.dialogName = 'File Details';
-            var intl = new Internationalization();
+            var intl = new Internationalization(parent.locale);
             var formattedString = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
             var permission = '';
             if (!isNullOrUndefined(details.permission)) {
@@ -2853,6 +2852,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     function LargeIconsView(parent) {
+        this.isInteraction = true;
         this.uploadOperation = false;
         this.count = 0;
         this.isRendered = true;
@@ -3236,12 +3236,14 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             var lastItem = this.getLastItem();
             var eveArgs = { ctrlKey: true, shiftKey: true };
             this.doSelection(lastItem, eveArgs);
+            this.isInteraction = true;
             this.isInteracted = true;
         }
     };
     LargeIconsView.prototype.onClearAllInit = function () {
         if (this.parent.view === 'LargeIcons') {
             this.clearSelection();
+            this.isInteraction = true;
             this.isInteracted = true;
         }
     };
@@ -3355,7 +3357,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.on(updateSelectionData, this.onUpdateSelectionData, this);
         this.parent.on(filterEnd, this.onPathChanged, this);
     };
-    LargeIconsView.prototype.onActionFailure = function () { this.isInteracted = true; };
+    LargeIconsView.prototype.onActionFailure = function () { this.isInteraction = true; this.isInteracted = true; };
     LargeIconsView.prototype.onMenuItemData = function (args) {
         if (this.parent.activeModule === this.getModuleName()) {
             var ele = closest(args.target, 'li');
@@ -3417,6 +3419,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                     this.adjustHeight();
                     break;
                 case 'selectedItems':
+                    this.isInteraction = false;
                     this.isInteracted = false;
                     var currentSelected = isNullOrUndefined(this.parent.selectedItems) ? [] : this.parent.selectedItems.slice(0);
                     currentSelected = this.parent.allowMultiSelection ? currentSelected :
@@ -3426,6 +3429,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                     if (currentSelected.length) {
                         this.selectItems(currentSelected);
                     }
+                    this.isInteraction = true;
                     this.isInteracted = true;
                     break;
                 case 'showThumbnail':
@@ -3566,48 +3570,54 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             return;
         }
         else if (!isNullOrUndefined(item)) {
-            if ((!this.parent.allowMultiSelection || (!this.multiSelect && (e && !e.ctrlKey)))
-                && !cList.contains(FRAME)) {
-                this.updateType(item);
-                this.clearSelect();
+            if (this.parent.allowMultiSelection && item.classList.contains(ACTIVE)
+                && (e.ctrlKey || target.classList.contains(CHECK))) {
+                action = 'unselect';
             }
-            if (this.parent.allowMultiSelection && e.shiftKey) {
-                if (!(e && e.ctrlKey)) {
+            var fileSelectionArgs = this.triggerSelection(action, item);
+            if (fileSelectionArgs.cancel !== true) {
+                if ((!this.parent.allowMultiSelection || (!this.multiSelect && (e && !e.ctrlKey)))
+                    && !cList.contains(FRAME)) {
+                    this.updateType(item);
                     this.clearSelect();
                 }
-                if (!this.startItem) {
+                if (this.parent.allowMultiSelection && e.shiftKey) {
+                    if (!(e && e.ctrlKey)) {
+                        this.clearSelect();
+                    }
+                    if (!this.startItem) {
+                        this.startItem = item;
+                    }
+                    var startIndex = this.itemList.indexOf(this.startItem);
+                    var endIndex = this.itemList.indexOf(item);
+                    if (startIndex > endIndex) {
+                        for (var i = startIndex; i >= endIndex; i--) {
+                            this.addActive(this.itemList[i]);
+                        }
+                    }
+                    else {
+                        for (var i = startIndex; i <= endIndex; i++) {
+                            this.addActive(this.itemList[i]);
+                        }
+                    }
+                    this.addFocus(this.itemList[endIndex]);
+                }
+                else {
                     this.startItem = item;
-                }
-                var startIndex = this.itemList.indexOf(this.startItem);
-                var endIndex = this.itemList.indexOf(item);
-                if (startIndex > endIndex) {
-                    for (var i = startIndex; i >= endIndex; i--) {
-                        this.addActive(this.itemList[i]);
+                    if (this.parent.allowMultiSelection && item.classList.contains(ACTIVE)) {
+                        this.removeActive(item);
                     }
-                }
-                else {
-                    for (var i = startIndex; i <= endIndex; i++) {
-                        this.addActive(this.itemList[i]);
+                    else {
+                        this.addActive(item);
                     }
+                    this.addFocus(item);
                 }
-                this.addFocus(this.itemList[endIndex]);
-            }
-            else {
-                this.startItem = item;
-                if (this.parent.allowMultiSelection && item.classList.contains(ACTIVE)) {
-                    this.removeActive(item);
-                    action = 'unselect';
+                if (this.parent.selectedItems.length === 0) {
+                    this.resetMultiSelect();
                 }
-                else {
-                    this.addActive(item);
-                }
-                this.addFocus(item);
+                this.parent.notify(selectionChanged, {});
+                this.triggerSelect(action, item);
             }
-            if (this.parent.selectedItems.length === 0) {
-                this.resetMultiSelect();
-            }
-            this.parent.notify(selectionChanged, {});
-            this.triggerSelect(action, item);
         }
         else {
             this.clearSelection();
@@ -3915,19 +3925,25 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.setFocus = function (nextItem) {
         if (!isNullOrUndefined(nextItem)) {
-            this.startItem = nextItem;
-            this.clearSelect();
-            this.addActive(nextItem);
-            this.addFocus(nextItem);
-            this.parent.notify(selectionChanged, {});
-            this.triggerSelect('select', nextItem);
+            var fileSelectionArgs = this.triggerSelection('select', nextItem);
+            if (fileSelectionArgs.cancel !== true) {
+                this.startItem = nextItem;
+                this.clearSelect();
+                this.addActive(nextItem);
+                this.addFocus(nextItem);
+                this.parent.notify(selectionChanged, {});
+                this.triggerSelect('select', nextItem);
+            }
         }
     };
     LargeIconsView.prototype.spaceKey = function (fItem) {
         if (!isNullOrUndefined(fItem) && !fItem.classList.contains(ACTIVE)) {
-            this.addActive(fItem);
-            this.parent.notify(selectionChanged, {});
-            this.triggerSelect('select', fItem);
+            var fileSelectionArgs = this.triggerSelection('select', fItem);
+            if (fileSelectionArgs.cancel !== true) {
+                this.addActive(fItem);
+                this.parent.notify(selectionChanged, {});
+                this.triggerSelect('select', fItem);
+            }
         }
     };
     LargeIconsView.prototype.ctrlAKey = function (firstItem, lastItem) {
@@ -4063,10 +4079,14 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.clearSelect = function () {
         var eles = Array.prototype.slice.call(selectAll('.' + ACTIVE, this.listElements));
-        for (var i = 0, len = eles.length; i < len; i++) {
-            this.removeActive(eles[i]);
-        }
+        var fileSelectionArgs;
         if (eles.length !== 0) {
+            fileSelectionArgs = this.triggerSelection('unselect', eles[0]);
+            if (fileSelectionArgs.cancel !== true) {
+                for (var i = 0, len = eles.length; i < len; i++) {
+                    this.removeActive(eles[i]);
+                }
+            }
             this.triggerSelect('unselect', eles[0]);
         }
     };
@@ -4086,6 +4106,15 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             }
         }
         this.perRow = perRow;
+    };
+    LargeIconsView.prototype.triggerSelection = function (action, item) {
+        var data = this.getItemObject(item);
+        var eventArgs = {
+            action: action, fileDetails: data, isInteracted: this.isInteraction, cancel: false, target: item
+        };
+        this.parent.trigger('fileSelection', eventArgs);
+        this.isInteraction = true;
+        return eventArgs;
     };
     LargeIconsView.prototype.triggerSelect = function (action, item) {
         var data = this.getItemObject(item);
@@ -4159,17 +4188,21 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 this.openFile(getValue('id', args));
                 break;
             case 'renameFile':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 this.renameFile(getValue('id', args), getValue('newName', args));
                 break;
             case 'createFolder':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 break;
             case 'clearSelection':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 this.onClearAllInit();
                 break;
             case 'selectAll':
+                this.isInteraction = false;
                 this.isInteracted = false;
                 this.onSelectAllInit();
                 break;
@@ -5317,7 +5350,8 @@ var defaultLocale = {
     'Button-Keep-Both': 'Keep both',
     'Button-Replace': 'Replace',
     'Button-Skip': 'Skip',
-    'ApplyAll-Label': 'Do this for all current items'
+    'ApplyAll-Label': 'Do this for all current items',
+    'KB': 'KB'
 };
 
 var __extends$8 = (undefined && undefined.__extends) || (function () {
@@ -7818,7 +7852,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 beforeCopy: function (args) { args.cancel = true; },
                 load: function (args) {
                     this.focusModule.destroy();
-                }
+                },
+                locale: this.parent.locale
             });
             this.gridObj.isStringTemplate = true;
             this.gridObj.appendTo('#' + this.parent.element.id + GRID_ID);
@@ -7949,21 +7984,16 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             }
             else {
                 var sizeValue = getValue('size', args.data);
-                if ((sizeValue / 1024) === 0) {
-                    modifiedSize = '0 KB';
-                }
-                else {
-                    var intl = new Internationalization();
-                    var value = intl.formatNumber((sizeValue / 1024), { format: 'n' });
-                    modifiedSize = value + ' KB';
-                }
+                var intl = new Internationalization(this.parent.locale);
+                var value = intl.formatNumber((sizeValue / 1024), { format: 'n' });
+                modifiedSize = value + ' ' + getLocaleText(this.parent, 'KB');
             }
             sizeEle.innerHTML = modifiedSize;
         }
         if (this.parent.isMobile) {
             if (getValue('_fm_modified', args.data) !== undefined && args.row.querySelector('.e-fe-date')) {
                 var dateEle = args.row.querySelector('.e-fe-date');
-                var intl = new Internationalization();
+                var intl = new Internationalization(this.parent.locale);
                 var columns = this.parent.detailsViewSettings.columns;
                 var format = void 0;
                 for (var i = 0; i < columns.length; i++) {
@@ -8313,7 +8343,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 this.onSearchFiles(args);
             }
             this.adjustHeight();
-            if (this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
+            if (this.gridObj.sortSettings.columns.length > 0 && this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
                 this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
             }
         }

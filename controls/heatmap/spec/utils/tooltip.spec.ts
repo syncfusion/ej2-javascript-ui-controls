@@ -200,7 +200,7 @@ describe('Heatmap Control', () => {
             expect(tempElement.textContent).toBe("09100");
         });
     });
-    it('memory leak', () => {     
+    it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

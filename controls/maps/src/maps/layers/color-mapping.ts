@@ -1,6 +1,7 @@
 import { Maps } from '../../index';
 import { ShapeSettingsModel, ColorMappingSettingsModel, ColorValue } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getValueFromObject } from '../utils/helper';
 
 /**
  * ColorMapping class
@@ -16,7 +17,8 @@ export class ColorMapping {
      */
     public getShapeColorMapping(shapeSettings: ShapeSettingsModel, layerData: object, color: string): Object {
         let colorValuePath: string = shapeSettings.colorValuePath ? shapeSettings.colorValuePath : shapeSettings.valuePath;
-        let equalValue: string = layerData[colorValuePath];
+        let equalValue: string = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
+         getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath]) : layerData[colorValuePath];
         let colorValue: number = Number(equalValue);
         let shapeColor: Object = this.getColorByValue(shapeSettings.colorMapping, colorValue, equalValue);
         return shapeColor ? shapeColor : color;

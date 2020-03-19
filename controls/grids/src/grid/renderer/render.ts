@@ -240,7 +240,7 @@ export class Render {
         this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.e-content'), true);
         if (isFActon) {
             let deffered: Deferred = new Deferred();
-            dataManager = this.getFData(deffered);
+            dataManager = this.getFData(deffered, args);
         }
         if (!dataManager) {
             dataManager = this.data.getData(args as NotifyArgs, this.data.generateQuery().requiresCount());
@@ -258,7 +258,7 @@ export class Render {
         if (this.parent.getForeignKeyColumns().length && (!isFActon || this.parent.searchSettings.key.length)) {
             let deffered: Deferred = new Deferred();
             dataManager = dataManager.then((e: ReturnType) => {
-                this.parent.notify(events.getForeignKeyData, { dataManager: dataManager, result: e, promise: deffered });
+                this.parent.notify(events.getForeignKeyData, { dataManager: dataManager, result: e, promise: deffered, action: args});
                 return deffered.promise;
             });
         }
@@ -269,8 +269,8 @@ export class Render {
             .catch((e: ReturnType) => this.dataManagerFailure(e, args));
     }
 
-    private getFData(deferred: Deferred): Promise<Object> {
-        this.parent.notify(events.getForeignKeyData, { isComplex: true, promise: deferred });
+    private getFData(deferred: Deferred, args?: Object): Promise<Object> {
+        this.parent.notify(events.getForeignKeyData, { isComplex: true, promise: deferred, action: args });
         return deferred.promise;
     }
 

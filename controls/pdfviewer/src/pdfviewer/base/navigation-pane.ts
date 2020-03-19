@@ -249,6 +249,7 @@ export class NavigationPane {
         let commentpanelTilte: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentPanelTitle', className: 'e-pv-comment-panel-title', attrs: { 'tabindex': '-1' } });
         commentpanelTilte.innerText = this.pdfViewer.localeObj.getConstant('Comments');
         let annotationButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_annotations_btn' });
+        annotationButton.setAttribute('aria-label', 'annotation button');
         annotationButton.className = 'e-btn e-pv-tbar-btn e-pv-comment-panel-title-close-div e-btn';
         // tslint:disable-next-line:max-line-length
         let moreOptionButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_annotation_more_icon', className: 'e-pv-more-icon e-pv-icon' });
@@ -316,7 +317,7 @@ export class NavigationPane {
 
     private createFileElement(toolbarElement: HTMLElement): void {
         // tslint:disable-next-line:max-line-length
-        this.annotationInputElement = createElement('input', { id: this.pdfViewer.element.id + '_annotationUploadElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file' } });
+        this.annotationInputElement = createElement('input', { id: this.pdfViewer.element.id + '_annotationUploadElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file', 'aria-label': 'upload elements' } });
         this.annotationInputElement.setAttribute('accept', '.json');
         toolbarElement.appendChild(this.annotationInputElement);
         this.annotationInputElement.addEventListener('change', this.loadImportAnnotation);
@@ -444,6 +445,7 @@ export class NavigationPane {
         if (this.pdfViewer.enableRtl) {
             this.toolbar.enableRtl = true;
         }
+        this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo(this.toolbarElement);
         if (option === 'search') {
             this.initiateSearchBox();
@@ -669,6 +671,7 @@ export class NavigationPane {
 
     private createSidebarTitleCloseButton(): void {
         this.closeDiv = createElement('button', { id: this.pdfViewer.element.id + '_close_btn' });
+        this.closeDiv.setAttribute('aria-label', 'close button');
         this.closeDiv.className = 'e-btn e-pv-tbar-btn e-pv-title-close-div e-btn';
         if (this.pdfViewer.enableRtl) {
             this.closeDiv.style.left = 8 + 'px';

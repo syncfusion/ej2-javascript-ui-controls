@@ -5,7 +5,8 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import * as events from '../base/constant';
 import { Grid } from '../base/grid';
-import { getScrollBarWidth } from '../base/util';
+import { getScrollBarWidth, ensureLastRow, ensureFirstRow } from '../base/util';
+import { Action } from '../base/enum';
 
 /**
  * Infinite Scrolling class
@@ -24,10 +25,12 @@ export class InfiniteScroll implements IAction {
     private isRemove: boolean = false;
     private isInitialCollapse: boolean = false;
     private prevScrollTop: number = 0;
-    private actions: string[] = ['filtering', 'searching', 'grouping', 'ungrouping', 'reorder'];
+    private actions: string[] = ['filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'sorting'];
     private keys: string[] = ['downArrow', 'upArrow', 'PageUp', 'PageDown'];
     private rowIndex: number;
     private cellIndex: number;
+    private rowTop: number = 0;
+    private empty: number | string;
 
     /**
      * Constructor for the Grid infinite scrolling.
@@ -47,6 +50,7 @@ export class InfiniteScroll implements IAction {
      */
     public addEventListener(): void {
         this.parent.on(events.dataReady, this.onDataReady, this);
+        this.parent.on(events.dataSourceModified, this.dataSourceModified, this);
         this.parent.on(events.infinitePageQuery, this.infinitePageQuery, this);
         this.parent.on(events.infiniteScrollHandler, this.infiniteScrollHandler, this);
         this.parent.on(events.beforeCellFocused, this.infiniteCellFocus, this);
@@ -64,6 +68,7 @@ export class InfiniteScroll implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.dataReady, this.onDataReady);
+        this.parent.off(events.dataSourceModified, this.dataSourceModified);
         this.parent.off(events.infinitePageQuery, this.infinitePageQuery);
         this.parent.off(events.infiniteScrollHandler, this.infiniteScrollHandler);
         this.parent.off(events.beforeCellFocused, this.infiniteCellFocus);
@@ -73,6 +78,10 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.setInfiniteCache, this.setCache);
         this.parent.off(events.initialCollapse, this.ensureIntialCollapse);
         this.parent.off(events.keyPressed, this.infiniteCellFocus);
+    }
+
+    private dataSourceModified(): void {
+        this.resetInfiniteBlocks({ requestType: this.empty as Action }, true);
     }
 
     private onDataReady(e: NotifyArgs): void {
@@ -86,9 +95,8 @@ export class InfiniteScroll implements IAction {
     }
 
     private infiniteScrollHandler(e: Event): void {
-        if ((e.target as HTMLElement).classList.contains('e-content') && this.parent.infiniteScrollSettings.enableScroll) {
+        if ((e.target as HTMLElement).classList.contains('e-content') && this.parent.enableInfiniteScrolling) {
             let scrollEle: Element = this.parent.getContent().firstElementChild;
-            let direction: string = this.prevScrollTop < scrollEle.scrollTop ? 'down' : 'up';
             this.prevScrollTop = scrollEle.scrollTop;
             let rows: Element[] = this.parent.getRows();
             let index: number = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10) + 1;
@@ -158,7 +166,11 @@ export class InfiniteScroll implements IAction {
     private makeRequest(args: InfiniteScrollArgs): void {
         if (this.parent.pageSettings.currentPage !== args.prevPage) {
             if (isNullOrUndefined(this.infiniteCache[args.currentPage]) && args.direction !== 'up') {
-                this.parent.notify('model-changed', args);
+                setTimeout(
+                    () => {
+                        this.parent.notify('model-changed', args);
+                    },
+                    100);
             } else {
                 setTimeout(
                     () => {
@@ -180,8 +192,8 @@ export class InfiniteScroll implements IAction {
 
     private intialPageQuery(query: Query): void {
         if (this.parent.infiniteScrollSettings.enableCache
-            && this.parent.infiniteScrollSettings.initialBlocks > this.parent.infiniteScrollSettings.maxBlock) {
-            this.parent.infiniteScrollSettings.initialBlocks = this.parent.infiniteScrollSettings.maxBlock;
+            && this.parent.infiniteScrollSettings.initialBlocks > this.parent.infiniteScrollSettings.maxBlocks) {
+            this.parent.infiniteScrollSettings.initialBlocks = this.parent.infiniteScrollSettings.maxBlocks;
         } else {
             let pageSize: number = this.parent.pageSettings.pageSize * this.parent.infiniteScrollSettings.initialBlocks;
             query.page(1, pageSize);
@@ -191,6 +203,28 @@ export class InfiniteScroll implements IAction {
     private infiniteCellFocus(e: CellFocusArgs): void {
         if (e.byKey && (e.keyArgs.action === 'upArrow' || e.keyArgs.action === 'downArrow')) {
             this.pressedKey = e.keyArgs.action;
+            let ele: Element = document.activeElement;
+            let rowIndex: number = parseInt(ele.parentElement.getAttribute('aria-rowindex'), 10);
+            let scrollEle: Element = this.parent.getContent().firstElementChild;
+            this.rowIndex = e.keyArgs.action === 'downArrow' ? rowIndex + 1 : rowIndex - 1;
+            this.cellIndex = parseInt(ele.getAttribute('aria-colindex'), 10);
+            let row: Element = this.parent.getRowByIndex(rowIndex);
+            let visibleRowCount: number = Math.floor((scrollEle as HTMLElement).offsetHeight / this.parent.getRowHeight());
+            if (!row || ensureLastRow(row, this.parent) || ensureFirstRow(row, this.rowTop)) {
+                let height: number = row ? row.getBoundingClientRect().height : this.parent.getRowHeight();
+                if (!this.parent.infiniteScrollSettings.enableCache) {
+                    if (e.keyArgs.action === 'downArrow' && (ensureLastRow(row, this.parent) || !row)) {
+                        let nTop: number = (this.rowIndex - visibleRowCount) * height;
+                        let oTop: number = scrollEle.scrollTop + this.parent.getRowHeight();
+                        scrollEle.scrollTop = nTop < oTop ? oTop : nTop;
+                    }
+                    if (e.keyArgs.action === 'upArrow' && ensureFirstRow(row, this.rowTop)) {
+                        scrollEle.scrollTop = this.rowIndex * height;
+                    }
+                }
+            } else {
+                this.pressedKey = this.empty as string;
+            }
         } else if ((e as KeyboardEventArgs).key === 'PageDown' || (e as KeyboardEventArgs).key === 'PageUp') {
             this.pressedKey = (e as KeyboardEventArgs).key;
         }
@@ -201,25 +235,26 @@ export class InfiniteScroll implements IAction {
         rows: Row<Column>[], rowElements: Element[], visibleRows: Row<Column>[]
     }): void {
         let target: Element = document.activeElement;
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.args.requestType === 'infiniteScroll';
+        let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
         if (isInfiniteScroll && e.args.direction === 'up') {
             e.tbody.insertBefore(e.frag, e.tbody.firstElementChild);
         } else {
             e.tbody.appendChild(e.frag);
         }
         (this.parent as Grid).contentModule.getTable().appendChild(e.tbody);
+        this.rowTop = !this.rowTop ? this.parent.getRows()[0].getBoundingClientRect().top : this.rowTop;
         if (isInfiniteScroll) {
             if (this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
                 if (e.args.direction === 'down') {
                     let startIndex: number = (this.parent.pageSettings.currentPage -
-                        this.parent.infiniteScrollSettings.maxBlock) * this.parent.pageSettings.pageSize;
+                        this.parent.infiniteScrollSettings.maxBlocks) * this.parent.pageSettings.pageSize;
                     (<{ visibleRows?: Row<Column>[] }>(this.parent as Grid).contentModule).visibleRows =
                         e.rows.slice(startIndex, e.rows.length);
                 }
                 if (e.args.direction === 'up') {
                     let startIndex: number = (this.parent.pageSettings.currentPage - 1) * this.parent.pageSettings.pageSize;
                     let endIndex: number = ((this.parent.pageSettings.currentPage
-                        + this.parent.infiniteScrollSettings.maxBlock) - 1) * this.parent.pageSettings.pageSize;
+                        + this.parent.infiniteScrollSettings.maxBlocks) - 1) * this.parent.pageSettings.pageSize;
                     (<{ visibleRows?: Row<Column>[] }>(this.parent as Grid).contentModule).visibleRows =
                         e.rows.slice(startIndex, endIndex);
                 }
@@ -228,26 +263,39 @@ export class InfiniteScroll implements IAction {
                 this.parent.getContent().firstElementChild.scrollTop = this.top;
             }
 
-            if (this.keys.some((value: string) => value === this.pressedKey)) {
-                if (this.pressedKey === 'downArrow' || (this.parent.infiniteScrollSettings.enableCache && this.pressedKey === 'upArrow')) {
-                    this.parent.focusModule.onClick({ target }, true);
-                }
-                if (this.pressedKey === 'PageDown') {
-                    let row: Element = this.parent.getRowByIndex(e.args.startIndex);
-                    if (row) {
-                        (<{ cells?: HTMLElement[] }>row).cells[0].focus();
-                    }
-                }
-                if (this.pressedKey === 'PageUp') {
-                    (<{ cells?: HTMLElement[] }>e.tbody.querySelector('.e-row')).cells[0].focus();
-                }
-            }
+            this.selectNewRow(e.tbody, e.args.startIndex);
             this.pressedKey = undefined;
         }
     }
 
+    private selectNewRow(tbody: Element, startIndex: number): void {
+        let row: Element = this.parent.getRowByIndex(this.rowIndex);
+        if (this.keys.some((value: string) => value === this.pressedKey)) {
+            if (this.pressedKey === 'downArrow' || (this.parent.infiniteScrollSettings.enableCache && this.pressedKey === 'upArrow')) {
+                setTimeout(
+                    () => {
+                        // tslint:disable-next-line:no-any
+                        let target: any = (<{ cells?: HTMLElement[] }>row).cells[0];
+                        target.focus({ preventScroll: true });
+                        this.parent.selectRow(this.rowIndex);
+                        this.parent.getContent().firstElementChild.scrollTop += this.parent.getRowHeight();
+                    },
+                    0);
+            }
+            if (this.pressedKey === 'PageDown') {
+                let row: Element = this.parent.getRowByIndex(startIndex);
+                if (row) {
+                    (<{ cells?: HTMLElement[] }>row).cells[0].focus();
+                }
+            }
+            if (this.pressedKey === 'PageUp') {
+                (<{ cells?: HTMLElement[] }>tbody.querySelector('.e-row')).cells[0].focus();
+            }
+        }
+    }
+
     private removeInfiniteCacheRows(e: { args: InfiniteScrollArgs }): void {
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.args.requestType === 'infiniteScroll';
+        let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
         if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
             let rows: Element[] = [].slice.call(this.parent.getContentTable().querySelectorAll('.e-row'));
             if (e.args.direction === 'down') {
@@ -283,7 +331,7 @@ export class InfiniteScroll implements IAction {
                 captionCount = Math.round((captionRows.length - 1) / this.parent.groupSettings.columns.length);
             }
             let value: number = captionCount ? captionCount
-                : this.parent.pageSettings.pageSize * (this.parent.infiniteScrollSettings.maxBlock - 1);
+                : this.parent.pageSettings.pageSize * (this.parent.infiniteScrollSettings.maxBlocks - 1);
             let currentViewRowCount: number = 0;
             let i: number = 0;
             while (currentViewRowCount < scrollCnt.clientHeight) {
@@ -362,10 +410,10 @@ export class InfiniteScroll implements IAction {
         }
     }
 
-    private resetInfiniteBlocks(args: InfiniteScrollArgs): void {
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType !== 'infiniteScroll';
+    private resetInfiniteBlocks(args: InfiniteScrollArgs, isDataModified?: boolean): void {
+        let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && args.requestType !== 'infiniteScroll';
         if (!this.initialRender && !isNullOrUndefined((this.parent as Grid).infiniteScrollModule) && isInfiniteScroll) {
-            if (this.actions.some((value: string) => value === args.requestType)) {
+            if (this.actions.some((value: string) => value === args.requestType) || isDataModified) {
                 this.initialRender = true;
                 this.parent.getContent().firstElementChild.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
@@ -380,7 +428,7 @@ export class InfiniteScroll implements IAction {
     }
 
     private setCache(e: { isInfiniteScroll: boolean, modelData: Row<Column>[] }): void {
-        if (this.parent.infiniteScrollSettings.enableScroll && this.parent.infiniteScrollSettings.enableCache) {
+        if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
             if (!Object.keys(this.infiniteCache).length) {
                 this.setInitialCache(e.modelData);
             }
@@ -389,7 +437,7 @@ export class InfiniteScroll implements IAction {
                 this.resetContentModuleCache(this.infiniteCache);
             }
             if (e.isInfiniteScroll && !this.isRemove) {
-                this.isRemove = (this.parent.pageSettings.currentPage - 1) % this.parent.infiniteScrollSettings.maxBlock === 0;
+                this.isRemove = (this.parent.pageSettings.currentPage - 1) % this.parent.infiniteScrollSettings.maxBlocks === 0;
                 (<{ isRemove?: boolean }>(this.parent as Grid).contentModule).isRemove = this.isRemove;
             }
         }

@@ -5,9 +5,11 @@ import { InterSectionObserver } from '@syncfusion/ej2-grids';
 import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-generator';
 import * as events from '../base/constant';
 import { isNullOrUndefined, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';
+import { DataManager } from '@syncfusion/ej2-data';
 /**
  * Content renderer for TreeGrid
  */
+
 export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     public getModelGenerator(): IModelGenerator<Column> {
       return new TreeVirtualRowModelGenerator(this.parent);
@@ -26,6 +28,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private endIndex: number = -1;
     private totalRecords: number;
     private contents: HTMLElement;
+    private fn: Function;
+    private preTranslate: number = 0;
+    private isRemoteExpand: boolean = false;
     public getRowByIndex(index: number) : Element {
       return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
     }
@@ -47,31 +52,58 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       args.endIndex = this.endIndex;
     }
     public eventListener(action: string): void {
-      this.parent[action]('data-ready', this.onDataReady, this);
+      if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '')) {
+              this.parent[action]('data-ready', this.onDataReady, this);
       //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
-      let fn: Function = () => {
-        this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs));
-        this.parent.off('content-ready', fn);
-      };
-      this.parent.on('content-ready', fn, this);
+              this.fn = () => {
+                this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs));
+                this.parent.off('content-ready', this.fn);
+              };
+              this.parent.on('content-ready', this.fn, this);
+            } else {
+              super.eventListener('on');
+            }
     }
     protected onDataReady (e?: NotifyArgs) : void {
       super.onDataReady(e);
-      if (!isNullOrUndefined(e.count)) {
-        this.totalRecords = e.count;
-        getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
-        let outBuffer: number = 4; // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
-      }
-      if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
-        this.contents.scrollTop = 0;
+      if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '')) {
+        if (!isNullOrUndefined(e.count)) {
+          this.totalRecords = e.count;
+          getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
+          let outBuffer: number = 4; // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
+        }
+        if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
+          this.contents.scrollTop = 0;
+        }
       }
     }
     public renderTable() : void {
       super.renderTable();
-      getValue('observer', this).options.debounceEvent = false;
-      this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
-      this.contents = this.getPanel().firstChild as HTMLElement;
+      if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '')) {
+              getValue('observer', this).options.debounceEvent = false;
+              this.observers = new TreeInterSectionObserver(this.parent, getValue('observer', this).element,
+                                                            getValue('observer', this).options);
+              this.contents = this.getPanel().firstChild as HTMLElement;
+          }
     }
+    protected getTranslateY(sTop: number, cHeight: number, info?: VirtualInfo, isOnenter?: boolean): number {
+      if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') {
+              if (this.isRemoteExpand) {
+                this.isRemoteExpand = false;
+                return this.preTranslate;
+              } else {
+                this.preTranslate = super.getTranslateY(sTop, cHeight, info, isOnenter);
+                return super.getTranslateY(sTop, cHeight, info, isOnenter);
+              }
+            } else {
+              return super.getTranslateY(sTop, cHeight, info, isOnenter);
+            }
+    }
+
     public scrollListeners(scrollArgs: ScrollArg) : void {
       let info: SentinelType = scrollArgs.sentinel;
       let outBuffer: number = 10; //this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
@@ -128,23 +160,40 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       }
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {
-      let info: VirtualInfo = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && getValue('currentInfo', this).page &&
-      getValue('currentInfo', this).page !== e.virtualInfo.page ? getValue('currentInfo', this) : e.virtualInfo;
-      let cBlock: number = (info.columnIndexes[0]) - 1;
-      let cOffset: number = this.getColumnOffset(cBlock);
-      //this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
-
-      target = this.parent.createElement('tbody');
-      target.appendChild(newChild);
-      let replace: string = 'replaceWith';
-      (this.getTable().querySelector('tbody') as HTMLElement)[replace](target);
-      if (!this.isExpandCollapse || this.translateY === 0) {
-        getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
+      if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+            && (this.parent.dataSource as DataManager).dataSource.url !== '') {
+              if (getValue('isExpandCollapse', e)) {
+                this.isRemoteExpand = true;
+              }
+              super.appendContent(target, newChild, e);
       } else {
-       this.isExpandCollapse = false;
+        let info: VirtualInfo = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' &&
+          getValue('currentInfo', this).page && getValue('currentInfo', this).page !== e.virtualInfo.page ?
+          getValue('currentInfo', this) : e.virtualInfo;
+        let cBlock: number = (info.columnIndexes[0]) - 1;
+        let cOffset: number = this.getColumnOffset(cBlock);
+        //this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
+        target = this.parent.createElement('tbody');
+        target.appendChild(newChild);
+        let replace: string = 'replaceWith';
+        (this.getTable().querySelector('tbody') as HTMLElement)[replace](target);
+        if (!this.isExpandCollapse || this.translateY === 0) {
+          getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
+        } else {
+          this.isExpandCollapse = false;
+        }
+        setValue('prevInfo', info, this);
       }
-      setValue('prevInfo', info, this);
     }
+
+    public removeEventListener(): void {
+      if (this.parent.isDestroyed) { return; }
+      this.parent.off('data-ready', this.onDataReady);
+      this.parent.off('content-ready', this.fn);
+      this.parent.off(events.virtualActionArgs, this.virtualOtherAction);
+      this.parent.off(events.indexModifier, this.indexModifier);
+    }
+
   }
 
   export class TreeInterSectionObserver extends InterSectionObserver {

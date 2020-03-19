@@ -47,8 +47,9 @@ describe('Custom Binding', () => {
       gridObj.dataStateChange = dataStateChange;
       gridObj.expanded = (args: any) => {
         expect(gridObj.getRows()[0].getElementsByClassName('e-treegridexpand').length === 1).toBe(true);
-        done();
+        expect(gridObj.getRows()[1].getElementsByClassName('e-treegridexpand').length === 1).toBe(true);
       }   
+      done();
       gridObj.expandRow(gridObj.getRows()[0]);
     });
     it ('Nested record expand/collapse icon test', () => {

@@ -548,7 +548,7 @@ describe('insert Link', () => {
             (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
             expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
         });
-        
+
         it('check display text', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let selObj: any = new NodeSelection();
@@ -567,7 +567,7 @@ describe('insert Link', () => {
             expect(document.getElementsByTagName('a')[0].firstChild.textContent).toBe("syncfusion");          
         });
         it('Apply link to the link element along with extra text', () => {
-            rteObj.value = '<a>syncfusion</a>test';
+            rteObj.value = '<p>hello<a>syncfusion</a>test</p>';
             rteObj.dataBind();
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let selObj: any = new NodeSelection();

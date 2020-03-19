@@ -38,13 +38,8 @@ export class Annotations {
                 this.createTemplate(element, annotationIndex, index);
             }
         });
-        if (parentElement && element.childElementCount) {
+        if (parentElement && element.childElementCount && !this.gauge.isBlazor) {
             parentElement.appendChild(element);
-            if (this.gauge.isBlazor) {
-                for (let i: number = 0; i < this.gauge.axes[index].annotations.length; i++) {
-                    updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
-                }
-            }
         }
     }
 
@@ -87,6 +82,14 @@ export class Annotations {
                 }
                 this.updateLocation(childElement, axis, <Annotation>annotation);
                 element.appendChild(childElement);
+                let parentElement: Element = document.getElementById(this.elementId + '_Secondary_Element');
+                if (this.gauge.isBlazor && annotationIndex === (this.gauge.axes[axisIndex].annotations.length - 1) &&
+                    element && parentElement) {
+                    parentElement.appendChild(element);
+                    for (let i: number = 0; i < this.gauge.axes[axisIndex].annotations.length; i++) {
+                        updateBlazorTemplate(this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[axisIndex].annotations[i]);
+                    }
+                }
             }
         });
     }

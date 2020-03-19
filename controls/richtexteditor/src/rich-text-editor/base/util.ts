@@ -1,7 +1,7 @@
 /**
  * Exports util methods used by RichTextEditor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, Browser, detach } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
 import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
@@ -13,6 +13,11 @@ import { ServiceLocator } from '../services/service-locator';
 import { SanitizeHtmlHelper, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 let undoRedoItems: string[] = ['Undo', 'Redo'];
+let inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
+'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
+'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
 
 export function getIndex(val: string, items: (string | IToolbarItems)[]): number {
     let index: number = -1;
@@ -271,20 +276,46 @@ export function getEditValue(value: string, rteObj: IRichTextEditor): string {
 export function updateTextNode(value: string): string {
     let tempNode: HTMLElement = document.createElement('div');
     tempNode.innerHTML = value;
+    tempNode.setAttribute('class', 'tempDiv');
+    let resultElm: HTMLElement = document.createElement('div');
     let childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
     if (childNodes.length > 0) {
-        [].slice.call(childNodes).forEach((childNode: Node) => {
-            if ((childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
-                && childNode.textContent.trim() !== '') || (childNode.nodeName === 'IMG' &&
-                childNode.parentNode === tempNode)) {
-                let defaultTag: HTMLElement = document.createElement('p');
-                let parentNode: Element = childNode.parentNode as Element;
-                parentNode.insertBefore(defaultTag, childNode);
-                defaultTag.appendChild(childNode);
+        let isPreviousInlineElem: boolean;
+        let previousParent: HTMLElement;
+        let paraElm: HTMLElement;
+        while (tempNode.firstChild) {
+            if ((tempNode.firstChild.nodeName === '#text' &&
+            (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
+            inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0 ) {
+                if (!isPreviousInlineElem) {
+                    paraElm = createElement('p');
+                    resultElm.appendChild(paraElm);
+                    paraElm.appendChild(tempNode.firstChild);
+                } else {
+                    previousParent.appendChild(tempNode.firstChild);
+                }
+                previousParent = paraElm;
+                isPreviousInlineElem = true;
+            } else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
+            (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
+                detach(tempNode.firstChild);
+            } else {
+                resultElm.appendChild(tempNode.firstChild);
+                isPreviousInlineElem = false;
             }
-        });
+        }
+        let imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
+        for (let i: number = 0; i < imageElm.length; i++) {
+            if (!imageElm[i].classList.contains(classes.CLS_RTE_IMAGE)) {
+                imageElm[i].classList.add(classes.CLS_RTE_IMAGE);
+            }
+            if (!(imageElm[i].classList.contains(classes.CLS_IMGINLINE) ||
+            imageElm[i].classList.contains(classes.CLS_IMGBREAK))) {
+                imageElm[i].classList.add(classes.CLS_IMGINLINE);
+            }
+        }
     }
-    return tempNode.innerHTML;
+    return resultElm.innerHTML;
 }
 
 export function isEditableValueEmpty(value: string): boolean {

@@ -56,7 +56,7 @@ export class TextLayer {
                 let textContent: string = textContents[i];
                 textContent = textContent.replace(/</g, '&lt;');
                 textContent = textContent.replace(/>/g, '&gt;');
-                textDiv.innerHTML = textContent.replace(/&nbsp;/g, ' ');
+                textDiv.textContent = textContent.replace(/&nbsp;/g, ' ');
                 // tslint:disable-next-line
                 let newLine: string = textContents[i].replace(/  +/g, ' ');
                 if (newLine !== ' ') {

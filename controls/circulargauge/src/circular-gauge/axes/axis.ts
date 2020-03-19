@@ -117,6 +117,12 @@ export class Label extends ChildProperty<Label> {
 
 export class Range extends ChildProperty<Range> {
 
+    /** @private */
+    public pathElement: Element[];
+
+    /** @private */
+    public currentValue: number;
+
     /**
      * Specifies the minimum value of the range.
      * @aspDefaultValueIgnore
@@ -286,6 +292,14 @@ export class Tick extends ChildProperty<Tick> {
 
     @Property(false)
     public useRangeColor: boolean;
+
+    /**
+     * Sets or gets the dash array for the ticks
+     * @default '0'
+     */
+
+    @Property('0')
+    public dashArray: string;
 }
 
 /**   
@@ -508,6 +522,13 @@ export class Pointer extends ChildProperty<Pointer> {
     public cap: CapModel;
 
     /**
+     * Options for customizing the font
+     */
+
+    @Complex<FontModel>({}, Font)
+    public textStyle: FontModel;
+
+    /**
      * Options for customizing the back needle.
      */
 
@@ -543,6 +564,7 @@ export class Pointer extends ChildProperty<Pointer> {
      * * diamond - Renders a diamond.
      * * invertedTriangle - Renders a invertedTriangle.
      * * image - Renders a image.
+     * * Text - Renders a Text.
      * @default Circle
      */
 
@@ -556,6 +578,13 @@ export class Pointer extends ChildProperty<Pointer> {
 
     @Property(5)
     public markerHeight: number;
+
+    /**
+     * text of the pointer.
+     * @default ''
+     */
+    @Property('')
+    public text: string;
 
     /**
      * Information about pointer for assistive technology.
@@ -591,6 +620,23 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /** @private */
     public currentDistanceFromScale: number;
+
+    /**
+     * Sets or gets the start width of the needle pointer
+     * @default null
+     */
+
+    @Property(null)
+    public needleStartWidth: number;
+
+    /**
+     * Sets or gets the end width of the needle pointer
+     * @default null
+     */
+
+    @Property(null)
+    public needleEndWidth: number;
+
 
 }
 

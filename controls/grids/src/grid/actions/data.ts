@@ -26,6 +26,7 @@ export class Data implements IDataProcessor {
     protected parent: IGrid;
     protected serviceLocator: ServiceLocator;
     protected dataState: PendingState = { isPending: false, resolver: null, group: [] };
+    public foreignKeyDataState: PendingState = { isPending: false, resolver: null};
 
     /**
      * Constructor for data module.
@@ -138,7 +139,7 @@ export class Data implements IDataProcessor {
     protected pageQuery(query: Query, skipPage?: boolean): Query {
         let gObj: IGrid = this.parent;
         let fName: string = 'fn';
-        if ((gObj.allowPaging || gObj.enableVirtualization || gObj.infiniteScrollSettings.enableScroll) && skipPage !== true) {
+        if ((gObj.allowPaging || gObj.enableVirtualization || gObj.enableInfiniteScrolling) && skipPage !== true) {
             gObj.pageSettings.currentPage = Math.max(1, gObj.pageSettings.currentPage);
             if (gObj.pageSettings.pageCount <= 0) {
                 gObj.pageSettings.pageCount = 8;
@@ -153,7 +154,7 @@ export class Data implements IDataProcessor {
                     }
                 }
             }
-            if (!isNullOrUndefined(gObj.infiniteScrollModule) && gObj.infiniteScrollSettings.enableScroll) {
+            if (!isNullOrUndefined(gObj.infiniteScrollModule) && gObj.enableInfiniteScrolling) {
                 this.parent.notify(events.infinitePageQuery, query);
             } else {
                 query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
@@ -528,6 +529,14 @@ export class Data implements IDataProcessor {
 
     public setState(state: PendingState): Object {
         return this.dataState = state;
+    }
+
+    public getForeignKeyDataState(): PendingState {
+        return this.foreignKeyDataState;
+    }
+
+    public setForeignKeyDataState(state: PendingState): void {
+        this.foreignKeyDataState = state;
     }
 
     public getStateEventArgument(query: Query): PendingState {

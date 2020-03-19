@@ -20,6 +20,7 @@
   .e-multi-select-wrapper .e-close-hooker::before {
     content: '\e745';
     cursor: pointer;
+    height: $ddl-overall-close-top;
     left: $ddl-overall-close-left;
     position: relative;
     top: $ddl-overall-close-top;

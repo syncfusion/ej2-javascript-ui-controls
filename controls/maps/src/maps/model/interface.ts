@@ -488,19 +488,19 @@ export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     /**
      * data label text event argument
      */
-    text?: string;
+    text: string;
     /**
      * Configures the label border
      */
-    border?: BorderModel;
+    border: BorderModel;
     /**
      * configure the fill
      */
-    fill?: string;
+    fill: string;
     /**
      * To customize the data label template.
      */
-    template?: string;
+    template: string;
     /**
      * label instance event argument
      */

@@ -131,7 +131,7 @@ export class EventBase {
         }
         let popupTarget: HTMLElement;
         popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
-            popupTarget = this.parent.element : popupTarget = document.getElementById(this.parent.parentID + '_Wrapper');
+            this.parent.element : document.getElementById(this.parent.parentID + '_Wrapper');
         this.parent.filterDialog.createFilterDialog(treeData, fieldName, fieldCaption, popupTarget);
     }
     /**
@@ -395,10 +395,11 @@ export class EventBase {
             /* tslint:disable */
             let obj: { [key: string]: Object } = {
                 id: member.actualText.toString(),
+                actualText: member.actualText,
                 name: memberName,
                 isSelected: isInclude ? false : true
             };
-            /* tslint:disable */
+            /* tslint:enable */
             if (filterObj[memberName] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }
@@ -410,7 +411,7 @@ export class EventBase {
             }
             this.parent.currentTreeItems.push(obj);
             this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[member.actualText] = memberCount - 1;
+            this.parent.currentTreeItemsPos[member.actualText] = { index: memberCount - 1, isSelected: obj.isSelected as boolean };
             memberCount++;
         }
         this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
@@ -446,7 +447,7 @@ export class EventBase {
             }
             this.parent.currentTreeItems.push(obj);
             this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[memberName] = memberCount - 1;
+            this.parent.currentTreeItemsPos[memberName] = { index: memberCount - 1, isSelected: obj.isSelected as boolean };
             memberCount++;
         }
         this.parent.isDataOverflow = isHierarchy ? ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor) : false;

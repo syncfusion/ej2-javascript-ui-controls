@@ -1,0 +1,9 @@
+@import 'ej2-base/styles/bootstrap-dark.scss';
+
+// Dependent component styles
+@import 'ej2-buttons/styles/button/bootstrap-dark.scss';
+@import 'ej2-popups/styles/popup/bootstrap-dark.scss';
+@import '../../../styles/h-scroll/bootstrap-dark.scss';
+
+// Component styles from current repository
+@import '../../../styles/toolbar/bootstrap-dark.scss';

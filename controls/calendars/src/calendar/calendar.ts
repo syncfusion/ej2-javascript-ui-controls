@@ -755,7 +755,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 targetEle.blur();
                 (this.tableBodyElement as HTMLElement).focus();
             }
-            if (this.serverModuleName === 'ejs.calendars.Calendar') {
+            if (this.serverModuleName === 'sf.calendars.Calendar') {
                 this.tableBodyElement = null;
             }
         } else {
@@ -2466,6 +2466,7 @@ export class Calendar extends CalendarBase {
      * This method is used to add the single or multiple dates to the values property of the Calendar.
      * @param  {Date || Date[]} dates - Specifies the date or dates to be added to the values property of the Calendar.
      * @returns void
+     * @deprecated
      */
     public addDate(dates: Date | Date[]): void {
         if (typeof dates !== 'string' && typeof dates !== 'number') {
@@ -2504,6 +2505,7 @@ export class Calendar extends CalendarBase {
      * This method is used to remove the single or multiple dates from the values property of the Calendar.
      * @param  {Date || Date[]} dates - Specifies the date or dates which need to be removed from the values property of the Calendar.
      * @returns void
+     * @deprecated
      */
     public removeDate(dates: Date | Date[]): void {
         if (typeof dates !== 'string' && typeof dates !== 'number' && !isNullOrUndefined(this.values) && this.values.length > 0) {

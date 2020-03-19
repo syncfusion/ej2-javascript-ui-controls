@@ -84,6 +84,10 @@
     .e-excelexport::before {
       content: '\e242';
     }
+
+    .e-pdfexport::before {
+      content: '\e240';
+    }
   }
 
   #{&}.e-gantt.e-device {

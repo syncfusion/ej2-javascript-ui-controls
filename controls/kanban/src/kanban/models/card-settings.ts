@@ -31,6 +31,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
     /**
      * Defines the card template
      * @default null
+     * @deprecated
      */
     @Property()
     public template: string;

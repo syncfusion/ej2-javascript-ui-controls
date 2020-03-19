@@ -56,7 +56,7 @@ export const selectionComplete: string = 'selectionComplete';
 /** @hidden */
 export const cMenuBeforeOpen: string = 'contextmenuBeforeOpen';
 /** @hidden */
-export const addSheetTab: string = 'addSheetTab';
+export const insertSheetTab: string = 'insertSheetTab';
 /** @hidden */
 export const removeSheetTab: string = 'removeSheetTab';
 /** @hidden */
@@ -128,9 +128,7 @@ export const applySort: string = 'applySort';
 /** @hidden */
 export const collaborativeUpdate: string = 'collaborativeUpdate';
 /** @hidden */
-export const hideShowRow: string = 'hideShowRow';
-/** @hidden */
-export const hideShowCol: string = 'hideShowCol';
+export const hideShow: string = 'hideShow';
 /** @hidden */
 export const autoFit: string = 'autoFitRowsColumns';
 /** @hidden */
@@ -183,4 +181,43 @@ export const getFilterRange: string = 'getFilterRange';
 export const setAutoFit: string = 'setAutoFit';
 /** @hidden */
 export const refreshFormulaDatasource: string = 'refreshFormulaDatasource';
+/** @hidden */
+export const setScrollEvent: string = 'setScrollEvent';
+/** @hidden */
+export const initiateDataValidation: string = 'initiatedatavalidation';
+/** @hidden */
+export const validationError: string = 'validationError';
+/** @hidden */
+export const startEdit: string = 'startEdit';
+/** @hidden */
+export const invalidData: string = 'invalidData';
+/** @hidden */
+export const clearInvalid: string = 'clearInvalid';
+/** @hidden */
+export const protectSheet: string = 'protectSheet';
+/** @hidden */
+export const applyProtect: string = 'applyProtect';
+/** @hidden */
+export const protectCellFormat: string = 'protectCellFormat';
+/** @hidden */
+export const gotoDlg: string = 'renderGotoDlgt';
+/** @hidden */
+export const findDlg: string = 'renderFindDlg';
+/** @hidden */
+export const findHandler: string = 'findHandler';
+/** @hidden */
+export const replace: string = 'replaceHandler';
+/** @hidden */
+export const created: string = 'created';
+/** @hidden */
+export const editAlert: string = 'editAlert';
+/** @hidden */
+export const setUndoRedo: string = 'setUndoRedo';
+/** @hidden */
+export const enableFormulaInput: string = 'enableFormulaInput';
+/** @hidden */
+export const protectSelection: string = 'protectSelection';
+
+
+
 

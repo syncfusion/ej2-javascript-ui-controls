@@ -148,7 +148,7 @@ export class FocusStrategy {
     }
 
     private focusVirtualElement(e?: KeyboardEventArgs): void {
-        if (this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll) {
+        if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
             let data: { virtualData: Object, isAdd: boolean, isCancel: boolean } = { virtualData: {}, isAdd: false, isCancel: false };
             this.parent.notify(event.getVirtualData, data);
             let isKeyFocus: boolean = this.actions.some((value: string) => value === this.activeKey);
@@ -184,7 +184,7 @@ export class FocusStrategy {
         setTimeout(
             () => {
                 if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
-                    if (this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll) {
+                    if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
                         this.focusVirtualElement(e);
                     } else {
                         this.currentInfo.elementToFocus.focus();
@@ -411,7 +411,7 @@ export class FocusStrategy {
     }
 
     public restoreFocusWithAction(e: NotifyArgs): void {
-        if (!this.parent.infiniteScrollSettings.enableScroll) {
+        if (!this.parent.enableInfiniteScrolling) {
             let matrix: Matrix = this.getContent().matrix;
             let current: number[] = matrix.current;
             switch (e.requestType) {

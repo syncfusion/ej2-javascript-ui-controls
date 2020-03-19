@@ -12,22 +12,23 @@ import { createElement, prepend } from '@syncfusion/ej2-base';
 /** @hidden */
 export class AxisFields {
     public parent: PivotView;
-    private pivotButton: PivotButton;
 
     /** Constructor for render module */
     constructor(parent: PivotView) {
         this.parent = parent;
     }
     /**
-     * Initialize the pivot button rendering
+     * Initialize the grouping bar pivot button rendering
      * @returns void
      * @private
      */
     public render(): void {
-        this.pivotButton = new PivotButton(this.parent);
+        /* tslint:disable:no-any */
+        let pivotButtonModule: PivotButton =
+            ((!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) ?
+                new PivotButton(this.parent) : this.parent.pivotButtonModule);
         this.createPivotButtons();
         let pivotButtons: HTMLElement[] = [];
-        /* tslint:disable:no-any */
         for (let element of this.parent.element.querySelectorAll('.' + cls.GROUP_ROW_CLASS) as any) {
             if (!element.classList.contains(cls.GROUP_CHART_ROW)) {
                 pivotButtons = pivotButtons.concat([].slice.call(element.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS)));
@@ -54,6 +55,7 @@ export class AxisFields {
                 element.innerHTML = '';
             }
         }
+        /* tslint:enable:no-any */
         let axis: String[] = ['rows', 'columns', 'values', 'filters'];
         let count: number = axis.length;
         for (let i: number = 0, lnt: number = fields.length; i < lnt; i++) {

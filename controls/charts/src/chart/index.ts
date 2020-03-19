@@ -54,6 +54,7 @@ export * from './user-interaction/tooltip';
 export * from './user-interaction/zooming';
 export * from './user-interaction/selection';
 export * from './user-interaction/data-editing';
+export * from './user-interaction/high-light';
 export * from './series/data-label';
 export * from './series/error-bar';
 export * from './series/chart-series';

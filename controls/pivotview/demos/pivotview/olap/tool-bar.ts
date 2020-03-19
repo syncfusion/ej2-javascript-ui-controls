@@ -118,6 +118,19 @@ let pivotGridObj: PivotView = new PivotView({
             // { name: '[Employee].[Employee Department]', items: ['[Employee].[Employee Department].[Title].&[Control Specialist]'], levelCount: 3 },
             // { name: '[Date].[Fiscal]', items: ['[Date].[Fiscal].[Fiscal Quarter].&[2012]&[4]', '[Date].[Fiscal].[Fiscal Year].&[2010]'], levelCount: 3 },
         ],
+        calculatedFieldSettings: [
+            {
+                name: 'BikeAndComponents',
+                formula: '([Product].[Product Categories].[Category].[Bikes] + [Product].[Product Categories].[Category].[Components] )',
+                hierarchyUniqueName: '[Product].[Product Categories]',
+                formatString: 'Standard'
+            },
+            {
+                name: 'Order on Discount',
+                formula: '[Measures].[Order Quantity] + ([Measures].[Order Quantity] * 0.10)',
+                formatString: 'Currency'
+            }
+        ],
         rows: [
             //     // { name: '[Customers].[Geography]' },
             //     { name: '[Geography].[Geography]', caption: 'Geography' },

@@ -6,6 +6,7 @@ export * from './actions/node-state-modified';
 export * from './actions/dataSource-update';
 export * from './actions/field-list';
 export * from './actions/keyboard';
+export * from './actions/common';
 export * from './grouping-bar/grouping-bar';
 export * from './calculatedfield/calculated-field';
 export * from './conditionalformatting/conditional-formatting';

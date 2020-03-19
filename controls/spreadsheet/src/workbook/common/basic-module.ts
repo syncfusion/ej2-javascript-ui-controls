@@ -1,7 +1,8 @@
 import { Workbook, DataBind } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
-import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink } from '../actions/index';
+import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookDelete } from '../actions/index';
+import { WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation } from '../actions/index';
 /**
  * Workbook basic module.
  * @private
@@ -14,7 +15,8 @@ export class WorkbookBasicModule {
     constructor() {
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula,
-            WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+            WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet,
+            WorkbookDataValidation);
     }
 
     /**

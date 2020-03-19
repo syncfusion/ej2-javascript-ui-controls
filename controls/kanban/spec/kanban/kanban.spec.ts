@@ -103,10 +103,9 @@ describe('Kanban base module', () => {
         });
 
         it('Header text testing', () => {
-            let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+            let headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(headerCells.item(index).childElementCount).toEqual(1);
-                expect((headerCells.item(index) as HTMLElement).innerText).toBe(column.headerText);
+                expect((headerText.item(index) as HTMLElement).innerText).toBe(column.headerText);
             });
         });
 
@@ -189,10 +188,9 @@ describe('Kanban base module', () => {
         });
 
         it('Header text testing', () => {
-            let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+            let headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(headerCells.item(index).childElementCount).toEqual(1);
-                expect((headerCells.item(index) as HTMLElement).innerText).toBe(column.headerText);
+                expect((headerText.item(index) as HTMLElement).innerText).toBe(column.headerText);
             });
         });
 
@@ -432,10 +430,9 @@ describe('Kanban base module', () => {
         });
 
         it('Header text testing', () => {
-            let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
+            let headerText: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells .e-header-text');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(headerCells.item(index).childElementCount).toEqual(1);
-                expect((headerCells.item(index) as HTMLElement).innerText).toBe(column.headerText);
+                expect((headerText.item(index) as HTMLElement).innerText).toBe(column.headerText);
             });
         });
 
@@ -606,6 +603,11 @@ describe('Kanban base module', () => {
         });
 
         it('showItemCount property testing', () => {
+            kanbanObj.columns[0].showItemCount = false;
+            kanbanObj.columns[1].showItemCount = false;
+            kanbanObj.columns[2].showItemCount = false;
+            kanbanObj.columns[3].showItemCount = false;
+            kanbanObj.dataBind();
             expect(kanbanObj.element.querySelectorAll('.e-header-cells .e-item-count').length).toEqual(0);
             kanbanObj.columns[0].showItemCount = true;
             kanbanObj.dataBind();

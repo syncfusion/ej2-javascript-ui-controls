@@ -144,7 +144,7 @@ export class RowDD {
     }
     private dropRows(args: RowDropEventArgs, isByMethod?: boolean): void {
         this.dropPosition = args.dropPosition;
-        if (args.dropPosition !== 'Invalid') {
+        if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             let gObj: Gantt = this.parent;
             let draggedRecord: IGanttData; let droppedRecord: IGanttData;
             this.droppedRecord = gObj.currentViewData[args.dropIndex];
@@ -176,7 +176,7 @@ export class RowDD {
                             }
                             this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
 
                         } else {
                             count = this.parent.editModule.getChildCount(droppedRecord, 0);
@@ -185,15 +185,15 @@ export class RowDD {
                             }
                             this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+                            this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         }
                         draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
                         draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
                         draggedRecord.level = this.ganttData[recordIndex1].level;
                         if (draggedRecord.hasChildRecords) {
                             let level: number = 1;
-                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                             this.updateChildRecordLevel(draggedRecord, level);
+                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                         }
                         if (droppedRecord.parentItem) {
                             let rec: IGanttData[] = this.parent.getParentTask(droppedRecord.parentItem).childRecords;
@@ -302,7 +302,7 @@ export class RowDD {
             }
             this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
             this.parent.flatData.splice(childRecordsLength, 0, this.draggedRecord);
-            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.taskId.toString());
+            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
             }
@@ -335,7 +335,7 @@ export class RowDD {
                 expanded : parentItem.expanded,
                 level : parentItem.level,
                 index : parentItem.index,
-                taskId : parentItem.ganttProperties.taskId
+                taskId : parentItem.ganttProperties.rowUniqueID
             };
             draggedRecord.parentItem = createParentItem;
             draggedRecord.parentUniqueID = droppedRecord.uniqueID;
@@ -374,7 +374,7 @@ export class RowDD {
         this.draggedRecord.level = this.ganttData[recordIndex1].level;
         this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
         this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
-        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
         if (this.draggedRecord.hasChildRecords) {
             let level: number = 1;
             this.updateChildRecord(this.draggedRecord, recordIndex1);
@@ -425,7 +425,7 @@ export class RowDD {
             count++;
             gObj.currentViewData.splice(count, 0, currentRecord);
             gObj.flatData.splice(count, 0, currentRecord);
-            this.parent.ids.splice(count, 0, currentRecord.ganttProperties.taskId.toString());
+            this.parent.ids.splice(count, 0, currentRecord.ganttProperties.rowUniqueID.toString());
             if (gObj.taskFields.parentID && (gObj.dataSource as IGanttData[]).length > 0) {
                 (gObj.dataSource as IGanttData[]).splice(count, 0, currentRecord.taskData);
             }
@@ -455,7 +455,7 @@ export class RowDD {
              //method to delete the record from datasource collection
             if (deletedRow && !this.parent.taskFields.parentID) {
                 let deleteRecordIDs: string[] = [];
-                deleteRecordIDs.push(deletedRow.ganttProperties.taskId.toString());
+                deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
                 this.parent.editModule.removeFromDataSource(deleteRecordIDs);
             }
             if (gObj.taskFields.parentID) {

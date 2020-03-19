@@ -1039,7 +1039,6 @@ describe('PivotFieldList spec', () => {
                 expect(pivotButton.length).toEqual(0);
             });
             it('drag/drop pivot button from axis field to axis field', () => {
-                debugger
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
                 let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');

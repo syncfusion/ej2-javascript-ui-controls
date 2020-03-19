@@ -10,14 +10,17 @@ import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandl
 import { isBlazor, addClass, removeClass, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
 import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, PivotColumn } from '../../common/base/interface';
+import { AggregateMenuOpenEventArgs, BeforeExportEventArgs } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
 import { OlapEngine, ITupInfo } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
 import { SelectedCellsInfo } from '../../common/popups/grouping';
+import { AggregateTypes } from '../../common/base/enum';
+import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 
 /**
  * Module to render PivotGrid control
@@ -66,7 +69,6 @@ export class Render {
     }
 
     /** @hidden */
-    /* tslint:disable */
     public render(): void {
         let parent: PivotView = this.parent;
         let engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
@@ -115,7 +117,6 @@ export class Render {
             this.parent.grid.isStringTemplate = true;
             this.parent.grid.appendTo('#' + this.parent.element.id + '_grid');
         }
-        /* tslint:disable */
         this.parent.grid.on(headerRefreshed, this.refreshHeader, this);
     }
 
@@ -146,6 +147,7 @@ export class Render {
         this.parent.grid = new Grid({
             frozenColumns: 1,
             frozenRows: 0,
+            enableHover: false,
             dataSource: isEmpty ? this.frameEmptyData() : this.frameDataSource('value'),
             columns: isEmpty ? this.frameEmptyColumns() : this.frameStackedHeaders(),
             height: isEmpty ? 'auto' : this.calculateGridHeight(),
@@ -302,7 +304,9 @@ export class Render {
                 (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderLeft = 'none';
             }
         }
-        this.parent.grid.widthService.setWidthToTable();
+        if (this.parent.grid && this.parent.grid.widthService) {
+            this.parent.grid.widthService.setWidthToTable();
+        }
         /* tslint:disable-next-line */
         if (!(this.parent as any).isEmptyGrid) {
             this.calculateGridHeight(true);
@@ -311,11 +315,22 @@ export class Render {
             this.parent.grid.hideScroll();
         }
         this.parent.isScrolling = false;
+        this.setFocusOnLastCell();
         this.parent.notify(events.contentReady, {});
     }
 
+    private setFocusOnLastCell(): void {
+        if (this.parent.keyboardModule && this.parent.keyboardModule.event &&
+            (this.parent.keyboardModule.event.target as HTMLElement).nodeName === 'TD') {
+            let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
+            gridFocus.setFocusedElement(this.parent.keyboardModule.event.target as HTMLElement);
+            gridFocus.focus(this.parent.keyboardModule.event);
+            addClass([(this.parent.keyboardModule.event.target as HTMLElement)], ['e-focused', 'e-focus']);
+            (this.parent.keyboardModule.event.target as HTMLElement).setAttribute('tabindex', '0');
+            this.parent.keyboardModule.event = undefined;
+        }
+    }
     /* tslint:disable */
-    /* tslint:disable:typedef */
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
         for (let item of args.items) {
             let cellTarget: Element = this.parent.lastCellClicked;
@@ -389,7 +404,7 @@ export class Render {
                     }
                     break;
                 case this.parent.element.id + '_custom_group':
-                    if (!isGroupElement && args.items.length == 2) {
+                    if (!isGroupElement && args.items.length === 2) {
                         args.cancel = true;
                     }
                     if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
@@ -438,7 +453,7 @@ export class Render {
                             args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.add(cls.MENU_DISABLE);
                         }
                     } else if (!(elem.classList.contains('e-summary'))) {
-                        if ((elem as HTMLElement).innerText === "") {
+                        if ((elem as HTMLElement).innerText === '') {
                             if (args.element.querySelector('#' + this.parent.element.id + '_drillthrough')) {
                                 args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.add(cls.MENU_DISABLE);
                             }
@@ -511,19 +526,75 @@ export class Render {
                     }
                     break;
                 case this.parent.element.id + '_aggregate':
-                    if ((elem as HTMLElement).innerText === "") {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_aggregate')) {
-                            args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.add(cls.MENU_DISABLE);
+                    if ((args.element.querySelector('#' + this.parent.element.id + '_aggregate')) &&
+                        (!args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.contains(cls.MENU_DISABLE))) {
+                        args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.add(cls.MENU_DISABLE);
+                    }
+                    if ((elem.classList.contains('e-valuesheader') || elem.classList.contains('e-valuescontent') ||
+                        (elem.classList.contains('e-stot') && elem.classList.contains('e-rowsheader'))) && this.parent.dataType !== 'olap') {
+                        let fieldType: string;
+                        if (!((elem as HTMLElement).innerText === '')) {
+                            fieldType = this.parent.engineModule.fieldList[pivotValue1.actualText.toString()].type;
                         }
-                    } else {
-                        if (args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.remove(cls.MENU_DISABLE);
-                        }
+                        let eventArgs: AggregateMenuOpenEventArgs = {
+                            cancel: false, fieldName: pivotValue1.actualText.toString(),
+                            aggregateTypes: [...this.getMenuItem(fieldType)]
+                        };
+                        this.parent.trigger(events.aggregateMenuOpen, eventArgs, (observedArgs: AggregateMenuOpenEventArgs) => {
+                            if (!observedArgs.cancel && !((elem as HTMLElement).innerText === '')) {
+                                let menuItem: MenuItemModel[] = [];
+                                let checkDuplicates: AggregateTypes[] = [];
+                                for (let i: number = 0; i < observedArgs.aggregateTypes.length; i++) {
+                                    let key: AggregateTypes = observedArgs.aggregateTypes[i] as AggregateTypes;
+                                    if (fieldType !== 'number') {
+                                        if ((['Count', 'DistinctCount'].indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
+                                            menuItem.push(
+                                                { text: this.parent.localeObj.getConstant(key), id: this.parent.element.id + '_Agg' + key });
+                                            checkDuplicates.push(key);
+                                        }
+                                    } else {
+                                        if ((this.parent.getAllSummaryType().indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
+                                            menuItem.push({ text: this.parent.localeObj.getConstant(key), id: this.parent.element.id + '_Agg' + key });
+                                            checkDuplicates.push(key);
+                                        }
+                                    }
+                                }
+                                if (menuItem.length >= 7) {
+                                    menuItem.splice(7);
+                                    menuItem.push(
+                                        {
+                                            text: this.parent.localeObj.getConstant('MoreOption'),
+                                            id: this.parent.element.id + '_Agg' + 'MoreOption'
+                                        });
+                                }
+                                if (menuItem && menuItem.length >= 1) {
+                                    item.items = menuItem;
+                                    args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.remove(cls.MENU_DISABLE);
+                                }
+                            }
+                        });
                     }
                     break;
             }
         }
         this.parent.trigger(events.contextMenuOpen, args);
+    }
+
+    private getMenuItem(isStringField: string): AggregateTypes[] {
+        let menuItems: AggregateTypes[] = [];
+        for (let i: number = 0; i < this.parent.aggregateTypes.length; i++) {
+            let key: AggregateTypes = this.parent.aggregateTypes[i] as AggregateTypes;
+            if (isStringField !== 'string') {
+                if ((this.parent.getAllSummaryType().indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
+                    menuItems.push(key);
+                }
+            } else {
+                if ((['Count', 'DistinctCount'].indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
+                    menuItems.push(key);
+                }
+            }
+        }
+        return menuItems;
     }
 
     private contextMenuClick(args: MenuEventArgs): void {
@@ -535,6 +606,8 @@ export class Render {
             'bubbles': true,
             'cancelable': true
         });
+        let exportArgs: BeforeExportEventArgs = {
+        };
         let ele: Element = null;
         if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
             target.classList.contains('e-headercelldiv') || target.classList.contains('e-icons') || target.classList.contains('e-rhandler')) {
@@ -547,22 +620,42 @@ export class Render {
         let rowIndx: number = Number(ele.getAttribute('index'));
         let colIndx: number = Number(ele.getAttribute('aria-colindex'));
         let pivotValue: IAxisSet = this.parent.pivotValues[rowIndx][colIndx] as IAxisSet;
-        if (args.item.id === this.parent.element.id + '_AggSum' || args.item.id === this.parent.element.id + '_AggProduct' ||
-            args.item.id === this.parent.element.id + '_AggCount' || args.item.id === this.parent.element.id + '_AggDistinctCount' ||
-            args.item.id === this.parent.element.id + '_AggAvg' || args.item.id === this.parent.element.id + '_AggMin' ||
-            args.item.id === this.parent.element.id + '_AggMax' || args.item.id === this.parent.element.id + '_AggMoreOption') {
+        let aggregateType: string;
+        if (args.item.id.indexOf(this.parent.element.id + '_Agg') > -1) {
             this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].id;
             this.fieldCaption = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
+            aggregateType = args.item.id.split('_Agg')[1];
         }
         switch (selected) {
             case this.parent.element.id + '_pdf':
-                this.parent.pdfExport();
+                exportArgs = {
+                    pdfDoc: undefined,
+                    isBlob: false,
+                    isMultipleExport: false,
+                    pdfExportProperties: { fileName: 'Export.pdf' },
+                };
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
                 break;
             case this.parent.element.id + '_excel':
-                this.parent.excelExport();
+                exportArgs = {
+                    isBlob: false,
+                    isMultipleExport: false,
+                    workbook: undefined,
+                    excelExportProperties: { fileName: 'Export.xlsx' },
+                };
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
                 break;
             case this.parent.element.id + '_csv':
-                this.parent.csvExport();
+                exportArgs = {
+                    isBlob: false,
+                    workbook: undefined,
+                    isMultipleExport: false,
+                    excelExportProperties: { fileName: 'Export.csv' },
+                };
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
                 break;
             case this.parent.element.id + '_drillthrough_menu':
                 ele.dispatchEvent(event);
@@ -591,48 +684,33 @@ export class Render {
                 break;
             case this.parent.element.id + '_expand':
                 if (ele.querySelectorAll('.' + cls.EXPAND)) {
-                    let exp = ele.querySelectorAll('.' + cls.EXPAND)[0] as Element
+                    let exp = ele.querySelectorAll('.' + cls.EXPAND)[0] as Element;
                     this.parent.onDrill(exp);
                 }
                 break;
             case this.parent.element.id + '_collapse':
                 if (ele.querySelectorAll('.' + cls.COLLAPSE)) {
-                    let colp = ele.querySelectorAll('.' + cls.COLLAPSE)[0] as Element
+                    let colp = ele.querySelectorAll('.' + cls.COLLAPSE)[0] as Element;
                     this.parent.onDrill(colp);
                 }
                 break;
             case this.parent.element.id + '_CalculatedField':
                 this.parent.calculatedFieldModule.createCalculatedFieldDialog();
                 break;
-            case this.parent.element.id + '_AggSum':
-                this.updateAggregate('Sum');
-                break;
-            case this.parent.element.id + '_AggProduct':
-                this.updateAggregate('Product');
-                break;
-            case this.parent.element.id + '_AggCount':
-                this.updateAggregate('Count');
-                break;
-            case this.parent.element.id + '_AggDistinctCount':
-                this.updateAggregate('DistinctCount');
-                break;
-            case this.parent.element.id + '_AggAvg':
-                this.updateAggregate('Avg');
-                break;
-            case this.parent.element.id + '_AggMin':
-                this.updateAggregate('Min');
-                break;
-            case this.parent.element.id + '_AggMax':
-                this.updateAggregate('Max');
-                break;
             case this.parent.element.id + '_AggMoreOption':
+            case this.parent.element.id + '_AggDifferenceFrom':
+            case this.parent.element.id + '_AggPercentageOfDifferenceFrom':
+            case this.parent.element.id + '_AggPercentageOfParentTotal':
                 ele.setAttribute('id', this.field);
                 ele.setAttribute('data-caption', this.fieldCaption);
                 ele.setAttribute('data-field', this.field);
                 ele.setAttribute('data-type', this.engine.fieldList[pivotValue.actualText.toString()].aggregateType);
                 ele.setAttribute('data-basefield', this.engine.fieldList[pivotValue.actualText.toString()].baseField);
                 ele.setAttribute('data-baseItem', this.engine.fieldList[pivotValue.actualText.toString()].baseItem);
-                this.aggMenu.createValueSettingsDialog(ele as HTMLElement, this.parent.element);
+                this.aggMenu.createValueSettingsDialog(ele as HTMLElement, this.parent.element, aggregateType);
+                break;
+            case this.parent.element.id + '_Agg' + aggregateType:
+                this.updateAggregate(aggregateType);
                 break;
             case this.parent.element.id + '_custom_group':
             case this.parent.element.id + '_custom_ungroup':
@@ -674,11 +752,13 @@ export class Render {
 
     /* tslint:enable */
     private updateAggregate(aggregate: string): void {
-        let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
-        for (let valueCnt: number = 0; valueCnt < this.parent.dataSourceSettings.values.length; valueCnt++) {
-            if (this.parent.dataSourceSettings.values[valueCnt].name === this.field) {
-                let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[valueCnt]);
-                dataSourceItem.type = aggregate as SummaryTypes;
+        if (this.parent.getAllSummaryType().indexOf(aggregate as AggregateTypes) > -1) {
+            let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
+            for (let valueCnt: number = 0; valueCnt < this.parent.dataSourceSettings.values.length; valueCnt++) {
+                if (this.parent.dataSourceSettings.values[valueCnt].name === this.field) {
+                    let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[valueCnt]);
+                    dataSourceItem.type = aggregate as SummaryTypes;
+                }
             }
         }
     }
@@ -814,7 +894,6 @@ export class Render {
         this.parent.trigger(args.e.type === 'touchend' || args.e.type === 'mouseup' ? events.resizeStop : events.resizing, args);
     }
 
-    /* tslint:disable */
     /** @hidden */
     public selected(): void {
         clearTimeout(this.timeOutObj);
@@ -901,6 +980,14 @@ export class Render {
                     if (cell.type === 'grand sum') {
                         tCell.classList.add('e-gtot');
                         localizedText = this.parent.localeObj.getConstant('grandTotal');
+                    } else if (this.parent.enableValueSorting) {
+                        if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
+                            (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
+                            tCell.classList.add('e-gtot');
+                        }
+                    } else if (cell.valueSort.levelName ===
+                        (this.parent.localeObj.getConstant('grandTotal') + '.' + (cell.formattedText))) {
+                        tCell.classList.add('e-gtot');
                     } else {
                         tCell.classList.add('e-stot');
                     }
@@ -944,6 +1031,9 @@ export class Render {
                 cell = (args.data as IGridValues)[Number(tCell.getAttribute('aria-colindex'))] as IAxisSet;
                 if (cell.isSum) {
                     tCell.classList.add(cls.SUMMARY);
+                }
+                if (cell.isGrandSum) {
+                    tCell.classList.add('e-gtot');
                 }
                 if (cell.cssClass) {
                     tCell.classList.add(cell.cssClass);
@@ -1093,6 +1183,13 @@ export class Render {
             this.maxIndent = this.maxIndent > indent ? this.maxIndent : indent;
         }
         tCell.setAttribute('fieldname', cell.hierarchy);
+        let grandTotal: boolean = (this.parent.olapEngineModule.tupRowInfo[cell.ordinal] ?
+            (this.parent.olapEngineModule.tupRowInfo[cell.ordinal].measurePosition === 0 ?
+                this.parent.olapEngineModule.tupRowInfo[cell.ordinal].allStartPos === 1 :
+                this.parent.olapEngineModule.tupRowInfo[cell.ordinal].allStartPos === 0) : false);
+        if (grandTotal) {
+            tCell.classList.add('e-gtot');
+        }
         return tCell;
     }
     /* tslint:enable */
@@ -1186,7 +1283,27 @@ export class Render {
                 let len: number = this.parent.dataSourceSettings.values.length;
                 for (let vCnt: number = 0; vCnt < len; vCnt++) {
                     if (this.parent.dataSourceSettings.values[vCnt].name === cell.actualText) {
-                        tCell.classList.add(cls.VALUESHEADER);
+                        if (this.parent.dataType === 'olap') {
+                            let grandTotal: boolean = (this.parent.olapEngineModule.tupColumnInfo[cell.ordinal] ?
+                                (this.parent.olapEngineModule.tupColumnInfo[cell.ordinal].measurePosition === 0 ?
+                                    this.parent.olapEngineModule.tupColumnInfo[cell.ordinal].allStartPos === 1 :
+                                    this.parent.olapEngineModule.tupColumnInfo[cell.ordinal].allStartPos === 0) : false);
+                            if (grandTotal) {
+                                tCell.classList.add('e-gtot');
+                            }
+                        }
+                        if (this.parent.enableValueSorting) {
+                            if (cell.valueSort.levelName === (this.parent.localeObj.getConstant('grandTotal') +
+                                (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText))) {
+                                tCell.classList.add('e-gtot');
+                            }
+                        } else if (cell.valueSort.levelName ===
+                            (this.parent.localeObj.getConstant('grandTotal') + '.' + (cell.formattedText))) {
+                            tCell.classList.add(cls.VALUESHEADER);
+                            tCell.classList.add('e-gtot');
+                        } else {
+                            tCell.classList.add(cls.VALUESHEADER);
+                        }
                     }
                 }
                 this.unWireEvents(tCell);
@@ -1200,7 +1317,7 @@ export class Render {
         let prevCell: IAxisSet = this.engine.headerContent[cell.rowIndex] ?
             this.engine.headerContent[cell.rowIndex][cell.colIndex - 1] : undefined;
         if (prevCell && prevCell.actualText === cell.actualText && prevCell.type === cell.type &&
-            (cell.memberType === 3 ? true : prevCell.colSpan > 1)) {
+            (prevCell.colSpan > 1)) {
             tCell.style.display = 'none';
         } else {
             tCell.setAttribute('colspan', cell.colSpan.toString());
@@ -1248,7 +1365,7 @@ export class Render {
     private getRowStartPos(): number {
         let pivotValues: IPivotValues = this.parent.pivotValues;
         let rowPos: number;
-        for (let rCnt: number = 0; rCnt < pivotValues.length; rCnt++) {
+        for (let rCnt: number = 0; rCnt < (pivotValues ? pivotValues.length : 0); rCnt++) {
             if (pivotValues[rCnt] && pivotValues[rCnt][0] && (pivotValues[rCnt][0] as IAxisSet).axis === 'row') {
                 rowPos = rCnt;
                 break;
@@ -1264,7 +1381,7 @@ export class Render {
                 let rowCnt: number = 0;
                 let pivotValues: IPivotValues = this.parent.pivotValues;
                 let start: number = type === 'value' ? this.rowStartPos : 0;
-                let end: number = type === 'value' ? pivotValues.length : this.rowStartPos;
+                let end: number = type === 'value' ? (pivotValues ? pivotValues.length : 0) : this.rowStartPos;
                 for (let rCnt: number = start; rCnt < end; rCnt++) {
                     if (pivotValues[rCnt]) {
                         rowCnt = type === 'header' ? rCnt : rowCnt;
@@ -1361,12 +1478,12 @@ export class Render {
                     let horizontalOverflow: boolean = contentWidth < tableWidth;
                     let verticalOverflow: boolean = contentHeight < tableHeight;
                     let commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
-                    let fixedOverflow: boolean = gridHeight <= (this.engine.valueContent.length * this.gridSettings.rowHeight);
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !verticalOverflow && !commonOverflow && !fixedOverflow) {
+                        !verticalOverflow && !commonOverflow) {
                         this.parent.grid.height = 'auto';
                     } else {
                         this.parent.grid.height = gridHeight;
+                        this.parent.grid.dataBind();
                     }
                 } else {
                     if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
@@ -1386,7 +1503,7 @@ export class Render {
             let headerCnt: number = this.engine.headerContent.length;
             let headerSplit: Object[] = [];
             let splitPos: Object[] = [];
-            let colWidth: number = this.calculateColWidth(this.engine.pivotValues[0].length);
+            let colWidth: number = this.calculateColWidth(this.engine.pivotValues ? this.engine.pivotValues[0].length : 0);
             do {
                 let columnModel: ColumnModel[] = [];
                 let actualCnt: number = 0;
@@ -1600,7 +1717,7 @@ export class Render {
             this.parent.localeObj.getConstant('grandTotal') : args.value;
         return args;
     }
-
+    /* tslint:disable:no-any */
     private unWireEvents(cell: HTMLElement): void {
         if (cell.querySelector('.e-hyperlinkcell')) {
             /* tslint:disable-next-line */

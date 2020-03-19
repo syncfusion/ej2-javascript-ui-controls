@@ -53,7 +53,13 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Collaborative Editing:** Provides the option for real time changes across multiple users in the Spreadsheet.
 - **Hyperlink:** Provides the option to navigate the web links or cell reference within the sheet or to other sheets in spreadsheet.
 - **Resize:** Allows you to change the row height and column width. Auto fit the rows and columns based on its content.
-- **Cell Template:** Provides the option to insert custom elements like button, checkbox, radio button, datepicker, etc. into a cell or range of cells.
+- **Wrap text:** Provides the option to display the large content as multiple lines in a single cell.
+- **Data validation:** Provides the option to validate edited values based on data validation rules defined for a cell or range of cells.
+- **Find and Replace:** Provides the option to find the data and replace it across all the sheets in Spreadsheet.
+- **Protect sheet:** Provides the option to restrict the user actions like cell editing, row and column insertion, deletion, and resizing.
+- **Borders:** Provides the option to customize cell gridlines such as color and its style for enhanced UI.
+- **Show/Hide:** Provides the option to show/hide the rows, columns and sheets.
+- **Insert/delete:** Provides the option to insert/delete the rows, columns and sheets.
 - **RTL:** Provides right-to-left mode which aligns content in the spreadsheet component from right to left.
 - **Localization:** Provides inherent support to localize the UI.
 - **Accessibility:** Provides with built-in accessibility support which helps to access all the spreadsheet component features through the keyboard, screen readers, or other assistive technology devices.

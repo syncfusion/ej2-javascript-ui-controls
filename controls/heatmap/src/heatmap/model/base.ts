@@ -444,3 +444,21 @@ export class LegendColorCollection {
         this.isHidden = isHidden;
     }
 }
+/**
+ * class used to maintain xAxis labels details for multipleRow label intersect action.
+ */
+export class MultipleRow {
+    public start: number;
+    public end: number;
+    public index: number = 1;
+    public label: string;
+    public row: number = 1;
+    constructor(
+        start: number, end: number, index: number, label: string, row: number) {
+        this.start = start;
+        this.end = end;
+        this.index = index;
+        this.label = label;
+        this.row = row;
+    }
+}

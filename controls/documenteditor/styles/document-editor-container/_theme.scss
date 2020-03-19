@@ -86,7 +86,7 @@
   }
 
   .e-de-tool-ctnr-properties-pane {
-    display: inline-flex;
+    display: flex;
     height: $de-tool-ctnr-editor-height;
     width: 100%;
   }
@@ -129,7 +129,7 @@
   }
 
   .e-de-ctnr-toolbar {
-    display: inline-flex;
+    display: flex;
     height: $de-ctnr-tlbr-height;
     width: 100%;
   }
@@ -1062,8 +1062,8 @@
   .e-de-status-bar {
     background-color: $de-ctnr-bg-clr;
     //border-bottom: 1px solid $de-panel-border;
-    display: inline-flex;
-    height: $de-ctnr-status-bar-hgt;
+    display: flex;
+    padding-top: $e-de-status-bar-padding-top;
     width: 100%;
   }
 
@@ -1317,7 +1317,7 @@
     }
 
     .e-de-tool-ctnr-properties-pane {
-      display: inline-flex;
+      display: flex;
       height: $de-tool-ctnr-editor-height-big;
       min-height: 200px;
       width: 100%;
@@ -1338,7 +1338,7 @@
     }
 
     .e-de-ctnr-toolbar {
-      display: inline-flex;
+      display: flex;
       height: $de-ctnr-tlbt-height-big;
       width: 100%;
     }
@@ -1762,8 +1762,8 @@
     .e-de-status-bar {
       background-color: $de-ctnr-bg-clr;
       //border-bottom: 1px solid $de-panel-border;
-      display: inline-flex;
-      height: $de-ctnr-status-bar-hgt;
+      display: flex;
+      padding-top: $e-de-status-bar-big-padding-top;
       width: 100%;
     }
 

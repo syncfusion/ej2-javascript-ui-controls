@@ -242,14 +242,14 @@ describe('Legend position ', () => {
         done();
     });
 	it('legend shape Cross', (done: Function) => {
-        browser.load('/demos/legend_shape.html');
-        property = element(by.id('shapes'));
-        property.all(by.tagName('option'))
-        .then((options: any) => {
-            options[5].click();
-        });
-        browser.compareScreen(element(By.id("container")), "legend_star");
-        done();
+       browser.load('/demos/legend_shape.html');
+       property = element(by.id('shapes'));
+       property.all(by.tagName('option'))
+       .then((options: any) => {
+           options[5].click();
+       });
+       browser.compareScreen(element(By.id("container")), "legend_star");
+       done();
     });
     it('legend shape HorizontalLine', (done: Function) => {
         browser.load('/demos/legend_shape.html');

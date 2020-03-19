@@ -116,11 +116,7 @@ export function addAction(details: { value: ITreeData, action: string }, treeDat
     value = getPlainData(value);
     switch (control.editSettings.newRowPosition) {
         case 'Top':
-            if (control.editSettings.mode === 'Batch') {
-                treeData.splice(treeData.length, 0, value);
-            } else {
-                treeData.unshift(value);
-            }
+            treeData.unshift(value);
             isSkip = true;
             break;
         case 'Bottom':
@@ -212,9 +208,7 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
     if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
         && ((action === 'add' || action === 'batchsave')) && !isNullOrUndefined(child.parentItem)) {
         let parentData: ITreeData = getParentData(control, child.parentItem.uniqueID);
-        if (parentData.childRecords.indexOf(child) === -1) {
         parentData.childRecords.push(child);
-        }
     } else {
         let currentRecords: ITreeData[] = control.grid.getCurrentViewRecords();
         let index: number;
@@ -234,22 +228,24 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
                 });
             }
             let childRecords: ITreeData = child ? child instanceof Array ? child[0] : child : currentRecords[index + 1];
-            if (!(<Object>record).hasOwnProperty('childRecords')) {
-                record.childRecords = [];
-            } else {
-                if (!isNullOrUndefined(child)) {
-                    record.childRecords.push(child);
+            if (control.editSettings.newRowPosition !== 'Below') {
+                if (!(<Object>record).hasOwnProperty('childRecords')) {
+                    record.childRecords = [];
+                } else {
+                    if (!isNullOrUndefined(child) && record[key] !== child[key]) {
+                        record.childRecords.push(child);
+                    }
                 }
-            }
-            if (record.childRecords.indexOf(childRecords) === -1) {
-                record.childRecords.unshift(childRecords);
-            }
-            if (isSelfReference) {
-                if (!(<Object>record).hasOwnProperty(control.childMapping)) {
-                    record[control.childMapping] = [];
+                if (record.childRecords.indexOf(childRecords) === -1 && record[key] !== child[key]) {
+                    record.childRecords.unshift(childRecords);
                 }
-                if (record[control.childMapping].indexOf(childRecords) === -1) {
-                    record[control.childMapping].unshift(childRecords);
+                if (isSelfReference) {
+                    if (!(<Object>record).hasOwnProperty(control.childMapping)) {
+                        record[control.childMapping] = [];
+                    }
+                    if (record[control.childMapping].indexOf(childRecords) === -1 && record[key] !== child[key]) {
+                        record[control.childMapping].unshift(childRecords);
+                    }
                 }
             }
         }
@@ -264,6 +260,9 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         }
         control.grid.setRowData(key, record);
         let row: HTMLTableRowElement = <HTMLTableRowElement>control.getRowByIndex(index);
+        if (control.editSettings.mode === 'Batch') {
+            row = <HTMLTableRowElement>control.getRows()[control.grid.getRowIndexByPrimaryKey(record[key])];
+        }
         let movableRow: HTMLTableRowElement;
         if (control.frozenRows || control.getFrozenColumns()) {
             movableRow = <HTMLTableRowElement>control.getMovableRowByIndex(index);

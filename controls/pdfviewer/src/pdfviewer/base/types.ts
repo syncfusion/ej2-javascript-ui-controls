@@ -100,3 +100,8 @@ export enum AnnotationResizerLocation {
  * set the ZoomMode on rendering
  */
 export type ZoomMode = 'Default' | 'FitToWidth' | 'FitToPage';
+
+/**
+ * Enum for Print Mode
+ */
+export type PrintMode = 'Default' | 'NewWindow' ;

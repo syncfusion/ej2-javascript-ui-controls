@@ -17,6 +17,17 @@ let minimalDs_number: { [key: string]: Object }[] = [
     { text: 3 },
 ];
 
+let nullValue_data_source: { [key: string]: Object } =  {
+    id: '01', text: null,
+    tooltip: 'title1', iconCss: 'iconClass1',
+    imageUrl: 'base/spec/img/img1.jpg', imageAttributes: { height: '200px' },
+    htmlAttributes: { role: 'li-1', class: 'base base1', uid: 1111 },
+    url: 'https://www.google.com', urlAttributes: {
+        role: 'li-1',
+        class: 'base base1', uid: 1111
+    }, enabled: false, isVisible: false
+};
+
 let data_source: { [key: string]: Object }[] = [
     {
         id: '01', text: 'text1',
@@ -90,6 +101,29 @@ let group_dataSource: { [key: string]: Object }[] = [
     { id: '05', text: 'series2', category: 'BMW' },
 ];
 
+let nullValue_group_dataSource: { [key: string]: Object }[] = [
+    { id: '01', text: null, category: 'Ferrari' },
+    { id: '02', text: 'a3', category: 'Audi' },
+    { id: '03', text: 'r8', category: 'Audi' },
+    { id: '04', text: 'g3', category: 'BMW' },
+    { id: '05', text: 'series2', category: 'BMW' },
+];
+
+let fullRow_datasource_false: { [key: string]: Object }[] = [
+    { id: '01', text: 'list1' },
+    { id: '02', text: 'list2' },
+    { id: '03', text: 'list3' },
+    { id: '04', text: 'list4' },
+    { id: '05', text: 'list5' }
+];
+
+let fullRow_datasource_true: { [key: string]: Object }[] = [
+    { id: '01', text: 'list1', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
+    { id: '02', text: 'list2', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
+    { id: '03', text: 'list3', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
+    { id: '04', text: 'list4', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" },
+    { id: '05', text: 'list5', url:"https:google.com", imageUrl: "imageUrl_mapping", iconCss: "sample-icon" }
+];
 
 function deepCloning(data: { [key: string]: object }[]) {
     return <{ [key: string]: object }[]>extend([], data, [], true);
@@ -1213,6 +1247,24 @@ describe('ListBase', () => {
             expect(templateElement.getAttribute("id")).toBe('01');
             expect(templateElement.textContent).toBe('text1');
         });
+        it('ListItem creation-nullable data', () => {
+            let template: string = '<div class="name" id ="${id}">${text}</div>';
+            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, deepCloning([nullValue_data_source]), { value: 'text' });
+            let liItem = ul.children[0];
+            expect(ul.tagName).toBe('UL');
+            expect(ul.classList.contains('e-list-parent')).toBe(true);
+            expect(ul.classList.contains('e-ul')).toBe(true);
+            expect(ul.getAttribute('role')).toBe('presentation');
+            expect(liItem.tagName).toBe('LI');
+            expect(liItem.classList.contains('e-list-item')).toBe(true);
+            expect(liItem.getAttribute('role')).toBe('option');
+            expect(liItem.getAttribute('data-value')).toBe('null');
+            let templateElement: Element = liItem.children[0];
+            expect(templateElement.tagName).toBe('DIV');
+            expect(templateElement.classList.contains('name')).toBe(true);
+            expect(templateElement.getAttribute("id")).toBe('01');
+            expect(templateElement.textContent).toBe('null');
+        });
 
         it('Group ListItem creation - ', () => {
             let template: string = '<div class="name">${text}</div>';
@@ -1236,6 +1288,29 @@ describe('ListBase', () => {
             expect(templateElement.tagName).toBe('DIV');
             expect(templateElement.classList.contains('name')).toBe(true);
             expect(templateElement.textContent).toBe('GTC4');
+        });
+        it('Group ListItem creation -nullable data ', () => {
+            let template: string = '<div class="name">${text}</div>';
+            let ds: { [key: string]: Object }[] = ListBase.groupDataSource(nullValue_group_dataSource, { groupBy: 'category' });
+            let ul: HTMLElement = ListBase.renderContentTemplate(createElement, template, ds, { value: 'text' });
+            let groupLiItem = ul.children[0];
+            let liItem = ul.children[1];
+            expect(ul.tagName).toBe('UL');
+            expect(ul.classList.contains('e-list-parent')).toBe(true);
+            expect(ul.classList.contains('e-ul')).toBe(true);
+            expect(ul.getAttribute('role')).toBe('presentation');
+            expect(groupLiItem.tagName).toBe('LI');
+            expect(groupLiItem.classList.contains('e-list-group-item')).toBe(true);
+            expect(groupLiItem.getAttribute('role')).toBe('presentation');
+            expect(groupLiItem.textContent).toBe('Ferrari');
+            expect(liItem.tagName).toBe('LI');
+            expect(liItem.classList.contains('e-list-item')).toBe(true);
+            expect(liItem.getAttribute('role')).toBe('option');
+            expect(liItem.getAttribute('data-value')).toBe('null');
+            let templateElement: Element = liItem.children[0];
+            expect(templateElement.tagName).toBe('DIV');
+            expect(templateElement.classList.contains('name')).toBe(true);
+            expect(templateElement.textContent).toBe('null');
         });
 
         it('Callback function', () => {
@@ -1275,6 +1350,98 @@ describe('ListBase', () => {
             expect(groupTemplateElement.tagName).toBe('DIV');
             expect(groupTemplateElement.classList.contains('header')).toBe(true);
             expect(groupTemplateElement.textContent).toBe('Ferrari');
+        });
+    });
+    describe('fullRow navigation', () => {
+        it('checking without url in complex', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: true,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_false, listoption, false);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(false);
+            expect(ulElement.children[0].querySelector(".e-anchor-wrap")).toBe(null);
+        });
+        it('checking without url in single', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: true,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_false, listoption, true);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(false);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(0);
+        });
+        it('checking with url in complex without checkbox', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: true,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, false);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
+        });
+        it('checking with url in single without checkbox', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: true,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, true);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
+        });
+        it('checking with url in complex with checkbox', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: true,
+                showCheckBox: true,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, false);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
+            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
+        });
+        it('checking with url in single with checkbox', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: true,
+                showCheckBox: true,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, true);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
+        });
+        it('checking with url in complex with text alone', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: false,
+                showCheckBox: false,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, false);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
+            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
+        });
+        it('checking with url in single with text alone', () => {
+            let listoption:ListBaseOptions = {
+                showIcon: false,
+                showCheckBox: false,
+                itemNavigable: true
+            }
+            let ulElement: HTMLElement = ListBase.createList(createElement, fullRow_datasource_true, listoption, true);
+            expect(ulElement.children[0].classList.contains("e-navigable")).toBe(true);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap").length).toBe(1);
+            expect(ulElement.children[0].querySelectorAll(".e-list-check").length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".sample-icon").length).toBe(0);
+            expect(ulElement.children[0].querySelectorAll(".e-anchor-wrap")[0].querySelectorAll(".e-list-check").length).toBe(0);
         });
     });
 });

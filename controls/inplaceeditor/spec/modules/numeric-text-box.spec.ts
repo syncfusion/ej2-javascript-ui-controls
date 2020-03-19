@@ -461,32 +461,38 @@ describe('NumericTextBox Control', () => {
             destroy(editorObj);
         });
         it('Inline - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Numeric',
                 mode: 'Inline',
                 value: 5,
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });
         it('Popup - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Numeric',
                 mode: 'Popup',
                 value: 5,
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });

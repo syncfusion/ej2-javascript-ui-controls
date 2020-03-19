@@ -53,6 +53,10 @@ export const contextMenuOpen: string = 'contextMenuOpen';
 /** @hidden */
 export const contextMenuClick: string = 'contextMenuClick' ;
 /** @hidden */
+export const beforeCopy: string = 'beforeCopy' ;
+/** @hidden */
+export const beforePaste: string = 'beforePaste' ;
+/** @hidden */
 export const savePreviousRowPosition: string = 'savePreviousRowPosition' ;
 /** @hidden */
 export const crudAction: string = 'crudAction';
@@ -74,6 +78,8 @@ export const batchDelete: string = 'batchDelete';
 export const batchCancel: string = 'batchCancel';
 /** @hidden */
 export const batchAdd: string = 'batchAdd';
+/** @hidden */
+export const beforeBatchDelete: string = 'beforeBatchDelete';
 /** @hidden */
 export const beforeBatchAdd: string = 'beforeBatchAdd';
 /** @hidden */

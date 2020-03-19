@@ -42,27 +42,30 @@ export class Toolbar {
 
     private refreshToolbar(args: RowSelectEventArgs): void {
         let tObj: TreeGrid = this.parent; let isParent: boolean;
-        if (args.rowIndex === 0 || tObj.getSelectedRecords().length > 1) {
+        if ((args.row as HTMLTableRowElement).rowIndex === 0 || tObj.getSelectedRecords().length > 1) {
             this.enableItems([tObj.element.id + '_gridcontrol_indent', tObj.element.id + '_gridcontrol_outdent'], false);
         } else {
-            if ((tObj.getCurrentViewRecords()[args.rowIndex] as ITreeData).level >
-            (tObj.getCurrentViewRecords()[args.rowIndex - 1] as ITreeData).level) {
-                this.enableItems([tObj.element.id + '_gridcontrol_indent'], false);
-            } else {
-                this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
-            }
-            if ((tObj.getCurrentViewRecords()[args.rowIndex] as ITreeData).level ===
-            (tObj.getCurrentViewRecords()[args.rowIndex - 1] as ITreeData).level) {
-                this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
-            }
-            if ((tObj.getCurrentViewRecords()[args.rowIndex] as ITreeData).level === 0) {
-                this.enableItems([tObj.element.id + '_gridcontrol_outdent'], false);
-            }
-            if ((tObj.getCurrentViewRecords()[args.rowIndex] as ITreeData).level !== 0) {
-                this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
+            if (!isNullOrUndefined((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData))) {
+                if (!isNullOrUndefined((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData)) &&
+                    ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level >
+                (tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex - 1] as ITreeData).level)) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], false);
+                } else {
+                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
+                }
+                if ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level ===
+                (tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex - 1] as ITreeData).level) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
+                }
+                if ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level === 0) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_outdent'], false);
+                }
+                if ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level !== 0) {
+                    this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
+                }
             }
         }
-        if (args.rowIndex === 0 && !isNullOrUndefined((args.data as ITreeData).parentItem)) {
+        if ((args.row as HTMLTableRowElement).rowIndex === 0 && !isNullOrUndefined((args.data as ITreeData).parentItem)) {
             this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
         }
     }

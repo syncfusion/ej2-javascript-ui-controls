@@ -4,7 +4,7 @@
 import { Chart, Series, getElement } from '../../index';
 import { StockChart } from '../stock-chart';
 import { Size } from '@syncfusion/ej2-svg-base';
-import { IZoomCompleteEventArgs, Axis, VisibleRangeModel, ILoadedEventArgs, IPointEventArgs, IZoomingEventArgs } from '../../chart/index';
+import { IZoomCompleteEventArgs, Axis, VisibleRangeModel, IPointEventArgs } from '../../chart/index';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';
 import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
@@ -43,19 +43,6 @@ export class CartesianChart {
 
         this.cartesianChartSize = this.calculateChartSize();
         stockChart.chart = new Chart({
-            load: (args: ILoadedEventArgs) => {
-                if (stockChart.tooltip.header === null) {
-                    args.chart.tooltip.header = '<b>${point.x}</b>';
-                }
-                if (stockChart.tooltip.format === null) {
-                    args.chart.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
-                        ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
-                    if (stockChart.series[0].volume !== '') {
-                        args.chart.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
-                    }
-                }
-                args.chart.animateSeries = false;
-            },
             chartArea : stockChart.chartArea,
             margin : this.findMargin(stockChart),
             primaryXAxis: this.copyObject(stockChart.primaryXAxis),
@@ -89,7 +76,6 @@ export class CartesianChart {
             pointMove: (args: IPointEventArgs) => {
                 this.stockChart.trigger('pointMove', args);
             },
-            onZooming: (args: IZoomingEventArgs) => { this.stockChart.trigger('onZooming', args); },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),

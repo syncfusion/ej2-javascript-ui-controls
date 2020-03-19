@@ -298,7 +298,6 @@ export class Grouping implements IAction {
         this.groupDialog.isStringTemplate = true;
         this.groupDialog.appendTo(groupDialog);
     }
-    /* tslint:disable:all */
     private createGroupOptions(fieldName: string, type: string): HTMLElement {
         let groupInstance: Grouping = this;
         let mainDiv: HTMLElement = createElement('div', {
@@ -316,6 +315,7 @@ export class Grouping implements IAction {
                     let caption: string;
                     let dataFields: IFieldOptions[] = dataSource.rows;
                     dataFields = dataFields.concat(dataSource.columns, dataSource.values, dataSource.filters);
+                    /* tslint:disable:max-line-length */
                     let actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
                     let currentField: IFieldOptions = PivotUtil.getFieldByName(fieldName, dataFields) as IFieldOptions;
                     let nextField: IFieldOptions = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields) as IFieldOptions;
@@ -327,6 +327,7 @@ export class Grouping implements IAction {
                     let captionInputTextDiv1: HTMLElement = createElement('div', {
                         className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('groupFieldCaption')
                     });
+                    /* tslint:enable:max-line-length */
                     let captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-wrapper' });
                     let captionInputField1: HTMLInputElement = createElement('input', {
                         id: this.parentElement.id + 'group_caption_option',
@@ -453,6 +454,7 @@ export class Grouping implements IAction {
                         endAtInputObj.isStringTemplate = true;
                         endAtInputObj.appendTo(endAtInputField1);
                         MultiSelect.Inject(CheckBoxSelection);
+                        /* tslint:disable */
                         let intervalObj: MultiSelect = new MultiSelect({
                             dataSource: groupData,
                             value: selectedGroups as string[],
@@ -467,13 +469,12 @@ export class Grouping implements IAction {
                                 groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
                             },
                             removed: () => {
-                                /* tslint:disable */
                                 if ((intervalObj as any).checkBoxSelectionModule.activeLi.length === 0) {
                                     groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                                 }
-                                /* tslint:enable */
                             }
                         });
+                        /* tslint:enable */
                         intervalObj.isStringTemplate = true;
                         intervalObj.appendTo(intervalInputField1);
                         startAtInputObj.value = startAt === undefined ? null : new Date(startAt);
@@ -556,7 +557,7 @@ export class Grouping implements IAction {
         }
         return mainDiv;
     }
-    /* tslint:disable */
+    /* tslint:disable:max-func-body-length */
     private updateGroupSettings(): void {
         let dialogElement: HTMLElement = this.groupDialog.element;
         let groupType: string = dialogElement.getAttribute('data-type');
@@ -586,7 +587,7 @@ export class Grouping implements IAction {
             let splicedItems: string[] = [];
             let newItems: string[] = [];
             let field: IGroupSettings = { name: fieldName, caption: captionInputInstance.value, type: 'Custom', customGroups: [] };
-            let isUpdated = false;
+            let isUpdated: boolean = false;
             for (let i: number = 0, len: number = groupFields.length; i < len; i++) {
                 if (groupFields[i].name === fieldName) {
                     field = groupFields[i];
@@ -621,6 +622,7 @@ export class Grouping implements IAction {
                 this.isUpdate = true;
                 groupFields.push(field);
             }
+            /* tslint:disable-next-line:max-line-length */
             groupFields = this.validateSettings(fieldName, groupFields, groupType, (splicedItems.length === 0 ? customGroup.items : splicedItems), newItems);
         } else if (groupType === 'date' || groupType === 'number') {
             let startCheckBoxInstance: CheckBox = getInstance('#' + this.parentElement.id + 'group_start_option', CheckBox) as CheckBox;
@@ -648,7 +650,7 @@ export class Grouping implements IAction {
                 field.type = 'Number';
                 field.rangeInterval = (intervalInstance as NumericTextBox).value;
             }
-            let isUpdated = false;
+            let isUpdated: boolean = false;
             for (let i: number = 0, len: number = groupFields.length; i < len; i++) {
                 if (groupFields[i].name === fieldName) {
                     groupFields.splice(i, 1, field);
@@ -666,7 +668,6 @@ export class Grouping implements IAction {
         this.groupDialog.close();
         this.updateDateSource(groupFields, groupType);
     }
-    /* tslint:enable */
     private getGroupBasedSettings(groupFields: IGroupSettings[]): { [key: string]: IGroupSettings[] } {
         let groups: { [key: string]: IGroupSettings[] } = {};
         for (let group of groupFields) {
@@ -788,7 +789,7 @@ export class Grouping implements IAction {
         if (this.parent.grid && this.parent.grid.isDestroyed) { return; }
         this.parent.grid.clearSelection();
         if (this.groupDialog && !this.groupDialog.isDestroyed) { this.groupDialog.destroy(); }
-        if (document.getElementById(this.parentElement.id + '_GroupDialog')) {
+        if (this.parentElement && document.getElementById(this.parentElement.id + '_GroupDialog')) {
             remove(document.getElementById(this.parentElement.id + '_GroupDialog'));
         }
     }

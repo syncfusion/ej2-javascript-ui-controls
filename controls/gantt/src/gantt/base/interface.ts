@@ -1,16 +1,23 @@
-import { ContextMenuType } from './enum';
+import { PdfTreeGridCell } from './../export/pdf-base/pdf-grid-table';
+import { PdfBorders } from './../export/pdf-base/pdf-borders';
+import { ColumnModel } from './../models/column';
+import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import {
+    ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType
+} from './enum';
 import { ContextMenuOpenEventArgs as GridContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { ContextMenuClickEventArgs as GridContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { RecordDoubleClickEventArgs as GridRecordDoubleClickEventArgs } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs as GridRowSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs as GridCellSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { RowDeselectEventArgs as GridRowDeselectEventArgs} from '@syncfusion/ej2-grids';
+import { RowDeselectEventArgs as GridRowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { RowSelectEventArgs as GridRowSelectEventArgs, RowDataBoundEventArgs as GridRowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { Column } from '../models/column';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { TimelineViewMode } from '../base/enum';
 import { TimelineTierSettingsModel } from '../models/timeline-settings-model';
 import { EventMarkerModel } from '../models/event-marker-model';
+import { PdfPaddings } from '../export/pdf-base/index';
 /**
  * Specifies Gantt-chart interfaces
  * 
@@ -113,6 +120,24 @@ export interface ITaskData {
     totalProgress?: number;
     /** Defines the total duration of task. */
     totalDuration?: number;
+    /** Defines the work of the task. */
+    work?: number;
+    /** Defines the work unit of task. */
+    workUnit?: string;
+    /** Defines task type */
+    taskType?: TaskType;
+    /** Defines the auto scheduled task's start date. */
+    autoStartDate?: Date;
+    /** Defines the auto scheduled task's end date. */
+    autoEndDate?: Date;
+    /** Defines the auto scheduled task's duration */
+    autoDuration?: number;
+    /** Defines the auto scheduled task's left. */
+    autoLeft?: number;
+    /** Defines the auto scheduled task's width. */
+    autoWidth?: number;
+    /** It have taskId for ProjectView and uniqueID for resourceView */
+    rowUniqueID?: string;
 }
 
 export interface IGanttColumn {
@@ -404,6 +429,8 @@ export interface ITaskAddedEventArgs {
     cancel?: boolean;
     /** Defines the action. */
     action?: string;
+    /** Defines the request type. */
+    requestType?: string;
 }
 export interface ICollapsingEventArgs {
     /** Defines the TreeGrid row element */
@@ -697,5 +724,169 @@ export interface IMouseMoveEventArgs {
     indicator?: IIndicator;
     /** Defines the event markers. */
     eventMarkers?: EventMarkerModel;
+}
+
+export interface PdfExportProperties {
+    /** Defines the Pdf orientation. */
+    pageOrientation?: PageOrientation;
+    /** Defines the Pdf page size. */
+    pageSize?: PdfPageSize;
+    /** Enable the footer. */
+    enableFooter?: boolean;
+    /** Indicates whether to show the hidden columns in exported Pdf */
+    includeHiddenColumn?: boolean;
+    /** Defines the theme for exported Gantt  */
+    theme?: PdfTheme;
+    /** Defines the style for exported Gantt  */
+    ganttStyle?: IGanttStyle;
+    /** Defines the file name for the exported file  */
+    fileName?: string;
+    /** Indicates to export current data or all data */
+    exportType?: ExportType;
+    /** Indicates whether to show the predecessors in exported Pdf */
+    showPredecessorLines?: boolean;
+}
+export interface PdfQueryCellInfoEventArgs {
+    /** Defines the column of the current cell. */
+    column?: ColumnModel;
+    /** Defines the style of the current cell. */
+    style?: PdfGanttCellStyle;
+    /** Defines the value of the current cell. */
+    value?: Date | string | number | boolean | Object;
+    /** Defines the data of the cell */
+    data?: Object;
+    /** Defines the current PDF cell */
+    cell?: PdfTreeGridCell;
+}
+export interface TimelineDetails {
+    startPoint?: number;
+    endPoint?: number;
+    startDate?: Date;
+    endDate?: Date;
+    dayStartDate?: Date;
+    totalWidth?: number;
+    startIndex?: number;
+    endIndex?: number;
+    pageStartPoint?: PointF;
+}
+export interface PageDetail {
+    startPoint?: PointF;
+    width?: number;
+    height?: number;
+    pageStartX?: number;
+}
+export interface TimelineFormat {
+    width?: number;
+    height?: number;
+    value?: string;
+    isWeekend?: boolean;
+    style?: PdfGanttCellStyle;
+    isFinished?: boolean;
+    completedWidth?: number;
+    startDate?: Date;
+    endDate?: Date;
+}
+
+export interface PdfGanttFontStyle {
+    /** Defines the font size */
+    fontSize?: number;
+    /** Defines the font style */
+    fontStyle?: PdfFontStyle;
+    /** Defines the font color */
+    fontColor?: PdfColor;
+    /** Defines the background color of the cell */
+    backgroundColor?: PdfColor;
+    /** Defines the border color of the cell */
+    borderColor?: PdfColor;
+    /** Defines the format of the cell value */
+    format?: PdfStringFormat;
+}
+
+export interface PdfGanttCellStyle extends PdfGanttFontStyle {
+    /** Defines the cell borders */
+    borders?: PdfBorders;
+    /** Defines the cell padding */
+    padding?: PdfPaddings;
+}
+
+export interface ITaskbarStyle {
+    /** Defines the parent taskbar background color */
+    parentTaskColor?: PdfColor;
+    /** Defines the parent progressbar background color */
+    parentProgressColor?: PdfColor;
+    /** Defines the parent taskbar border color */
+    parentTaskBorderColor?: PdfColor;
+    /** Defines the child taskbar background color */
+    taskColor?: PdfColor;
+    /** Defines the child progressbar background color */
+    progressColor?: PdfColor;
+    /** Defines the child taskbar border color */
+    taskBorderColor?: PdfColor;
+    /** Defines the milestone background color */
+    milestoneColor?: PdfColor;
+    /** Defines the progress text color */
+    progressFontColor?: PdfColor;
+}
+
+export interface IGanttStyle {
+    columnHeader?: PdfGanttCellStyle;
+    fontFamily?: PdfFontFamily;
+    cell?: PdfGanttCellStyle;
+    taskbar?: ITaskbarStyle;
+    label?: PdfGanttCellStyle;
+    timeline?: PdfGanttCellStyle;
+    chartGridLineColor?: PdfColor;
+    connectorLineColor?: PdfColor;
+    footer?: PdfGanttCellStyle;
+}
+
+export interface PdfQueryTimelineCellInfoEventArgs {
+    /** Defines the timeline cell */
+    timelineCell?: PdfGanttCellStyle;
+    /** Specify the value of the timeline cell */
+    value?: string;
+}
+
+export interface PdfQueryTaskbarInfoEventArgs {
+    /** Defines the Taskbar style */
+    taskbar?: ITaskbarStyle;
+    /** Specify the value of the task data */
+    data?: IGanttData;
+}
+
+export interface PdfColumnHeaderQueryCellInfoEventArgs {
+    /** Defines the PDF grid current cell. */
+    cell?: PdfTreeGridCell;
+    /** Defines the style of the current cell. */
+    style?: PdfGanttCellStyle;
+    /** Defines the current cell with column */
+    column?: ColumnModel;
+    /** Specify the value of the column header cell */
+    value?: string | Object ;
+}
+
+/** @private */
+export interface TaskLabel {
+    value?: string;
+    left?: number;
+    isCompleted?: boolean;
+    isLeftCalculated?: boolean;
+}
+
+/**
+ * public Enum for `PdfHorizontalOverflowType`.
+ * @private
+ */
+export enum PdfHorizontalOverflowType {
+    /**
+     * Specifies the type of `NextPage`.
+     * @private
+     */
+    NextPage,
+    /**
+     * Specifies the type of `LastPage`.
+     * @private
+     */
+    LastPage
 }
 

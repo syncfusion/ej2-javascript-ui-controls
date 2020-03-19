@@ -1,5 +1,32 @@
 @include export-module('spreadsheet-bootstrap4-icons') {
   .e-spreadsheet {
+    & .e-findtool-dlg {
+
+      & .e-prev-icon {
+        &::before {
+          content: '\e651';
+        }
+      }
+
+      & .e-next-icon {
+        &::before {
+          content: '\e652';
+        }
+      }
+
+      & .e-option-icon {
+        &::before {
+          content: '\e781';
+        }
+      }
+
+      & .e-close {
+        &::before {
+          content: '\e745';
+        }
+      }
+    }
+
     & .e-ribbon {
       & .e-bold-icon {
         &::before {
@@ -35,6 +62,10 @@
         &::before {
           content: '\e754';
         }
+      }
+
+      .e-wrap-icon::before {
+        content: '\e824';
       }
 
       & .e-hide-headers {
@@ -99,6 +130,14 @@
     }
   }
 
+  .e-spreadsheet-find-ddb {
+    & .e-search-icon {
+      &::before {
+        content: '\e724';
+      }
+    }
+  }
+
   .e-spreadsheet-contextmenu.e-contextmenu-wrapper {
     & .e-delete {
       &::before {
@@ -107,10 +146,75 @@
     }
   }
 
-  .e-dropdown-popup .e-selected-icon,
-  .e-numformat-ddb.e-dropdown-popup .e-active-item {
-    &::before {
-      content: '\e718';
+  .e-popup {
+    &.e-dropdown-popup .e-selected-icon,
+    &.e-numformat-ddb.e-dropdown-popup .e-active-item,
+    &.e-menu-popup .e-selected-icon {
+      &::before {
+        content: '\e718';
+      }
+    }
+  }
+
+  .e-borders-ddb {
+    & .e-top-borders {
+      &::before {
+        content: '\e7a3';
+      }
+    }
+
+    & .e-left-borders {
+      &::before {
+        content: '\e7a7';
+      }
+    }
+
+    & .e-right-borders {
+      &::before {
+        content: '\e79f';
+      }
+    }
+
+    & .e-bottom-borders {
+      &::before {
+        content: '\e7aa';
+      }
+    }
+
+    & .e-all-borders {
+      &::before {
+        content: '\e79e';
+      }
+    }
+
+    & .e-horizontal-borders {
+      &::before {
+        content: '\e7a9';
+      }
+    }
+
+    & .e-vertical-borders {
+      &::before {
+        content: '\e79c';
+      }
+    }
+
+    & .e-outside-borders {
+      &::before {
+        content: '\e7a1';
+      }
+    }
+
+    & .e-inside-borders {
+      &::before {
+        content: '\e79d';
+      }
+    }
+
+    & .e-no-borders {
+      &::before {
+        content: '\e195';
+      }
     }
   }
 
@@ -148,6 +252,14 @@
     & .e-top-icon {
       &::before {
         content: '\e709';
+      }
+    }
+  }
+
+  .e-datavalidation-ddb {
+    & .e-datavalidation-icon {
+      &::before {
+        content: '\e196';
       }
     }
   }
@@ -339,6 +451,12 @@
       &::before {
         content: '\e819';
       }
+    }
+
+    & .e-protect-icon {
+      &::before {
+        content: '\e197';
+       }
     }
 
     & .e-sort-filter-icon {

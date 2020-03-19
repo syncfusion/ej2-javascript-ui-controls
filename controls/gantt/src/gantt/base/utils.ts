@@ -79,3 +79,11 @@ export function getIndex(value: any, key1: string, collection: any, key2?: strin
     }
     return index;
 }
+
+export function pixelToPoint(value: number): number {
+    return (value * 76) / 92;
+}
+
+export function pointToPixel(value: number): number {
+    return (value * 92) / 76;
+}

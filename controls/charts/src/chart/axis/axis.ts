@@ -777,6 +777,13 @@ export class Axis extends ChildProperty<Axis> {
     public startAngle: number;
 
     /**
+     * It specifies whether the axis to be start from zero.
+     * @default true
+     */
+    @Property(true)
+    public startFromZero: boolean;
+
+    /**
      * Description for axis and its element.
      * @default null
      */

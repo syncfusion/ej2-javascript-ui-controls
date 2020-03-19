@@ -1,11 +1,11 @@
 import { Spreadsheet } from '../index';
 import { initiateHyperlink, locale, dialog, click, getUpdateUsingRaf, keyUp, createHyperlinkElement } from '../common/index';
-import { editHyperlink, removeHyperlink, openHyperlink } from '../common/index';
+import { editHyperlink, removeHyperlink, openHyperlink, editAlert } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getRangeAddress, getCellIndexes, getCellAddress } from '../../workbook/common/address';
-import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs } from '../../workbook';
+import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick } from '../../workbook/common/event';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 
@@ -37,7 +37,7 @@ export class SpreadsheetHyperlink {
         this.parent.on(editHyperlink, this.editHyperlinkHandler, this);
         this.parent.on(removeHyperlink, this.removeHyperlinkHandler, this);
         this.parent.on(openHyperlink, this.openHyperlinkHandler, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.hyperlinkClickHandler, this);
         this.parent.on(createHyperlinkElement, this.createHyperlinkElementHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
     }
@@ -48,7 +48,7 @@ export class SpreadsheetHyperlink {
             this.parent.off(editHyperlink, this.editHyperlinkHandler);
             this.parent.off(removeHyperlink, this.removeHyperlinkHandler);
             this.parent.off(openHyperlink, this.openHyperlinkHandler);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.hyperlinkClickHandler);
             this.parent.off(createHyperlinkElement, this.createHyperlinkElementHandler);
             this.parent.off(keyUp, this.keyUpHandler);
         }
@@ -86,6 +86,11 @@ export class SpreadsheetHyperlink {
 
     private initiateHyperlinkHandler(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        if (sheet.isProtected && !sheet.protectSettings.insertLink) {
+            this.parent.notify(editAlert, null);
+            return;
+        }
         if (!this.parent.element.querySelector('.e-dlg-container')) {
             let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
             dialogInst.show({
@@ -251,7 +256,7 @@ export class SpreadsheetHyperlink {
                             range[1] = left + ':' + right;
                         } else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
                             selRange = getCellAddress(parseInt(left, 10) - 1, 0) + ':' +
-                             getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
+                                getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
                             rangeIndexes = [parseInt(left, 10) - 1, 0, parseInt(right, 10) - 1, sheet.colCount - 1];
                             isEmpty = false;
                         }
@@ -292,9 +297,9 @@ export class SpreadsheetHyperlink {
         }
     }
 
-    private clickHandler(e: MouseEvent): void {
+    private hyperlinkClickHandler(e: MouseEvent): void {
         let trgt: HTMLElement = e.target as HTMLElement;
-        if (closest(trgt, '.e-dlg-content') && closest(trgt, '.e-toolbar-item')) {
+        if (closest(trgt, '.e-link-dialog') && closest(trgt, '.e-toolbar-item')) {
             let dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
             let ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;
             let insertBut: HTMLElement = ftrEle.firstChild as HTMLElement;
@@ -361,7 +366,7 @@ export class SpreadsheetHyperlink {
         let rowIdx: number = args.rowIdx;
         let colIdx: number = args.colIdx;
         let hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink' });
-        if (!isNullOrUndefined(cell.hyperlink)) {
+        if (!isNullOrUndefined(cell.hyperlink) && !td.querySelector('a')) {
             let hyperlink: string | HyperlinkModel = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
                 if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('https://') === -1 &&
@@ -386,7 +391,11 @@ export class SpreadsheetHyperlink {
                 } else if (hyperlink.address.includes('=') || hyperlink.address.includes('!')) {
                     hyperEle.setAttribute('ref', hyperlink.address as string);
                 }
-                hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink.address as string;
+                if (getTypeFromFormat(cell.format) === 'Accounting') {
+                    hyperEle.innerHTML = td.innerHTML;
+                } else {
+                    hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink.address as string;
+                }
                 td.textContent = '';
                 td.innerText = '';
                 td.appendChild(hyperEle);

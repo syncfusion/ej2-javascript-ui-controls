@@ -131,14 +131,14 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      * @event
      */
     @Event()
-    public fileItemSelect: EmitType<MenuEventArgs>;
+    public fileMenuItemSelect: EmitType<MenuEventArgs>;
 
     /**
      * Triggers while rendering each file menu item.
      * @event
      */
     @Event()
-    public beforeFileItemRender: EmitType<MenuEventArgs>;
+    public beforeFileMenuItemRender: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the file menu.
@@ -262,7 +262,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 this.trigger('beforeOpen', args);
             },
             select: (args: MenuEventArgs): void => {
-                this.trigger('fileItemSelect', args);
+                this.trigger('fileMenuItemSelect', args);
             },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event.type === 'mouseover' && !closest(args.event.target as Element, '.e-menu-popup')) {
@@ -274,7 +274,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 }
             },
             beforeItemRender: (args: MenuEventArgs): void => {
-                this.trigger('beforeFileItemRender', args);
+                this.trigger('beforeFileMenuItemRender', args);
             }
         });
         menuObj.createElement = this.createElement;

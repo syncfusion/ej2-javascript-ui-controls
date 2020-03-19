@@ -304,6 +304,7 @@ describe('Chart Control Legend Checking', () => {
         setTimeout(() => {
             let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_primaryYAxis_0');
             expect(stripLine.getAttribute('y') == '129.96875' || stripLine.getAttribute('y') == '130.71875').toBe(true);
+            console.log("stripline_legend = " + stripLine.getAttribute('y'));
             done();
         }, 301);
     });

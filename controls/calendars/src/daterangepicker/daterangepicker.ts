@@ -8,7 +8,7 @@ import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
+import { ListBase} from '@syncfusion/ej2-lists';
 import { PresetsModel, DateRangePickerModel } from './daterangepicker-model';
 
 const DATERANGEWRAPPER: string = 'e-date-range-wrapper';
@@ -61,7 +61,7 @@ const CANCEL: string = 'e-cancel';
 const DEVICE: string = 'e-device';
 const OVERLAY: string = 'e-overlay';
 const CHANGEICON: string = 'e-change-icon e-icons';
-const LISTCLASS: string = ListBaseClasses.li;
+const LISTCLASS: string = 'e-list-item';
 const RTL: string = 'e-rtl';
 const HOVER: string = 'e-hover';
 const OVERFLOW: string = 'e-range-overflow';
@@ -624,7 +624,7 @@ export class DateRangePicker extends CalendarBase {
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     @Property('Never')
@@ -1128,7 +1128,7 @@ export class DateRangePicker extends CalendarBase {
         }
         e.preventDefault();
         this.targetElement = null;
-        if (this.isPopupOpen()) {
+        if (this.isPopupOpen() && document.body.contains(this.popupObj.element)) {
             this.applyFunction(e);
         } else {
             this.isRangeIconClicked = true;
@@ -3541,7 +3541,7 @@ export class DateRangePicker extends CalendarBase {
             && !(closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
             && !(closest(target, '.e-daterangepicker.e-popup') && (!target.classList.contains('e-day')))) {
             this.preventBlur = false;
-            if (this.isPopupOpen()) {
+            if (this.isPopupOpen() && document.body.contains(this.popupObj.element)) {
                 this.applyFunction(e);
                 if (!this.isMobile) { this.isRangeIconClicked = false; }
             }

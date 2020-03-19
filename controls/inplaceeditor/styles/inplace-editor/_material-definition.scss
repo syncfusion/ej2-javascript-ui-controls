@@ -1,6 +1,7 @@
 /*! Material theme definitions and variables */
 
 /*! Value element styles */
+$inplace-skin: 'material' !default;
 $editor-big-value-text-font-size: 14px !default;
 $editor-nrml-value-text-font-size: 13px !default;
 $editor-big-value-container-padding: 8px !default;
@@ -70,13 +71,3 @@ $editor-rtl-nrml-btn-save-margin: 0 0 0 4px !default;
 $editor-rtl-big-btn-cancel-margin: 0 4px 0 0 !default;
 $editor-rtl-nrml-btn-cancel-margin: 0 4px 0 0 !default;
 $editor-btn-icon-color: rgba($grey-light-font , .54) !default;
-$editor-btn-interaction-color: transparent !default;
-$editor-btn-bg: transparent !default;
-$editor-btn-hover-bg: transparent !default;
-$editor-btn-focus-bg: transparent !default;
-$editor-btn-active-bg: transparent !default;
-$editor-btn-border: none !default;
-$editor-btn-hover-border: none !default;
-$editor-btn-focus-border: none !default;
-$editor-btn-active-border: none !default;
-$editor-btn-box-shadow: none !default;

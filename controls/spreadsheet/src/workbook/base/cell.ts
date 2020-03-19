@@ -1,9 +1,11 @@
-import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';
+import { extend, Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { SheetModel, getRowsHeight, getColumnsWidth } from './index';
-import { CellStyleModel, CellStyle, HyperlinkModel } from '../common/index';
+import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';
 import { getRow } from './row';
 import { RowModel } from './row-model';
 import { CellModel } from './cell-model';
+import { Workbook } from './workbook';
+import { getSheet } from './sheet';
 /**
  * Represents the cell.
  */
@@ -65,6 +67,20 @@ export class Cell extends ChildProperty<RowModel> {
      */
     @Property('')
     public hyperlink: string | HyperlinkModel;
+
+    /**
+     * Wraps the cell text to the next line, if the text width exceeds the column width.
+     * @default false
+     */
+    @Property(false)
+    public wrap: boolean;
+
+    /**
+     * Specifies the validation of the cell.
+     * @default ''
+     */
+    @Property('')
+    public validation: ValidationModel;
 }
 
 /**
@@ -83,7 +99,7 @@ export function getCell(rowIndex: number, colIndex: number, sheet: SheetModel, i
             return null;
         }
     }
-    return sheet.rows[rowIndex].cells[colIndex];
+    return sheet.rows[rowIndex].cells[colIndex] || null;
 }
 
 /**
@@ -121,7 +137,8 @@ export function getCellPosition(sheet: SheetModel, indexes: number[]): { top: nu
 /** @hidden */
 export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): CellStyleModel {
     let defaultProps: CellStyleModel = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
-        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none'};
+        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
+        border: '', borderLeft: '', borderTop: '', borderRight: '', borderBottom: '' };
     let changedProps: CellStyleModel = {};
     Object.keys(defaultKey ? defaultProps : style).forEach((propName: string): void => {
         if (style[propName] !== defaultProps[propName]) {
@@ -129,4 +146,18 @@ export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): C
         }
     });
     return changedProps;
+}
+
+/** @hidden */
+export function wrap(address: string, wrap: boolean = true, context?: Workbook): void {
+    let addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
+    let rng: number[] = addressInfo.indices;
+    let sheet: SheetModel = getSheet(context, addressInfo.sheetIndex);
+    for (let i: number = rng[0]; i <= rng[2]; i++) {
+        for (let j: number = rng[1]; j <= rng[3]; j++) {
+            setCell(i, j, sheet, { wrap: wrap }, true);
+        }
+    }
+    context.setProperties({ sheets: context.sheets }, true);
+    context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
 }

@@ -1,4 +1,4 @@
-import { Property, Collection, ChildProperty } from '@syncfusion/ej2-base';import { CellModel, SheetModel } from './index';import { Cell } from './cell';
+import { CellModel, SheetModel } from './index';import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';import { Cell } from './cell';
 
 /**
  * Interface for a class Row
@@ -34,7 +34,6 @@ export interface RowModel {
     /**
      * To hide/show the row in spreadsheet.
      * @default false
-     * @hidden
      */
     hidden?: boolean;
 

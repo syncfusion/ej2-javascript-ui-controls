@@ -659,7 +659,7 @@ export class FormFields {
         for (let m: number = 0; m < formFieldsData.length; m++) {
             // tslint:disable-next-line
             let currentData: any = formFieldsData[m];
-            if (currentData.Name === 'ink' && currentData.FieldName === signData.FieldName && signData.Value !== '') {
+            if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField') && currentData.FieldName === signData.FieldName && signData.Value && signData.Value !== '') {
                 signData.Value = currentData.Value;
                 this.isSignatureField = true;
                 break;

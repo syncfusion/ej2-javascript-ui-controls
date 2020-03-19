@@ -7,8 +7,8 @@ import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series 
 import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../chart/index';
 import { Periods } from '../common/model/base';
-import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs  } from '../chart/model/chart-interface';
-import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
+import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
+import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../chart/model/chart-interface';
 import { PeriodsModel } from '../common/model/base-model';
 import { ChartTheme } from '../chart/index';
 import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';
@@ -326,13 +326,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     @Event()
     public pointMove: EmitType<IPointEventArgs>;
 
-    /**
-     * Triggers after the zoom selection is completed.
-     * @event
-     */
-    @Event()
-    public onZooming: EmitType<IZoomingEventArgs>;
-
 
     /**
      * Specifies whether series or data point has to be selected. They are,
@@ -358,7 +351,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the range navigator rendering
      * @event
-     * @deprecated
      */
     @Event()
     public load: EmitType<IStockChartEventArgs>;
@@ -566,6 +558,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public rangeFound: boolean = false;
     /** @private */
     public tempPeriods: PeriodsModel[] = [];
+    /** @private */
+    public isBlazor: boolean;
 
     /**
      * Constructor for creating the widget
@@ -611,12 +605,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Pre render for financial Chart
      */
     protected preRender(): void {
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.isProtectedOnChange = true;
         this.setCulture();
-        this.stockChartTheme = getThemeColor(this.theme);
         this.wireEvents();
     }
 
@@ -702,19 +697,24 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
 
     protected render(): void {
-        this.trigger('load', { stockChart: this });
-        this.storeDataSource();
-        this.drawSVG();
-        this.renderTitle();
-        this.chartModuleInjection();
-        this.chartRender();
-        if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
-            this.stockChartDataManagerSuccess();
-            this.initialRender = false;
-        }
-        this.renderComplete();
-        this.allowServerDataBinding = true;
-        this.isProtectedOnChange = false;
+        let loadEventData: IStockChartEventArgs = { name: 'load', stockChart: this.isBlazor ? {} as StockChart : this, theme: this.theme };
+        this.trigger('load', loadEventData, () => {
+            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.stockChartTheme = getThemeColor(this.theme);
+            this.storeDataSource();
+            this.drawSVG();
+            this.renderTitle();
+            this.chartModuleInjection();
+            this.chartRender();
+            if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
+                this.stockChartDataManagerSuccess();
+                this.initialRender = false;
+            }
+            this.renderComplete();
+            this.allowServerDataBinding = true;
+            this.isProtectedOnChange = false;
+        });
+
     }
 
     /**
@@ -1228,7 +1228,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         }
     }
     private findTitleColor(): string {
-        if (this.theme.indexOf('Highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
+        if (this.theme.toLocaleLowerCase().indexOf('highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
             return '#ffffff';
         }
         return '#424242';

@@ -1,7 +1,7 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, SortEventArgs, CellSaveEventArgs, SaveCompleteEventArgs, CollaborativeEditArgs, BeforeCellFormatArgs, CellModel } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, SortEventArgs, CellSaveEventArgs, SaveCompleteEventArgs, CollaborativeEditArgs, BeforeCellFormatArgs, CellModel, CellInfoEventArgs } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
@@ -26,19 +26,20 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    name: 'PriceDetails',
+    name: 'Price Details',
     rangeSettings: [{
         dataSource: dataSource,
         startCell: 'A1'
     }],
     rowCount: 200,
-    columns: columns
+    columns: columns,
+    rows: [{ index: 3, cells: [{ wrap: true }]}]
 }];
 
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Sheet1') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Price Details') {
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         }
     },
@@ -57,11 +58,10 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     openComplete: (args: Object) => {
         console.log(args);
     },
-    created:() => {
+    created: (): void => {
        // spreadsheet.addCustomFunction('customFunc', 'fn')
        //console.log('called');
     }
-    
 });
 
 spreadsheet.appendTo('#spreadsheet');

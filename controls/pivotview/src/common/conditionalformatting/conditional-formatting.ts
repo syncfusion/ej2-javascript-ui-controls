@@ -172,7 +172,7 @@ export class ConditionalFormatting {
             let element: HTMLElement = createElement('p', {
                 id: this.parentID + 'emptyFormat',
                 className: cls.EMPTY_FORMAT,
-                innerHTML: this.parent.localeObj.getConstant('emptyFormat'),
+                innerHTML: this.parent.localeObj.getConstant('emptyFormat')
             });
             outerDiv.appendChild(element);
             format.appendChild(outerDiv);
@@ -396,7 +396,8 @@ export class ConditionalFormatting {
         let color: string = this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
         (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.color = color;
         this.fontColor[i] = new ColorPicker({
-            cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
+            cssClass: cls.FORMAT_COLOR_PICKER + ' ' + cls.FORMAT_FONT_COLOR_PICKER,
+            value: color, mode: 'Palette',
             change: this.fontColorChange.bind(this, i)
         });
         this.fontColor[i].isStringTemplate = true;
@@ -551,6 +552,9 @@ export class ConditionalFormatting {
                 if (this.backgroundColor[i] && !this.backgroundColor[i].isDestroyed) { this.backgroundColor[i].destroy(); }
             }
             this.dialog.destroy();
+            if (document.querySelector('#' + this.parentID + 'conditionalformatting')) {
+                remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
+            }
         } else {
             return;
         }

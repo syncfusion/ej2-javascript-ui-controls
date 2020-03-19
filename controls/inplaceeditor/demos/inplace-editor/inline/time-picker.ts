@@ -6,7 +6,7 @@ import { TimePicker } from './../../../src/inplace-editor/modules/time-picker';
 
 InPlaceEditor.Inject(TimePicker);
 
-let serviceUrl: string = 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData';
+let serviceUrl: string = 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData';
 
 let editObj: InPlaceEditor = new InPlaceEditor({
     mode: 'Inline',

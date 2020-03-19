@@ -4,7 +4,7 @@
 
 import { RangeNavigator } from '../index';
 import { DataPoint } from '../utils/helper';
-import { FontModel } from '../../chart/index';
+import { FontModel, ChartTheme } from '../../chart/index';
 import { Rect, Size } from '@syncfusion/ej2-svg-base';
 
 /**
@@ -25,6 +25,8 @@ export interface IRangeLoadedEventArgs {
     name: string;
     /** rangeNavigator */
     rangeNavigator: RangeNavigator;
+    /** theme */
+    theme ?: ChartTheme;
 }
 
 

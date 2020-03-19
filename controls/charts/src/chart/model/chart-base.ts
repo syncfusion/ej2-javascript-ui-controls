@@ -39,6 +39,7 @@ export class ChartAnnotationSettings extends ChildProperty<ChartAnnotationSettin
      * * Far - Align the annotation element as right side.
      * * Center - Align the annotation element as mid point.
      * @default 'Center'
+     * @deprecated
      */
 
     @Property('Center')
@@ -70,6 +71,7 @@ export class ChartAnnotationSettings extends ChildProperty<ChartAnnotationSettin
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
      * @default 'Middle'
+     * @deprecated
      */
 
     @Property('Middle')
@@ -216,7 +218,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public start: Object | number | Date;
+    public start: number | Date;
 
     /**
      * End value of the strip line.
@@ -224,7 +226,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public end: Object | number | Date;
+    public end: number | Date;
 
     /**
      * Size of the strip line, when it starts from the origin.
@@ -270,7 +272,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public repeatEvery: Object | number | Date;
+    public repeatEvery: number | Date;
 
     /**
      * repeatUntil value of the strip line.
@@ -278,7 +280,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public repeatUntil: Object | number | Date;
+    public repeatUntil: number | Date;
 
     /**
      * isSegmented value of the strip line
@@ -294,7 +296,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public segmentStart: Object | number | Date;
+    public segmentStart: number | Date;
 
     /**
      * segmentEnd value of the strip line.
@@ -302,7 +304,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public segmentEnd: Object | number | Date;
+    public segmentEnd: number | Date;
 
     /**
      * segmentAxisName of the strip line.
@@ -339,6 +341,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
+     * @deprecated
      */
     @Property('Middle')
     public horizontalAlignment: Anchor;
@@ -349,6 +352,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
+     * @deprecated
      */
     @Property('Middle')
     public verticalAlignment: Anchor;

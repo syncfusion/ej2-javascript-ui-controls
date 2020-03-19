@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex, Collection, isBlazor } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs, getZindexPartial } from '@syncfusion/ej2-popups';
+﻿import { Component, EventHandler, Property, Event, EmitType, Complex, Collection, isBlazor } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs, getZindexPartial } from '@syncfusion/ej2-popups';
 import {Placement,TooltipPlacement,TooltipShowOn,SliderType,SliderOrientation,SliderChangeEventArgs,SliderTickEventArgs,SliderTickRenderedEventArgs,SliderTooltipEventArgs} from "./slider";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -340,7 +340,6 @@ export interface SliderModel extends ComponentModel{
 
     /**
      * We can trigger tooltipChange event when we change the Sider tooltip value.
-     * @deprecated
      * @event
      * @blazorProperty 'OnTooltipChange'
      */

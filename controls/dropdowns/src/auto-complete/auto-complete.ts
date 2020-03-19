@@ -44,6 +44,7 @@ export class AutoComplete extends ComboBox {
      * {% codeBlock src='autocomplete/fields/index.md' %}{% endcodeBlock %}
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
      * @default { value: null, iconCss: null, groupBy: null}
+     * @deprecated
      */
     @Complex<FieldSettingsModel>({ value: null, iconCss: null, groupBy: null }, FieldSettings)
     public fields: FieldSettingsModel;
@@ -52,6 +53,7 @@ export class AutoComplete extends ComboBox {
      * on performing the search to find suggestions.
      * By default consider the casing.
      * @default true
+     * @deprecated
      */
     @Property(true)
     public ignoreCase: boolean;
@@ -82,6 +84,7 @@ export class AutoComplete extends ComboBox {
      * 
      * {% codeBlock src='autocomplete/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
+     * @deprecated
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
@@ -91,6 +94,7 @@ export class AutoComplete extends ComboBox {
      * 
      * {% codeBlock src='autocomplete/query/index.md' %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     @Property(null)
     public query: Query;
@@ -137,6 +141,7 @@ export class AutoComplete extends ComboBox {
      * 
      * The default value set to `Contains`, all the suggestion items which contain typed characters to listed in the suggestion popup.
      * @default 'Contains'
+     * @blazorOverrideType override
      */
     @Property('Contains')
     public filterType: FilterType;
@@ -154,6 +159,7 @@ export class AutoComplete extends ComboBox {
      * @blazorType int
      * @isBlazorNullableType true
      * @blazorDefaultValue 
+     * @deprecated
      */
     @Property(null)
     public index: number;
@@ -171,7 +177,8 @@ export class AutoComplete extends ComboBox {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
+     * @deprecated
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -179,6 +186,7 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component.
      * @default null
      * @private
+     * @deprecated
      */
     @Property(null)
     public valueTemplate: string;
@@ -186,6 +194,7 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component.
      * @default null
      * @private
+     * @deprecated
      */
     @Property(null)
     public filterBarPlaceholder: string;
@@ -193,6 +202,7 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component. 
      * @default false
      * @private
+     * @deprecated
      */
     @Property(false)
     public allowFiltering: boolean;
@@ -200,6 +210,7 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component. 
      * @default null
      * @private
+     * @deprecated
      */
     @Property(null)
     public text: string;
@@ -249,35 +260,46 @@ export class AutoComplete extends ComboBox {
     protected searchLists(e: KeyboardEventArgs): void {
         this.isTyped = true;
         this.isDataFetched = this.isSelectCustom = false;
-        if (isNullOrUndefined(this.list)) {
-            super.renderList(true);
-        }
-        this.queryString = this.filterInput.value;
-        if (e.keyCode === 40 || e.keyCode === 38) {
-            this.queryString = this.queryString === '' ? null : this.queryString;
-            this.beforePopupOpen = true;
-            this.resetList(this.dataSource, this.fields);
-            return;
-        }
-        this.isSelected = false;
-        this.activeIndex = null;
-        let eventArgs: { [key: string]: Object } = {
-            preventDefaultAction: false,
-            text: this.filterInput.value,
-            updateData: (
-                dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
-                fields?: FieldSettingsModel) => {
-                if (eventArgs.cancel) { return; }
-                this.isFiltered = true;
-                this.filterAction(dataSource, query, fields);
-            },
-            cancel: false
-        };
-        this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-            if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
-                this.filterAction(this.dataSource, null, this.fields);
+        if (this.isServerBlazor) {
+            this.beforePopupOpen = (this.isFiltering() && !this.beforePopupOpen) ? !this.beforePopupOpen : this.beforePopupOpen;
+            this.queryString = this.filterInput.value;
+            if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
+                // tslint:disable-next-line
+                (this as any).interopAdaptor.invokeMethodAsync('OnServerFilter', this.filterInput.value);
+            } else {
+                this.hidePopup();
             }
-        });
+        } else {
+            if (isNullOrUndefined(this.list)) {
+                super.renderList(true);
+            }
+            this.queryString = this.filterInput.value;
+            if (e.keyCode === 40 || e.keyCode === 38) {
+                this.queryString = this.queryString === '' ? null : this.queryString;
+                this.beforePopupOpen = true;
+                this.resetList(this.dataSource, this.fields);
+                return;
+            }
+            this.isSelected = false;
+            this.activeIndex = null;
+            let eventArgs: { [key: string]: Object } = {
+                preventDefaultAction: false,
+                text: this.filterInput.value,
+                updateData: (
+                    dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
+                    fields?: FieldSettingsModel) => {
+                    if (eventArgs.cancel) { return; }
+                    this.isFiltered = true;
+                    this.filterAction(dataSource, query, fields);
+                },
+                cancel: false
+            };
+            this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+                if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
+                    this.filterAction(this.dataSource, null, this.fields);
+                }
+            });
+        }
     }
 
     /**
@@ -286,6 +308,7 @@ export class AutoComplete extends ComboBox {
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @return {void}.
+     * @deprecated
      */
     public filter(
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
@@ -341,6 +364,7 @@ export class AutoComplete extends ComboBox {
         if (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action !== 'enter' && this.isValidLI(li)) {
             let value: string | number | boolean = this.getFormattedValue(li.getAttribute('data-value'));
             this.activeIndex = this.getIndexByValue(value);
+            if (this.isServerBlazor) { this.removeHover(); }
             this.setHoverList(li);
             this.selectedLI = <HTMLElement>li;
             this.setScrollPosition(e as KeyboardEventArgs);
@@ -397,18 +421,19 @@ export class AutoComplete extends ComboBox {
     /**
      * Search the entered text and show it in the suggestion list if available.
      * @returns void.
+     * @deprecated
      */
     public showPopup(): void {
         if (!this.enabled) {
             return;
         }
-        if (this.beforePopupOpen) {
+        if (this.beforePopupOpen && !this.isServerBlazor) {
             this.refreshPopup();
             return;
         }
         this.beforePopupOpen = true;
         this.preventAutoFill = true;
-        if (isNullOrUndefined(this.list)) {
+        if (isNullOrUndefined(this.list) || this.isServerBlazor) {
             this.renderList();
         } else {
             this.resetList(this.dataSource, this.fields);
@@ -435,13 +460,20 @@ export class AutoComplete extends ComboBox {
             switch (prop) {
                 case 'showPopupButton':
                     if (this.showPopupButton) {
-                        let button: HTMLElement = Input.appendSpan(
-                            dropDownListClasses.icon,
-                            this.inputWrapper.container,
-                            this.createElement);
-                        this.inputWrapper.buttons[0] = button;
-                        EventHandler.add(this.inputWrapper.buttons[0], 'click', this.dropDownClick, this);
-                    } else {
+                        if (!this.isServerBlazor) {
+                            let button: HTMLElement = Input.appendSpan(
+                                dropDownListClasses.icon,
+                                this.inputWrapper.container,
+                                this.createElement);
+                            this.inputWrapper.buttons[0] = button;
+                        } else if (this.inputWrapper && this.inputWrapper.container) {
+                            let button: HTMLElement = this.inputWrapper.container.querySelector('.e-input-group-icon.e-ddl-icon');
+                            this.inputWrapper.buttons[0] = button;
+                        }
+                        if (this.inputWrapper && this.inputWrapper.buttons && this.inputWrapper.buttons[0]) {
+                            EventHandler.add(this.inputWrapper.buttons[0], 'click', this.dropDownClick, this);
+                        }
+                    } else if (!this.isServerBlazor) {
                         detach(this.inputWrapper.buttons[0]);
                         this.inputWrapper.buttons[0] = null;
                     }
@@ -451,6 +483,16 @@ export class AutoComplete extends ComboBox {
                     atcProps = this.getPropObject(prop, <{ [key: string]: string; }>newProp, <{ [key: string]: string; }>oldProp);
                     super.onPropertyChanged(atcProps.newProperty, atcProps.oldProperty);
                     break;
+            }
+        }
+    }
+    protected renderHightSearch(): void {
+        if (this.highlight) {
+            for (let i: number = 0; i < this.liCollections.length; i++) {
+                let isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
+                if (!isHighlight) {
+                    highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType, this.isServerBlazor);
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ export interface ChipListModel extends ComponentModel{
     /**
      * This chips property helps to render ChipList component.
      * @default []
+     * @blazorType List<ChipListChip>
      */
     chips?: string[] | number[] | ChipModel[];
 

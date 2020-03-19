@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Kanban Typescript Component</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/material.css" />
+    <script data-main="events" src="../../node_modules/requirejs/require.js"></script>
+    <script src="require.config.js"></script>
+</head>
+
+<body>
+    <div class="col-lg-8 control-section">
+    <div class="content-wrapper">
+        <div id="Kanban"></div>
+    </div>
+</div>
+<div class="col-lg-4 property-section">
+    <table id="property" title="Event Trace">
+        <tbody>
+            <tr>
+                <td>
+                    <div class="eventarea">
+                        <span class="EventLog" id="EventLog"></span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="evtbtn">
+                        <input id="clear" class="e-btn" type="button" value="Clear">
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<style>
+    .eventarea {
+        height: 245px;
+        overflow: auto
+    }
+
+    .EventLog {
+        word-break: normal;
+    }
+
+    .evtbtn {
+        padding-bottom: 10px
+    }
+
+    #EventLog b {
+        color: #388e3c;
+    }
+
+    hr {
+        margin: 1px 10px 1px 0px;
+        border-top: 1px solid #eee;
+    }
+</style>
+
+</body>
+
+</html>

@@ -1,5 +1,6 @@
 import { getObject } from '@syncfusion/ej2-grids';
 import { TreeGrid } from './base/treegrid';
+import { ColumnModel } from './models/column';
 import { DataManager, ODataAdaptor, UrlAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
 import { WebApiAdaptor, WebMethodAdaptor, CacheAdaptor } from '@syncfusion/ej2-data';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -19,6 +20,15 @@ export function isRemoteData(parent: TreeGrid) : boolean {
 export function isCountRequired(parent: TreeGrid) : boolean {
   if (parent.dataSource && 'result' in parent.dataSource) {
     return true;
+  }
+  return false;
+}
+
+export function isCheckboxcolumn(parent: TreeGrid) : boolean {
+  for (let i: number = 0; i < parent.columns.length; i++) {
+    if ((parent.columns[i] as ColumnModel).showCheckbox) {
+      return true;
+    }
   }
   return false;
 }

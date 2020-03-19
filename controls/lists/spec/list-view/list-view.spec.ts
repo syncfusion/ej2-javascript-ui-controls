@@ -1532,7 +1532,7 @@ describe('ListView', () => {
             checkbox.click();
             expect(listObj.getSelectedItems().text[0]).toBe('text1');
             checkbox.click();
-            expect(listObj.getSelectedItems().text[0]).toBe(undefined);
+            setTimeout(() => {  expect(listObj.getSelectedItems().text[0]).toBe(undefined); }, 100);
         });
 
         it('Entering child element and clicking the child item and navigating back', () => {

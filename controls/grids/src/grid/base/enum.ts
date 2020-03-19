@@ -543,10 +543,10 @@ export type PdfVAlign =
  * Defines Export Type.
  */
 export type ExportType =
-    /** Current page in grid is exported. */
-    'CurrentPage' |
     /** All pages of the grid is exported. */
-    'AllPages';
+    'AllPages' |
+    /** Current page in grid is exported. */
+    'CurrentPage';
 
 /**
  * Defines Excel horizontal alignment.

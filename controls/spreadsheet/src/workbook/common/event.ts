@@ -80,4 +80,60 @@ export const filterRangeAlert: string = 'filterRangeAlert';
 /** @hidden */
 export const clearAllFilter: string = 'clearAllFilter';
 /** @hidden */
+export const wrapEvent: string = 'wrapText';
+/** @hidden */
 export const onSave: string = 'onSave';
+/** @hidden */
+export const insert: string = 'insert';
+/** @hidden */
+export const deleteAction: string = 'delete';
+/** @hidden */
+export const insertModel: string = 'insertModel';
+/** @hidden */
+export const deleteModel: string = 'deleteModel';
+/** @hidden */
+export const isValidation: string = 'isValidation';
+/** @hidden */
+export const setValidation: string = 'setValidation';
+/** @hidden */
+export const addHighlight: string = 'addHighlight';
+/** @hidden */
+export const dataValidate: string = 'dataValidate';
+/** @hidden */
+export const findNext: string = 'findNext';
+/** @hidden */
+export const findPrevious: string = 'findPrevious';
+/** @hidden */
+export const goto: string = 'gotoHandler';
+/** @hidden */
+export const findWorkbookHandler: string = 'findHandler';
+/** @hidden */
+export const replaceHandler: string = 'replace';
+/** @hidden */
+export const replaceAllHandler: string = 'replaceAll';
+/** @hidden */
+export const showDialog: string = 'ShowDialog';
+/** @hidden */
+export const findUndoRedo: string = 'findUndoRedo';
+/** @hidden */
+export const findKeyUp: string = 'findKeyUp';
+/** @hidden */
+export const removeValidation: string = 'removeValidation';
+/** @hidden */
+export const removeHighlight: string = 'removeHighlight';
+/** @hidden */
+export const queryCellInfo: string = 'queryCellInfo';
+/** @hidden */
+export const count: string = 'count';
+/** @hidden */
+export const findCount: string = 'findCount';
+/** @hidden */
+export const protectSheetWorkBook: string = 'protectSheet';
+/** @hidden */
+export const updateToggle: string = 'updateToggleItem';
+/** @hidden */
+export const protectsheetHandler: string = 'protectsheetHandler';
+/** @hidden */
+export const replaceAllDialog: string = 'replaceAllDialog';
+/** @hidden */
+export const workBookeditAlert: string = 'editAlert';

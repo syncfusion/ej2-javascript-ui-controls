@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, getValue, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, ODataV4Adaptor, Predicate, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
@@ -320,7 +320,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     InPlaceEditor.prototype.appendValueElement = function () {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: VALUE_WRAPPER });
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
+        if (!isBlazor()) {
             this.element.innerHTML = '';
         }
         this.valueEle = this.createElement('span', { className: VALUE });
@@ -581,7 +581,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         else {
             classProp = ELEMENTS;
         }
-        extend(this.model, this.model, { cssClass: classProp });
+        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl });
         if (!isNullOrUndefined(this.value)) {
             this.updateModelValue();
         }
@@ -756,9 +756,8 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         this.isExtModule ? this.notify(setFocus, {}) : this.componentObj.element.focus();
     };
-    InPlaceEditor.prototype.removeEditor = function () {
-        var blazorContain = Object.keys(window);
-        if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate) {
+    InPlaceEditor.prototype.removeEditor = function (isBlazorDestroy) {
+        if (isBlazor() && !this.isStringTemplate) {
             resetBlazorTemplate(this.element.id + 'template', 'Template');
         }
         var tipEle;
@@ -784,7 +783,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         this.containerEle = undefined;
         removeClass([this.valueWrap], [OPEN, HIDE]);
-        this.setProperties({ enableEditMode: false }, true);
+        if (!isBlazorDestroy) {
+            this.setProperties({ enableEditMode: false }, true);
+        }
         if (this.editableOn !== 'EditIconClick') {
             var titleConstant = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
             this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
@@ -876,13 +877,12 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     InPlaceEditor.prototype.templateCompile = function (trgEle, tempStr) {
         var tempEle;
-        var blazorContain = Object.keys(window);
         if (typeof tempStr === 'string') {
             tempStr = tempStr.trim();
         }
         var compiler = compile(tempStr);
         if (!isNullOrUndefined(compiler)) {
-            var isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+            var isString = (isBlazor() &&
                 !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
             tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
@@ -891,7 +891,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             [].slice.call(tempEle).forEach(function (el) {
                 trgEle.appendChild(el);
             });
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
+            if (isBlazor() && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
                 updateBlazorTemplate(this.element.id + 'template', 'Template', this);
             }
         }
@@ -946,7 +946,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     InPlaceEditor.prototype.enableEditor = function (val) {
         (val) ? this.renderEditor() : this.cancelHandler();
     };
-    InPlaceEditor.prototype.checkValidation = function () {
+    InPlaceEditor.prototype.checkValidation = function (isValidate) {
         var _this = this;
         var args;
         if (this.validationRules) {
@@ -965,6 +965,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                         else {
                             _this.toggleErrorClass(false);
                         }
+                        _this.afterValidation(isValidate);
                     });
                 },
                 customPlacement: function (inputElement, errorElement) {
@@ -986,7 +987,17 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                 else {
                     _this.toggleErrorClass(false);
                 }
+                _this.afterValidation(isValidate);
             });
+        }
+    };
+    InPlaceEditor.prototype.afterValidation = function (isValidate) {
+        if (!this.formEle.classList.contains(ERROR) && isValidate) {
+            this.loadSpinner('validate');
+            if (this.mode === 'Popup') {
+                this.updateArrow();
+            }
+            this.sendValue();
         }
     };
     InPlaceEditor.prototype.toggleErrorClass = function (value) {
@@ -1118,7 +1129,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     InPlaceEditor.prototype.afterOpenHandler = function (e) {
-        var _this = this;
         if (this.mode === 'Popup' && this.type === 'MultiSelect') {
             EventHandler.add(this.containerEle, 'mousedown', this.popMouseDown, this);
             EventHandler.add(this.containerEle, 'click', this.popClickHandler, this);
@@ -1134,22 +1144,19 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.sliderModule.refresh();
             this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
-        var eventArgs = { mode: this.mode, cancelFocus: false };
-        this.trigger('beginEdit', eventArgs, function (args) {
-            if (!_this.beginEditArgs.cancelFocus) {
-                if (_this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(_this.type) > -1)
-                    && _this.model.dataSource instanceof DataManager) {
-                    _this.showDropDownPopup();
-                }
-                else {
-                    _this.setFocus();
-                }
+        if (!this.beginEditArgs.cancelFocus) {
+            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                && this.model.dataSource instanceof DataManager) {
+                this.showDropDownPopup();
             }
-            if (_this.afterOpenEvent) {
-                _this.tipObj.setProperties({ afterOpen: _this.afterOpenEvent }, true);
-                _this.tipObj.trigger('afterOpen', e);
+            else {
+                this.setFocus();
             }
-        });
+        }
+        if (this.afterOpenEvent) {
+            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+            this.tipObj.trigger('afterOpen', e);
+        }
     };
     InPlaceEditor.prototype.popMouseDown = function (e) {
         var trgClass = e.target.classList;
@@ -1261,7 +1268,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     InPlaceEditor.prototype.validate = function () {
-        this.checkValidation();
+        this.checkValidation(false);
     };
     /**
      * Submit the edited input value to the server.
@@ -1283,14 +1290,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         if (!this.isTemplate) {
             this.setValue();
         }
-        this.checkValidation();
-        if (!this.formEle.classList.contains(ERROR)) {
-            this.loadSpinner('validate');
-            if (this.mode === 'Popup') {
-                this.updateArrow();
-            }
-            this.sendValue();
-        }
+        this.checkValidation(true);
     };
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -1298,7 +1298,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
      */
     InPlaceEditor.prototype.destroy = function () {
         var _this = this;
-        this.removeEditor();
+        this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(destroy, {});
         }

@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+## 18.1.36-beta (2020-03-19)
+
+- `#258211` - Support to customize the header of the treemap items is provided in the `itemRendering` and `itemClick` events.
+
 ## 17.1.48 (2019-05-21)
 
 ### TreeMap

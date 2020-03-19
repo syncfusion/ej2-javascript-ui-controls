@@ -43,7 +43,7 @@ export class AxisLayoutPanel {
      * @return {void}
      * @private
      */
-
+    /* tslint:disable:max-func-body-length */
     private calculateAxesRadius(): void {
         let totalRadius: number; let currentRadius: number;
         let rangeMaximumRadius: number = 0;
@@ -276,10 +276,17 @@ export class AxisLayoutPanel {
                         argsData.text, i
                     ));
                     if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
-                        this.getMaxLabelWidth(this.gauge, axis);
-                        this.axisRenderer.drawAxisLabels(
-                            axis, this.gauge.axes.length - 1,
-                            (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))), this.gauge);
+                        let currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
+                            : null;
+                        if ( currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
+                            this.getMaxLabelWidth(this.gauge, axis);
+                            axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
+                            axis.farSize = axis.farSize + axis.maxLabelSize.height;
+                            this.axisRenderer.drawAxisLabels(
+                                axis, this.gauge.axes.length - 1,
+                                (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))),
+                                this.gauge);
+                        }
                     }
                 }
             };
@@ -288,7 +295,7 @@ export class AxisLayoutPanel {
         }
         let lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal: number = axis.visibleRange.max;
-        if ( lastLabel !== maxVal && axis.showLastLabel === true) {
+        if (!isNullOrUndefined(lastLabel) && lastLabel !== maxVal && axis.showLastLabel === true) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
                 text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(maxVal)) :
@@ -304,6 +311,14 @@ export class AxisLayoutPanel {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, maxVal
                     ));
+                    if (this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
+                        this.getMaxLabelWidth(this.gauge, axis);
+                        axis.farSize = axis.farSize + axis.maxLabelSize.height;
+                        axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
+                        this.axisRenderer.drawAxisLabels(
+                            axis, this.gauge.axes.length - 1,
+                            (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))), this.gauge);
+                    }
                 }
             };
             axisLabelRenderSuccess.bind(this);

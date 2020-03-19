@@ -548,30 +548,31 @@ describe('TextBox Control', () => {
             destroy(editorObj);
         });
         it('Inline - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Text',
                 mode: 'Inline',
                 value: 'Badminton',
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
-            ele = editorObj.element;
-            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
-            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
-            valueEle.click();
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });
         it('Inline - Focus as false testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Text',
                 mode: 'Inline',
                 value: 'Badminton',
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = false
                 }
             });
@@ -581,34 +582,36 @@ describe('TextBox Control', () => {
             valueEle.click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });
         it('Popup - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Text',
                 mode: 'Popup',
                 value: 'Badminton',
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
-            ele = editorObj.element;
-            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
-            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
-            valueEle.click();
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });
         it('Popup - Focus as false testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Text',
                 mode: 'Popup',
                 value: 'Badminton',
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = false
                 }
             });
@@ -618,6 +621,7 @@ describe('TextBox Control', () => {
             valueEle.click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });

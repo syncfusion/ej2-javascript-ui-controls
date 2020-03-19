@@ -1,15 +1,14 @@
 /// <reference path='../drop-down-list/drop-down-list-model.d.ts'/>
 import { EventHandler, Property, Event, EmitType, addClass, Browser, KeyboardEventArgs, removeClass, detach } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, NotifyPropertyChanges, getValue, setValue, Complex } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, NotifyPropertyChanges, getValue, setValue } from '@syncfusion/ej2-base';
 import { DropDownList, dropDownListClasses } from '../drop-down-list/drop-down-list';
-import { FilteringEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
+import { FilteringEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { ComboBoxModel } from '../combo-box/combo-box-model';
 import { Search } from '../common/incremental-search';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 /* tslint:disable */
 import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { SortOrder } from '@syncfusion/ej2-lists';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 /* tslint:enable */
 const SPINNER_CLASS: string = 'e-atc-spinner-icon';
@@ -56,6 +55,7 @@ export class ComboBox extends DropDownList {
      * {% codeBlock src='combobox/htmlAttributes/index.md' %}{% endcodeBlock %}
      * 
      * @default {}
+     * @deprecated
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
@@ -69,6 +69,7 @@ export class ComboBox extends DropDownList {
      * 
      * {% codeBlock src="combobox/allow-filtering-api/index.html" %}{% endcodeBlock %}
      * @default false
+     * @deprecated
      */
     @Property(false)
     public allowFiltering: boolean;
@@ -78,6 +79,7 @@ export class ComboBox extends DropDownList {
      * 
      * {% codeBlock src='combobox/query/index.md' %}{% endcodeBlock %}
      * @default null
+     * @deprecated
      */
     @Property(null)
     public query: Query;
@@ -92,6 +94,7 @@ export class ComboBox extends DropDownList {
      * @blazorType int
      * @isBlazorNullableType true
      * @blazorDefaultValue 
+     * @deprecated
      */
     @Property(null)
     public index: number;
@@ -99,9 +102,18 @@ export class ComboBox extends DropDownList {
      * Specifies whether to show or hide the clear button. 
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
      * @default true
+     * @blazorOverrideType override
      */
     @Property(true)
     public showClearButton: boolean;
+    /**
+     * Enable or disable rendering component in right to left direction.
+     * @default false
+     * @deprecated
+     * @blazorOverrideType override
+     */
+    @Property(false)
+    public enableRtl: boolean;
     /**
      * Triggers on set a 
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
@@ -141,7 +153,8 @@ export class ComboBox extends DropDownList {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
+     * @deprecated
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -149,148 +162,95 @@ export class ComboBox extends DropDownList {
      * Not applicable to this component.
      * @default null
      * @private
+     * @deprecated
      */
     @Property(null)
     public filterBarPlaceholder: string;
     /**
-     * The `fields` property maps the columns of the data table and binds the data to the component.
-     * * text - Maps the text column from data table for each list item.
-     * * value - Maps the value column from data table for each list item.
-     * * iconCss - Maps the icon class column from data table for each list item.
-     * * groupBy - Group the list items with it's related items by mapping groupBy field.
-     * ```html
-     * <input type="text" tabindex="1" id="list"> </input>
-     * ```
-     * ```typescript  
-     *   let customers: ComboBox = new ComboBox({
-     *      dataSource:new DataManager({ url:'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
-     *      query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(5),
-     *      fields: { text: 'ContactName', value: 'CustomerID' },
-     *      placeholder: 'Select a customer'
-     *   });
-     *   customers.appendTo("#list");
-     * ```
-     * @default {text: null, value: null, iconCss: null, groupBy: null}
+     * Sets CSS classes to the root element of the component that allows customization of appearance.
+     * @default null
+     * @deprecated
      */
-    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
-    public fields: FieldSettingsModel;
+    @Property(null)
+    public cssClass: string;
     /**
-     * Enable or disable persisting component's state between page reloads. 
-     * If enabled, following list of states will be persisted.
-     * 1. value
+     * Accepts the template design and assigns it to the header container of the popup list.
+     * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
+     * @default null
+     * @deprecated
+     */
+    @Property(null)
+    public headerTemplate: string;
+    /**
+     * Accepts the template design and assigns it to the footer container of the popup list.
+     * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
+     * @default null
+     * @deprecated
+     */
+    @Property(null)
+    public footerTemplate: string;
+    /**
+     * Specifies a short hint that describes the expected value of the DropDownList component.
+     * @default null
+     * @deprecated
+     */
+    @Property(null)
+    public placeholder: string;
+    /**
+     * Specifies the width of the component. By default, the component width sets based on the width of 
+     * its parent container. You can also set the width in pixel values.
+     * @default '100%'
+     * @aspType string
+     * @blazorType string
+     * @deprecated
+     */
+    @Property('100%')
+    public width: string | number;
+    /**
+     * Specifies the height of the popup list.  
+     * > For more details about the popup configuration refer to 
+     * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
+     * @default '300px'
+     * @aspType string
+     * @blazorType string
+     * @deprecated
+     */
+    @Property('300px')
+    public popupHeight: string | number;
+    /**
+     * Specifies the width of the popup list. By default, the popup width sets based on the width of 
+     * the component.
+     * > For more details about the popup configuration refer to 
+     * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
+     * @default '100%'
+     * @aspType string
+     * @blazorType string
+     * @deprecated
+     */
+    @Property('100%')
+    public popupWidth: string | number;
+    /**
+     * When set to true, the user interactions on the component are disabled.
      * @default false
+     * @deprecated
      */
     @Property(false)
-    public enablePersistence: boolean;
+    public readonly: boolean;
     /**
-     * Accepts the template design and assigns it to each list item present in the popup.
-     * We have built-in `template engine`
-     * 
-     * which provides options to compile template string into a executable function. 
-     * For EX: We have expression evolution as like ES6 expression string literals. 
+     * Gets or sets the display text of the selected item in the component.
      * @default null
+     * @deprecated
      */
     @Property(null)
-    public itemTemplate: string;
+    public text: string;
     /**
-     * Accepts the template design and assigns it to the group headers present in the popup list.
+     * Gets or sets the value of the selected item in the component.
      * @default null
+     * @isGenericType true
+     * @deprecated
      */
     @Property(null)
-    public groupTemplate: string;
-    /**
-     * Accepts the template design and assigns it to popup list of component
-     * when no data is available on the component.
-     * @default 'No Records Found'
-     */
-    @Property('No Records Found')
-    public noRecordsTemplate: string;
-    /**
-     * Accepts the template and assigns it to the popup list content of the component
-     * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
-     */
-    @Property('The Request Failed')
-    public actionFailureTemplate: string;
-    /**
-     * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
-     * * `None` - The data source is not sorting.
-     * * `Ascending` - The data source is sorting with ascending order.
-     * * `Descending` - The data source is sorting with descending order.
-     * @default None
-     */
-    @Property<SortOrder>('None')
-    public sortOrder: SortOrder;
-    /**
-     * Specifies a value that indicates whether the component is enabled or not.
-     * @default true
-     */
-    @Property(true)
-    public enabled: boolean;
-    /**
-     * Accepts the list items either through local or remote service and binds it to the component.
-     * It can be an array of JSON Objects or an instance of
-     * `DataManager`.
-     * @default []
-     */
-    @Property([])
-    public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
-    /**   
-     * Determines on which filter type, the component needs to be considered on search action. 
-     * The `FilterType` and its supported data types are 
-     * 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td><td colSpan=1 rowSpan=1> 
-     * Supported Types<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
-     * String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Contains<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
-     * </table>
-     * 
-     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
-     * @default 'StartsWith'
-     */
-    @Property('StartsWith')
-    public filterType: FilterType;
-    /**
-     * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
-     * By default consider the casing.
-     * @default true
-     */
-    @Property(true)
-    public ignoreCase: boolean;
-    /**
-     * specifies the z-index value of the component popup element.
-     * @default 1000
-     */
-    @Property(1000)
-    public zIndex: number;
-    /**
-     * ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
-     */
-    @Property(false)
-    public ignoreAccent: boolean;
-    /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     */
-    @Property()
-    public locale: string;
+    public value: number | string | boolean;
     /**
      * *Constructor for creating the component
      */
@@ -431,7 +391,7 @@ export class ComboBox extends DropDownList {
         this.isTyped = true;
         if (this.isFiltering()) {
             super.searchLists(e);
-            if (this.filterInput.value.trim() === '') {
+            if (this.ulElement && this.filterInput.value.trim() === '') {
                 this.setHoverList(this.ulElement.querySelector('.' + dropDownListClasses.li));
             }
         } else {
@@ -452,7 +412,9 @@ export class ComboBox extends DropDownList {
     }
 
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
-        super.onActionComplete(ulElement, list, e);
+        if (!this.isServerBlazor) {
+            super.onActionComplete(ulElement, list, e);
+        }
         if (this.isSelectCustom) {
             this.removeSelection();
         }
@@ -516,6 +478,7 @@ export class ComboBox extends DropDownList {
     /**
      * Shows the spinner loader.
      * @returns void.
+     * @deprecated
      */
     public showSpinner(): void {
         if (isNullOrUndefined(this.spinnerElement)) {
@@ -536,6 +499,7 @@ export class ComboBox extends DropDownList {
     /**
      * Hides the spinner loader.
      * @returns void.
+     * @deprecated
      */
     public hideSpinner(): void {
         if (!isNullOrUndefined(this.spinnerElement)) {
@@ -593,6 +557,10 @@ export class ComboBox extends DropDownList {
     protected clearAll(e?: MouseEvent | KeyboardEventArgs, property?: ComboBoxModel): void {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
             super.clearAll(e);
+            if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
+                // tslint:disable-next-line
+                (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', this.beforePopupOpen, true);
+            }
         }
     }
 
@@ -841,6 +809,7 @@ export class ComboBox extends DropDownList {
      * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
      * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
      * @return {void}.
+     * @deprecated
      */
     public addItem(
         items: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],
@@ -853,6 +822,7 @@ export class ComboBox extends DropDownList {
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @return {void}.
+     * @deprecated
      */
     public filter(
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
@@ -860,8 +830,17 @@ export class ComboBox extends DropDownList {
         super.filter(dataSource, query, fields);
     }
     /**
+     * Opens the popup that displays the list of items.
+     * @returns void.
+     * @deprecated
+     */
+    public showPopup(): void {
+        super.showPopup();
+    }
+    /**
      * Hides the popup if it is in open state.
      * @returns void.
+     * @deprecated
      */
     public hidePopup(e?: MouseEvent | KeyboardEventArgs): void {
         let inputValue: string | Object = this.inputElement.value === '' ? null : this.inputElement.value;
@@ -919,6 +898,44 @@ export class ComboBox extends DropDownList {
             this.preventFocus = true;
         }
         super.focusIn();
+    }
+    /**
+     * Allows you to clear the selected values from the component.
+     * @returns void.
+     * @deprecated
+     */
+    public clear(): void {
+        this.value = null;
+    }
+    /**
+     * Moves the focus from the component if the component is already focused. 
+     * @returns void.
+     * @deprecated
+     */
+    public focusOut(e?: MouseEvent | KeyboardEventArgs): void {
+        super.focusOut(e);
+    }
+    /**
+     * Gets all the list items bound on this component.
+     * @returns Element[].
+     * @deprecated
+     */
+    public getItems(): Element[] {
+        return super.getItems();
+    }
+    /**
+     * Gets the data Object that matches the given value. 
+     * @param { string | number } value - Specifies the value of the list item.
+     * @returns Object.
+     * @blazorType object
+     * @deprecated
+     */
+    public getDataByValue(value: string | number | boolean)
+        : { [key: string]: Object } | string | number | boolean {
+            return super.getDataByValue(value);
+        }
+    protected renderHightSearch(): void {
+        // update high light search 
     }
 }
 export interface CustomValueSpecifierEventArgs {

@@ -2,7 +2,8 @@ import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, IToolt
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
-import { MapLocation, getMousePosition, Internalize, checkPropertyPath } from '../utils/helper';
+import { MapLocation, getMousePosition, Internalize, checkPropertyPath, getValueFromObject,
+    formatValue, convertStringToValue } from '../utils/helper';
 /**
  * Map Tooltip
  */
@@ -41,7 +42,6 @@ export class MapsTooltip {
             pageY = e.pageY;
             target = <Element>e.target;
         }
-        let formatFunction: Function; let value: number;
         let option: TooltipSettingsModel;
         let currentData: string = '';
         let targetId: string = target.id; let item: Object = {};
@@ -71,12 +71,15 @@ export class MapsTooltip {
                     for (let k: number = 0; k < properties.length; k++) {
                         for (let i: number = 0; i < layer['dataSource']['length']; i++) {
                             let data: Object[] = layer.dataSource[i];
-                            let dataShapeLayerValue: string = !isNullOrUndefined(data[layer.shapeDataPath]) ?
-                            data[layer.shapeDataPath].toLowerCase() : data[layer.shapeDataPath];
-                            let propertiesValue: string = !isNullOrUndefined(value[properties[k]]) ? value[properties[k]].toLowerCase()
-                                : value[properties[k]];
-                            if ((dataShapeLayerValue) === propertiesValue) {
-                                isShape = true; index = i; k = properties.length;
+                            let dataPath: string = (layer.shapeDataPath.indexOf('.') > -1 ) ?
+                            (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
+                            let dataPathValue: string = isNullOrUndefined(dataPath) ? dataPath.toLowerCase() : dataPath;
+                            let propertyValue: string = isNullOrUndefined(value[properties[k]])
+                                && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
+                                value[properties[k]];
+                            if (dataPathValue === propertyValue) {
+                                isShape = true; index = i;
+                                k = properties.length;
                                 break;
                             }
                         }
@@ -89,10 +92,14 @@ export class MapsTooltip {
                         currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);
                     } else {
                         let shapePath: string = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);
-                        currentData = ((!isNullOrUndefined(layer.dataSource)) && ((!isNullOrUndefined(index)))) ?
-                            this.formatValue(layer.dataSource[index][option.valuePath], this.maps) : value[shapePath];
+                        currentData = (!isNullOrUndefined(layer.dataSource) && !isNullOrUndefined(index)) ?
+                                      formatValue(((option.valuePath.indexOf('.') > -1) ?
+                                                    (getValueFromObject(layer.dataSource[index], option.valuePath)) :
+                                                   layer.dataSource[index][option.valuePath]),
+                                                  this.maps) : value[shapePath];
                         if (isNullOrUndefined(currentData)) {
-                            currentData = value[option.valuePath];
+                            currentData = (option.valuePath.indexOf('.') > -1) ?
+                            (getValueFromObject(value, option.valuePath)) : value[option.valuePath];
                         }
                     }
                 }
@@ -108,7 +115,12 @@ export class MapsTooltip {
                     if (marker.tooltipSettings.format) {
                         currentData = this.formatter(marker.tooltipSettings.format, marker.dataSource[dataIndex]);
                     } else {
-                        currentData = this.formatValue(marker.dataSource[dataIndex][marker.tooltipSettings.valuePath], this.maps) as string;
+                        currentData =
+                        formatValue(((marker.tooltipSettings.valuePath. indexOf('.') > -1) ?
+                                     (getValueFromObject(marker.dataSource[dataIndex], marker.tooltipSettings.valuePath)) :
+                                     marker.dataSource[dataIndex][marker.tooltipSettings.valuePath]),
+                                    this.maps
+                                    ) as string;
                     }
                 }
                 //location.y = this.template(option, location);
@@ -122,7 +134,12 @@ export class MapsTooltip {
                     if (bubble.tooltipSettings.format) {
                         currentData = this.formatter(bubble.tooltipSettings.format, bubble.dataSource[dataIndex]);
                     } else {
-                        currentData = this.formatValue(bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath], this.maps) as string;
+                        currentData =
+                        formatValue(((bubble.tooltipSettings.valuePath.indexOf('.') > -1) ?
+                                     (getValueFromObject(bubble.dataSource[dataIndex], bubble.tooltipSettings.valuePath)) :
+                                    bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath]),
+                                    this.maps
+                                    ) as string;
                     }
                 }
                 //location.y = this.template(option, location);
@@ -215,17 +232,6 @@ export class MapsTooltip {
         return localData;
     }
 
-    private formatValue(value: string, maps: Maps): string {
-        let formatValue: string; let formatFunction: Function;
-        if (maps.format && !isNaN(Number(value))) {
-            formatFunction = maps.intl.getNumberFormat(
-                { format: maps.format, useGrouping: maps.useGroupingSeparator });
-            formatValue = formatFunction(Number(value));
-        } else {
-            formatValue = value;
-        }
-        return formatValue;
-    }
     /*private template(tooltip: TooltipSettingsModel, location: MapLocation): number {
         location.y = (tooltip.template) ? location.y + 10 : location.y;
         return location.y;
@@ -233,7 +239,8 @@ export class MapsTooltip {
     private formatter(format: string, data: object = {}): string {
         let keys: string[] = Object.keys(data);
         for (let key of keys) {
-            format = format.split('${' + key + '}').join(this.formatValue(data[key], this.maps));
+            format = (typeof data[key] === 'object') ? convertStringToValue('', format, data, this.maps) :
+             format.split('${' + key + '}').join(formatValue(data[key], this.maps));
         }
         return format;
     }

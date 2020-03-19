@@ -1,7 +1,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, getValue, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption, Predicate } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
@@ -182,12 +182,18 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * * Specifies the name of the field which is used to map data to the server. 
      * If name is not given, then component ID is taken as mapping field name.
+     * 
+     * {% codeBlock src='inplace-editor/name/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
     public name: string;
     /**
      * Specifies the display value for input when original input value is empty.
+     * 
+     * {% codeBlock src='inplace-editor/value/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      * @isGenericType true
      */
@@ -195,6 +201,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public value: string | number | Date | string[] | Date[] | number[];
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
+     * 
+     * {% codeBlock src='inplace-editor/template/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      * @blazorType string
      */
@@ -214,18 +223,27 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public cssClass: string;
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
+     * 
+     * {% codeBlock src='inplace-editor/primary-key/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
     public primaryKey: string | number;
     /**
      * Sets the text to be shown when an element has 'Empty' value.
+     * 
+     * {% codeBlock src='inplace-editor/empty-text/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Empty'
      */
     @Property('Empty')
     public emptyText: string;
     /**
      * Gets the url for server submit action.
+     * 
+     * {% codeBlock src='inplace-editor/url/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
@@ -235,6 +253,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * 
      * - `Inline`: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
      * - `Popup`: Editable content and ok/cancel buttons are displayed inside popup while editing.
+     * 
+     * {% codeBlock src='inplace-editor/mode/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Popup'
      */
     @Property('Popup')
@@ -245,12 +266,18 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * - `UrlAdaptor`: Base adaptor for interacting with remote data services.
      * - `ODataV4Adaptor`: Used to interact with ODataV4 service.
      * - `WebApiAdaptor`: Used to interact with Web api created with OData endpoint.
+     * 
+     * {% codeBlock src='inplace-editor/adaptor/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'UrlAdaptor'
      */
     @Property('UrlAdaptor')
     public adaptor: AdaptorType;
     /**
      * Specifies the type of components that integrated with In-place editor to make it as editable.
+     * 
+     * {% codeBlock src='inplace-editor/type/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Text'
      */
     @Property('Text')
@@ -261,6 +288,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * - `Click`: Do the single click action on input to enter into the edit mode.
      * - `DblClick`: Do the single double click action on input to enter into the edit mode.
      * - `EditIconClick`: Disables the editing of event action of input and allows user to edit only through edit icon.
+     * 
+     * {% codeBlock src='inplace-editor/editable-on/index.md' %}{% endcodeBlock %}
+     * 
      * @default 'Click'
      */
     @Property('Click')
@@ -290,6 +320,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
+     * 
+     * {% codeBlock src='inplace-editor/enable-persistence/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
@@ -302,24 +335,36 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public disabled: boolean;
     /**
      * Used to show/hide the ok/cancel buttons of In-place editor.
+     * 
+     * {% codeBlock src='inplace-editor/show-buttons/index.md' %}{% endcodeBlock %}
+     * 
      * @default true
      */
     @Property(true)
     public showButtons: boolean;
     /**
      * Specifies to show/hide the editing mode.
+     * 
+     * {% codeBlock src='inplace-editor/enable-edit-mode/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
     public enableEditMode: boolean;
     /**
      * Sets to trigger the submit action with enter key pressing of input.
+     * 
+     * {% codeBlock src='inplace-editor/submit-on-enter/index.md' %}{% endcodeBlock %}
+     * 
      * @default true
      */
     @Property(true)
     public submitOnEnter: boolean;
     /**
      * Specifies the object to customize popup display settings like positions, animation etc.
+     * 
+     * {% codeBlock src='inplace-editor/popup-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default {}
      */
     @Complex<PopupSettingsModel>({}, PopupSettings)
@@ -327,6 +372,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     // tslint:disable
     /**
      * Specifies the model object configuration for the integrated components like AutoComplete, DatePicker,NumericTextBox, etc.
+     * 
+     * {% codeBlock src='inplace-editor/model/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     @Property(null)
@@ -334,18 +382,27 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     // tslint:enable
     /**
      * Used to customize the "Save" button UI appearance by defining Button model configuration.
+     *
+     * {% codeBlock src='inplace-editor/save-button/index.md' %}{% endcodeBlock %}
+     *
      * @default { iconCss: 'e-icons e-save-icon' }
      */
     @Property({ iconCss: 'e-icons e-save-icon' })
     public saveButton: ButtonModel;
     /**
      * Used to customize the "Cancel" button UI appearance by defining Button model configuration.
+     * 
+     * {% codeBlock src='inplace-editor/cancel-button/index.md' %}{% endcodeBlock %}
+     * 
      * @default { iconCss: 'e-icons e-cancel-icon' }
      */
     @Property({ iconCss: 'e-icons e-cancel-icon' })
     public cancelButton: ButtonModel;
     /**
      * Maps the validation rules for the input.
+     * 
+     * {% codeBlock src='inplace-editor/validation-rules/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     @Property(null)
@@ -453,7 +510,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private appendValueElement(): void {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: classes.VALUE_WRAPPER });
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
+        if (!isBlazor()) {
             this.element.innerHTML = '';
         }
         this.valueEle = this.createElement('span', { className: classes.VALUE });
@@ -693,7 +750,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else {
             classProp = classes.ELEMENTS;
         }
-        extend(this.model, this.model, { cssClass: classProp });
+        extend(this.model, this.model, { cssClass: classProp, enableRtl: this.enableRtl });
         if (!isNOU(this.value)) { this.updateModelValue(); }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
@@ -844,9 +901,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (this.isTemplate) { return; }
         this.isExtModule ? this.notify(events.setFocus, {}) : this.componentObj.element.focus();
     }
-    private removeEditor(): void {
+    private removeEditor(isBlazorDestroy?: boolean): void {
         let blazorContain: string[] = Object.keys(window) as string[];
-        if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate) {
+        if (isBlazor() && !this.isStringTemplate) {
             resetBlazorTemplate(this.element.id + 'template', 'Template');
         }
         let tipEle: HTMLElement;
@@ -871,7 +928,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         this.containerEle = undefined;
         removeClass([this.valueWrap], [classes.OPEN, classes.HIDE]);
-        this.setProperties({ enableEditMode: false }, true);
+        if (!isBlazorDestroy) { this.setProperties({ enableEditMode: false }, true); }
         if (this.editableOn !== 'EditIconClick') {
             let titleConstant: string = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
             this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
@@ -964,7 +1021,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         let compiler: Function = compile(tempStr);
         if (!isNOU(compiler)) {
-            let isString: boolean = (blazorContain.indexOf('ejsInterop') !== -1 &&
+            let isString: boolean = (isBlazor() &&
             !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
             this.isStringTemplate : true;
             tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
@@ -973,7 +1030,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             [].slice.call(tempEle).forEach((el: HTMLElement): void => {
                 trgEle.appendChild(el);
             });
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
+            if (isBlazor() && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
                 updateBlazorTemplate(this.element.id + 'template', 'Template', this);
             }
         }
@@ -1025,7 +1082,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private enableEditor(val: boolean): void {
         (val) ? this.renderEditor() : this.cancelHandler();
     }
-    private checkValidation(): void {
+    private checkValidation(isValidate?: boolean): void {
         let args: ValidateEventArgs;
         if (this.validationRules) {
             this.formValidate = new FormValidator(this.formEle as HTMLFormElement, {
@@ -1042,6 +1099,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                         } else {
                             this.toggleErrorClass(false);
                         }
+                        this.afterValidation(isValidate);
                     });
                 },
                 customPlacement: (inputElement: HTMLElement, errorElement: HTMLElement) => {
@@ -1061,7 +1119,15 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 } else {
                     this.toggleErrorClass(false);
                 }
+                this.afterValidation(isValidate);
             });
+        }
+    }
+    private afterValidation(isValidate: boolean): void {
+        if (!this.formEle.classList.contains(classes.ERROR) && isValidate) {
+            this.loadSpinner('validate');
+            if (this.mode === 'Popup') { this.updateArrow(); }
+            this.sendValue();
         }
     }
     private toggleErrorClass(value: boolean): void {
@@ -1194,22 +1260,19 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.sliderModule.refresh();
             this.setAttribute(<HTMLElement>select('.e-slider-input', this.containerEle), ['name']);
         }
-        let eventArgs: BeginEditEventArgs = { mode: this.mode, cancelFocus: false };
-        this.trigger('beginEdit', eventArgs, (args: BeginEditEventArgs) => {
-            if (!this.beginEditArgs.cancelFocus) {
-                if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
-                    && (this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel
-                        | MultiSelectModel).dataSource instanceof DataManager) {
-                    this.showDropDownPopup();
-                } else {
-                    this.setFocus();
-                }
+        if (!this.beginEditArgs.cancelFocus) {
+            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                && (this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel
+                    | MultiSelectModel).dataSource instanceof DataManager) {
+                this.showDropDownPopup();
+            } else {
+                this.setFocus();
             }
-            if (this.afterOpenEvent) {
-                this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
-                this.tipObj.trigger('afterOpen', e);
-            }
-        });
+        }
+        if (this.afterOpenEvent) {
+            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+            this.tipObj.trigger('afterOpen', e);
+        }
     }
     private popMouseDown(e: MouseEvent): void {
         let trgClass: DOMTokenList = (<Element>e.target).classList;
@@ -1314,7 +1377,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @returns void
      */
     public validate(): void {
-        this.checkValidation();
+        this.checkValidation(false);
     }
     /**
      * Submit the edited input value to the server.
@@ -1334,19 +1397,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!this.isTemplate) {
             this.setValue();
         }
-        this.checkValidation();
-        if (!this.formEle.classList.contains(classes.ERROR)) {
-            this.loadSpinner('validate');
-            if (this.mode === 'Popup') { this.updateArrow(); }
-            this.sendValue();
-        }
+        this.checkValidation(true);
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
      * @returns void
      */
     public destroy(): void {
-        this.removeEditor();
+        this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(events.destroy, {});
         }

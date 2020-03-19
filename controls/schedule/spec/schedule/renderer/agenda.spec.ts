@@ -363,14 +363,13 @@ describe('Agenda View', () => {
 
     describe('Agenda view rendering with templates', () => {
         let schObj: Schedule;
-        let appTmpl: string = '<div>SUbject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
+        let appTmpl: string = '<div>Subject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
             '<div>EndTime: ${EndTime.toLocaleString()</div>';
         beforeAll((done: Function) => {
             let model: ScheduleModel = {
                 height: '500px', currentView: 'Agenda', dateFormat: 'dd MMM yyyy',
                 dateHeaderTemplate: '<span>${date.toLocaleDateString()}</span>',
-                selectedDate: new Date(2017, 9, 30),
-                eventSettings: { template: appTmpl }
+                selectedDate: new Date(2017, 9, 30)
             };
             schObj = createSchedule(model, generateObject(), done);
         });
@@ -390,23 +389,26 @@ describe('Agenda View', () => {
             expect(agendaDate.children[0].childElementCount).toEqual(1);
         });
 
-        it('Checking appointment template', () => {
+        it('Checking appointment template', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                let agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
+                expect(agendaEle.getAttribute('role')).toEqual('row');
+                expect(agendaEle.childElementCount).toEqual(2);
+                let agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
+                expect(agendaListApp.className).toEqual('e-agenda-cells e-day-border');
+                expect(agendaListApp.getAttribute('role')).toEqual('gridcell');
+                expect(agendaListApp.childElementCount).toEqual(1);
+                expect(agendaListApp.children[0].className).toEqual('e-agenda-parent e-ul e-agenda-view');
+                expect(agendaListApp.children[0].childElementCount).toBeGreaterThanOrEqual(1);
+                expect(agendaListApp.children[0].children[0].className).toEqual('e-agenda-item e-agenda-view e-level-1');
+                expect(agendaListApp.children[0].children[0].childElementCount).toEqual(1);
+                expect(agendaListApp.children[0].children[0].children[0].className).toEqual('e-appointment e-template');
+                expect(agendaListApp.children[0].children[0].children[0].children[0].className).toEqual('e-icons e-recurrence-icon');
+                expect(agendaListApp.children[0].children[0].children[0].childElementCount).toEqual(4);
+                done();
+            };
             schObj.eventSettings.template = appTmpl;
             schObj.dataBind();
-            let agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            expect(agendaEle.getAttribute('role')).toEqual('row');
-            expect(agendaEle.childElementCount).toEqual(2);
-            let agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
-            expect(agendaListApp.className).toEqual('e-agenda-cells e-day-border');
-            expect(agendaListApp.getAttribute('role')).toEqual('gridcell');
-            expect(agendaListApp.childElementCount).toEqual(1);
-            expect(agendaListApp.children[0].className).toEqual('e-agenda-parent e-ul e-agenda-view');
-            expect(agendaListApp.children[0].childElementCount).toBeGreaterThanOrEqual(1);
-            expect(agendaListApp.children[0].children[0].className).toEqual('e-agenda-item e-agenda-view e-level-1');
-            expect(agendaListApp.children[0].children[0].childElementCount).toEqual(1);
-            expect(agendaListApp.children[0].children[0].children[0].className).toEqual('e-appointment e-template');
-            expect(agendaListApp.children[0].children[0].children[0].children[0].className).toEqual('e-icons e-recurrence-icon');
-            expect(agendaListApp.children[0].children[0].children[0].childElementCount).toEqual(4);
         });
     });
 

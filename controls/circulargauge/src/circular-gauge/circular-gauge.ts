@@ -7,10 +7,13 @@ import { Event, EmitType, EventHandler, Collection, Internationalization, Module
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { CircularGaugeModel } from './circular-gauge-model';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer, IThemeStyle, ILegendRenderEventArgs } from './model/interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer } from './model/interface';
+import { IVisibleRange, IThemeStyle } from './model/interface';
 import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs, IPointerDragEventArgs, IResizeEventArgs } from './model/interface';
-import { ITooltipRenderEventArgs, IAnnotationRenderEventArgs, IMouseEventArgs, IPrintEventArgs } from './model/interface';
-import { TextOption, textElement, RectOption, getAngleFromLocation, getValueFromAngle, removeElement } from './utils/helper';
+import { ITooltipRenderEventArgs, ILegendRenderEventArgs, IAnnotationRenderEventArgs }from './model/interface';
+import { IMouseEventArgs, IPrintEventArgs } from './model/interface';
+import { TextOption, textElement, RectOption, getAngleFromLocation }from './utils/helper';
+import { getValueFromAngle, removeElement, getRange } from './utils/helper';
 import { Size, stringToNumber, measureText, Rect, GaugeLocation, getElement, getPointer, setStyles, toPixel } from './utils/helper';
 import { getAngleFromValue, getPathArc } from './utils/helper';
 import { GaugeTheme } from './utils/enum';
@@ -20,7 +23,8 @@ import { Axis, Range, Pointer, Annotation, VisibleRangeModel } from './axes/axis
 import { Annotations } from './annotations/annotations';
 import { GaugeTooltip } from './user-interaction/tooltip';
 import { AxisModel } from './axes/axis-model';
-import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown } from './model/constants';
+import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, pointerMove,  } from './model/constants';
+import {  rangeMove, pointerStart, rangeStart, pointerEnd, rangeEnd } from './model/constants';
 import { gaugeMouseUp, dragEnd, dragMove, dragStart, resized } from './model/constants';
 import { AxisLayoutPanel } from './axes/axis-panel';
 import { getThemeStyle } from './model/theme';
@@ -136,6 +140,13 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     @Property(false)
     public enablePointerDrag: boolean;
+
+    /**
+     * Enables or disables the drag movement of the ranges in the circular gauge.
+     * @default false
+     */
+    @Property(false)
+    public enableRangeDrag: boolean;
 
     /**
      * X coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
@@ -360,15 +371,25 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /** @private */
     public activeAxis: Axis;
     /** @private */
+    public activeRange: Range;
+    /** @private */
     public gaugeRect: Rect;
     /** @private */
     public animatePointer: boolean;
     /** @private */
+    public startValue: number;
+    /** @private */
+    public endValue: number;
     /**
      * Render axis panel for gauge.
      * @hidden
+     * @private
      */
     public gaugeAxisLayoutPanel: AxisLayoutPanel;
+    /**
+     * @private
+     */
+    public gaugeRangeLayoutPanel:  AxisLayoutPanel;
     /**
      * @private
      */
@@ -492,30 +513,62 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             let dragBlazorArgs: IPointerDragEventArgs;
             let tooltip: GaugeTooltip = this.tooltipModule;
             if (!args.cancel) {
+                if ((this.enablePointerDrag || this.enableRangeDrag) && this.svgObject.getAttribute('cursor') !== 'grabbing') {
+                    if ((args.target.id.indexOf('_Pointer_') !== -1 && this.enablePointerDrag) || (this.enableRangeDrag && args.target.id.indexOf('_Range_') !== -1)) {
+                            this.svgObject.setAttribute('cursor', 'pointer');
+                    } else {
+                        this.svgObject.setAttribute('cursor', 'auto');
+                    }
+                }
                 if (this.enablePointerDrag && this.activePointer) {
                     this.isDrag = true;
                     let dragPointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-                    let dragAxisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
-                    dragArgs = {
-                        axis: this.activeAxis,
-                        pointer: this.activePointer,
-                        previousValue: this.activePointer.currentValue,
-                        name: dragMove,
-                        currentValue: null,
-                        axisIndex: dragAxisInd,
-                        pointerIndex: dragPointInd
-                    };
-                    dragBlazorArgs = {
-                        previousValue: this.activePointer.currentValue,
-                        name: dragMove,
-                        currentValue: null,
-                        pointerIndex: dragPointInd,
-                        axisIndex: dragAxisInd
-                    };
-                    this.pointerDrag(new GaugeLocation(args.x, args.y));
+                    let dragAxisInd: number = parseInt(this.activePointer.pathElement[0].id.split('_Axis_')[1], 10);
+                      dragArgs = {
+                         axis: this.activeAxis,
+                         pointer: this.activePointer,
+                         previousValue: this.activePointer.currentValue,
+                         name: dragMove,
+                         type: pointerMove,
+                        
+                         currentValue: null,
+                         axisIndex: dragAxisInd,
+                         pointerIndex: dragPointInd,
+                     };
+                     dragBlazorArgs = {
+                         previousValue: this.activePointer.currentValue,
+                         name: dragMove,
+                         type: pointerMove,
+                         currentValue: null,
+                         pointerIndex: dragPointInd,
+                         axisIndex: dragAxisInd,
+                     };
+                    this.pointerDrag(new GaugeLocation(args.x, args.y), dragAxisInd, dragPointInd);
                     dragArgs.currentValue = dragBlazorArgs.currentValue = this.activePointer.currentValue;
                     this.trigger(dragMove, this.isBlazor ? dragBlazorArgs : dragArgs);
+                    this.activeRange=null;
                 }
+                else if ( this.enableRangeDrag && this.activeRange) {
+                    this.isDrag = true;       
+                    let dragAxisInd: number = parseInt(this.activeRange.pathElement[0].id.split('_Axis_')[1], 10);
+                    let dragRangeInd: number =parseInt(this.activeRange.pathElement[0].id.slice(-1), 10);
+                    dragArgs = {
+                        axis: this.activeAxis,
+                        name: dragMove,
+                        type: rangeMove,
+                        range: this.activeRange,
+                        axisIndex: dragAxisInd,
+                        rangeIndex: dragRangeInd,
+                    };
+                    dragBlazorArgs = {
+                        name: dragMove,
+                        type: rangeMove,
+                        axisIndex: dragAxisInd,
+                        rangeIndex: dragRangeInd,
+                    };
+                    this.rangeDrag(new GaugeLocation(args.x,args.y),dragAxisInd, dragRangeInd);
+                    this.trigger(dragMove, this.isBlazor ? dragBlazorArgs : dragArgs);
+                         }
             }
         });
         if (!this.isTouch) {
@@ -536,6 +589,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         this.setMouseXY(e);
         this.activeAxis = null;
         this.activePointer = null;
+        this.activeRange = null;
         this.svgObject.setAttribute('cursor', 'auto');
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
         this.trigger(gaugeMouseLeave, args);
@@ -560,7 +614,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * Handles the pointer draf while mouse move on gauge.
      * @private
      */
-    public pointerDrag(location: GaugeLocation): void {
+    public pointerDrag(location: GaugeLocation, axisIndex?: number, pointerIndex?: number): void {
         let axis: Axis = this.activeAxis;
         let range: VisibleRangeModel = axis.visibleRange;
         let value: number = getValueFromAngle(
@@ -569,11 +623,46 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             axis.direction === 'ClockWise'
         );
         if (value >= range.min && value <= range.max) {
+            this.axes[axisIndex].pointers[pointerIndex].value= value;
             this.activePointer.currentValue = value;
             this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, this.activePointer, value);
         }
     }
 
+    /**
+     * Handles the range draf while mouse move on gauge.
+     * @private
+     */
+    public rangeDrag(location: GaugeLocation, axisIndex:number, rangeIndex:number): void {
+        if(this.activeAxis){
+         let axis: Axis = this.activeAxis;
+         let range: VisibleRangeModel = axis.visibleRange;
+        let gauge = this;
+        let value : number;
+        value = getValueFromAngle(
+            getAngleFromLocation(this.midPoint, location), range.max, range.min,
+            axis.startAngle, axis.endAngle,
+            axis.direction === 'ClockWise'
+        )
+        if(value >= range.min && value <= range.max){
+            {
+            let previousValue1=this.activeRange.currentValue;
+            this.activeRange.currentValue = value;
+       
+         let avg: number;
+         let add : number = (this.activeRange.end - this.activeRange.start);
+         let div : number = add/2;
+         avg = parseFloat(this.activeRange.start.toString()) + div;
+            this.startValue = (value < avg) ? value :((previousValue1 < avg) ? previousValue1 : this.activeRange.start);
+            this.endValue  = (value < avg) ? ((previousValue1 > avg) ? previousValue1 : this.activeRange.end) : value;
+     
+        this.axes[axisIndex].ranges[rangeIndex].start=this.startValue;
+        this.axes[axisIndex].ranges[rangeIndex].end = this.endValue;
+       
+            }
+    }
+    }
+    }
     /**
      * Handles the mouse down on gauge.
      * @return {boolean}
@@ -582,34 +671,71 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public gaugeOnMouseDown(e: PointerEvent): boolean {
         this.setMouseXY(e);
         let currentPointer: IVisiblePointer;
+        let currentRange: IVisibleRange;
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
         this.trigger('gaugeMouseDown', args, (observedArgs: IMouseEventArgs) => {
-            if (!args.cancel && args.target.id.indexOf('_Pointer_') >= 0 &&
-                args.target.id.indexOf(this.element.id + '_Axis_') >= 0) {
+            if (!args.cancel &&
+                args.target.id.indexOf(this.element.id + '_Axis_') >= 0 &&
+                args.target.id.indexOf('_Pointer_') >= 0 ) {
                 currentPointer = getPointer(args.target.id, this);
                 this.activeAxis = <Axis>this.axes[currentPointer.axisIndex];
                 this.activePointer = <Pointer>this.activeAxis.pointers[currentPointer.pointerIndex];
-                if (isNullOrUndefined(this.activePointer.pathElement)) {
+                    if (isNullOrUndefined(this.activePointer.pathElement )) {
                     this.activePointer.pathElement = [e.target as Element];
-                }
+                    }
                 let pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-                let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+                let axisInd: number = parseInt(this.activePointer.pathElement[0].id.split('_Axis_')[1], 10);
                 this.trigger(dragStart, this.isBlazor ? {
                     name: dragStart,
+                    type: pointerStart,
                     currentValue: this.activePointer.currentValue,
                     pointerIndex: pointInd,
-                    axisIndex: axisInd
+                    axisIndex: axisInd,
                 } as IPointerDragEventArgs : {
                     axis: this.activeAxis,
                     name: dragStart,
+                    type: pointerStart,
                     pointer: this.activePointer,
                     currentValue: this.activePointer.currentValue,
                     pointerIndex: pointInd,
-                    axisIndex: axisInd
+                    axisIndex: axisInd,
                 } as IPointerDragEventArgs);
-                this.svgObject.setAttribute('cursor', 'pointer');
+                if (this.enablePointerDrag) {
+                    this.svgObject.setAttribute('cursor', 'grabbing');
+                }
             }
-        });
+           else if (!args.cancel &&
+                args.target.id.indexOf(this.element.id + '_Axis_') >= 0 &&
+                args.target.id.indexOf('_Range_') >=0
+                )
+                {
+                    currentRange = getRange(args.target.id, this);
+                    this.activeAxis = <Axis>this.axes[currentRange.axisIndex];
+                    this.activeRange=<Range>this.activeAxis.ranges[currentRange.rangeIndex];
+                    if (isNullOrUndefined(this.activeRange.pathElement )) {
+                        this.activeRange.pathElement=[e.target as Element];
+                    }
+                    let rangeInd: number = parseInt(this.activeRange.pathElement[0].id.slice(-1), 0);
+                    let axisInd: number = parseInt(this.activeRange.pathElement[0].id.split('_Axis_')[1], 10);
+                    this.trigger(dragStart, this.isBlazor ? {
+                        name: dragStart,
+                        type: rangeStart,
+                        axisIndex: axisInd,
+                        rangeIndex: rangeInd,
+                    } as IPointerDragEventArgs : {
+                        axis: this.activeAxis,
+                        name: dragStart,
+                        type: rangeStart,
+                        range: this.activeRange,
+                        axisIndex: axisInd,
+                        rangeIndex: rangeInd,
+                    } as IPointerDragEventArgs);
+                    if (this.enableRangeDrag) {
+                        this.svgObject.setAttribute('cursor', 'grabbing');
+                    }
+                }
+
+                });
         return false;
     }
 
@@ -628,16 +754,19 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let tooltipInterval: number;
         let tooltip: GaugeTooltip = this.tooltipModule;
         this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
-        if (this.activeAxis && this.activePointer) {
+        if (this.activeAxis && this.activePointer && this.enablePointerDrag) {
+            this.svgObject.setAttribute('cursor', 'auto');
             let pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-            let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+            let axisInd: number = parseInt(this.activePointer.pathElement[0].id.split('_Axis_')[1], 10);
             this.trigger(dragEnd, this.isBlazor ? {
                 name: dragEnd,
+                type: pointerEnd,
                 currentValue: this.activePointer.currentValue,
                 pointerIndex: pointerInd,
                 axisIndex: axisInd
             } as IPointerDragEventArgs : {
                 name: dragEnd,
+                type: pointerEnd,
                 axis: this.activeAxis,
                 pointer: this.activePointer,
                 currentValue: this.activePointer.currentValue,
@@ -646,6 +775,27 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             } as IPointerDragEventArgs);
             this.activeAxis = null;
             this.activePointer = null;
+            this.isDrag = false;
+        }
+        else if (this.activeAxis && this.activeRange && this.enableRangeDrag) {
+            this.svgObject.setAttribute('cursor', 'auto');
+            let rangeInd: number = parseInt(this.activeRange.pathElement[0].id.slice(-1), 10);
+            let axisInd: number = parseInt(this.activeRange.pathElement[0].id.split('_Axis_')[1], 10);
+            this.trigger(dragEnd, this.isBlazor ? {
+                name: dragEnd,
+                type: rangeEnd,
+                rangeIndex: rangeInd,
+                axisIndex: axisInd
+            } as IPointerDragEventArgs : {
+                name: dragEnd,
+                type: rangeEnd,
+                axis: this.activeAxis,
+                range: this.activeRange,
+                axisIndex: axisInd,
+                rangeIndex: rangeInd
+            } as IPointerDragEventArgs);
+            this.activeAxis = null;
+            this.activeRange = null;
             this.isDrag = false;
         }
         this.svgObject.setAttribute('cursor', 'auto');
@@ -690,6 +840,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
+    else
         if (this.element.classList.contains('e-circulargauge')) {
             this.resizeTo = window.setTimeout(
                 (): void => {

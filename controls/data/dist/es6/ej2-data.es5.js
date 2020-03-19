@@ -185,7 +185,9 @@ var Query = /** @__PURE__ @class */ (function () {
         if (typeof fieldNames === 'string') {
             fieldNames = [fieldNames];
         }
-        operator = operator || 'contains';
+        if (!operator || operator === 'none') {
+            operator = 'contains';
+        }
         var comparer = DataUtil.fnOperators[operator];
         this.queries.push({
             fn: 'onSearch',

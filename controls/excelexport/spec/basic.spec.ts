@@ -311,4 +311,29 @@ describe('ExcelCreation', () => {
             }
         });
     });
+    it('TextValue', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    rows: [
+                    /*row -> 1*/ { index: 1, cells: [{ index: 1, value: "&<" }, { index: 2, value: "W&orld" }, { index: 3, value: "<Hello&" }] }, /*Text*/
+                    ]
+                }
+            ],
+
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'TextValue.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
 });

@@ -900,22 +900,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         format = this.getFormat(column.format);
         let valueColl: string[] = [];
         for (let i: number = 0, iLen: number = tempColl.length; i < iLen; i++) {
-            if (tempColl[i].nextElementSibling) {
-                if (tempColl[i].nextElementSibling.className.indexOf('e-check') > -1) {
-                    valueColl.push(tempColl[i].textContent);
-                } else {
-                    if (column.type === 'date' && value[i] instanceof Date) {
-                        valueColl.push(this.intl.formatDate(value[i], format));
-                    } else {
-                        valueColl.push(value[i]);
-                    }
-                }
+            if (column.type === 'date' && value[i] instanceof Date) {
+                valueColl.push(this.intl.formatDate(value[i], format));
             } else {
-                if (column.type === 'date' && value[i] instanceof Date) {
-                    valueColl.push(this.intl.formatDate(value[i], format));
-                } else {
-                    valueColl.push(value[i]);
-                }
+                valueColl = value as string[];
             }
         }
         if (column.type === 'date') {
@@ -1647,7 +1635,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                 parentElem.style.width = '100%';
             } else {
-                parentElem.style.minWidth = '200px';
+                parentElem.style.width = '200px';
             }
         } else {
             removeClass([target.nextElementSibling], 'e-template-value'); let inputLen: number = 1;
@@ -1780,12 +1768,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (this.allowValidation && rule.rules[index].operator && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 (getComponent(target.parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
             }
-            if (inputElem.length > 1) {
+            if (inputElem.length > 1 && !(inputElem[0].className.indexOf('e-template') > -1)) {
                 rule.rules[index].value = [];
             }
             for (let i: number = 0; i < inputElem.length; i++) {
                 if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
                     rule.rules[index].value = null;
+                    continue;
+                } else if (inputElem[i].classList.contains('e-template')) {
                     continue;
                 }
                 this.updateValues(inputElem[i], rule.rules[index]);
@@ -1817,7 +1807,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (rule.rules[index].operator) {
                 oper = rule.rules[index].operator.toLowerCase();
             }
-            if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number') {
+            if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number' &&
+            !(target.className.indexOf('e-template') > -1)) {
                 let selVal: number[] = []; let dupSelectedValue: string[] | number[] = selectedValue as number[] | string[];
                 for (let k: number = 0, kLen: number = dupSelectedValue.length; k < kLen; k++) {
                     if (typeof dupSelectedValue[k] === 'string') {
@@ -1829,15 +1820,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             }
             if (target.className.indexOf('e-template') > -1) {
-                if (selectedValue instanceof Array) {
-                    if (arrOperator.indexOf(oper) > -1) {
-                        rule.rules[index].value = selectedValue as string | number | string[] | number[];
-                    } else {
-                        rule.rules[index].value = selectedValue[0] as string | number;
-                    }
-                } else {
-                    rule.rules[index].value = selectedValue as string | number | string[] | number[];
-                }
+                rule.rules[index].value = selectedValue as string | number | string[] | number[];
                 eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value as string, type: 'value'};
                 if (!this.isImportRules) {
                     this.trigger('change', eventsArgs);
@@ -2034,8 +2017,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.element.style.width = '100%';
                 this.element.classList.add('e-device');
             }
-            removeClass(document.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-            addClass(document.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
+            removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
+            addClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
             this.displayMode = 'Vertical';
         } else {
             this.displayMode = 'Horizontal';
@@ -2055,7 +2038,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
             this.notGroupRtl();
-            let buttons: NodeListOf<Element> = document.querySelectorAll('label.e-btn');
+            let buttons: NodeListOf<Element> = this.element.querySelectorAll('label.e-btn');
             let button: HTMLElement;
             for (let i: number = 0; i < buttons.length; i++) {
                 button = buttons.item(i) as HTMLElement;
@@ -2629,7 +2612,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let predicate: Predicate = this.getPredicate(this.getValidRules(this.rule));
         let dataManagerQuery: Query;
         dataManagerQuery = isNullOrUndefined(predicate) ? new Query() : new Query().where(predicate);
-        if (this.isBlazor()) {
+        if (isBlazor()) {
             let adaptr: UrlAdaptor = new UrlAdaptor();
             let dm: DataManager = new DataManager({ url: '', adaptor: new UrlAdaptor });
             let state: { data?: string, pvtData?: Object[] } = adaptr.processQuery(dm, dataManagerQuery);

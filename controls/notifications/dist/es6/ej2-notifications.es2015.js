@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -20,6 +20,7 @@ const ACTIOBUTTONS = 'e-toast-actions';
 const CLOSEBTN = 'e-toast-close-icon';
 const RTL = 'e-rtl';
 const TOAST_REF_ELEMENT = 'e-toast-ref-element';
+const TOAST_BLAZOR_HIDDEN = 'e-blazor-toast-hidden';
 /**
  * An object that is used to configure the Toast X Y positions.
  */
@@ -86,7 +87,6 @@ let Toast = class Toast extends Component {
     constructor(options, element) {
         super(options, element);
         this.toastCollection = [];
-        this.isDestroy = false;
     }
     /**
      * Gets the Component module name.
@@ -105,12 +105,14 @@ let Toast = class Toast extends Component {
      * Removes the component from the DOM and detaches all its related event handlers, attributes and classes.
      */
     destroy() {
-        if ((isBlazor && this.isServerRendered)) {
-            this.isDestroy = true;
-        }
         this.hide('All');
         this.element.classList.remove(CONTAINER);
         setStyleAttribute(this.element, { 'position': '', 'z-index': '' });
+        if (!isNullOrUndefined(this.refElement) && !isNullOrUndefined(this.refElement.parentElement)) {
+            this.refElement.parentElement.insertBefore(this.element, this.refElement);
+            detach(this.refElement);
+            this.refElement = undefined;
+        }
         super.destroy();
     }
     /**
@@ -126,7 +128,7 @@ let Toast = class Toast extends Component {
         if (isNullOrUndefined(this.target)) {
             this.target = document.body;
         }
-        if (this.enableRtl) {
+        if (this.enableRtl && !this.isBlazorServer()) {
             this.element.classList.add(RTL);
         }
     }
@@ -143,11 +145,18 @@ let Toast = class Toast extends Component {
             new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
         }
         this.renderComplete();
+        if (!isNullOrUndefined(this.element.parentElement)) {
+            let parentEle = this.element.parentElement;
+            this.refElement = this.createElement('div', { className: TOAST_REF_ELEMENT });
+            parentEle.insertBefore(this.refElement, this.element);
+        }
+        this.initRenderClass = this.element.className;
     }
     /**
      * To show Toast element on a document with the relative position.
      * @param  {ToastModel} toastObj? - To show Toast element on screen.
      * @returns void
+     * @deprecated
      */
     show(toastObj) {
         let collectionObj;
@@ -170,11 +179,11 @@ let Toast = class Toast extends Component {
                 target.style.position = 'relative';
             }
             this.setPositioning(this.position);
-            if (isBlazor && this.isServerRendered) {
-                this.refElement = this.createElement('div', { className: TOAST_REF_ELEMENT });
-                this.toastContainer.parentElement.insertBefore(this.refElement, this.toastContainer);
-            }
             target.appendChild(this.toastContainer);
+        }
+        if (this.isBlazorServer() && this.element.classList.contains('e-control')) {
+            this.isToastModel(toastObj);
+            return;
         }
         this.toastEle = this.createElement('div', { className: ROOT, id: getUniqueID('toast') });
         this.setWidthHeight();
@@ -188,6 +197,17 @@ let Toast = class Toast extends Component {
             extend(collectionObj, { element: [this.toastEle] }, true);
             this.toastCollection.push(collectionObj);
         }
+    }
+    isToastModel(toastObj) {
+        this.toastContainer = this.element;
+        this.setPositioning(this.position);
+        let proxy = this;
+        if (!isNullOrUndefined(proxy.element.lastElementChild)) {
+            this.toastEle = proxy.element.lastElementChild;
+            this.setProgress();
+        }
+        this.setAria();
+        this.appendToTarget(toastObj);
     }
     swipeHandler(e) {
         let toastEle = closest(e.originalEvent.target, '.' + ROOT + ':not(.' + CONTAINER + ')');
@@ -269,25 +289,12 @@ let Toast = class Toast extends Component {
             for (let i = 0; i < this.toastContainer.childElementCount; i++) {
                 this.destroyToast(this.toastContainer.children[i]);
             }
-            let target = typeof (this.target) === 'string' ? document.querySelector(this.target) : document.body;
-            if (!isNullOrUndefined(target) && this.isDestroy && !isNullOrUndefined(this.refElement)) {
-                this.refElement.parentElement.insertBefore(this.toastContainer, this.refElement);
-                detach(this.refElement);
-                this.refElement = undefined;
-            }
             return;
         }
         if (isNullOrUndefined(element)) {
-            element = (this.newestOnTop ? this.checkBlazorTemp(this.toastContainer.lastElementChild) :
-                this.toastContainer.firstElementChild);
+            element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
         }
         this.destroyToast(element);
-    }
-    checkBlazorTemp(element) {
-        while (element.classList.contains('blazor-template')) {
-            element = element.previousElementSibling;
-        }
-        return element;
     }
     fetchEle(ele, value, prob) {
         value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;
@@ -295,8 +302,6 @@ let Toast = class Toast extends Component {
         let tempVar;
         let tmpArray;
         let templateProps;
-        let templateValue;
-        let blazorContain = Object.keys(window);
         if (ele.classList.contains(TITLE)) {
             templateProps = this.element.id + 'title';
         }
@@ -325,16 +330,14 @@ let Toast = class Toast extends Component {
         }
         catch (e) {
             templateFn = compile(value);
-            templateValue = value;
+            
         }
         if (!isNullOrUndefined(templateFn)) {
-            if (!isBlazor()) {
+            if (!this.isBlazorServer()) {
                 tmpArray = templateFn({}, this, prob, null, true);
             }
             else {
-                let isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
-                    !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
-                    this.isStringTemplate : true;
+                let isString = true;
                 tmpArray = templateFn({}, this, prob, templateProps, isString);
             }
         }
@@ -345,25 +348,11 @@ let Toast = class Toast extends Component {
                 }
                 ele.appendChild(el);
             });
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
-                this.blazorTemplate(templateProps);
-            }
         }
         else if (ele.childElementCount === 0) {
             ele.innerHTML = value;
         }
         return ele;
-    }
-    blazorTemplate(templateProps) {
-        if (templateProps === this.element.id + 'title') {
-            updateBlazorTemplate(templateProps, 'Title', this, false);
-        }
-        else if (templateProps === this.element.id + 'content') {
-            updateBlazorTemplate(templateProps, 'Content', this, false);
-        }
-        else {
-            updateBlazorTemplate(templateProps, 'Template', this, false);
-        }
     }
     clearProgress(intervalId) {
         if (!isNullOrUndefined(this.intervalId[intervalId])) {
@@ -376,6 +365,10 @@ let Toast = class Toast extends Component {
         }
     }
     clearContainerPos() {
+        if (this.isBlazorServer()) {
+            this.toastContainer = null;
+            return;
+        }
         if (this.customPosition) {
             setStyleAttribute(this.toastContainer, { 'left': '', 'top': '' });
             this.toastContainer = null;
@@ -412,6 +405,9 @@ let Toast = class Toast extends Component {
         document.body.appendChild(this.toastTemplate);
         this.toastTemplate = null;
     }
+    isBlazorServer() {
+        return (isBlazor() && this.isServerRendered);
+    }
     destroyToast(toastEle) {
         let toastObj;
         for (let i = 0; i < this.toastCollection.length; i++) {
@@ -420,7 +416,12 @@ let Toast = class Toast extends Component {
                 this.toastCollection.splice(i, 1);
             }
         }
-        let toastClose = isBlazor() ? {
+        let hideAnimate = this.animation.hide;
+        let animate = {
+            duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
+        };
+        let intervalId = parseInt(toastEle.id.split('toast_')[1], 10);
+        let toastClose = this.isBlazorServer() ? {
             options: toastObj,
             toastContainer: this.toastContainer
         } : {
@@ -428,35 +429,20 @@ let Toast = class Toast extends Component {
             toastContainer: this.toastContainer,
             toastObj: this,
         };
-        if (!isNullOrUndefined(this.isDestroy) && this.isDestroy) {
-            if (!toastEle.querySelector('.blazor-inner-template')) {
+        if (!isNullOrUndefined(this.progressObj[intervalId]) && !isNullOrUndefined(toastEle.querySelector('.' + PROGRESS))) {
+            this.progressObj[intervalId].progressEle.style.width = '0%';
+        }
+        animate.end = () => {
+            this.clearProgress(intervalId);
+            if (!this.isBlazorServer() || isNullOrUndefined(toastObj)) {
                 detach(toastEle);
             }
+            this.trigger('close', toastClose);
             if (this.toastContainer.childElementCount === 0) {
                 this.clearContainerPos();
             }
-        }
-        else {
-            let hideAnimate = this.animation.hide;
-            let animate = {
-                duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
-            };
-            let intervalId = parseInt(toastEle.id.split('toast_')[1], 10);
-            if (!isNullOrUndefined(this.progressObj[intervalId]) && !isNullOrUndefined(toastEle.querySelector('.' + PROGRESS))) {
-                this.progressObj[intervalId].progressEle.style.width = '0%';
-            }
-            animate.end = () => {
-                this.clearProgress(intervalId);
-                if (!toastEle.querySelector('.blazor-inner-template')) {
-                    detach(toastEle);
-                }
-                this.trigger('close', toastClose);
-                if (this.toastContainer.childElementCount === 0) {
-                    this.clearContainerPos();
-                }
-            };
-            new Animation({}).animate(toastEle, animate);
-        }
+        };
+        new Animation({}).animate(toastEle, animate);
     }
     personalizeToast() {
         this.setIcon();
@@ -468,9 +454,12 @@ let Toast = class Toast extends Component {
         attributes(this.toastEle, { 'role': 'alert' });
     }
     setPositioning(pos) {
+        if (this.isBlazorServer()) {
+            return;
+        }
         if (!isNaN(parseFloat(pos.X)) || !isNaN(parseFloat(pos.Y))) {
-            setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
             this.customPosition = true;
+            setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
         }
         else {
             this.toastContainer.classList.add(ROOT + '-' + pos.Y.toString().toLowerCase() + '-' + pos.X.toString().toLowerCase());
@@ -611,8 +600,27 @@ let Toast = class Toast extends Component {
             this.appendMessageContainer(actionBtnContainer);
         }
     }
+    /* istanbul ignore next */
+    wireClientSideEvent(toastObj) {
+        if (this.isBlazorServer()) {
+            this.toastEle = this.element.lastElementChild;
+            EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
+            EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
+            let count = 0;
+            [].slice.call(this.buttons).forEach((actionBtn) => {
+                if (isNullOrUndefined(actionBtn.model)) {
+                    return;
+                }
+                let btnDom = this.toastEle.querySelectorAll('.e-toast-actions button')[count];
+                if (!isNullOrUndefined(actionBtn.click) && typeof (actionBtn.click) === 'function') {
+                    EventHandler.add(btnDom, 'click', actionBtn.click);
+                }
+                count++;
+            });
+        }
+    }
     appendToTarget(toastObj) {
-        let toastBeforeOpen = isBlazor() ? {
+        let toastBeforeOpen = this.isBlazorServer() ? {
             options: toastObj,
             element: this.toastEle,
             cancel: false
@@ -624,27 +632,38 @@ let Toast = class Toast extends Component {
         };
         this.trigger('beforeOpen', toastBeforeOpen, (toastBeforeOpenArgs) => {
             if (!toastBeforeOpenArgs.cancel) {
-                this.toastEle.style.display = 'none';
+                if (!this.isBlazorServer()) {
+                    this.toastEle.style.display = 'none';
+                }
                 if (this.newestOnTop && this.toastContainer.childElementCount !== 0) {
                     this.toastContainer.insertBefore(this.toastEle, this.toastContainer.children[0]);
                 }
-                else {
+                else if (!this.isBlazorServer()) {
                     this.toastContainer.appendChild(this.toastEle);
                 }
+                removeClass([this.toastEle], TOAST_BLAZOR_HIDDEN);
                 EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
                 EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
                 this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
                 this.displayToast(this.toastEle, toastObj);
             }
+            else if (this.isBlazorServer()) {
+                let intervalId = parseInt(this.toastEle.id.split('toast_')[1], 10);
+                this.clearProgress(intervalId);
+                detach(this.toastEle);
+                if (this.toastContainer.childElementCount === 0) {
+                    this.clearContainerPos();
+                }
+            }
         });
     }
     clickHandler(e) {
-        if (!isBlazor()) {
+        if (!this.isBlazorServer()) {
             e.stopPropagation();
         }
         let target = e.target;
         let toastEle = closest(target, '.' + ROOT);
-        let clickArgs = isBlazor() ? {
+        let clickArgs = this.isBlazorServer() ? {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e
         } : {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this
@@ -669,7 +688,7 @@ let Toast = class Toast extends Component {
         let animate = {
             duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
         };
-        let toastOpen = isBlazor() ? {
+        let toastOpen = this.isBlazorServer() ? {
             options: toastObj,
             element: this.toastEle
         } : {

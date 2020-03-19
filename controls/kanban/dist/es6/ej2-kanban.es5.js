@@ -1,6 +1,8 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
-import { Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isBlazor, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
+import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { FormValidator, Input, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
@@ -21,7 +23,7 @@ var cardDoubleClick = 'cardDoubleClick';
 /** @hidden */
 var cardRendered = 'cardRendered';
 /** @hidden */
-var columnRendered = 'columnRendered';
+var queryCellInfo = 'queryCellInfo';
 /** @hidden */
 var dataBinding = 'dataBinding';
 /** @hidden */
@@ -34,6 +36,10 @@ var drag = 'drag';
 var dragStop = 'dragStop';
 /** @hidden */
 var documentClick = 'document-click';
+/** @hidden */
+var dialogOpen = 'dialogOpen';
+/** @hidden */
+var dialogClose = 'dialogClose';
 // Constants for internal events
 /** @hidden */
 var contentReady = 'content-ready';
@@ -247,38 +253,20 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Holds the configuration of columns in kanban board.
+ * Holds the configuration of editor settings.
  */
-var Columns = /** @__PURE__ @class */ (function (_super) {
-    __extends$3(Columns, _super);
-    function Columns() {
+var DialogSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(DialogSettings, _super);
+    function DialogSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$3([
         Property()
-    ], Columns.prototype, "keyField", void 0);
+    ], DialogSettings.prototype, "template", void 0);
     __decorate$3([
-        Property()
-    ], Columns.prototype, "headerText", void 0);
-    __decorate$3([
-        Property()
-    ], Columns.prototype, "template", void 0);
-    __decorate$3([
-        Property(false)
-    ], Columns.prototype, "allowToggle", void 0);
-    __decorate$3([
-        Property(true)
-    ], Columns.prototype, "isExpanded", void 0);
-    __decorate$3([
-        Property()
-    ], Columns.prototype, "minCount", void 0);
-    __decorate$3([
-        Property()
-    ], Columns.prototype, "maxCount", void 0);
-    __decorate$3([
-        Property(false)
-    ], Columns.prototype, "showItemCount", void 0);
-    return Columns;
+        Property([])
+    ], DialogSettings.prototype, "fields", void 0);
+    return DialogSettings;
 }(ChildProperty));
 
 var __extends$4 = (undefined && undefined.__extends) || (function () {
@@ -301,17 +289,71 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Holds the configuration of stacked header settings in kanban board.
+ * Holds the configuration of columns in kanban board.
  */
-var StackedHeaders = /** @__PURE__ @class */ (function (_super) {
-    __extends$4(StackedHeaders, _super);
-    function StackedHeaders() {
+var Columns = /** @__PURE__ @class */ (function (_super) {
+    __extends$4(Columns, _super);
+    function Columns() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$4([
         Property()
-    ], StackedHeaders.prototype, "text", void 0);
+    ], Columns.prototype, "keyField", void 0);
     __decorate$4([
+        Property()
+    ], Columns.prototype, "headerText", void 0);
+    __decorate$4([
+        Property()
+    ], Columns.prototype, "template", void 0);
+    __decorate$4([
+        Property(false)
+    ], Columns.prototype, "allowToggle", void 0);
+    __decorate$4([
+        Property(true)
+    ], Columns.prototype, "isExpanded", void 0);
+    __decorate$4([
+        Property()
+    ], Columns.prototype, "minCount", void 0);
+    __decorate$4([
+        Property()
+    ], Columns.prototype, "maxCount", void 0);
+    __decorate$4([
+        Property(true)
+    ], Columns.prototype, "showItemCount", void 0);
+    return Columns;
+}(ChildProperty));
+
+var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Holds the configuration of stacked header settings in kanban board.
+ */
+var StackedHeaders = /** @__PURE__ @class */ (function (_super) {
+    __extends$5(StackedHeaders, _super);
+    function StackedHeaders() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$5([
+        Property()
+    ], StackedHeaders.prototype, "text", void 0);
+    __decorate$5([
         Property()
     ], StackedHeaders.prototype, "keyFields", void 0);
     return StackedHeaders;
@@ -395,17 +437,17 @@ var COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
 /** @hidden */
 var COLLAPSED_CLASS = 'e-collapsed';
 /** @hidden */
-
+var DIALOG_CLASS = 'e-kanban-dialog';
 /** @hidden */
 
 /** @hidden */
-
+var FORM_CLASS = 'e-kanban-form';
 /** @hidden */
-
+var FORM_WRAPPER_CLASS = 'e-kanban-form-wrapper';
 /** @hidden */
-
+var ERROR_VALIDATION_CLASS = 'e-kanban-error';
 /** @hidden */
-
+var FIELD_CLASS = 'e-field';
 /** @hidden */
 var DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
 /** @hidden */
@@ -480,6 +522,8 @@ var POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
 var CLOSE_ICON_CLASS = 'e-close-icon';
 /** @hidden */
 var POPUP_OPEN_CLASS = 'e-popup-open';
+/** @hidden */
+var DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
 
 /**
  * Action module is used to perform card actions.
@@ -524,21 +568,22 @@ var Action = /** @__PURE__ @class */ (function () {
             this.cardDoubleClick(e);
         }
     };
-    Action.prototype.cardClick = function (e) {
+    Action.prototype.cardClick = function (e, selectedCard) {
         var _this = this;
-        var target = closest(e.target, '.' + CARD_CLASS);
+        var target = closest((selectedCard) ? selectedCard : e.target, '.' + CARD_CLASS);
         var cardClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardClickObj, element: target };
         var args = { data: cardClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardClick, args, function (clickArgs) {
             if (!clickArgs.cancel) {
-                if (target.classList.contains(CARD_SELECTION_CLASS)) {
+                if (target.classList.contains(CARD_SELECTION_CLASS) && e.type === 'click') {
                     removeClass([target], CARD_SELECTION_CLASS);
+                    _this.parent.layoutModule.disableAttributeSelection(target);
                 }
                 else {
                     var isCtrlKey = e.ctrlKey;
                     if (_this.parent.isAdaptive && _this.parent.touchModule) {
-                        isCtrlKey = _this.parent.touchModule.tabHold || e.ctrlKey;
+                        isCtrlKey = (_this.parent.touchModule.mobilePopup && _this.parent.touchModule.tabHold) || isCtrlKey;
                     }
                     _this.cardSelection(target, isCtrlKey, e.shiftKey);
                 }
@@ -549,11 +594,16 @@ var Action = /** @__PURE__ @class */ (function () {
         });
     };
     Action.prototype.cardDoubleClick = function (e) {
+        var _this = this;
         var target = closest(e.target, '.' + CARD_CLASS);
         var cardDoubleClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
         var args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
-        this.parent.trigger(cardDoubleClick, args);
+        this.parent.trigger(cardDoubleClick, args, function (doubleClickArgs) {
+            if (!doubleClickArgs.cancel && !_this.parent.isBlazorRender()) {
+                _this.parent.dialogModule.openDialog('Edit', args.data);
+            }
+        });
     };
     Action.prototype.rowExpandCollapse = function (e) {
         var _this = this;
@@ -562,18 +612,23 @@ var Action = /** @__PURE__ @class */ (function () {
         this.parent.trigger(actionBegin, args, function (actionArgs) {
             if (!actionArgs.cancel) {
                 var target = closest(headerTarget, '.' + SWIMLANE_ROW_CLASS);
+                var key = target.getAttribute('data-key');
                 var tgtRow = _this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + (":nth-child(" + (target.rowIndex + 2) + ")"));
                 var targetIcon = target.querySelector("." + SWIMLANE_ROW_EXPAND_CLASS + ",." + SWIMLANE_ROW_COLLAPSE_CLASS);
-                if (target.classList.contains(COLLAPSED_CLASS)) {
+                var isCollapsed = target.classList.contains(COLLAPSED_CLASS) ? true : false;
+                if (isCollapsed) {
                     removeClass([tgtRow, target], COLLAPSED_CLASS);
                     classList(targetIcon, [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
-                    _this.parent.swimlaneToggleArray.splice(_this.parent.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
+                    _this.parent.swimlaneToggleArray.splice(_this.parent.swimlaneToggleArray.indexOf(key), 1);
                 }
                 else {
                     addClass([tgtRow, target], COLLAPSED_CLASS);
                     classList(targetIcon, [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
-                    _this.parent.swimlaneToggleArray.push(target.getAttribute('data-key'));
+                    _this.parent.swimlaneToggleArray.push(key);
                 }
+                targetIcon.setAttribute('aria-label', isCollapsed ? key + ' Expand' : key + ' Collapse');
+                target.setAttribute('aria-expanded', isCollapsed.toString());
+                tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
                 _this.parent.notify(contentReady, {});
                 _this.parent.trigger(actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -620,9 +675,12 @@ var Action = /** @__PURE__ @class */ (function () {
                 var targetCol = row.querySelector("." + CONTENT_CELLS_CLASS + ":nth-child(" + (colIndex + 1) + ")");
                 removeClass([targetCol, target], COLLAPSED_CLASS);
                 remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT_CLASS));
+                target.setAttribute('aria-expanded', 'true');
+                targetCol.setAttribute('aria-expanded', 'true');
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
             this.parent.columns[colIndex].setProperties({ isExpanded: true }, true);
+            target.querySelector('.e-header-icon').setAttribute('aria-label', target.getAttribute('data-key') + ' Expand');
         }
         else {
             addClass(colGroup, COLLAPSED_CLASS);
@@ -630,9 +688,9 @@ var Action = /** @__PURE__ @class */ (function () {
                 colGroup.forEach(function (col) { return col.style.width = formatUnit(toggleWidth); });
             }
             classList(targetIcon, [COLUMN_COLLAPSE_CLASS], [COLUMN_EXPAND_CLASS]);
+            var key = target.getAttribute('data-key');
             for (var _a = 0, targetRow_2 = targetRow; _a < targetRow_2.length; _a++) {
                 var row = targetRow_2[_a];
-                var key = target.getAttribute('data-key');
                 var targetCol = row.querySelector("." + CONTENT_CELLS_CLASS + "[data-key=\"" + key + "\"]");
                 var index = targetCol.cellIndex;
                 targetCol.appendChild(createElement('div', {
@@ -640,9 +698,12 @@ var Action = /** @__PURE__ @class */ (function () {
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], COLLAPSED_CLASS);
+                target.setAttribute('aria-expanded', 'false');
+                targetCol.setAttribute('aria-expanded', 'false');
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
             this.parent.columns[colIndex].setProperties({ isExpanded: false }, true);
+            target.querySelector('.e-header-icon').setAttribute('aria-label', key + ' Collapse');
         }
     };
     Action.prototype.cardSelection = function (target, isCtrl, isShift) {
@@ -659,6 +720,7 @@ var Action = /** @__PURE__ @class */ (function () {
             }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
                 removeClass(cards, CARD_SELECTION_CLASS);
+                this.parent.layoutModule.disableAttributeSelection(cards);
                 cards.forEach(function (el) {
                     _this.selectionArray.splice(_this.selectionArray.indexOf(el.getAttribute('data-id')), 1);
                     _this.selectedCardsElement.splice(_this.selectedCardsElement.indexOf(el), 1);
@@ -684,6 +746,7 @@ var Action = /** @__PURE__ @class */ (function () {
                 for (i = start; i <= end; i++) {
                     var card = allCards[i];
                     addClass([card], CARD_SELECTION_CLASS);
+                    card.setAttribute('aria-selected', 'true');
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -695,6 +758,7 @@ var Action = /** @__PURE__ @class */ (function () {
             }
             else {
                 addClass([target], CARD_SELECTION_CLASS);
+                target.setAttribute('aria-selected', 'true');
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));
@@ -809,16 +873,30 @@ var Crud = /** @__PURE__ @class */ (function () {
                     changedRecords: _this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
                 };
                 if (cardData instanceof Array || modifiedData.length > 0) {
-                    promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
+                    if (!_this.parent.isBlazorRender()) {
+                        promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('AddCards', { Records: cardData }, _this.keyField);
+                    }
                 }
                 else {
-                    promise = _this.parent.dataModule.dataManager.insert(cardData, _this.getTable(), _this.getQuery());
+                    if (!_this.parent.isBlazorRender()) {
+                        promise = _this.parent.dataModule.dataManager.insert(cardData, _this.getTable(), _this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('AddCard', { Record: cardData });
+                    }
                 }
-                var crudArgs = {
-                    requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                _this.refreshData(crudArgs);
+                if (!_this.parent.isBlazorRender()) {
+                    var crudArgs = {
+                        requestType: 'cardCreated', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    _this.refreshData(crudArgs);
+                }
             }
         });
     };
@@ -840,16 +918,30 @@ var Crud = /** @__PURE__ @class */ (function () {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
                 if (cardData instanceof Array) {
-                    promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
+                    if (!_this.parent.isBlazorRender()) {
+                        promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('UpdateCards', { Records: cardData }, _this.keyField);
+                    }
                 }
                 else {
-                    promise = _this.parent.dataModule.dataManager.update(_this.keyField, cardData, _this.getTable(), _this.getQuery());
+                    if (!_this.parent.isBlazorRender()) {
+                        promise = _this.parent.dataModule.dataManager.update(_this.keyField, cardData, _this.getTable(), _this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('UpdateCard', _this.keyField, { Record: cardData });
+                    }
                 }
-                var crudArgs = {
-                    requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                _this.refreshData(crudArgs);
+                if (!_this.parent.isBlazorRender()) {
+                    var crudArgs = {
+                        requestType: 'cardChanged', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    _this.refreshData(crudArgs);
+                }
             }
         });
     };
@@ -872,16 +964,30 @@ var Crud = /** @__PURE__ @class */ (function () {
             if (!deleteArgs.cancel) {
                 var promise = null;
                 if (editParms.deletedRecords.length > 1) {
-                    promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
+                    if (!_this.parent.isBlazorRender()) {
+                        promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { Records: cardData }, _this.keyField);
+                    }
                 }
                 else {
-                    promise = _this.parent.dataModule.dataManager.remove(_this.keyField, cardData, _this.getTable(), _this.getQuery());
+                    if (!_this.parent.isBlazorRender()) {
+                        promise = _this.parent.dataModule.dataManager.remove(_this.keyField, cardData, _this.getTable(), _this.getQuery());
+                    }
+                    else {
+                        // tslint:disable-next-line
+                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCard', _this.keyField, { Record: cardData });
+                    }
                 }
-                var crudArgs = {
-                    requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
-                    changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
-                };
-                _this.refreshData(crudArgs);
+                if (!_this.parent.isBlazorRender()) {
+                    var crudArgs = {
+                        requestType: 'cardRemoved', cancel: false, promise: promise, addedRecords: editParms.addedRecords,
+                        changedRecords: editParms.changedRecords, deletedRecords: editParms.deletedRecords
+                    };
+                    _this.refreshData(crudArgs);
+                }
             }
         });
     };
@@ -964,6 +1070,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
+        this.isDragging = false;
     }
     DragAndDrop.prototype.wireDragEvents = function (element) {
         new Draggable(element, {
@@ -1024,6 +1131,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 };
                 return;
             }
+            if (_this.parent.isBlazorRender()) {
+                e.bindEvents(e.dragElement);
+            }
             if (_this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
                 _this.dragObj.selectedCards.forEach(function (element) { _this.draggedClone(element); });
                 if (_this.dragObj.selectedCards.length > 1) {
@@ -1034,6 +1144,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                     });
                     _this.dragObj.cloneElement.appendChild(drag$$1);
                     classList(_this.dragObj.cloneElement, ['e-multi-card-clone'], [CARD_SELECTION_CLASS]);
+                    _this.parent.layoutModule.disableAttributeSelection(_this.dragObj.cloneElement);
                     _this.dragObj.cloneElement.style.width = '90px';
                 }
             }
@@ -1065,13 +1176,12 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             var targetKey = this.getColumnKey(contentCell);
             var keys = targetKey.split(',');
             this.multiCloneRemove();
-            var isDrag = false;
-            if ((targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS)))) {
-                isDrag = true;
-            }
+            var isDrag = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS)))
+                ? true : false;
             if (keys.length === 1 || isDrag) {
                 if (target.classList.contains(CARD_CLASS)) {
-                    var insertClone = isNullOrUndefined(target.previousElementSibling) ? 'beforebegin' : 'afterend';
+                    var insertClone = (isNullOrUndefined(target.previousElementSibling) &&
+                        ((this.dragObj.pageY - target.offsetTop) / 2) < 25) ? 'beforebegin' : 'afterend';
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 }
                 else if (target.classList.contains(CONTENT_CELLS_CLASS) && !closest(target, '.' + SWIMLANE_ROW_CLASS)) {
@@ -1218,6 +1328,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             _this.removeElement(_this.dragObj.cloneElement);
             var dragMultiClone = [].slice.call(_this.parent.element.querySelectorAll('.' + DRAGGED_CLONE_CLASS));
             dragMultiClone.forEach(function (clone) { return remove(clone); });
+            if (_this.parent.isBlazorRender()) {
+                _this.dragObj.element.style.removeProperty('width');
+                _this.multiCloneRemove();
+            }
             removeClass([_this.dragObj.element], DRAGGED_CARD_CLASS);
             clearInterval(_this.dragObj.navigationInterval);
             _this.dragObj.navigationInterval = null;
@@ -1231,6 +1345,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 _this.parent.touchModule.tabHold = false;
             }
             _this.dragObj.cardDetails = _this.dragObj.modifiedData = [];
+            _this.isDragging = false;
         });
     };
     DragAndDrop.prototype.updateDroppedData = function (element, cardStatus, contentCell) {
@@ -1280,7 +1395,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
     };
     DragAndDrop.prototype.toggleVisible = function (target, tColumn) {
         var _this = this;
-        var lists = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_CELLS_CLASS));
+        var headerCells = '.' + HEADER_CELLS_CLASS + ':not(.' + STACKED_HEADER_CELL_CLASS + ')';
+        var lists = [].slice.call(this.parent.element.querySelectorAll(headerCells));
         lists.forEach(function (list) {
             if (_this.getColumnKey(list) === _this.getColumnKey(tColumn || target)) {
                 _this.parent.actionModule.columnToggle(list);
@@ -1312,6 +1428,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         var eventArgs = this.getPageCoordinates(e);
         this.dragObj.pageY = eventArgs.pageY;
         this.dragObj.pageX = eventArgs.pageX;
+        this.isDragging = true;
+        if (this.parent.isAdaptive && this.parent.tooltipModule) {
+            this.parent.tooltipModule.tooltipObj.close();
+        }
     };
     DragAndDrop.prototype.getPageCoordinates = function (e) {
         var eventArgs = e.event;
@@ -1319,7 +1439,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             eventArgs || e;
     };
     DragAndDrop.prototype.getColumnKey = function (target) {
-        if (target) {
+        if (target && target.getAttribute('data-key')) {
             return target.getAttribute('data-key').trim();
         }
         return '';
@@ -1407,6 +1527,394 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * Dialog module is used to perform card actions.
+ * @hidden
+ */
+var KanbanDialog = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for dialog module
+     * @private
+     */
+    function KanbanDialog(parent) {
+        this.parent = parent;
+    }
+    KanbanDialog.prototype.openDialog = function (action, data) {
+        this.action = action;
+        this.parent.activeCardData.data = data;
+        this.renderDialog(data, action);
+        this.dialogObj.show();
+    };
+    KanbanDialog.prototype.closeDialog = function () {
+        this.dialogObj.hide();
+    };
+    KanbanDialog.prototype.renderDialog = function (args, action) {
+        this.element = createElement('div', { id: this.parent.element.id + '_dialog_wrapper' });
+        this.parent.element.appendChild(this.element);
+        var dialogModel = {
+            buttons: this.getDialogButtons(action),
+            content: this.getDialogContent(args, action),
+            cssClass: DIALOG_CLASS,
+            enableRtl: this.parent.enableRtl,
+            header: this.parent.localeObj.getConstant(action === 'Add' ? 'addTitle' : action === 'Edit' ? 'editTitle' : 'deleteTitle'),
+            height: this.parent.isAdaptive ? '100%' : 'auto',
+            isModal: true,
+            showCloseIcon: this.parent.isAdaptive ? false : true,
+            target: document.body,
+            width: (action === 'Delete') ? 400 : 350,
+            visible: false,
+            beforeOpen: this.onBeforeDialogOpen.bind(this),
+            beforeClose: this.onBeforeDialogClose.bind(this)
+        };
+        this.dialogObj = new Dialog(dialogModel, this.element);
+        if (action !== 'Delete') {
+            this.applyFormValidation();
+        }
+    };
+    KanbanDialog.prototype.getDialogContent = function (args, action) {
+        if (action === 'Delete') {
+            return this.parent.localeObj.getConstant('deleteContent');
+        }
+        else {
+            var container = createElement('div', { className: FORM_WRAPPER_CLASS });
+            var form = createElement('form', {
+                id: this.parent.element.id + 'EditForm',
+                className: FORM_CLASS, attrs: { onsubmit: 'return false;' }
+            });
+            if (this.parent.dialogSettings.template) {
+                if (args) {
+                    this.destroyComponents();
+                    [].slice.call(form.childNodes).forEach(function (node) { return remove(node); });
+                }
+                append(this.parent.templateParser(this.parent.dialogSettings.template)(args), form);
+            }
+            else {
+                var dialogWrapper = createElement('div', { className: DIALOG_CONTENT_CONTAINER });
+                form.appendChild(dialogWrapper);
+                var table = createElement('table');
+                dialogWrapper.appendChild(table);
+                var dialogFields = this.getDialogFields();
+                for (var _i = 0, dialogFields_1 = dialogFields; _i < dialogFields_1.length; _i++) {
+                    var field = dialogFields_1[_i];
+                    var tr = createElement('tr');
+                    table.appendChild(tr);
+                    tr.appendChild(createElement('td', { className: 'e-label', innerHTML: field.text ? field.text : field.key }));
+                    var td = createElement('td');
+                    tr.appendChild(td);
+                    td.appendChild(this.renderComponents(field));
+                }
+            }
+            container.appendChild(form);
+            return container;
+        }
+    };
+    KanbanDialog.prototype.getDialogFields = function () {
+        var fields = this.parent.dialogSettings.fields;
+        if (fields.length === 0) {
+            fields = [
+                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'Input' },
+                { key: this.parent.keyField, type: 'DropDown' },
+                { key: 'Estimate', type: 'Numeric' },
+                { key: 'Summary', type: 'TextArea' }
+            ];
+            if (this.parent.cardSettings.priority) {
+                fields.splice(fields.length - 1, 0, { key: this.parent.cardSettings.priority, type: 'Numeric' });
+            }
+            if (this.parent.swimlaneSettings.keyField) {
+                fields.splice(fields.length - 1, 0, { key: 'Assignee', type: 'DropDown' });
+            }
+        }
+        return fields;
+    };
+    KanbanDialog.prototype.getDialogButtons = function (action) {
+        var primaryButtonClass = action === 'Delete' ? 'e-dialog-yes' : action === 'Add' ? 'e-dialog-add' : 'e-dialog-edit';
+        var flatButtonClass = action === 'Delete' ? 'e-dialog-no' : 'e-dialog-cancel';
+        var dialogButtons = [
+            {
+                buttonModel: {
+                    cssClass: 'e-flat ' + primaryButtonClass, isPrimary: true,
+                    content: this.parent.localeObj.getConstant(action === 'Add' || action === 'Edit' ? 'save' : 'yes')
+                },
+                click: this.dialogButtonClick.bind(this)
+            }, {
+                buttonModel: {
+                    cssClass: 'e-flat ' + flatButtonClass, isPrimary: false,
+                    content: this.parent.localeObj.getConstant(action === 'Add' || action === 'Edit' ? 'cancel' : 'no')
+                },
+                click: this.dialogButtonClick.bind(this)
+            }
+        ];
+        if (action === 'Edit') {
+            var deleteButton = {
+                buttonModel: { cssClass: 'e-flat e-dialog-delete', isPrimary: false, content: this.parent.localeObj.getConstant('delete') },
+                click: this.dialogButtonClick.bind(this)
+            };
+            dialogButtons.splice(0, 0, deleteButton);
+        }
+        return dialogButtons;
+    };
+    KanbanDialog.prototype.renderComponents = function (field) {
+        var wrapper = createElement('div', { className: field.key + '_wrapper' });
+        var element = createElement('input', { className: FIELD_CLASS, attrs: { 'name': field.key } });
+        wrapper.appendChild(element);
+        var controlObj;
+        var fieldValue = this.parent.activeCardData.data ? this.parent.activeCardData.data[field.key] : null;
+        switch (field.type) {
+            case 'DropDown':
+                var dropDownOptions = void 0;
+                if (field.key === this.parent.keyField) {
+                    dropDownOptions = {
+                        dataSource: [].slice.call(this.parent.columns),
+                        fields: { text: 'headerText', value: 'keyField' },
+                        value: fieldValue
+                    };
+                }
+                else if (field.key === this.parent.swimlaneSettings.keyField) {
+                    dropDownOptions = {
+                        dataSource: [].slice.call(this.parent.layoutModule.kanbanRows),
+                        fields: { text: 'textField', value: 'keyField' },
+                        value: fieldValue
+                    };
+                }
+                controlObj = new DropDownList(dropDownOptions);
+                break;
+            case 'Numeric':
+                controlObj = new NumericTextBox({ value: fieldValue });
+                break;
+            case 'TextBox':
+                controlObj = new TextBox({ value: fieldValue });
+                break;
+            case 'Input':
+                if (fieldValue) {
+                    element.value = fieldValue;
+                }
+                if (fieldValue && this.parent.cardSettings.headerField === field.key) {
+                    Input.createInput({ element: element, properties: { enabled: false } });
+                }
+                else {
+                    Input.createInput({ element: element });
+                }
+                break;
+            case 'TextArea':
+                remove(element);
+                var divElement = createElement('div', { className: 'e-float-input' });
+                element = createElement('textarea', {
+                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '2' },
+                    innerHTML: fieldValue
+                });
+                wrapper.appendChild(divElement).appendChild(element);
+                break;
+            default:
+                break;
+        }
+        if (controlObj) {
+            controlObj.appendTo(element);
+        }
+        return wrapper;
+    };
+    KanbanDialog.prototype.onBeforeDialogOpen = function (args) {
+        var eventProp = {
+            data: this.parent.activeCardData.data,
+            cancel: false, element: this.element,
+            target: this.parent.activeCardData.element,
+            requestType: this.action
+        };
+        this.parent.trigger(dialogOpen, eventProp, function (openArgs) { return args.cancel = openArgs.cancel; });
+    };
+    KanbanDialog.prototype.onBeforeDialogClose = function (args) {
+        var _this = this;
+        var formInputs = this.getFormElements();
+        var cardObj = {};
+        for (var _i = 0, formInputs_1 = formInputs; _i < formInputs_1.length; _i++) {
+            var input = formInputs_1[_i];
+            var columnName = input.name || this.getColumnName(input);
+            if (!isNullOrUndefined(columnName) && columnName !== '') {
+                var value = this.getValueFromElement(input);
+                if (columnName === this.parent.cardSettings.headerField) {
+                    value = this.getIDType() === 'string' ? value : parseInt(value, 10);
+                }
+                cardObj[columnName] = value;
+            }
+        }
+        var eventProp = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
+        this.parent.trigger(dialogClose, eventProp, function (closeArgs) {
+            args.cancel = closeArgs.cancel;
+            if (!closeArgs.cancel) {
+                _this.cardData = eventProp.data;
+                _this.destroy();
+            }
+        });
+    };
+    KanbanDialog.prototype.getIDType = function () {
+        if (this.parent.kanbanData.length !== 0) {
+            return typeof (this.parent.kanbanData[0][this.parent.cardSettings.headerField]);
+        }
+        return 'string';
+    };
+    KanbanDialog.prototype.applyFormValidation = function () {
+        var _this = this;
+        var form = this.element.querySelector('.' + FORM_CLASS);
+        var rules = {};
+        for (var _i = 0, _a = this.parent.dialogSettings.fields; _i < _a.length; _i++) {
+            var field = _a[_i];
+            rules[field.key] = (field.validationRules && Object.keys(field.validationRules).length > 0) ? field.validationRules : null;
+        }
+        this.formObj = new FormValidator(form, {
+            rules: rules,
+            customPlacement: function (inputElement, error) {
+                var id = error.getAttribute('for');
+                var elem = _this.element.querySelector('#' + id + '_Error');
+                if (!elem) {
+                    _this.createTooltip(inputElement, error, id, '');
+                }
+            },
+            validationComplete: function (args) {
+                var elem = _this.element.querySelector('#' + args.inputName + '_Error');
+                if (elem) {
+                    elem.style.display = (args.status === 'failure') ? '' : 'none';
+                }
+            }
+        });
+    };
+    KanbanDialog.prototype.createTooltip = function (element, error, name, display) {
+        var dlgContent;
+        var client;
+        var inputClient = element.parentElement.getBoundingClientRect();
+        if (this.element.classList.contains(DIALOG_CLASS)) {
+            dlgContent = this.element;
+            client = this.element.getBoundingClientRect();
+        }
+        else {
+            dlgContent = this.element.querySelector('.e-kanban-dialog .e-dlg-content');
+            client = dlgContent.getBoundingClientRect();
+        }
+        var div = createElement('div', {
+            className: 'e-tooltip-wrap e-popup ' + ERROR_VALIDATION_CLASS,
+            id: name + '_Error',
+            styles: 'display:' + display + ';top:' +
+                (inputClient.bottom - client.top + dlgContent.scrollTop + 9) + 'px;left:' +
+                (inputClient.left - client.left + dlgContent.scrollLeft + inputClient.width / 2) + 'px;'
+        });
+        var content = createElement('div', { className: 'e-tip-content' });
+        content.appendChild(error);
+        var arrow = createElement('div', { className: 'e-arrow-tip e-tip-top' });
+        arrow.appendChild(createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
+        arrow.appendChild(createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
+        div.appendChild(content);
+        div.appendChild(arrow);
+        dlgContent.appendChild(div);
+        div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
+    };
+    KanbanDialog.prototype.destroyToolTip = function () {
+        if (this.element) {
+            this.element.querySelectorAll('.' + ERROR_VALIDATION_CLASS).forEach(function (node) { return remove(node); });
+        }
+        if (this.formObj && this.formObj.element) {
+            this.formObj.reset();
+        }
+    };
+    KanbanDialog.prototype.dialogButtonClick = function (event) {
+        var target = event.target.cloneNode(true);
+        var id = this.formObj.element.id;
+        if (document.getElementById(id) && this.formObj.validate() &&
+            (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
+            this.dialogObj.hide();
+            if (target.classList.contains('e-dialog-edit')) {
+                this.parent.crudModule.updateCard(this.cardData);
+            }
+            if (target.classList.contains('e-dialog-add')) {
+                this.parent.crudModule.addCard(this.cardData);
+            }
+            this.cardData = null;
+        }
+        if (!target.classList.contains('e-dialog-edit') && !target.classList.contains('e-dialog-add')) {
+            this.dialogObj.hide();
+            if (target.classList.contains('e-dialog-yes')) {
+                this.parent.crudModule.deleteCard(this.parent.activeCardData.data);
+            }
+            else if (target.classList.contains('e-dialog-no')) {
+                this.openDialog('Edit', this.parent.activeCardData.data);
+            }
+            else if (target.classList.contains('e-dialog-delete')) {
+                this.openDialog('Delete', this.parent.activeCardData.data);
+            }
+        }
+    };
+    KanbanDialog.prototype.getFormElements = function () {
+        var elements = [].slice.call(this.element.querySelectorAll('.' + FIELD_CLASS));
+        var validElements = [];
+        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+            var element = elements_1[_i];
+            if (element.classList.contains('e-control')) {
+                validElements.push(element);
+            }
+            else if (element.querySelector('.e-control')) {
+                validElements.push(element.querySelector('.e-control'));
+            }
+            else {
+                validElements.push(element);
+            }
+        }
+        return validElements;
+    };
+    KanbanDialog.prototype.getColumnName = function (element) {
+        var attrName = element.getAttribute('data-name') || '';
+        if (attrName === '') {
+            var isDropDowns = false;
+            var fieldSelector = '';
+            if (element.classList.contains('e-dropdownlist') || element.classList.contains('e-multiselect')) {
+                fieldSelector = element.classList.contains('e-dropdownlist') ? 'e-ddl' : 'e-multiselect';
+                isDropDowns = true;
+            }
+            else if (element.classList.contains('e-numerictextbox')) {
+                fieldSelector = 'e-numeric';
+            }
+            var classSelector = isDropDowns ? "." + fieldSelector + ":not(.e-control)" : "." + fieldSelector;
+            var control = closest(element, classSelector) || element.querySelector("." + fieldSelector);
+            if (control) {
+                var attrEle = control.querySelector('[name]');
+                if (attrEle) {
+                    attrName = attrEle.name;
+                }
+            }
+        }
+        return attrName;
+    };
+    KanbanDialog.prototype.getValueFromElement = function (element) {
+        var value;
+        var instance = element.ej2_instances;
+        if (instance && instance.length > 0) {
+            value = instance[0].value ||
+                instance[0].checked;
+        }
+        else {
+            value = element.value;
+        }
+        return value;
+    };
+    KanbanDialog.prototype.destroyComponents = function () {
+        var formelement = this.getFormElements();
+        for (var _i = 0, formelement_1 = formelement; _i < formelement_1.length; _i++) {
+            var element = formelement_1[_i];
+            var instance = element.ej2_instances;
+            if (instance && instance.length > 0) {
+                instance.forEach(function (node) { return node.destroy(); });
+            }
+        }
+    };
+    KanbanDialog.prototype.destroy = function () {
+        this.destroyToolTip();
+        this.destroyComponents();
+        if (this.dialogObj) {
+            this.dialogObj.destroy();
+            this.dialogObj = null;
+            remove(this.element);
+            this.element = null;
+        }
+    };
+    return KanbanDialog;
+}());
+
+/**
  * Drag and Drop module is used to perform card actions.
  * @hidden
  */
@@ -1444,6 +1952,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             keyConfigs: this.keyConfigs,
             eventName: 'keydown'
         });
+        this.prevAction = '';
     }
     Keyboard.prototype.keyActionHandler = function (e) {
         var selectedCard = this.parent.element.querySelectorAll("." + CARD_CLASS + "." + CARD_SELECTION_CLASS).item(0);
@@ -1489,6 +1998,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
     Keyboard.prototype.processCardSelection = function (action, selectedCard) {
         if (selectedCard) {
             removeClass([selectedCard], CARD_SELECTION_CLASS);
+            this.parent.layoutModule.disableAttributeSelection(selectedCard);
             var selection = this.parent.actionModule.selectionArray;
             selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
         }
@@ -1565,26 +2075,23 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             className = "." + CONTENT_ROW_CLASS + "." + SWIMLANE_ROW_CLASS;
         }
         var element = [].slice.call(this.parent.element.querySelectorAll(className));
-        var collapseCount = this.parent.element.querySelectorAll(className + '.' + COLLAPSED_CLASS).length;
-        if ((action === 'swimlaneCollapseAll' && element.length - collapseCount === 0) ||
-            (action === 'swimlaneExpandAll' && element.length - collapseCount === element.length)) {
+        if (this.prevAction === action) {
             return;
         }
+        this.prevAction = action;
         element.forEach(function (ele) {
             if (ele.classList.contains(CARD_CLASS)) {
                 ele = closest(ele, '.' + CONTENT_ROW_CLASS).previousElementSibling;
-                if ((!ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneExpand') ||
-                    (ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneCollapse')) {
-                    return;
-                }
             }
             if (ele.classList.contains(COLLAPSED_CLASS)) {
                 removeClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
                 classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
+                ele.querySelector('.' + ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Expand');
             }
             else if (!ele.classList.contains(COLLAPSED_CLASS)) {
                 addClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
                 classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
+                ele.querySelector('.' + ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Collapse');
             }
         });
     };
@@ -1599,9 +2106,6 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             var nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
             if (nextCellCards.length > 0) {
                 this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                if (row.classList.contains(COLLAPSED_CLASS)) {
-                    this.processSwimlaneExpandCollapse('selectedSwimlaneExpand');
-                }
                 break;
             }
         }
@@ -1633,7 +2137,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             this.parent.actionModule.rowExpandCollapse(e);
         }
         if (selectedCard) {
-            this.parent.actionModule.cardSelection(selectedCard, false, false);
+            this.parent.actionModule.cardClick(e, selectedCard);
         }
     };
     Keyboard.prototype.processTab = function (action, selectedCard) {
@@ -1644,6 +2148,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
                 tabTarget.querySelector("." + SWIMLANE_ROW_COLLAPSE_CLASS + ",." + SWIMLANE_ROW_EXPAND_CLASS).focus();
             }
             removeClass([selectedCard], CARD_SELECTION_CLASS);
+            this.parent.layoutModule.disableAttributeSelection(selectedCard);
         }
     };
     Keyboard.prototype.processMoveCards = function (action, card) {
@@ -1748,6 +2253,10 @@ var KanbanTooltip = /** @__PURE__ @class */ (function () {
         this.tooltipObj.isStringTemplate = true;
     };
     KanbanTooltip.prototype.onBeforeRender = function (args) {
+        if (this.parent.dragAndDropModule.isDragging) {
+            args.cancel = true;
+            return;
+        }
         var tooltipContent;
         if (this.parent.tooltipTemplate) {
             tooltipContent = createElement('div');
@@ -1964,7 +2473,7 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
     return MobileLayout;
 }());
 
-var __extends$5 = (undefined && undefined.__extends) || (function () {
+var __extends$6 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1981,7 +2490,7 @@ var __extends$5 = (undefined && undefined.__extends) || (function () {
  * Kanban layout rendering module
  */
 var LayoutRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$5(LayoutRender, _super);
+    __extends$6(LayoutRender, _super);
     /**
      * Constructor for layout module
      */
@@ -1998,37 +2507,44 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     LayoutRender.prototype.initRender = function () {
-        if (this.parent.columns.length === 0) {
-            return;
+        if (!this.parent.isBlazorRender()) {
+            if (this.parent.columns.length === 0) {
+                return;
+            }
+            this.columnData = this.getColumnCards();
+            this.kanbanRows = this.getRows();
+            this.swimlaneData = this.getSwimlaneCards();
         }
-        this.columnData = this.getColumnCards();
-        this.kanbanRows = this.getRows();
-        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             var parent_1 = this.parent.element.querySelector('.' + CONTENT_CLASS);
             if (parent_1) {
                 this.scrollLeft = parent_1.scrollLeft;
             }
         }
-        this.destroy();
-        this.parent.on(dataReady, this.initRender, this);
-        this.parent.on(contentReady, this.scrollUiUpdate, this);
-        if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
-            this.renderSwimlaneHeader();
+        if (!this.parent.isBlazorRender()) {
+            this.destroy();
+            this.parent.on(dataReady, this.initRender, this);
+            this.parent.on(contentReady, this.scrollUiUpdate, this);
+            if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
+                this.renderSwimlaneHeader();
+            }
+            var header = createElement('div', { className: HEADER_CLASS });
+            this.parent.element.appendChild(header);
+            this.renderHeader(header);
+            this.renderContent();
+            this.renderCards();
+            this.renderValidation();
         }
-        var header = createElement('div', { className: HEADER_CLASS });
-        this.parent.element.appendChild(header);
-        this.renderHeader(header);
-        this.renderContent();
-        this.renderCards();
-        this.renderValidation();
         this.parent.notify(contentReady, {});
         this.wireEvents();
     };
     LayoutRender.prototype.renderHeader = function (header) {
         var headerWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
         header.appendChild(headerWrap);
-        var headerTable = createElement('table', { className: TABLE_CLASS + ' ' + HEADER_TABLE_CLASS });
+        var headerTable = createElement('table', {
+            className: TABLE_CLASS + ' ' + HEADER_TABLE_CLASS,
+            attrs: { 'role': 'presentation' }
+        });
         headerWrap.appendChild(headerTable);
         this.renderColGroup(headerTable);
         var tableHead = createElement('thead');
@@ -2079,16 +2595,19 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 if (column.allowToggle) {
-                    var name_1 = (column.isExpanded && index === -1) ? COLUMN_EXPAND_CLASS : COLUMN_COLLAPSE_CLASS;
+                    var isExpand = (column.isExpanded && index === -1) ? true : false;
+                    var name_1 = (isExpand) ? COLUMN_EXPAND_CLASS : COLUMN_COLLAPSE_CLASS;
                     var icon = createElement('div', {
                         className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name_1,
                         attrs: { 'tabindex': '0' }
                     });
+                    icon.setAttribute('aria-label', isExpand ? column.keyField + ' Expand' : column.keyField + ' Collapse');
+                    th_1.setAttribute('aria-expanded', isExpand.toString());
                     headerWrapper.appendChild(icon);
                 }
-                var dataObj = [{ keyField: column.keyField, textField: column.headerText }];
+                var dataObj = [{ keyField: column.keyField, textField: column.headerText, count: noOfCard }];
                 var args = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
-                this_1.parent.trigger(columnRendered, args, function (columnArgs) {
+                this_1.parent.trigger(queryCellInfo, args, function (columnArgs) {
                     if (!columnArgs.cancel) {
                         tr.appendChild(th_1);
                     }
@@ -2106,7 +2625,10 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         this.parent.element.appendChild(content);
         var contentWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
         content.appendChild(contentWrap);
-        var contentTable = createElement('table', { className: TABLE_CLASS + ' ' + CONTENT_TABLE_CLASS });
+        var contentTable = createElement('table', {
+            className: TABLE_CLASS + ' ' + CONTENT_TABLE_CLASS,
+            attrs: { 'role': 'presentation' }
+        });
         contentWrap.appendChild(contentTable);
         this.renderColGroup(contentTable);
         var tBody = createElement('tbody');
@@ -2125,7 +2647,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 isCollaspsed = index !== -1;
             }
             className = isCollaspsed ? CONTENT_ROW_CLASS + ' ' + COLLAPSED_CLASS : CONTENT_ROW_CLASS;
-            var tr = createElement('tr', { className: className });
+            var tr = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
             if (this_2.parent.swimlaneSettings.keyField && !this_2.parent.isAdaptive) {
                 this_2.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
@@ -2135,16 +2657,18 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     var index = this_2.parent.actionModule.columnToggleArray.indexOf(column.keyField);
                     var className_1 = index === -1 ? CONTENT_CELLS_CLASS : CONTENT_CELLS_CLASS + ' ' + COLLAPSED_CLASS;
                     var td = createElement('td', {
-                        className: className_1, attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
+                        className: className_1,
+                        attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true' }
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], COLLAPSED_CLASS);
                         td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
+                        td.setAttribute('aria-expanded', 'false');
                     }
                     tr.appendChild(td);
-                    var dataObj = [{ keyField: row.keyField, textField: row.textField }];
+                    var dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
                     var args = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
-                    this_2.parent.trigger(columnRendered, args, function (columnArgs) {
+                    this_2.parent.trigger(queryCellInfo, args, function (columnArgs) {
                         if (!columnArgs.cancel) {
                             tBody.appendChild(tr);
                         }
@@ -2161,7 +2685,12 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     LayoutRender.prototype.renderSwimlaneRow = function (tBody, row, isCollapsed) {
         var name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
         var className = isCollapsed ? ' ' + COLLAPSED_CLASS : '';
-        var tr = createElement('tr', { className: name + className, attrs: { 'data-key': row.keyField } });
+        var tr = createElement('tr', {
+            className: name + className, attrs: {
+                'data-key': row.keyField,
+                'aria-expanded': (!isCollapsed).toString()
+            }
+        });
         var col = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         var td = createElement('td', {
             className: CONTENT_CELLS_CLASS,
@@ -2170,7 +2699,12 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         var swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
         var iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE_CLASS : SWIMLANE_ROW_EXPAND_CLASS;
-        var iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass, attrs: { 'tabindex': '0' } });
+        var iconDiv = createElement('div', {
+            className: ICON_CLASS + ' ' + iconClass, attrs: {
+                'tabindex': '0',
+                'aria-label': isCollapsed ? row.keyField + ' Collapse' : row.keyField + ' Expand'
+            }
+        });
         swimlaneHeader.appendChild(iconDiv);
         var headerWrap = createElement('div', { className: HEADER_WRAP_CLASS });
         swimlaneHeader.appendChild(headerWrap);
@@ -2195,9 +2729,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }));
         }
         tr.appendChild(td);
-        var dataObj = [{ keyField: row.keyField, textField: row.textField }];
+        var dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
         var args = { data: dataObj, element: tr, cancel: false, requestType: 'swimlaneRow' };
-        this.parent.trigger(columnRendered, args, function (columnArgs) {
+        this.parent.trigger(queryCellInfo, args, function (columnArgs) {
             if (!columnArgs.cancel) {
                 tBody.appendChild(tr);
             }
@@ -2225,8 +2759,14 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                         var className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION_CLASS;
                         var cardElement = createElement('div', {
                             className: CARD_CLASS + className,
-                            attrs: { 'data-id': data[_this.parent.cardSettings.headerField], 'data-key': data[_this.parent.keyField] }
+                            attrs: {
+                                'data-id': data[_this.parent.cardSettings.headerField], 'data-key': data[_this.parent.keyField],
+                                'aria-selected': 'false'
+                            }
                         });
+                        if (cardIndex !== -1) {
+                            cardElement.setAttribute('aria-selected', 'true');
+                        }
                         if (_this.parent.cardSettings.template) {
                             addClass([cardElement], TEMPLATE_CLASS);
                             var cardTemplate = _this.parent.templateParser(_this.parent.cardSettings.template)(data);
@@ -2324,6 +2864,12 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             if (this.parent.swimlaneSettings.sortBy === 'Descending') {
                 kanbanRows.reverse();
             }
+            kanbanRows.forEach(function (row) {
+                row.count = _this.parent.kanbanData.filter(function (obj) {
+                    return _this.columnKeys.indexOf(obj[_this.parent.keyField]) > -1 &&
+                        obj[_this.parent.swimlaneSettings.keyField] === row.keyField;
+                }).length;
+            });
         }
         else {
             kanbanRows.push({ keyField: '', textField: '' });
@@ -2432,7 +2978,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }));
         }
         if (limits.childElementCount > 0) {
-            if (target.firstElementChild.classList.contains(CARD_WRAPPER_CLASS)) {
+            if (target.querySelector('.' + CARD_WRAPPER_CLASS)) {
                 target.insertBefore(limits, target.firstElementChild);
             }
             else {
@@ -2507,6 +3053,17 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         }
         var cards = [].slice.call(this.parent.element.querySelectorAll("." + CARD_CLASS + "." + CARD_SELECTION_CLASS));
         removeClass(cards, CARD_SELECTION_CLASS);
+        this.disableAttributeSelection(cards);
+    };
+    LayoutRender.prototype.disableAttributeSelection = function (cards) {
+        if (cards instanceof Element) {
+            cards.setAttribute('aria-selected', 'false');
+        }
+        else {
+            cards.forEach(function (card) {
+                card.setAttribute('aria-selected', 'false');
+            });
+        }
     };
     LayoutRender.prototype.getColumnCards = function (data) {
         var _this = this;
@@ -2661,13 +3218,24 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
             this.swimlaneToggleArray = [];
         }
         this.activeCardData = { data: null, element: null };
-        var defaultLocale = {
-            items: 'items',
-            min: 'Min',
-            max: 'Max',
-            cardsSelected: 'Cards Selected'
-        };
-        this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
+        if (!this.isBlazorRender()) {
+            var defaultLocale = {
+                items: 'items',
+                min: 'Min',
+                max: 'Max',
+                cardsSelected: 'Cards Selected',
+                addTitle: 'Add New Card',
+                editTitle: 'Edit Card Details',
+                deleteTitle: 'Delete Card',
+                deleteContent: 'Are you sure you want to delete this card?',
+                save: 'Save',
+                delete: 'Delete',
+                cancel: 'Cancel',
+                yes: 'Yes',
+                no: 'No'
+            };
+            this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
+        }
     };
     /**
      * To provide the array of modules needed for control rendering
@@ -2697,24 +3265,27 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Kanban.prototype.render = function () {
-        var addClasses = [ROOT_CLASS];
-        var removeClasses = [];
-        if (this.enableRtl) {
-            addClasses.push(RTL_CLASS);
+        if (!this.isBlazorRender()) {
+            var addClasses = [];
+            var removeClasses = [];
+            if (this.enableRtl) {
+                addClasses.push(RTL_CLASS);
+            }
+            else {
+                removeClasses.push(RTL_CLASS);
+            }
+            if (this.isAdaptive) {
+                addClasses.push(DEVICE_CLASS);
+            }
+            else {
+                removeClasses.push(DEVICE_CLASS);
+            }
+            if (this.cssClass) {
+                addClasses.push(this.cssClass);
+            }
+            this.element.setAttribute('role', 'main');
+            classList(this.element, addClasses, removeClasses);
         }
-        else {
-            removeClasses.push(RTL_CLASS);
-        }
-        if (this.isAdaptive) {
-            addClasses.push(DEVICE_CLASS);
-        }
-        else {
-            removeClasses.push(DEVICE_CLASS);
-        }
-        if (this.cssClass) {
-            addClasses.push(this.cssClass);
-        }
-        classList(this.element, addClasses, removeClasses);
         this.element.style.width = formatUnit(this.width);
         this.element.style.height = formatUnit(this.height);
         createSpinner({ target: this.element });
@@ -2739,7 +3310,9 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'enableRtl':
                 case 'locale':
-                    this.refresh();
+                    if (!this.isBlazorRender()) {
+                        this.refresh();
+                    }
                     break;
                 case 'width':
                     this.element.style.width = formatUnit(newProp.width);
@@ -2753,11 +3326,18 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'dataSource':
                 case 'query':
-                    this.dataModule = new Data(this);
+                    if (!this.isBlazorRender()) {
+                        this.dataModule = new Data(this);
+                    }
                     break;
                 case 'columns':
                 case 'constraintType':
-                    this.notify(dataReady, { processedData: this.kanbanData });
+                    if (!this.isBlazorRender()) {
+                        this.notify(dataReady, { processedData: this.kanbanData });
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
                 case 'swimlaneSettings':
                     this.onSwimlaneSettingsPropertyChanged(newProp.swimlaneSettings, oldProp.swimlaneSettings);
@@ -2780,7 +3360,14 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     }
                     if (newProp.enableTooltip) {
                         this.tooltipModule = new KanbanTooltip(this);
-                        this.layoutModule.refreshCards();
+                        if (!this.isBlazorRender()) {
+                            this.layoutModule.refreshCards();
+                        }
+                    }
+                    break;
+                case 'dialogSettings':
+                    if (newProp.dialogSettings) {
+                        this.dialogModule = new KanbanDialog(this);
                     }
                     break;
                 case 'allowKeyboard':
@@ -2793,7 +3380,12 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'stackedHeaders':
-                    this.layoutModule.refreshHeaders();
+                    if (!this.isBlazorRender()) {
+                        this.layoutModule.refreshHeaders();
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
                 default:
                     break;
@@ -2810,7 +3402,12 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 case 'showItemCount':
                 case 'template':
                 case 'sortBy':
-                    this.notify(dataReady, { processedData: this.kanbanData });
+                    if (!this.isBlazorRender()) {
+                        this.notify(dataReady, { processedData: this.kanbanData });
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
             }
         }
@@ -2823,19 +3420,27 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 case 'headerField':
                 case 'contentField':
                 case 'template':
-                    this.layoutModule.refreshCards();
+                    if (!this.isBlazorRender()) {
+                        this.layoutModule.refreshCards();
+                    }
+                    else {
+                        this.notifyChange();
+                    }
                     break;
                 case 'selectionType':
                     var cards = this.getSelectedCards();
                     if (cards.length > 0) {
                         removeClass(cards, CARD_SELECTION_CLASS);
+                        this.layoutModule.disableAttributeSelection(cards);
                     }
                     break;
             }
         }
     };
     Kanban.prototype.initializeModules = function () {
-        this.dataModule = new Data(this);
+        if (!this.isBlazorRender()) {
+            this.dataModule = new Data(this);
+        }
         this.layoutModule = new LayoutRender(this);
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
@@ -2843,12 +3448,43 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
         this.actionModule = new Action(this);
         this.crudModule = new Crud(this);
         this.dragAndDropModule = new DragAndDrop(this);
+        this.dialogModule = new KanbanDialog(this);
         if (this.enableTooltip) {
             this.tooltipModule = new KanbanTooltip(this);
         }
         if (Browser.isDevice || Browser.isTouch) {
             this.touchModule = new KanbanTouch(this);
         }
+    };
+    Kanban.prototype.notifyChange = function () {
+        // tslint:disable-next-line
+        this.interopAdaptor.invokeMethodAsync('PropertyChanged');
+    };
+    Kanban.prototype.isDevice = function (ref) {
+        if (Browser.isDevice && this.isBlazorRender() && ref) {
+            // tslint:disable-next-line
+            ref.invokeMethodAsync('IsDevice', true);
+        }
+    };
+    /**
+     * @hidden
+     */
+    Kanban.prototype.isBlazorRender = function () {
+        return isBlazor() && this.isServerRendered;
+    };
+    /**
+     * @hidden
+     */
+    Kanban.prototype.updateDataSource = function (data) {
+        this.kanbanData = data.Result;
+    };
+    /**
+     * @hidden
+     */
+    Kanban.prototype.dataReady = function (data) {
+        this.kanbanData = data.Result;
+        this.hideSpinner();
+        this.notify(dataReady, { processedData: {} });
     };
     Kanban.prototype.destroyModules = function () {
         if (this.layoutModule) {
@@ -2863,6 +3499,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
             this.touchModule.destroy();
             this.touchModule = null;
         }
+        this.dialogModule = null;
         this.actionModule = null;
         this.crudModule = null;
         this.dataModule = null;
@@ -2884,6 +3521,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the card details based on card ID from the board.
+     * @deprecated
      * @method getCardDetails
      * @param {Element} target Accepts the card element to get the details.
      * @returns {{[key: string]: Object}}
@@ -2899,6 +3537,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the column data based on column key input.
+     * @deprecated
      * @method getColumnData
      * @param {string} columnKey Accepts the column key to get the objects.
      * @returns {Object[]}
@@ -2908,6 +3547,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the swimlane column data based on swimlane keyField input.
+     * @deprecated
      * @method getSwimlaneData
      * @param {string} keyField Accepts the swimlane keyField to get the objects.
      * @returns {Object[]}
@@ -2938,6 +3578,27 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      */
     Kanban.prototype.hideSpinner = function () {
         hideSpinner(this.element);
+    };
+    /**
+     * To manually open the dialog.
+     * @deprecated
+     * @method openDialog
+     * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
+     *  editing of existing cards or deletion of existing card. The applicable action names are `Add`, `Edit` and `Delete`.
+     * @param {Object} data It can be card data.
+     * @returns {void}
+     */
+    Kanban.prototype.openDialog = function (action, data) {
+        this.dialogModule.openDialog(action, data);
+    };
+    /**
+     * To manually close the dialog.
+     * @deprecated
+     * @method closeDialog
+     * @returns {void}
+     */
+    Kanban.prototype.closeDialog = function () {
+        this.dialogModule.closeDialog();
     };
     /**
      * Adds the new card to the data source of Kanban and layout.
@@ -2973,6 +3634,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Add the column to Kanban board dynamically based on the provided column options and index in the argument list.
+     * @deprecated
      * @method addColumn
      * @param {ColumnsModel} columnOptions Defines the properties to new column that are going to be added in the board.
      * @param {number} index Defines the index of column to add the new column.
@@ -2983,6 +3645,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Deletes the column based on the provided index value.
+     * @deprecated
      * @method deleteColumn
      * @param {number} index Defines the index of column to delete the existing column from Kanban board.
      * @returns {void}
@@ -2992,6 +3655,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Shows the column from hidden based on the provided key in the columns.
+     * @deprecated
      * @method showColumn
      * @param {string} key Accepts the hidden column key name to be shown from the hidden state in board.
      * @returns {void}
@@ -3001,6 +3665,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Hides the column from Kanban board based on the provided key in the columns.
+     * @deprecated
      * @method hideColumn
      * @param {string} key Accepts the visible column key name to be hidden from the board.
      * @returns {void}
@@ -3015,13 +3680,17 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      */
     Kanban.prototype.destroy = function () {
         this.destroyModules();
-        [].slice.call(this.element.childNodes).forEach(function (node) { return detach(node); });
+        if (!this.isBlazorRender()) {
+            [].slice.call(this.element.childNodes).forEach(function (node) { return detach(node); });
+        }
         var removeClasses = [ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        _super.prototype.destroy.call(this);
+        if (!this.isBlazorRender()) {
+            _super.prototype.destroy.call(this);
+        }
     };
     __decorate([
         Property()
@@ -3060,11 +3729,17 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
         Complex({}, CardSettings)
     ], Kanban.prototype, "cardSettings", void 0);
     __decorate([
+        Complex({}, DialogSettings)
+    ], Kanban.prototype, "dialogSettings", void 0);
+    __decorate([
         Property(true)
     ], Kanban.prototype, "allowDragAndDrop", void 0);
     __decorate([
         Property(false)
     ], Kanban.prototype, "enableTooltip", void 0);
+    __decorate([
+        Property(false)
+    ], Kanban.prototype, "enablePersistence", void 0);
     __decorate([
         Property()
     ], Kanban.prototype, "tooltipTemplate", void 0);
@@ -3094,7 +3769,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     ], Kanban.prototype, "cardDoubleClick", void 0);
     __decorate([
         Event()
-    ], Kanban.prototype, "columnRendered", void 0);
+    ], Kanban.prototype, "queryCellInfo", void 0);
     __decorate([
         Event()
     ], Kanban.prototype, "cardRendered", void 0);
@@ -3107,6 +3782,12 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Kanban.prototype, "dragStop", void 0);
+    __decorate([
+        Event()
+    ], Kanban.prototype, "dialogOpen", void 0);
+    __decorate([
+        Event()
+    ], Kanban.prototype, "dialogClose", void 0);
     Kanban = __decorate([
         NotifyPropertyChanges
     ], Kanban);
@@ -3125,5 +3806,5 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
  * Export Kanban component
  */
 
-export { Kanban, actionBegin, actionComplete, actionFailure, cardClick, cardDoubleClick, cardRendered, columnRendered, dataBinding, dataBound, dragStart, drag, dragStop, documentClick, contentReady, dataReady, bottomSpace, cardSpace, toggleWidth };
+export { Kanban, actionBegin, actionComplete, actionFailure, cardClick, cardDoubleClick, cardRendered, queryCellInfo, dataBinding, dataBound, dragStart, drag, dragStop, documentClick, dialogOpen, dialogClose, contentReady, dataReady, bottomSpace, cardSpace, toggleWidth };
 //# sourceMappingURL=ej2-kanban.es5.js.map

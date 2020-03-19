@@ -42,8 +42,10 @@ export class LayoutAnimation {
                 let current: LayoutAnimation = this;
                 setIntervalObjects[x] = setInterval(
                     () => {
+                        diagram.allowServerDataBinding = false;
                         opacity <= 1 ? this.updateOpacity(node, opacity, diagram) : clearInterval(setIntervalObjects[0]);
                         opacity += .2;
+                        diagram.allowServerDataBinding = true;
                     },
                     20);
             }

@@ -31,6 +31,21 @@ require.config({
         name: '@syncfusion/ej2-svg-base',
         location: 'node_modules/@syncfusion/ej2-svg-base/dist',
         main: 'ej2-svg-base.umd.min.js'           
+      },
+      {
+        name: '@syncfusion/ej2-pdf-export',
+        location: 'node_modules/@syncfusion/ej2-pdf-export/dist',
+        main: 'ej2-pdf-export.umd.min.js'
+      },
+      {
+        name: '@syncfusion/ej2-file-utils',
+        location: 'node_modules/@syncfusion/ej2-file-utils/dist',
+        main: 'ej2-file-utils.umd.min.js'
+      },
+      {
+        name: '@syncfusion/ej2-compression',
+        location: 'node_modules/@syncfusion/ej2-compression/dist',
+        main: 'ej2-compression.umd.min.js'
       }
     // Include dependent packages
   ],

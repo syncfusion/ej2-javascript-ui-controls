@@ -65,7 +65,7 @@ export class YearEvent extends TimelineEvent {
         let workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS);
         this.cellWidth = workCell.offsetWidth;
         this.cellHeight = workCell.offsetHeight;
-        this.cellHeader = (workCell.querySelector('.' + cls.DATE_HEADER_CLASS) as HTMLElement).offsetHeight;
+        this.cellHeader = util.getOuterHeight(workCell.querySelector('.' + cls.DATE_HEADER_CLASS));
         let eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
         let wrapperCollection: HTMLElement[] =

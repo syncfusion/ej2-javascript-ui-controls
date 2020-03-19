@@ -10,7 +10,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * @default Syncfusion.EJ2.Grids.SelectionMode.Row
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionMode
+     * @blazorType Syncfusion.Blazor.Grids.SelectionMode
      */
     @Property('Row')
     public mode: SelectionMode;
@@ -23,7 +23,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectionMode
+     * @blazorType Syncfusion.Blazor.Grids.CellSelectionMode
      */
     @Property('Flow')
     public cellSelectionMode: CellSelectionMode;
@@ -35,7 +35,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * @default Syncfusion.EJ2.Grids.SelectionType.Single
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionType
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionType
+     * @blazorType Syncfusion.Blazor.Grids.SelectionType
      */
     @Property('Single')
     public type: SelectionType;
@@ -55,7 +55,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * @default Syncfusion.EJ2.Grids.CheckboxSelectionType.Default
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CheckboxSelectionType
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CheckboxSelectionType
+     * @blazorType Syncfusion.Blazor.Grids.CheckboxSelectionType
      */
     @Property('Default')
     public checkboxMode: CheckboxSelectionType;

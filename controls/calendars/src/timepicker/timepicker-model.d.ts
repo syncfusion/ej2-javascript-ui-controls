@@ -1,4 +1,4 @@
-﻿import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID, isBlazor } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, cssClass as ListBaseClasses, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
+﻿import { EventHandler, Property, Internationalization, NotifyPropertyChanges, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
 import {TimeFormatObject,ChangeEventArgs,PopupEventArgs,ItemEventArgs} from "./timepicker";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -130,7 +130,7 @@ export interface TimePickerModel extends ComponentModel{
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      * @isEnumeration true
      */
     floatLabelType?: FloatLabelType | string;
@@ -186,7 +186,7 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Gets or sets the value of the component. The value is parsed based on the culture specific time format.
      * @default null
-     * @isBlazorNullableType true
+     * @isGenericType true
      */
     value?: Date;
 

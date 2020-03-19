@@ -495,8 +495,8 @@ export class BasicFormulas {
         if (startDate[0] === '#') {
             return startDate;
         }
-        let d1: string | Date = this.parent.parseDate(endDate);
-        let d2: string | Date = this.parent.parseDate(startDate);
+        let d1: string | Date = this.parent.intToDate(endDate);
+        let d2: string | Date = this.parent.intToDate(startDate);
         if (d1.toString()[0] === '#') {
             return d1.toString();
         }

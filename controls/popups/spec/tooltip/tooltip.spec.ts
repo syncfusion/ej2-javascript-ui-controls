@@ -113,7 +113,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 cssClass: 'myCustomClass', content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.classList.contains('myCustomClass')).toEqual(true);
             tooltip.close();
@@ -123,7 +123,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.cssClass = "myCustomClass";
             tooltip.dataBind();
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
@@ -136,7 +136,7 @@ describe('Tooltip Control', () => {
                 content: 'Tooltip Content',
                 cssClass: "myCustomClass1"
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.classList.contains('myCustomClass1')).toEqual(true);
             tooltip.cssClass = "myCustomClass2";
@@ -155,7 +155,7 @@ describe('Tooltip Control', () => {
             }, '#tstooltip');
             tooltip.cssClass = "myCustomClass";
             tooltip.dataBind();
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.classList.contains('myCustomClass')).toEqual(true);
             tooltip.close();
@@ -165,7 +165,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 enableRtl: true, content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.classList.contains('e-rtl')).toEqual(true);
             tooltip.close();
@@ -175,7 +175,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.enableRtl = true;
             tooltip.dataBind();
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
@@ -189,7 +189,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({
                 enableHtmlSanitizer: false, content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             var ele = document.body;
             expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
             tooltip.close();
@@ -198,7 +198,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({
                 enableHtmlSanitizer: true, content: 'Tooltip Content<style>body{background:blue}<\/style>'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             var ele = document.body;
             expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
             tooltip.close();
@@ -208,7 +208,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({
                 enableHtmlSanitizer: false, content: tipcontent
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             var ele = document.body;
             expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
             tooltip.close();
@@ -217,7 +217,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({
                 enableHtmlSanitizer: true, content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             var ele = document.body;
             expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
             tooltip.close();
@@ -227,7 +227,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.enableRtl = true;
             tooltip.dataBind();
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
@@ -244,7 +244,7 @@ describe('Tooltip Control', () => {
             }, '#tstooltip');
             tooltip.enableRtl = true;
             tooltip.dataBind();
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.classList.contains('e-rtl')).toEqual(true);
             tooltip.enableRtl = false;
@@ -257,7 +257,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 width: '200px', content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.style.width).toEqual('200px');
             tooltip.width = 'auto';
@@ -270,7 +270,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 height: '50px', content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.style.height).toEqual('50px');
             tooltip.height = 'auto';
@@ -283,7 +283,7 @@ describe('Tooltip Control', () => {
             tooltip.height = '300px';
             tooltip.width = '350px';
             tooltip.dataBind();
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.style.height).toEqual('300px');
             expect(element.style.width).toEqual('350px');
@@ -293,7 +293,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 width: 350, height: 300
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.style.height).toEqual('300px');
             expect(element.style.width).toEqual('350px');
@@ -304,7 +304,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: tipcontent
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.querySelector('.e-tip-content').innerHTML).toEqual('<p>tooltip content from html</p>');
             tooltip.refresh();
@@ -337,7 +337,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({ animation: { open: { effect: 'None' }, close: { effect: 'None' } } });
             tooltip.appendTo('#tstooltip');
             let target: HTMLElement = document.getElementById('tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             expect(target.getAttribute('title')).toBeNull();
             expect(target.getAttribute('data-content')).toEqual('tooltip with title attribute');
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
@@ -351,13 +351,13 @@ describe('Tooltip Control', () => {
                 content: 'tooltip from button', height: '40px'
             }, '#btn');
             let describedby: string = document.getElementById('btn').getAttribute('aria-describedby');
-            tooltip.open(document.getElementById('btn'));
+            tooltip.open(document.getElementById('btn')); // Open the tooltip based on target element specified in optional parameter
             expect(document.getElementById('btn').getAttribute('aria-describedby').indexOf('descriptionClose')).toEqual(0);
             tooltip.close();
             expect(document.getElementById('btn').getAttribute('aria-describedby')).toEqual(describedby);
             tooltip.position = 'RightCenter';
             tooltip.dataBind();
-            tooltip.open(document.getElementById('btn'));
+            tooltip.open(document.getElementById('btn')); // Open the tooltip based on target element specified in optional parameter
         });
     });
     describe('Tooltip Mouse hover events', () => {
@@ -373,10 +373,14 @@ describe('Tooltip Control', () => {
             }
             document.body.innerHTML = '';
         });
-        it('Mouse hover event testing', () => {
+        it('Mouse hover event testing with isInteracted', () => {
+            function tooltipFunction(args: TooltipEventArgs) {
+                expect(args.isInteracted).toBe(true);
+            }
             tooltip = new Tooltip({
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
-                width: '100px', height: '50px', content: 'Tooltip Content'
+                width: '100px', height: '50px', content: 'Tooltip Content', beforeRender: tooltipFunction,
+                beforeOpen: tooltipFunction, beforeClose: tooltipFunction, afterClose: tooltipFunction, afterOpen: tooltipFunction
             }, '#tstooltip');
             let target: HTMLElement = document.getElementById('tstooltip');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
@@ -505,7 +509,7 @@ describe('Tooltip Control', () => {
             document.getElementById("tstooltip").click();
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
             let target1: HTMLElement = document.getElementById('tstooltip');
-            tooltip.open(target1);
+            tooltip.open(target1); // Open the tooltip based on target element specified in optional parameter
             expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
             tooltip.close();
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
@@ -873,8 +877,8 @@ describe('Tooltip Control', () => {
             }, '#targetContainer');
             let target1: HTMLElement = document.getElementById('target');
             triggerMouseEvent(target1, 'mouseover');
-            function onCollision(e: TooltipEventArgs){
-              expect(e.collidedPosition).toBe('BottomCenter');
+            function onCollision(e: TooltipEventArgs) {
+                expect(e.collidedPosition).toBe('BottomCenter');
             }
             let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             let tipHeight: number = 8;
@@ -1204,7 +1208,7 @@ describe('Tooltip Control', () => {
         it('close on escape key', () => {
             let target1: HTMLElement = document.getElementById('tstooltip');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
-            tooltip.open(target1);
+            tooltip.open(target1); // Open the tooltip based on target element specified in optional parameter
             let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             tooltip.keyDown({ keyCode: 13, altKey: false, ctrlKey: false, shiftKey: false });
             expect(isVisible(tooltipEle)).toBe(true);
@@ -1262,7 +1266,7 @@ describe('Tooltip Control', () => {
                 afterClose: tipFn1
             });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             expect(tipFn1).toHaveBeenCalledTimes(2);
             tooltip.refresh();
             tooltip.close();
@@ -1272,39 +1276,69 @@ describe('Tooltip Control', () => {
         it('cancel before render event', () => {
             function onBeforeRender(args: TooltipEventArgs) {
                 args.cancel = true;
+                expect(args.isInteracted).toBe(false);
             }
             tooltip = new Tooltip({
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 beforeRender: onBeforeRender
             });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(tooltipEle).toBeNull();
         });
         it('cancel before open event', () => {
             function cancelbeforeOpen(args: TooltipEventArgs) {
                 args.cancel = true;
+                expect(args.isInteracted).toBe(false);
             }
             tooltip = new Tooltip({
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 beforeOpen: cancelbeforeOpen
             });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(tooltipEle).toBeNull();
+        });
+        it('after open event', () => {
+            function cancelbeforeOpen(args: TooltipEventArgs) {
+                expect(args.isInteracted).toBe(false);
+            }
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                afterOpen: cancelbeforeOpen
+            });
+            tooltip.appendTo('#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+        });
+        it('after close event', () => {
+            function cancelbeforeOpen(args: TooltipEventArgs) {
+                expect(args.isInteracted).toBe(false);
+            }
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                afterOpen: cancelbeforeOpen
+            });
+            tooltip.appendTo('#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter            
+            tooltip.close();
             let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(tooltipEle).toBeNull();
         });
         it('cancel before close event', () => {
             function cancelbeforeClose(args: TooltipEventArgs) {
                 args.cancel = true;
+                expect(args.isInteracted).toBe(false);
             }
             let tooltip: any = new Tooltip({
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 beforeClose: cancelbeforeClose
             });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.close();
             let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(isVisible(tooltipEle)).toEqual(true);
@@ -1390,7 +1424,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({
                 width: '100px', height: '40px', animation: { open: { effect: 'FadeIn', duration: 500, delay: 100 } }
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             setTimeout(function () {
                 expect((<HTMLElement>document.querySelector('.e-tooltip-wrap')).classList.contains("e-popup-open")).toEqual(true);
                 expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
@@ -1401,7 +1435,7 @@ describe('Tooltip Control', () => {
         it("delay to open tooltip", function (done) {
             tooltip = new Tooltip({ width: '100px', height: '40px', openDelay: 600, animation: { open: { effect: 'None' } } });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             setTimeout(function () {
                 expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
                 done();
@@ -1411,7 +1445,7 @@ describe('Tooltip Control', () => {
         it("delay to open tooltip", function (done) {
             tooltip = new Tooltip({ width: '100px', height: '40px', openDelay: 600, animation: { open: { effect: 'None' } } });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             setTimeout(function () {
                 tooltip.close();
             }, 300);
@@ -1424,7 +1458,7 @@ describe('Tooltip Control', () => {
         it("apply animation through public method open test case", function (done) {
             tooltip = new Tooltip({ width: '100px', height: '40px' }, '#tstooltip');
             let animationOptions: Object = { effect: 'FadeIn', duration: 400, delay: 10 };
-            tooltip.open(document.getElementById('tstooltip'), animationOptions);
+            tooltip.open(document.getElementById('tstooltip'), animationOptions); // Open the tooltip based on target element specified in optional parameter
             setTimeout(function () {
                 expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
                 done();
@@ -1455,7 +1489,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({
                 width: '100px', height: '40px', animation: { close: { effect: 'FadeOut', duration: 500, delay: 100 } }
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.close();
             setTimeout(function () {
                 expect(document.querySelector('.e-tooltip-wrap') as HTMLElement).toBeNull();
@@ -1466,7 +1500,7 @@ describe('Tooltip Control', () => {
         it("delay to close tooltip", function (done) {
             tooltip = new Tooltip({ width: '100px', height: '40px', closeDelay: 600, animation: { close: { effect: 'None' } } });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.close();
             setTimeout(function () {
                 expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
@@ -1479,7 +1513,7 @@ describe('Tooltip Control', () => {
         it("delay to close tooltip", function (done) {
             tooltip = new Tooltip({ width: '100px', height: '40px', closeDelay: 800, animation: { close: { effect: 'None' } } });
             tooltip.appendTo('#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.close();
             setTimeout(function () {
                 expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
@@ -1499,7 +1533,7 @@ describe('Tooltip Control', () => {
                 width: '100px', height: '40px'
             }, '#tstooltip');
             let animationOptions: Object = { effect: 'FadeOut', duration: 400, delay: 10 };
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.close(animationOptions);
             setTimeout(function () {
                 expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
@@ -1535,14 +1569,14 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({ animation: { open: { effect: 'None' }, close: { effect: 'None' } } }, '#tstooltip');
             tooltip.content = 'Tooltip Content';
             tooltip.dataBind();
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(element.querySelector('.e-tip-content').innerHTML).toEqual('Tooltip Content');
             tooltip.close();
         });
         it('content property changes when popup element does not in document', () => {
             tooltip = new Tooltip({ animation: { open: { effect: 'None' }, close: { effect: 'None' } } }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             tooltip.content = 'Tooltip Content';
             tooltip.dataBind();
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
@@ -1597,13 +1631,13 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 tipPointerPosition: 'Start', content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             expect(isVisible(document.querySelector('.e-tooltip-wrap'))).toBe(true);
             tooltip.close();
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
             tooltip.tipPointerPosition = 'Middle';
             tooltip.dataBind();
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             expect(isVisible(document.querySelector('.e-tooltip-wrap'))).toBe(true);
             tooltip.tipPointerPosition = 'End';
             tooltip.dataBind();
@@ -1616,7 +1650,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let x: number = parseInt((<HTMLElement>document.querySelector('.e-tooltip-wrap')).style.left, 10);
             let y: number = parseInt((<HTMLElement>document.querySelector('.e-tooltip-wrap')).style.top, 10);
             tooltip.offsetX = 20;
@@ -1630,14 +1664,14 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let x: number = parseInt((<HTMLElement>document.querySelector('.e-tooltip-wrap')).style.left, 10);
             let y: number = parseInt((<HTMLElement>document.querySelector('.e-tooltip-wrap')).style.top, 10);
             tooltip.close();
             tooltip.offsetX = 20;
             tooltip.offsetY = 20;
             tooltip.dataBind();
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             expect(parseInt((<HTMLElement>document.querySelector('.e-tooltip-wrap')).style.left, 10)).toEqual(x + 20);
             expect(parseInt((<HTMLElement>document.querySelector('.e-tooltip-wrap')).style.top, 10)).toEqual(y + 20);
         });
@@ -1662,7 +1696,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             (<HTMLElement>document.getElementById('tstooltip')).style.left = "10px";
             tooltip.refresh(document.getElementById('tstooltip'));
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
@@ -1672,13 +1706,22 @@ describe('Tooltip Control', () => {
             expect(document.querySelector('.e-tooltip-wrap') as HTMLElement).toBeNull();
             tooltip.close();
         });
+        it("public method open test case with empty parameter", function (done) {
+            tooltip = new Tooltip({ width: '100px', height: '40px' }, '#tstooltip');
+            let animationOptions: Object = { effect: 'FadeIn', duration: 400, delay: 10 };
+            tooltip.open();
+            setTimeout(function () {
+                expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
+                done();
+            }, 500);
+        });        
         it('change height and width dynamically test cases', () => {
             let elem: HTMLElement = document.createElement('button');
             let tooltip = new Tooltip({
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let tip: HTMLElement = document.querySelector('.e-arrow-tip') as HTMLElement;
             let tipPreviousVal = tip.style.left;
             elem.onclick = function () {
@@ -1706,8 +1749,18 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip Content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('hiddenEle'));
+            tooltip.open(document.getElementById('hiddenEle')); // Open the tooltip based on target element specified in optional parameter
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+        });
+        it("public method close test case with empty target", function (done) {
+            tooltip = new Tooltip({ width: '100px', height: '40px' }, '#tstooltip');
+            let animationOptions: Object = { effect: 'FadeIn', duration: 400, delay: 10 };
+            document.getElementById("tstooltip").remove();
+            tooltip.close();
+            setTimeout(function () {                
+                expect((document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(null);
+                done();
+            }, 500);
         });
     });
     describe('Collision testing on target and container resizing', () => {
@@ -1755,12 +1808,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('TopCenter');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('BottomCenter');
                 done();
             }, 500);
@@ -1777,12 +1830,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('TopRight');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('BottomRight');
                 done();
             }, 500);
@@ -1799,12 +1852,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('TopLeft');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('BottomLeft');
                 done();
             }, 500);
@@ -1821,12 +1874,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('TopRight');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('BottomRight');
                 done();
             }, 500);
@@ -1843,12 +1896,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('BottomCenter');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('TopCenter');
                 done();
             }, 500);
@@ -1865,12 +1918,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('BottomRight');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('TopRight');
                 done();
             }, 500);
@@ -1887,12 +1940,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('BottomLeft');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('TopLeft');
                 done();
             }, 500);
@@ -1909,12 +1962,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('LeftTop');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('LeftBottom');
                 done();
             }, 500);
@@ -1931,12 +1984,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('LeftTop');
             tooltip.close();
             setTimeout(() => {
                 block.style.width = '130px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('TopLeft');
                 done();
             }, 500);
@@ -1953,12 +2006,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('LeftBottom');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('LeftTop');
                 done();
             }, 500);
@@ -1975,12 +2028,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('LeftBottom');
             tooltip.close();
             setTimeout(() => {
                 block.style.width = '130px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('BottomLeft');
                 done();
             }, 500);
@@ -1997,12 +2050,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('RightTop');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('RightBottom');
                 done();
             }, 500);
@@ -2019,12 +2072,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('RightTop');
             tooltip.close();
             setTimeout(() => {
                 block.style.width = '130px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('TopRight');
                 done();
             }, 500);
@@ -2041,12 +2094,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('RightBottom');
             tooltip.close();
             setTimeout(() => {
                 block.style.height = '30px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('RightTop');
                 done();
             }, 500);
@@ -2063,12 +2116,12 @@ describe('Tooltip Control', () => {
                 }
             });
             tooltip.appendTo('.block');
-            tooltip.open(button);
+            tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
             expect(currentPosition).toBe('RightBottom');
             tooltip.close();
             setTimeout(() => {
                 block.style.width = '130px';
-                tooltip.open(button);
+                tooltip.open(button); // Open the tooltip based on target element specified in optional parameter
                 expect(currentPosition).toBe('BottomRight');
                 done();
             }, 500);
@@ -2093,7 +2146,7 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'Tooltip content'
             }, '#tstooltip');
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
             triggerScrollEvent(document.body, 1000);
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
@@ -2148,7 +2201,7 @@ describe('Tooltip Control', () => {
             tooltip = new Tooltip({ animation: { open: { effect: 'None' }, close: { effect: 'None' } } }, '#tstooltip');
             tooltip.content = '<div>Blazor Content</div>';
             tooltip.dataBind();
-            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             console.log(element.querySelector('.e-tip-content').innerHTML);
             expect(element.querySelector('.e-tip-content').innerHTML).toEqual('<div>Blazor Content</div>');

@@ -1,4 +1,4 @@
-import { SheetModel } from './index';import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { SheetModel } from './index';import { ChildProperty, Property } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class Column
@@ -28,7 +28,6 @@ export interface ColumnModel {
     /**
      * To hide/show the column in spreadsheet.
      * @default false
-     * @hidden
      */
     hidden?: boolean;
 

@@ -48,11 +48,11 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Specifies the details view settings of the file manager.
-     * @default {     
+     * @default {
      * columns: [{
      * field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
-     * customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified',
-     * minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
+     * customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified', type: 'dateTime',
+     * format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
      * template: '<span class="e-fe-size">${size}</span>' }
      * ]
      * }

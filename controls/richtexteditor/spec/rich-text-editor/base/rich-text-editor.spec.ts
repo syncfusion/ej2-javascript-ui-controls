@@ -1781,7 +1781,7 @@ describe('RTE base module', () => {
             rteObj.executeCommand('insertHTML', 'inserted an html');
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
         });
-        
+
         it('ensure insert image on execute command', () => {
             destroy(rteObj);
             rteObj = renderRTE({
@@ -1799,7 +1799,7 @@ describe('RTE base module', () => {
             expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
         });
 
-        
+
         it('ensure insert image on execute command with arguments', () => {
             destroy(rteObj);
             rteObj = renderRTE({
@@ -3577,7 +3577,7 @@ describe('EJ2-26359 Clear Format is not working after applied selection and pare
         let item: HTMLElement = rteElement.querySelector("#" + controlId + '_toolbar_ClearFormat');
         dispatchEvent(item, 'mousedown');
         item.click();
-        let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><p>column 1<br>column 2</p><p><br></p><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"></p>`;
+        let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><p>column 1<br>column 2</p><p><br></p><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`;
         expect(expectedHTML === rteObj.inputElement.innerHTML).toBe(true);
     });
     afterAll(() => {
@@ -3697,19 +3697,19 @@ describe('XHTML validation', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div> <p><img src="image.jpg" alt=""></p><p> dfg<img src="image.jpg" alt=""> ds</p> </div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p> <img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p><p> </p></div>');
     });
     it("removeTags", function () {
         rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   </div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul><p> </p><ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol><p>   </p></div>');
         rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><span> </span>   <span></span></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table></table>   <span></span><p></p></div>');
         rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
@@ -3776,19 +3776,19 @@ describe('XHTML validation -iframe', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div> <p><img src="image.jpg" alt=""></p><p> dfg<img src="image.jpg" alt=""> ds</p> </div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p> <img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p><p> </p></div>');
     });
     it("removeTags", function () {
         rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   </div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul><p> </p><ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol><p>   </p></div>');
         rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><span> </span>   <span></span></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table></table>   <span></span><p></p></div>');
         rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
@@ -3840,65 +3840,35 @@ describe('IFrame - Util - setEditFrameFocus method testing', function () {
         expect(document.activeElement.tagName).toEqual('BODY');
     });
 });
-describe('RTE content element height check-Pixel', function () {
-    let rteObj: any;
-    let elem: any;
-    beforeAll(function (done) {
-        elem = document.createElement('div');
-        elem.id = 'defaultRTE';
-        document.body.appendChild(elem);
-        document.getElementById('defaultRTE').style.display='none';
-        rteObj = new RichTextEditor({
-            height: '100px',
-            toolbarSettings :{
-                enable : false
+
+describe('Check undo in execCommand', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: "<p>RTE</p>" , 
+            toolbarSettings: {
+              items: [ 'Undo', 'Redo']
             }
         });
-        rteObj.appendTo("#defaultRTE");
-       
         done();
     });
-    it('Check pixel', function (done) {
-        document.getElementById('defaultRTE').style.display='block';
-        setTimeout(() => {
-            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('100px');
-            done();
-        }, 100);
-     
+    it('Image insert execCommand method', () => {
+        (rteObj as any).inputElement.focus();
+        let curDocument: Document;
+        curDocument = rteObj.contentModule.getDocument();
+        setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
+        let el = document.createElement("img");
+        el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png";
+        (rteObj as any).inputElement.focus();
+        rteObj.executeCommand("insertImage", el, { undo: true });
+        expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
+        expect(rteObj.element.querySelector('[title="Undo"]').classList.contains('e-overlay')).toBe(false);
     });
-    afterAll(function () {
+    afterAll(() => {
         destroy(rteObj);
     });
 });
-describe('RTE content element height check-percentage', function () {
-    let rteObj: any;
-    let elem : any;
-    beforeAll(function (done) {
-        elem = document.createElement('div');
-        elem.id = 'defaultRTE';
-        document.body.appendChild(elem);
-        (document.getElementById('defaultRTE') as HTMLElement).style.display='none';
-        rteObj = new RichTextEditor({
-            height: '50%',
-            toolbarSettings :{
-                enable : false
-            }
-        });
-        rteObj.appendTo("#defaultRTE");
-        done();
-    });
-    it('check pecentage', function (done) {
-        document.getElementById('defaultRTE').style.display='block';
-        setTimeout(() => {
-            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('50%');
-            done();
-        }, 100);
-     
-    });
-    afterAll(function () {
-        destroy(rteObj);
-    });
-});
+
 describe('Check destroy method', () => {
     let rteObj: RichTextEditor;
     beforeAll((done: Function) => {
@@ -3914,4 +3884,65 @@ describe('Check destroy method', () => {
     afterAll(() => {
         destroy(rteObj);
     });
+
+    describe('RTE content element height check-Pixel', function () {
+        let rteObj: any;
+        let elem: any;
+        beforeAll(function (done) {
+            elem = document.createElement('div');
+            elem.id = 'defaultRTE';
+            document.body.appendChild(elem);
+            document.getElementById('defaultRTE').style.display='none';
+            rteObj = new RichTextEditor({
+                height: '100px',
+                toolbarSettings :{
+                    enable : false
+                }
+            });
+            rteObj.appendTo("#defaultRTE");
+           
+            done();
+        });
+        it('Check pixel', function (done) {
+            document.getElementById('defaultRTE').style.display='block';
+            setTimeout(() => {
+                expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('100px');
+                done();
+            }, 100);
+         
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+    });
+    describe('RTE content element height check-percentage', function () {
+        let rteObj: any;
+        let elem : any;
+        beforeAll(function (done) {
+            elem = document.createElement('div');
+            elem.id = 'defaultRTE';
+            document.body.appendChild(elem);
+            (document.getElementById('defaultRTE') as HTMLElement).style.display='none';
+            rteObj = new RichTextEditor({
+                height: '50%',
+                toolbarSettings :{
+                    enable : false
+                }
+            });
+            rteObj.appendTo("#defaultRTE");
+            done();
+        });
+        it('check pecentage', function (done) {
+            document.getElementById('defaultRTE').style.display='block';
+            setTimeout(() => {
+                expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('50%');
+                done();
+            }, 100);
+         
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+    });
+    
 });

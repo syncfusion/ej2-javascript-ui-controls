@@ -32,7 +32,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         if (this.parent.groupSettings.columns.length === 0) {
             return super.generateRows(data, args);
         }
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'infiniteScroll';
+        let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && args.requestType === 'infiniteScroll';
         this.rows = [];
         this.index = this.parent.enableVirtualization || isInfiniteScroll ? args.startIndex : 0;
         for (let i: number = 0, len: number = data.length; i < len; i++) {
@@ -47,7 +47,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
     private getGroupedRecords(
         index: number, data: GroupedData, raw?: Object, parentid?: number, childId?: number, tIndex?: number, parentUid?: string): void {
-        let isRenderCaption: boolean = this.parent.infiniteScrollSettings.enableScroll && this.prevKey === data.key;
+        let isRenderCaption: boolean = this.parent.enableInfiniteScrolling && this.prevKey === data.key;
         let level: number = <number>raw;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid)) {

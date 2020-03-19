@@ -1,8 +1,8 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, classList, closest, compile, createElement, deleteObject, extend, formatUnit, getElement, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
+import { Edit, ForeignKey, Grid, Page, Predicate, Toolbar, ValueFormatter, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getForeignData, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
-import { ColumnMenu, ContextMenu, Edit as Edit$1, ExcelExport, Filter as Filter$1, Reorder, Resize, RowDD, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
+import { ColumnMenu, ContextMenu, Edit as Edit$1, ExcelExport, Filter, Reorder, Resize, RowDD, Selection, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { ContextMenu as ContextMenu$1, Tab, Toolbar as Toolbar$1 } from '@syncfusion/ej2-navigations';
 import { Count, HtmlEditor, Link, QuickToolbar, RichTextEditor, Toolbar as Toolbar$2 } from '@syncfusion/ej2-richtexteditor';
@@ -10,6 +10,7 @@ import { MaskedTextBox, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
+import { ElementLayouter, PdfBorderOverlapStyle, PdfColor, PdfCompositeField, PdfDashStyle, PdfDocument, PdfFontFamily, PdfFontStyle, PdfLayoutBreakType, PdfLayoutElement, PdfLayoutFormat, PdfLayoutResult, PdfLayoutType, PdfLineCap, PdfPage, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfStringLayouter, PdfTextAlignment, PdfVerticalAlignment, PdfWordWrapType, PointF, RectangleF, RowLayoutResult, SizeF } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Common methods used in Gantt
@@ -82,6 +83,12 @@ function getIndex(value, key1, collection, key2) {
         }
     }
     return index;
+}
+function pixelToPoint(value) {
+    return (value * 76) / 92;
+}
+function pointToPixel(value) {
+    return (value * 92) / 76;
 }
 
 /**
@@ -362,7 +369,7 @@ class DateProcessor {
         let totalHours = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
         let holidaysCount = isAutoSchedule ? this.getHolidaysCount(sDate, eDate) : 0;
         let totWorkDays = (totalHours - (weekendCount * 86400) - (holidaysCount * 86400)) / 86400; // working days between two dates
-        let nonWorkHours = this.getNonWorkingSecondsOnDate(sDate, eDate);
+        let nonWorkHours = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule);
         let totalNonWorkTime = (totWorkDays * (86400 - this.parent.secondsPerDay)) +
             (weekendCount * 86400) + (holidaysCount * 86400) + nonWorkHours;
         return totalNonWorkTime;
@@ -512,19 +519,22 @@ class DateProcessor {
      * @private
      * @param ganttProp
      */
-    getValidStartDate(ganttProp) {
+    getValidStartDate(ganttProp, isAuto) {
         let sDate = null;
-        if (isNullOrUndefined(ganttProp.startDate)) {
-            if (!isNullOrUndefined(ganttProp.endDate)) {
-                sDate = new Date(ganttProp.endDate.getTime());
+        let startDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        let endDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        let duration = !ganttProp.isAutoSchedule && ganttProp.autoDuration ? ganttProp.autoDuration : ganttProp.duration;
+        if (isNullOrUndefined(startDate)) {
+            if (!isNullOrUndefined(endDate)) {
+                sDate = new Date(endDate.getTime());
                 this.setTime(this.parent.defaultStartTime, sDate);
             }
-            else if (!isNullOrUndefined(ganttProp.duration)) {
+            else if (!isNullOrUndefined(duration)) {
                 sDate = this.getProjectStartDate(ganttProp);
             }
         }
         else {
-            sDate = new Date(ganttProp.startDate.getTime());
+            sDate = new Date(startDate.getTime());
         }
         return sDate;
     }
@@ -533,27 +543,30 @@ class DateProcessor {
      * @param ganttProp
      * @private
      */
-    getValidEndDate(ganttProp) {
+    getValidEndDate(ganttProp, isAuto) {
         let eDate = null;
-        if (isNullOrUndefined(ganttProp.endDate)) {
-            if (!isNullOrUndefined(ganttProp.startDate)) {
+        let startDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        let endDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        let duration = isAuto ? ganttProp.autoDuration : ganttProp.duration;
+        if (isNullOrUndefined(endDate)) {
+            if (!isNullOrUndefined(startDate)) {
                 if (ganttProp.isMilestone) {
-                    eDate = this.checkStartDate(ganttProp.startDate);
+                    eDate = this.checkStartDate(startDate);
                 }
                 else {
-                    eDate = new Date(ganttProp.startDate.getTime());
+                    eDate = new Date(startDate.getTime());
                     this.setTime(this.parent.defaultEndTime, eDate);
                 }
             }
-            else if (!isNullOrUndefined(ganttProp.duration)) {
+            else if (!isNullOrUndefined(duration)) {
                 let sDate = this.getValidStartDate(ganttProp);
                 if (sDate) {
-                    eDate = this.getEndDate(sDate, ganttProp.duration, ganttProp.durationUnit, ganttProp, false);
+                    eDate = this.getEndDate(sDate, duration, ganttProp.durationUnit, ganttProp, false);
                 }
             }
         }
         else {
-            eDate = new Date(ganttProp.endDate.getTime());
+            eDate = new Date(endDate.getTime());
         }
         return eDate;
     }
@@ -794,14 +807,14 @@ class DateProcessor {
      * @param startDate
      * @param endDate
      */
-    getNonWorkingSecondsOnDate(startDate, endDate) {
+    getNonWorkingSecondsOnDate(startDate, endDate, isAutoSchedule) {
         let sHour = this.getSecondsInDecimal(startDate);
         let eHour = this.getSecondsInDecimal(endDate);
         let startRangeIndex = -1;
         let endRangeIndex = -1;
         let totNonWrkSecs = 0;
-        let startOnHoliday = this.isOnHolidayOrWeekEnd(startDate, null);
-        let endOnHoliday = this.isOnHolidayOrWeekEnd(endDate, null);
+        let startOnHoliday = isAutoSchedule ? this.isOnHolidayOrWeekEnd(startDate, null) : false;
+        let endOnHoliday = isAutoSchedule ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
         for (let i = 0; i < this.parent.nonWorkingTimeRanges.length; i++) {
             let val = this.parent.nonWorkingTimeRanges[i];
             if (sHour >= val.from && sHour <= val.to) {
@@ -1043,6 +1056,32 @@ class DateProcessor {
         return value;
     }
     /**
+     * Method to get work with value and unit.
+     * @param work
+     * @param workUnit
+     * @private
+     */
+    getWorkString(work, workUnit) {
+        let value = '';
+        if (!isNullOrUndefined(work)) {
+            value += parseFloat(work).toFixed(2) + ' ';
+            if (!isNullOrUndefined(workUnit)) {
+                let plural = work !== 1;
+                if (workUnit === 'day') {
+                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
+                }
+                else if (workUnit === 'hour') {
+                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+                }
+                else if (workUnit === 'minute') {
+                    value += plural ? this.parent.localeObj.getConstant('minutes') :
+                        this.parent.localeObj.getConstant('minute');
+                }
+            }
+        }
+        return value;
+    }
+    /**
      *
      * @param editArgs
      * @private
@@ -1164,7 +1203,6 @@ class TaskProcessor extends DateProcessor {
             this.taskIds = [];
             this.parent.ids = [];
             this.recordIndex = 0;
-            this.taskIds = [];
             this.hierarchyData = [];
             this.parent.predecessorsCollection = [];
             this.parent.treeGrid.parentData = [];
@@ -1221,6 +1259,7 @@ class TaskProcessor extends DateProcessor {
     cloneDataSource() {
         let taskIdMapping = this.parent.taskFields.id;
         let parentIdMapping = this.parent.taskFields.parentID;
+        let hierarchicalData = [];
         if (!isNullOrUndefined(taskIdMapping) && !isNullOrUndefined(parentIdMapping)) {
             let data = [];
             for (let i = 0; i < this.dataArray.length; i++) {
@@ -1234,10 +1273,59 @@ class TaskProcessor extends DateProcessor {
                 this.parent.taskFields.child = 'Children';
             }
             this.constructDataSource(data);
-            this.prepareDataSource(this.hierarchyData);
+            hierarchicalData = this.hierarchyData;
         }
         else {
-            this.prepareDataSource(this.dataArray);
+            hierarchicalData = this.dataArray;
+        }
+        if (this.parent.viewType !== 'ProjectView') {
+            let resources = extend([], [], this.parent.resources, true);
+            let unassignedTasks = [];
+            this.constructResourceViewDataSource(resources, hierarchicalData, unassignedTasks);
+            if (unassignedTasks.length > 0) {
+                let record = {};
+                record[this.parent.resourceFields.id] = 0;
+                record[this.parent.resourceFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+                record[this.parent.taskFields.child] = unassignedTasks;
+                resources.push(record);
+            }
+            hierarchicalData = resources;
+        }
+        this.prepareDataSource(hierarchicalData);
+    }
+    /**
+     *
+     *
+     */
+    constructResourceViewDataSource(resources, data, unassignedTasks) {
+        for (let i = 0; i < data.length; i++) {
+            let tempData = data[i];
+            let child = this.parent.taskFields.child;
+            let resourceData = tempData && tempData[this.parent.taskFields.resourceInfo];
+            let resourceIdMapping = this.parent.resourceFields.id;
+            if (!tempData[child] && resourceData && resourceData.length) {
+                resourceData.forEach((resource) => {
+                    let id = (typeof resource === 'object') ? resource[resourceIdMapping] :
+                        resource;
+                    for (let j = 0; j < resources.length; j++) {
+                        if (resources[j][resourceIdMapping].toString() === id.toString()) {
+                            if (resources[j][child]) {
+                                resources[j][child].push(tempData);
+                            }
+                            else {
+                                resources[j][child] = [tempData];
+                            }
+                            break;
+                        }
+                    }
+                });
+            }
+            else if (!tempData[child]) {
+                unassignedTasks.push(tempData);
+            }
+            if (tempData[this.parent.taskFields.child] && tempData[this.parent.taskFields.child].length) {
+                this.constructResourceViewDataSource(resources, tempData[this.parent.taskFields.child], unassignedTasks);
+            }
         }
     }
     /**
@@ -1246,7 +1334,7 @@ class TaskProcessor extends DateProcessor {
      */
     prepareDataSource(data) {
         this.prepareRecordCollection(data, 0);
-        if (this.parent.taskFields.dependency) {
+        if (this.parent.taskFields.dependency && this.parent.predecessorModule) {
             this.parent.predecessorModule.ensurePredecessorCollection();
         }
     }
@@ -1256,8 +1344,9 @@ class TaskProcessor extends DateProcessor {
             let tempData = data[i];
             let ganttData = this.createRecord(tempData, level, parentItem, true);
             ganttData.index = this.recordIndex++;
-            this.parent.ids[ganttData.index] = ganttData.ganttProperties.taskId.toString();
+            this.parent.ids[ganttData.index] = ganttData.ganttProperties.rowUniqueID;
             this.parent.flatData.push(ganttData);
+            this.parent.setTaskIds(ganttData);
             let childData = tempData[this.parent.taskFields.child];
             if (!isNullOrUndefined(childData) && childData.length > 0) {
                 this.prepareRecordCollection(childData, ganttData.level + 1, ganttData);
@@ -1286,26 +1375,53 @@ class TaskProcessor extends DateProcessor {
      * @param isLoad
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     createRecord(data, level, parentItem, isLoad) {
         let taskSettings = this.parent.taskFields;
+        let resourceFields = this.parent.resourceFields;
         let child = data[taskSettings.child];
         let progress = data[taskSettings.progress];
+        let id = null;
+        let name = null;
         progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
         let predecessors = data[taskSettings.dependency];
         let baselineStartDate = this.getDateFromFormat(data[taskSettings.baselineStartDate]);
         let baselineEndDate = this.getDateFromFormat(data[taskSettings.baselineEndDate]);
         let ganttData = {};
         let ganttProperties = {};
+        let autoSchedule = (this.parent.taskMode === 'Auto') ? true :
+            (this.parent.taskMode === 'Manual') ? false :
+                data[taskSettings.manual] === true ? false : true;
         this.parent.setRecordValue('ganttProperties', ganttProperties, ganttData);
-        this.parent.setRecordValue('taskId', data[taskSettings.id], ganttProperties, true);
+        if (!isNullOrUndefined(data[taskSettings.id])) {
+            id = data[taskSettings.id];
+            name = data[taskSettings.name];
+            this.addTaskData(ganttData, data, isLoad);
+        }
+        else if (!isNullOrUndefined(data[resourceFields.id])) {
+            id = data[resourceFields.id];
+            name = data[resourceFields.name];
+            this.addTaskData(ganttData, data, false);
+        }
+        this.parent.setRecordValue('taskId', id, ganttProperties, true);
+        this.parent.setRecordValue('taskName', name, ganttProperties, true);
         if (taskSettings.parentID) {
             this.parent.setRecordValue('parentId', data[taskSettings.parentID], ganttProperties, true);
         }
-        this.parent.setRecordValue('taskName', data[taskSettings.name], ganttProperties, true);
-        this.addTaskData(ganttData, data, isLoad);
         this.addCustomFieldValue(data, ganttData);
-        this.parent.setRecordValue('isAutoSchedule', true, ganttProperties, true);
-        this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
+        this.parent.setRecordValue('isAutoSchedule', autoSchedule, ganttProperties, true);
+        if (!this.parent.isSameResourceAdd) {
+            this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
+        }
+        else {
+            let preProperties = getValue('ganttProperties.resourceInfo', data);
+            if (preProperties) {
+                this.parent.setRecordValue('resourceInfo', preProperties, ganttProperties, true);
+            }
+            else {
+                this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
+            }
+        }
         this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
         this.updateResourceName(ganttData);
         this.calculateScheduledValues(ganttData, data, isLoad);
@@ -1337,10 +1453,15 @@ class TaskProcessor extends DateProcessor {
         else {
             this.parent.setRecordValue('hasChildRecords', false, ganttData);
         }
+        if (ganttData.hasChildRecords) {
+            this.parent.setRecordValue('autoStartDate', ganttData.ganttProperties.startDate, ganttProperties);
+            this.parent.setRecordValue('autoEndDate', ganttData.ganttProperties.endDate, ganttProperties);
+            this.parent.setRecordValue('autoDuration', ganttData.ganttProperties.duration, ganttProperties);
+        }
         this.parent.setRecordValue('expanded', (ganttData.hasChildRecords && this.parent.collapseAllParentTasks) ? false : true, ganttData);
         this.updateExpandStateMappingValue(ganttData, data);
         if (!isLoad) {
-            this.parent.setRecordValue('width', this.calculateWidth(ganttProperties), ganttProperties, true);
+            this.parent.setRecordValue('width', this.calculateWidth(ganttData), ganttProperties, true);
             this.parent.setRecordValue('left', this.calculateLeft(ganttProperties), ganttProperties, true);
             this.parent.setRecordValue('progressWidth', this.getProgressWidth(ganttProperties.width, progress), ganttProperties, true);
             if (ganttProperties.baselineEndDate && ganttProperties.baselineStartDate) {
@@ -1348,14 +1469,61 @@ class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('baselineWidth', this.calculateBaselineWidth(ganttProperties), ganttProperties, true);
             }
         }
-        this.updateTaskData(ganttData);
-        if (!isNullOrUndefined(parentItem)) {
-            parentItem.childRecords.push(ganttData);
+        if (isNullOrUndefined(taskSettings.work)) {
+            this.updateWorkWithDuration(ganttData);
         }
+        if (!isNullOrUndefined(taskSettings.manual)) {
+            this.parent.dataOperation.updateMappingData(ganttData, 'manual');
+        }
+        this.updateTaskData(ganttData);
         if (predecessors) {
             this.parent.predecessorsCollection.push(ganttData);
         }
+        if (!isNullOrUndefined(parentItem)) {
+            parentItem.childRecords.push(ganttData);
+        }
+        if (this.parent.viewType === 'ProjectView') {
+            this.parent.setRecordValue('rowUniqueID', ganttProperties.taskId.toString(), ganttProperties, true);
+        }
+        else {
+            let uniqueId = ganttData.uniqueID.replace(this.parent.element.id + '_data_', '');
+            this.parent.setRecordValue('rowUniqueID', uniqueId, ganttData);
+            this.parent.setRecordValue('rowUniqueID', uniqueId, ganttProperties, true);
+        }
         return ganttData;
+    }
+    /**
+     * Method to calculate work based on resource unit and duration.
+     * @param ganttData
+     */
+    updateWorkWithDuration(ganttData) {
+        let resources = ganttData.ganttProperties.resourceInfo;
+        let work = 0;
+        if (!isNullOrUndefined(resources)) {
+            let resourcesLength = resources.length;
+            let index;
+            let resourceUnit;
+            let resourceOneDayWork;
+            let actualOneDayWork = (this.parent.secondsPerDay) / 3600;
+            let durationInDay = this.getDurationInDay(ganttData.ganttProperties.duration, ganttData.ganttProperties.durationUnit);
+            for (index = 0; index < resourcesLength; index++) {
+                resourceUnit = resources[index][this.parent.resourceFields.unit]; //in percentage 
+                resourceOneDayWork = resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : actualOneDayWork; //in hours
+                work += (resourceOneDayWork * durationInDay);
+            }
+            //Update work as per defined unit.
+            if (ganttData.ganttProperties.workUnit === 'minute') {
+                work = work * 60;
+            }
+            if (ganttData.ganttProperties.workUnit === 'day') {
+                work = work / actualOneDayWork;
+            }
+            //To check the decimal places.
+            if (work % 1 !== 0) {
+                work = parseFloat(work.toFixed(2));
+            }
+        }
+        this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
     }
     /**
      *
@@ -1370,7 +1538,7 @@ class TaskProcessor extends DateProcessor {
             cloneParent.expanded = parent.expanded;
             cloneParent.level = parent.level;
             cloneParent.index = parent.index;
-            cloneParent.taskId = parent.ganttProperties.taskId;
+            cloneParent.taskId = parent.ganttProperties.rowUniqueID;
             return cloneParent;
         }
         else {
@@ -1454,6 +1622,10 @@ class TaskProcessor extends DateProcessor {
         let isMileStone = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         let durationMapping = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
         this.parent.setRecordValue('durationUnit', this.validateDurationUnitMapping(durationMapping), ganttProperties, true);
+        let work = !isNullOrUndefined(data[taskSettings.work]) ? parseInt(data[taskSettings.work], 10) : 0;
+        this.parent.setRecordValue('workUnit', this.validateWorkUnitMapping(this.parent.workUnit), ganttProperties, true);
+        this.parent.setRecordValue('taskType', this.parent.taskType, ganttProperties, true);
+        this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
         if (!endDate && !startDate && (isNullOrUndefined(duration) || duration === '')) {
             if (this.parent.allowUnscheduledTasks) {
                 return;
@@ -1490,6 +1662,93 @@ class TaskProcessor extends DateProcessor {
             this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
             this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
         }
+        if (!isNullOrUndefined(taskSettings.work)) {
+            this.parent.setRecordValue('durationUnit', this.parent.durationUnit, ganttProperties, true);
+            if (isNaN(work) || isNullOrUndefined(work)) {
+                this.parent.setRecordValue('work', 0, ganttProperties, true);
+                this.parent.setRecordValue('duration', 0, ganttProperties, true);
+                this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+                this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
+            }
+            else {
+                this.parent.setRecordValue('work', work, ganttProperties, true);
+                this.updateDurationWithWork(ganttData);
+                if (ganttProperties.duration === 0) {
+                    this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+                    this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
+                }
+                else if (!isNullOrUndefined(ganttProperties.startDate) && !isNullOrUndefined(ganttProperties.duration)) {
+                    this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
+                    this.calculateEndDate(ganttData);
+                }
+            }
+            this.parent.dataOperation.updateMappingData(ganttData, 'work');
+        }
+    }
+    /**
+     * Method to update duration with work value.
+     * @param ganttData
+     */
+    updateDurationWithWork(ganttData) {
+        let ganttProperties = ganttData.ganttProperties;
+        let resources = ganttProperties.resourceInfo;
+        if (!isNullOrUndefined(resources)) {
+            let resourcesLength = !isNullOrUndefined(resources) ? resources.length : 0;
+            let totalResourceOneDayWork = 0;
+            let actualOneDayWork = (this.parent.secondsPerDay) / 3600;
+            let updatedDuration = 0;
+            let resourceUnit;
+            let index;
+            let totalHours;
+            for (index = 0; index < resourcesLength; index++) {
+                resourceUnit = resources[index][this.parent.resourceFields.unit]; //in percentage 
+                totalResourceOneDayWork += (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : actualOneDayWork); //in hours
+            }
+            totalHours = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
+            if (resourcesLength > 0) {
+                updatedDuration += (totalHours / totalResourceOneDayWork);
+            }
+            //Update duration as per defined unit.
+            if (ganttProperties.durationUnit === 'minute') {
+                updatedDuration = updatedDuration * actualOneDayWork * 60;
+            }
+            if (ganttProperties.durationUnit === 'hour') {
+                updatedDuration = updatedDuration * actualOneDayWork;
+            }
+            //To check the decimal places.
+            if (updatedDuration % 1 !== 0) {
+                updatedDuration = parseFloat(updatedDuration.toFixed(2));
+            }
+            if (!isNullOrUndefined(ganttProperties.duration)) {
+                this.parent.setRecordValue('duration', updatedDuration, ganttProperties, true);
+            }
+        }
+    }
+    /**
+     * Update units of resources with respect to duration and work of a task.
+     * @param ganttData
+     */
+    updateUnitWithWork(ganttData) {
+        let ganttProperties = ganttData.ganttProperties;
+        let resources = ganttProperties.resourceInfo;
+        let resourcesLength = !isNullOrUndefined(resources) ? resources.length : 0;
+        let actualOneDayWork = (this.parent.secondsPerDay) / 3600;
+        if (resourcesLength === 0) {
+            return;
+        }
+        let durationInDay = this.getDurationInDay(ganttData.ganttProperties.duration, ganttData.ganttProperties.durationUnit);
+        let totalHours = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
+        let totalUnitInPercentage = durationInDay > 0 ? (totalHours / (durationInDay * actualOneDayWork)) * 100 : 0;
+        let individualUnit = totalUnitInPercentage > 0 ? totalUnitInPercentage / resourcesLength : 100;
+        //To check the decimal places.
+        if (individualUnit % 1 !== 0) {
+            individualUnit = parseFloat(individualUnit.toFixed(2));
+        }
+        for (let index = 0; index < resourcesLength; index++) {
+            resources[index][this.parent.resourceFields.unit] = individualUnit;
+        }
+        //To update the unit value in data source
+        this.updateResourceName(ganttData);
     }
     calculateDateFromEndDate(endDate, duration, ganttData) {
         let ganttProperties = ganttData.ganttProperties;
@@ -1562,18 +1821,19 @@ class TaskProcessor extends DateProcessor {
      * @param ganttProp
      * @private
      */
-    calculateWidth(ganttProp) {
-        let sDate = ganttProp.startDate;
-        let eDate = ganttProp.endDate;
+    calculateWidth(ganttData, isAuto) {
+        let ganttProp = ganttData.ganttProperties;
+        let sDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        let eDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
         let unscheduledTaskWidth = 3;
         if (isNullOrUndefined(sDate) && isNullOrUndefined(eDate)) {
-            sDate = this.getValidStartDate(ganttProp);
-            eDate = this.getValidEndDate(ganttProp);
+            sDate = this.getValidStartDate(ganttProp, isAuto);
+            eDate = this.getValidEndDate(ganttProp, isAuto);
         }
         if (isNullOrUndefined(sDate) || isNullOrUndefined(eDate)) {
             return unscheduledTaskWidth;
         }
-        else if (ganttProp.isMilestone) {
+        else if (ganttProp.isMilestone && (!ganttData.hasChildRecords || ganttProp.isAutoSchedule)) {
             //let taskBarHeight: number = this.getTaskbarHeight();
             return 0;
         }
@@ -1596,15 +1856,18 @@ class TaskProcessor extends DateProcessor {
      * @param ganttProp
      * @private
      */
-    calculateLeft(ganttProp) {
+    calculateLeft(ganttProp, isAuto) {
         let sDate = null;
         let left = -300;
+        let startDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        let endDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        let duration = isAuto ? ganttProp.autoDuration : ganttProp.duration;
         let milestone = ganttProp.isMilestone;
-        if (ganttProp.startDate) {
-            sDate = new Date(ganttProp.startDate.getTime());
+        if (startDate) {
+            sDate = new Date(startDate.getTime());
         }
-        else if (ganttProp.endDate) {
-            sDate = new Date(ganttProp.endDate.getTime());
+        else if (endDate) {
+            sDate = new Date(endDate.getTime());
             milestone = true;
         }
         else {
@@ -1614,6 +1877,29 @@ class TaskProcessor extends DateProcessor {
             left = this.getTaskLeft(sDate, milestone);
         }
         return left;
+    }
+    /**
+     * calculate the left position of the auto scheduled taskbar
+     * @param {ITaskData} ganttProperties - Defines the gantt data.
+     * @private
+     */
+    calculateAutoLeft(ganttProperties) {
+        return this.getTaskLeft(ganttProperties.autoStartDate, ganttProperties.isMilestone);
+    }
+    /**
+     * To calculate duration of Gantt record with auto scheduled start date and auto scheduled end date
+     * @param {ITaskData} ganttProperties - Defines the gantt data.
+     */
+    calculateAutoDuration(ganttProperties) {
+        return this.getDuration(ganttProperties.autoStartDate, ganttProperties.autoEndDate, ganttProperties.durationUnit, false, ganttProperties.isMilestone);
+    }
+    /**
+     * calculate the with between auto scheduled start date and auto scheduled end date
+     * @param {ITaskData} ganttProperties - Defines the gantt data.
+     * @private
+     */
+    calculateAutoWidth(ganttProperties) {
+        return this.getTaskWidth(ganttProperties.autoStartDate, ganttProperties.autoEndDate);
     }
     /**
      * calculate the left margin of the baseline element
@@ -1703,7 +1989,7 @@ class TaskProcessor extends DateProcessor {
     updateMappingData(ganttData, fieldName) {
         let columnMapping = this.parent.columnMapping;
         let ganttProp = ganttData.ganttProperties;
-        if (isNullOrUndefined(columnMapping[fieldName])) {
+        if (isNullOrUndefined(columnMapping[fieldName]) && fieldName !== 'taskType') {
             return;
         }
         if (fieldName === 'predecessorName') {
@@ -1711,11 +1997,17 @@ class TaskProcessor extends DateProcessor {
         }
         else if (fieldName === 'resourceInfo') {
             let resourceData = ganttProp.resourceInfo;
+            let resourceSettings = this.parent.resourceFields;
             let resourcesId = [];
             let resourcesName = [];
             for (let i = 0; i < resourceData.length; i++) {
-                resourcesId.push(resourceData[i][this.parent.resourceIDMapping]);
-                resourcesName.push(resourceData[i][this.parent.resourceNameMapping]);
+                resourcesId.push(resourceData[i][resourceSettings.id]);
+                let resName = resourceData[i][resourceSettings.name];
+                let resourceUnit = resourceData[i][resourceSettings.unit];
+                if (resourceUnit !== 100) {
+                    resName += '[' + resourceUnit + '%' + ']';
+                }
+                resourcesName.push(resName);
             }
             this.parent.setRecordValue('resourceNames', resourcesName.join(','), ganttProp, true);
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], resourcesId, ganttData);
@@ -1726,6 +2018,18 @@ class TaskProcessor extends DateProcessor {
         }
         else if (fieldName === 'duration') {
             this.setRecordDuration(ganttData, columnMapping[fieldName]);
+        }
+        else if (fieldName === 'work') {
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], this.getWorkString(ganttProp.work, ganttProp.workUnit), ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
+        }
+        else if (fieldName === 'taskType') {
+            this.parent.setRecordValue('taskData.' + 'taskType', ganttProp[fieldName], ganttData);
+            this.parent.setRecordValue('taskType', ganttProp[fieldName], ganttData);
+        }
+        else if (fieldName === 'manual') {
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
         }
         else {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], ganttProp[fieldName], ganttData);
@@ -1763,6 +2067,17 @@ class TaskProcessor extends DateProcessor {
         else {
             this.parent.setRecordValue(mapping, duration, task);
             this.parent.setRecordValue('taskData.' + mapping, duration, task);
+        }
+    }
+    getWorkInHour(work, workUnit) {
+        if (workUnit === 'day') {
+            return work * (this.parent.secondsPerDay / 3600);
+        }
+        else if (workUnit === 'minute') {
+            return work / 60;
+        }
+        else {
+            return work;
         }
     }
     /**
@@ -1821,6 +2136,10 @@ class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('taskData.' + dataMapping.parentID, ganttProperties.parentId, ganttData);
                 this.parent.setRecordValue(dataMapping.parentID, ganttProperties.parentId, ganttData);
             }
+            if (dataMapping.work) {
+                this.parent.setRecordValue('taskData.' + dataMapping.work, this.getWorkString(ganttProperties.work, ganttProperties.workUnit), ganttData);
+                this.parent.setRecordValue(dataMapping.work, ganttProperties.work, ganttData);
+            }
         }
     }
     /**
@@ -1834,28 +2153,70 @@ class TaskProcessor extends DateProcessor {
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
         let resourceData = this.parent.resources;
-        let resourceIDMapping = this.parent.resourceIDMapping;
+        let resourceIDMapping = this.parent.resourceFields.id;
+        let resourceUnitMapping = this.parent.resourceFields.unit;
+        let resourceGroup = this.parent.resourceFields.group;
         let resources = [];
         for (let count = 0; count < resourceIdCollection.length; count++) {
             let resource = resourceData.filter((resourceInfo) => {
-                return (resourceIdCollection[count] === resourceInfo[resourceIDMapping]);
+                if (typeof (resourceIdCollection[count]) === 'object' &&
+                    resourceIdCollection[count][resourceIDMapping] === resourceInfo[resourceIDMapping]) {
+                    return true;
+                }
+                else {
+                    return (resourceIdCollection[count] === resourceInfo[resourceIDMapping]);
+                }
             });
             let ganttDataResource = extend({}, resource[0]);
             resources.push(ganttDataResource);
+            if (!isNullOrUndefined(resourceUnitMapping) && !isNullOrUndefined(resourceIdCollection[count][resourceUnitMapping])) {
+                ganttDataResource[resourceUnitMapping] = resourceIdCollection[count][resourceUnitMapping];
+            }
+            if (!isNullOrUndefined(resourceGroup) && !isNullOrUndefined(resourceIdCollection[count][resourceGroup])) {
+                ganttDataResource[resourceGroup] = resourceIdCollection[count][resourceGroup];
+            }
         }
+        this.updateResourceUnit(resources);
         return resources;
+    }
+    /**
+     * To set resource unit in Gantt record
+     * @private
+     */
+    updateResourceUnit(resourceData) {
+        let resourceUnit = this.parent.resourceFields.unit;
+        if (!isNullOrUndefined(resourceUnit)) {
+            let length = resourceData.length;
+            let index;
+            for (index = 0; index < length; index++) {
+                if (isNullOrUndefined(resourceData[index][resourceUnit])) {
+                    resourceData[index][resourceUnit] = 100;
+                }
+            }
+        }
     }
     updateResourceName(data) {
         let resourceInfo = data.ganttProperties.resourceInfo;
         let resourceName = [];
         if (resourceInfo) {
+            let taskResources = extend([], [], data.taskData[this.parent.taskFields.resourceInfo], true);
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, [], data);
             for (let i = 0; i < resourceInfo.length; i++) {
                 let resource = resourceInfo[i];
-                resourceName.push(resource[this.parent.resourceNameMapping]);
+                let resName = resource[this.parent.resourceFields.name];
+                let resourceUnit = resource[this.parent.resourceFields.unit];
+                if (resourceUnit !== 100) {
+                    resName += '[' + resourceUnit + '%' + ']';
+                }
+                resourceName.push(resName);
                 if (data.taskData) {
                     let mapping = this.parent.taskFields.resourceInfo;
-                    data.taskData[mapping].push(resource[this.parent.resourceIDMapping]);
+                    if (typeof (taskResources[i] === 'object')) {
+                        data.taskData[mapping].push(taskResources[i]);
+                    }
+                    else {
+                        data.taskData[mapping].push(resource[this.parent.resourceFields.id]);
+                    }
                 }
             }
             this.parent.setRecordValue('resourceNames', resourceName.join(','), data.ganttProperties, true);
@@ -1889,6 +2250,22 @@ class TaskProcessor extends DateProcessor {
         }
         else {
             unit = this.parent.durationUnit.toLocaleLowerCase();
+        }
+        return unit;
+    }
+    validateWorkUnitMapping(workUnit) {
+        let unit = workUnit;
+        if (unit === 'minute') {
+            unit = 'minute';
+        }
+        else if (unit === 'hour') {
+            unit = 'hour';
+        }
+        else if (unit === 'day') {
+            unit = 'day';
+        }
+        else {
+            unit = this.parent.workUnit.toLocaleLowerCase();
         }
         return unit;
     }
@@ -1948,9 +2325,7 @@ class TaskProcessor extends DateProcessor {
                 childData = parentItem.childRecords;
             }
             if (parentItem && childData.indexOf(data) === childData.length - 1 && !data.hasChildRecords) {
-                if (parentItem.ganttProperties.isAutoSchedule) {
-                    this.updateParentItems(parentItem);
-                }
+                this.updateParentItems(parentItem);
             }
         }
     }
@@ -1964,6 +2339,9 @@ class TaskProcessor extends DateProcessor {
             let data = flatData[i];
             let task = data.ganttProperties;
             this.updateWidthLeft(data);
+            if (this.parent.taskMode !== 'Auto' && data.hasChildRecords) {
+                this.updateAutoWidthLeft(data);
+            }
             this.parent.setRecordValue('baselineLeft', this.calculateBaselineLeft(task), task, true);
             this.parent.setRecordValue('baselineWidth', this.calculateBaselineWidth(task), task, true);
             this.parent.dataOperation.updateTaskData(data);
@@ -1976,9 +2354,19 @@ class TaskProcessor extends DateProcessor {
      */
     updateWidthLeft(data) {
         let ganttRecord = data.ganttProperties;
-        this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(ganttRecord), ganttRecord, true);
+        this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data), ganttRecord, true);
         this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttRecord), ganttRecord, true);
-        this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(ganttRecord.width, ganttRecord.progress), ganttRecord, true);
+        this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth((ganttRecord.isAutoSchedule || !data.hasChildRecords ? ganttRecord.width : ganttRecord.autoWidth), ganttRecord.progress), ganttRecord, true);
+    }
+    /**
+     * method to update left, width, progress width in record
+     * @param data
+     * @private
+     */
+    updateAutoWidthLeft(data) {
+        let ganttRecord = data.ganttProperties;
+        this.parent.setRecordValue('autoWidth', this.calculateWidth(data, true), ganttRecord, true);
+        this.parent.setRecordValue('autoLeft', this.calculateLeft(ganttRecord, true), ganttRecord, true);
     }
     /**
      * To calculate parent progress value
@@ -2020,12 +2408,15 @@ class TaskProcessor extends DateProcessor {
     /**
      * @private
      */
-    updateParentItems(cloneParent) {
-        let parentData = this.parent.getParentTask(cloneParent);
+    // tslint:disable-next-line:max-func-body-length
+    updateParentItems(cloneParent, isParent) {
+        let parentData = isParent ? cloneParent : this.parent.getParentTask(cloneParent);
         let deleteUpdate = false;
+        let ganttProp = parentData.ganttProperties;
         if (parentData.childRecords.length > 0) {
-            let previousStartDate = parentData.ganttProperties.startDate;
-            let previousEndDate = parentData.ganttProperties.endDate;
+            let previousStartDate = ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate;
+            let previousEndDate = ganttProp.isAutoSchedule ? ganttProp.endDate :
+                ganttProp.autoEndDate;
             let childRecords = parentData.childRecords;
             let childLength = childRecords.length;
             let totalDuration = 0;
@@ -2034,10 +2425,18 @@ class TaskProcessor extends DateProcessor {
             let maxEndDate = null;
             let milestoneCount = 0;
             let totalProgress = 0;
+            let childCompletedWorks = 0;
             for (let count = 0; count < childLength; count++) {
                 let childData = childRecords[count];
                 if (this.parent.isOnDelete && childData.isDelete) {
-                    if (childLength === 1) {
+                    if (childLength === 1 && this.parent.viewType === 'ProjectView') {
+                        if (isBlazor()) {
+                            let id = parentData.ganttProperties.rowUniqueID;
+                            let task = this.parent.getRecordByID(id);
+                            if (task && this.parent.editedRecords.indexOf(task) === -1) {
+                                this.parent.editedRecords.push(task);
+                            }
+                        }
                         deleteUpdate = true;
                     }
                     continue;
@@ -2064,13 +2463,14 @@ class TaskProcessor extends DateProcessor {
                 else {
                     milestoneCount++;
                 }
+                childCompletedWorks += childData.ganttProperties.work;
             }
             if (!deleteUpdate) {
                 if (this.compareDates(previousStartDate, minStartDate) !== 0) {
-                    this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
+                    this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate', minStartDate, parentData.ganttProperties, true);
                 }
                 if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
-                    this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
+                    this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate', maxEndDate, parentData.ganttProperties, true);
                 }
                 let taskCount;
                 if (this.parent.isOnDelete) {
@@ -2084,10 +2484,22 @@ class TaskProcessor extends DateProcessor {
                 let milestone = (taskCount === 0) && minStartDate && maxEndDate &&
                     minStartDate.getTime() === maxEndDate.getTime() ? true : false;
                 this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
-                this.calculateDuration(parentData);
+                if (parentProp.isAutoSchedule) {
+                    this.calculateDuration(parentData);
+                }
+                this.updateWorkWithDuration(parentData);
+                let parentWork = parentProp.work;
+                parentWork += childCompletedWorks;
+                this.parent.setRecordValue('work', parentWork, parentProp, true);
+                this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
+                this.updateMappingData(parentData, 'taskType');
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                 this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
+                if (!parentProp.isAutoSchedule) {
+                    this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
+                    this.updateAutoWidthLeft(parentData);
+                }
                 this.resetDependency(parentData);
                 this.updateWidthLeft(parentData);
                 this.updateTaskData(parentData);
@@ -2099,7 +2511,7 @@ class TaskProcessor extends DateProcessor {
             this.updateTaskData(parentData);
         }
         let parentItem = this.parent.getParentTask(parentData.parentItem);
-        if (parentItem && parentItem.ganttProperties.isAutoSchedule) {
+        if (parentItem) {
             this.updateParentItems(parentItem);
         }
         deleteUpdate = false;
@@ -2170,6 +2582,16 @@ const parentMilestoneTop = 'e-parent-milestone-top';
 const parentMilestoneBottom = 'e-parent-milestone-bottom';
 const traceChildTaskBar = 'e-gantt-child-taskbar';
 const traceChildProgressBar = 'e-gantt-child-progressbar';
+const manualParentMainContainer = 'e-manualparent-main-container';
+const manualParentTaskBar = 'e-gantt-manualparenttaskbar';
+const manualParentMilestone = 'e-gantt-manualparent-milestone';
+const manualParentMilestoneTop = 'e-manualparent-milestone-top';
+const manualParentMilestoneBottom = 'e-manualparent-milestone-bottom';
+const manualChildTaskBar = 'e-gantt-child-manualtaskbar';
+const manualChildProgressBar = 'e-gantt-child-manualprogressbar';
+const manualParentRightResizer = 'e-gantt-manualparenttaskbar-right';
+const manualParentLeftResizer = 'e-gantt-manualparenttaskbar-left';
+const traceManualUnscheduledTask = 'e-gantt-unscheduled-manualtask';
 const traceParentTaskBar = 'e-gantt-parent-taskbar';
 const traceParentProgressBar = 'e-gantt-parent-progressbar';
 const traceUnscheduledTask = 'e-gantt-unscheduled-task';
@@ -2860,7 +3282,7 @@ class GanttChart {
         let rows = [];
         for (let i = 0; i < chartRows.length; i++) {
             if (chartRows[i].classList.contains('gridrowtaskId'
-                + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
+                + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
                 rows.push(chartRows[i]);
             }
         }
@@ -3171,6 +3593,8 @@ class Timeline {
         this.isZoomIn = false;
         this.isZooming = false;
         this.isZoomToFit = false;
+        this.topTierCollection = [];
+        this.bottomTierCollection = [];
         this.parent = ganttObj;
         this.initProperties();
     }
@@ -3888,16 +4312,23 @@ class Timeline {
         let endDate = new Date(this.timelineRoundOffEndDate.toString());
         let scheduleDateCollection = [];
         do {
-            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count);
+            // PDf export collection
+            let timelineCell = {};
+            timelineCell.startDate = new Date(startDate.getTime());
+            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell);
             scheduleDateCollection.push(new Date(startDate.toString()));
             increment = this.getIncrement(startDate, count, mode);
             newTime = startDate.getTime() + increment;
             startDate.setTime(newTime);
             if (startDate >= endDate) {
-                parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count);
+                /* tslint:disable-next-line */
+                parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
             }
             parentTh = parentTh + parentTr;
             parentTr = '';
+            let tierCollection = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
+            timelineCell.endDate = new Date(startDate.getTime());
+            tierCollection.push(timelineCell);
         } while (!(startDate >= endDate));
         return parentTh;
     }
@@ -3981,7 +4412,8 @@ class Timeline {
      * @return {string}
      * @private
      */
-    getHeaterTemplateString(scheduleWeeks, mode, tier, isLast, count) {
+    /* tslint:disable-next-line */
+    getHeaterTemplateString(scheduleWeeks, mode, tier, isLast, count, timelineCell) {
         let parentTr = '';
         let td = '';
         let format = tier === 'topTier' ?
@@ -4002,6 +4434,8 @@ class Timeline {
             : thWidth;
         isWeekendCell = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         let textClassName = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
+        let value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
+            this.customFormat(scheduleWeeks, format, tier, mode, formatter));
         td += this.parent.timelineModule.isSingleTier ?
             '<th class="' + timelineSingleHeaderCell + ' ' : '<th class="' + timelineTopHeaderCell;
         td += isWeekendCell ? ' ' + weekendHeaderCell : '';
@@ -4011,8 +4445,7 @@ class Timeline {
             'background-color:' + this.customTimelineSettings.weekendBackground + ';' : '';
         td += '"><div class="' + timelineHeaderCellLabel + textClassName + '" style="width:' +
             (thWidth - 1) + 'px;' + (this.parent.timelineSettings.showTooltip ? '"title="' + date : '');
-        td += '">' + (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
-            this.customFormat(scheduleWeeks, format, tier, mode, formatter)) + '</div>';
+        td += '">' + value + '</div>';
         parentTr += td;
         parentTr += '</th>';
         td = '';
@@ -4022,6 +4455,10 @@ class Timeline {
         else if ((this.isSingleTier || tier === 'topTier') && isLast) {
             this.totalTimelineWidth = (this.totalTimelineWidth - cellWidth) + thWidth;
         }
+        // PDf export collection
+        timelineCell.value = value;
+        timelineCell.isWeekend = isWeekendCell;
+        timelineCell.width = cellWidth;
         return parentTr;
     }
     /**
@@ -4698,7 +5135,7 @@ class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         let tasksMapping = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual'];
         for (let i = 0; i < length; i++) {
             let column = {};
             if (typeof ganttObj.columns[i] === 'string') {
@@ -4710,10 +5147,18 @@ class GanttTreeGrid {
             let columnName = [];
             if (tasksMapping.length > 0) {
                 columnName = tasksMapping.filter((name) => {
-                    return column.field === tasks[name];
+                    if (column.field === 'taskType' && !isNullOrUndefined(tasks.work)) {
+                        return column.field;
+                    }
+                    else {
+                        return column.field === tasks[name];
+                    }
                 });
             }
             if (columnName.length === 0) {
+                if (column.field === this.parent.resourceFields.group) {
+                    continue;
+                }
                 this.parent.customColumns.push(column.field);
                 column.headerText = column.headerText ? column.headerText : column.field;
                 column.width = column.width ? column.width : 150;
@@ -4723,10 +5168,16 @@ class GanttTreeGrid {
                 continue;
             }
             else {
-                let index = tasksMapping.indexOf(columnName[0]);
-                tasksMapping.splice(index, 1);
-                this.createTreeGridColumn(column, true);
-                this.parent.columnMapping[columnName[0]] = column.field;
+                if (column.field === 'taskType') {
+                    this.createTreeGridColumn(column, true);
+                    this.parent.columnMapping[column.field] = column.field;
+                }
+                else {
+                    let index = tasksMapping.indexOf(columnName[0]);
+                    tasksMapping.splice(index, 1);
+                    this.createTreeGridColumn(column, true);
+                    this.parent.columnMapping[columnName[0]] = column.field;
+                }
             }
         }
         /** Create default columns with task settings property */
@@ -4736,7 +5187,18 @@ class GanttTreeGrid {
                 column.field = tasks[tasksMapping[j]];
                 this.createTreeGridColumn(column, length === 0);
                 this.parent.columnMapping[tasksMapping[j]] = column.field;
+                if (column.field === tasks.work) {
+                    let column = {};
+                    column.field = 'taskType';
+                    this.createTreeGridColumn(column, length === 0);
+                    this.parent.columnMapping[column.field] = column.field;
+                }
             }
+        }
+        if (this.parent.viewType !== 'ProjectView') {
+            let column = {};
+            this.composeUniqueIDColumn(column);
+            this.createTreeGridColumn(column, true);
         }
     }
     /**
@@ -4744,6 +5206,7 @@ class GanttTreeGrid {
      * @param column
      * @param isDefined
      */
+    /* tslint:disable-next-line:max-func-body-length */
     createTreeGridColumn(column, isDefined) {
         let taskSettings = this.parent.taskFields;
         column.disableHtmlEncode = column.disableHtmlEncode ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
@@ -4829,6 +5292,35 @@ class GanttTreeGrid {
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
         }
+        else if (taskSettings.work === column.field) {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('work');
+            column.width = column.width ? column.width : 150;
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.workValueAccessor.bind(this);
+            column.editType = column.editType ? column.editType : 'numericedit';
+        }
+        else if (column.field === 'taskType') {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskType');
+            column.width = column.width ? column.width : 150;
+            //column.type = 'string';
+            column.editType = 'dropdownedit';
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.taskTypeValueAccessor.bind(this);
+        }
+        else if (taskSettings.manual === column.field && this.parent.taskMode === 'Custom') {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskMode');
+            column.width = column.width ? column.width : 120;
+            column.editType = column.editType ? column.editType : 'dropdownedit';
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.modeValueAccessor.bind(this);
+            column.edit = {
+                params: {
+                    query: new Query(),
+                    dataSource: [
+                        { id: 1, text: this.parent.localeObj.getConstant('manual'), value: true },
+                        { id: 2, text: this.parent.localeObj.getConstant('auto'), value: false }
+                    ],
+                    fields: { text: 'text', value: 'value' }
+                },
+            };
+        }
         this.bindTreeGridColumnProperties(column, isDefined);
     }
     /**
@@ -4847,7 +5339,17 @@ class GanttTreeGrid {
      * @private
      */
     getResourceIds(data) {
-        return getValue(this.parent.taskFields.resourceInfo, data.taskData);
+        let value = getValue(this.parent.taskFields.resourceInfo, data.taskData);
+        let id = [];
+        if (!isNullOrUndefined(value)) {
+            for (let i = 0; i < value.length; i++) {
+                id.push(typeof value[i] === 'object' ? value[i][this.parent.resourceFields.id] : value[i]);
+            }
+            return id;
+        }
+        else {
+            return value;
+        }
     }
     /**
      * Create Id column
@@ -4859,6 +5361,17 @@ class GanttTreeGrid {
         column.width = column.width ? column.width : 100;
         column.allowEditing = column.allowEditing ? column.allowEditing : false;
         column.editType = column.editType ? column.editType : 'numericedit';
+        if (this.parent.viewType !== 'ProjectView') {
+            column.valueAccessor = this.idValueAccessor.bind(this);
+            column.isPrimaryKey = false;
+        }
+    }
+    composeUniqueIDColumn(column) {
+        column.field = 'rowUniqueID';
+        column.isPrimaryKey = true;
+        column.headerText = 'UniqueID';
+        column.allowEditing = false;
+        column.visible = false;
     }
     /**
      * Create progress column
@@ -4897,6 +5410,31 @@ class GanttTreeGrid {
             return ganttProp.resourceNames;
         }
         return '';
+    }
+    workValueAccessor(field, data, column) {
+        let ganttProp = data.ganttProperties;
+        if (!isNullOrUndefined(ganttProp)) {
+            return this.parent.dataOperation.getWorkString(ganttProp.work, ganttProp.workUnit);
+        }
+        return '';
+    }
+    taskTypeValueAccessor(field, data, column) {
+        let ganttProp = data.ganttProperties;
+        if (!isNullOrUndefined(ganttProp)) {
+            return ganttProp.taskType;
+        }
+        return '';
+    }
+    modeValueAccessor(field, data, column) {
+        if (data[field]) {
+            return 'Manual';
+        }
+        else {
+            return 'Auto';
+        }
+    }
+    idValueAccessor(field, data, column) {
+        return data.level === 0 ? 'R-' + data.ganttProperties.taskId : 'T-' + data.ganttProperties.taskId;
     }
     updateScrollTop(args) {
         this.treeGridElement.querySelector('.e-content').scrollTop = getValue('top', args);
@@ -5251,6 +5789,12 @@ __decorate$12([
 __decorate$12([
     Property(null)
 ], TaskFields.prototype, "notes", void 0);
+__decorate$12([
+    Property(null)
+], TaskFields.prototype, "work", void 0);
+__decorate$12([
+    Property(null)
+], TaskFields.prototype, "manual", void 0);
 
 var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -5360,6 +5904,30 @@ __decorate$15([
 __decorate$15([
     Property(true)
 ], SortSettings.prototype, "allowUnsort", void 0);
+
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines mapping property to get resource details from resource collection.
+ */
+class ResourceFields extends ChildProperty {
+}
+__decorate$16([
+    Property(null)
+], ResourceFields.prototype, "id", void 0);
+__decorate$16([
+    Property(null)
+], ResourceFields.prototype, "name", void 0);
+__decorate$16([
+    Property(null)
+], ResourceFields.prototype, "unit", void 0);
+__decorate$16([
+    Property(null)
+], ResourceFields.prototype, "group", void 0);
 
 /**
  * Export all generated models for complex settings
@@ -5479,10 +6047,12 @@ class ChartRows {
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
             let template = (data.ganttProperties.startDate && data.ganttProperties.endDate
-                && data.ganttProperties.duration) ? ('<div class="' + childTaskBarInnerDiv + ' ' + traceChildTaskBar + '"' +
+                && data.ganttProperties.duration) ? ('<div class="' + childTaskBarInnerDiv + ' ' + traceChildTaskBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                '' : manualChildTaskBar) + '"' +
                 'style="width:' + data.ganttProperties.width + 'px;height:' +
                 (this.taskBarHeight) + 'px;">' + '<div class="' + childProgressBarInnerDiv + ' ' +
-                traceChildProgressBar + '"' +
+                traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                '' : manualChildProgressBar) + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
                 'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
@@ -5491,15 +6061,18 @@ class ChartRows {
                 (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 labelString + '</span></div></div>') :
                 (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
-                    unscheduledTaskbarLeft + '"' +
+                    unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
+                    '' : manualChildTaskBar) + '"' +
                     'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
                     (data.ganttProperties.endDate && !data.ganttProperties.startDate && !data.ganttProperties.duration) ?
                         ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
-                            unscheduledTaskbarRight + '"' +
+                            unscheduledTaskbarRight + ' ' + (data.ganttProperties.isAutoSchedule ?
+                            '' : manualChildTaskBar) + '"' +
                             'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
                         (data.ganttProperties.duration && !data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
                             ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
-                                unscheduledTaskbar + '"' +
+                                unscheduledTaskbar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                                '' : manualChildTaskBar) + '"' +
                                 'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
                                 ' height:' + this.taskBarHeight + 'px;"></div>') : '';
             childTaskbarNode = this.createDivElement(template);
@@ -5635,6 +6208,44 @@ class ChartRows {
         }
         return rightLabelNode;
     }
+    getManualTaskbar() {
+        let data = this.templateData;
+        let taskbarHeight = (this.taskBarHeight / 2 - 1);
+        let innerDiv = (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration) ?
+            ('<div class="' + manualParentTaskBar + '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                taskbarHeight / 5 + 'px;border-left-width:' + taskbarHeight / 5 +
+                'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') :
+            (!data.ganttProperties.startDate && !data.ganttProperties.endDate && data.ganttProperties.duration) ?
+                ('<div class="' + manualParentTaskBar + ' ' + traceManualUnscheduledTask +
+                    '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                    (taskbarHeight / 5 + 1) + 'px;border-left-width:' + taskbarHeight / 5 +
+                    'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') : ('<div class="' +
+                manualParentTaskBar + ' ' + (data.ganttProperties.startDate ? unscheduledTaskbarLeft : unscheduledTaskbarRight) +
+                '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                taskbarHeight * 2 + 'px;border-left-width:' + taskbarHeight / 5 +
+                'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>');
+        let template = '<div class="' + manualParentMainContainer + '"' +
+            'style=left:' + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
+            'width:' + data.ganttProperties.width + 'px;' +
+            'height:' + taskbarHeight + 'px;>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
+            data.ganttProperties.duration) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
+            '"height:' + taskbarHeight + 'px;border-left-width:' + taskbarHeight / 5 +
+            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
+            '<div class="e-gantt-manualparenttaskbar-right" style=' +
+            'left:' + (data.ganttProperties.width - taskbarHeight / 5) + 'px;height:' +
+            (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
+            taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
+        let milestoneTemplate = '<div class="' + manualParentMilestone + '" style="position:absolute;left:' +
+            (data.ganttProperties.left - data.ganttProperties.autoLeft - (this.milestoneHeight / 2)) +
+            'px;width:' + (this.milesStoneRadius * 2) +
+            'px;">' + '<div class="' + manualParentMilestoneTop + '" style="border-right-width:' +
+            this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
+            this.milesStoneRadius + 'px;"></div>' +
+            '<div class="' + manualParentMilestoneBottom + '" style="top:' +
+            (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
+            this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
+        return this.createDivElement(data.ganttProperties.width === 0 ? milestoneTemplate : template);
+    }
     /**
      * To get parent taskbar node.
      * @return {NodeList}
@@ -5658,9 +6269,13 @@ class ChartRows {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
+            let tHeight = this.taskBarHeight / 5;
             let template = '<div class="' + parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + traceParentTaskBar + '"' +
-                ' style="width:' + (data.ganttProperties.width) + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + (data.ganttProperties.isAutoSchedule ? data.ganttProperties.width :
+                data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
+                (tHeight * 3)) + 'px;margin-top:' + (data.ganttProperties.isAutoSchedule ? '' :
+                (tHeight * 2)) + 'px;">' +
                 '<div class="' + parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -5676,7 +6291,8 @@ class ChartRows {
                 '<div class="' + parentMilestoneBottom + '" style="top:' +
                 (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
                 this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
-            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ? milestoneTemplate : template);
+            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ?
+                data.ganttProperties.isAutoSchedule ? milestoneTemplate : '' : template);
         }
         return parentTaskbarNode;
     }
@@ -5817,14 +6433,19 @@ class ChartRows {
     }
     taskbarContainer() {
         let data = this.templateData;
+        let manualParent = this.parent.editModule && this.parent.editSettings.allowTaskbarEditing &&
+            this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
+            true : false;
         let template = '<div class="' + taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
-            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
-            this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
-            (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-            this.taskBarMarginTop + 'px;left:' + (data.ganttProperties.left) + 'px;height:' +
-            this.taskBarHeight + 'px;')) + '"></div>';
+            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
+            ('width:' + this.milestoneHeight + 'px;height:' +
+                this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
+                (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
+            'px;margin-top:' + this.taskBarMarginTop + 'px;left:' + (!data.hasChildRecords || data.ganttProperties.isAutoSchedule ?
+            data.ganttProperties.left : data.ganttProperties.autoLeft) + 'px;height:' +
+            this.taskBarHeight + 'px;cursor:' + (data.ganttProperties.isAutoSchedule ? 'move;' : 'auto;'))) + '"></div>';
         return this.createDivElement(template);
     }
     rightLabelContainer() {
@@ -5939,9 +6560,19 @@ class ChartRows {
     }
     taskNameWidth(ganttData) {
         ganttData = this.templateData;
+        let ganttProp = ganttData.ganttProperties;
         let width;
         if (ganttData.ganttProperties.isMilestone) {
             width = (ganttData.ganttProperties.left - (this.parent.getTaskbarHeight() / 2));
+        }
+        else if (ganttData.hasChildRecords && !ganttProp.isAutoSchedule) {
+            if (!this.parent.allowUnscheduledTasks) {
+                width = (ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime()) ?
+                    ganttProp.autoLeft : ganttProp.left;
+            }
+            else {
+                width = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
+            }
         }
         else {
             width = ganttData.ganttProperties.left;
@@ -5953,8 +6584,26 @@ class ChartRows {
     }
     getRightLabelLeft(ganttData) {
         ganttData = this.templateData;
+        let ganttProp = ganttData.ganttProperties;
+        let left;
+        let endLeft;
+        let width;
         if (ganttData.ganttProperties.isMilestone) {
             return ganttData.ganttProperties.left + (this.parent.getTaskbarHeight() / 2);
+        }
+        else if (ganttData.hasChildRecords && !ganttProp.isAutoSchedule) {
+            if (!this.parent.allowUnscheduledTasks) {
+                left = ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime() ? ganttProp.autoLeft : ganttProp.left;
+                endLeft = ganttProp.autoEndDate.getTime() < ganttProp.endDate.getTime() ?
+                    this.parent.dataOperation.getTaskLeft(ganttProp.endDate, ganttProp.isMilestone) :
+                    this.parent.dataOperation.getTaskLeft(ganttProp.autoEndDate, ganttProp.isMilestone);
+                width = endLeft - left;
+            }
+            else {
+                left = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
+                width = ganttProp.autoWidth;
+            }
+            return left + width;
         }
         else {
             return ganttData.ganttProperties.left + ganttData.ganttProperties.width;
@@ -5980,11 +6629,16 @@ class ChartRows {
             let length = ganttData.ganttProperties.resourceInfo.length;
             if (length > 0) {
                 for (let i = 0; i < length; i++) {
+                    let resourceName = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.name];
+                    let resourceUnit = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.unit];
+                    if (resourceUnit !== 100) {
+                        resourceName += '[' + resourceUnit + '%' + ']';
+                    }
                     if (isNullOrUndefined(resource)) {
-                        resource = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceNameMapping];
+                        resource = resourceName;
                     }
                     else {
-                        resource += ' , ' + ganttData.ganttProperties.resourceInfo[i][this.parent.resourceNameMapping];
+                        resource += ' , ' + resourceName;
                     }
                 }
                 return resource;
@@ -6066,6 +6720,10 @@ class ChartRows {
         }
         if (this.templateData.hasChildRecords) {
             let parentTaskbarTemplateNode = this.getParentTaskbarNode(i);
+            if (!this.templateData.ganttProperties.isAutoSchedule) {
+                let manualTaskbar = this.getManualTaskbar();
+                taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
+            }
             if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
             }
@@ -6321,7 +6979,9 @@ class ChartRows {
             let data = selectedItem;
             tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
             this.triggerQueryTaskbarInfoByIndex(tr, data);
-            this.parent.treeGrid.grid.setRowData(data.ganttProperties.taskId, data);
+            /* tslint:disable-next-line */
+            let dataId = this.parent.viewType === 'ProjectView' ? parseInt(data.ganttProperties.rowUniqueID) : data.ganttProperties.rowUniqueID;
+            this.parent.treeGrid.grid.setRowData(dataId, data);
             let row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));
             row.data = data;
         }
@@ -6436,7 +7096,7 @@ class Dependency {
                 let predecessorItem = predecessorVal[c];
                 let preValue = {};
                 preValue.from = getValue('from', predecessorItem);
-                preValue.to = getValue('to', predecessorItem) ? getValue('to', predecessorItem) : ganttProp.taskId;
+                preValue.to = getValue('to', predecessorItem) ? getValue('to', predecessorItem) : ganttProp.rowUniqueID;
                 preValue.type = getValue('type', predecessorItem) ? getValue('type', predecessorItem) : 'FS';
                 let offsetUnits = getValue('offset', predecessorItem);
                 if (isNullOrUndefined(offsetUnits)) {
@@ -6544,7 +7204,7 @@ class Dependency {
                 from: match[0],
                 type: predecessorText,
                 isDrawn: false,
-                to: ganttRecord.ganttProperties.taskId.toString(),
+                to: ganttRecord.ganttProperties.rowUniqueID.toString(),
                 offsetUnit: offsetUnits.durationUnit,
                 offset: offsetUnits.duration
             };
@@ -6569,7 +7229,7 @@ class Dependency {
             for (let i = 0; i < length; i++) {
                 let currentValue = predecessors[i];
                 let temp = '';
-                if (currentValue.from !== data.ganttProperties.taskId.toString()) {
+                if (currentValue.from !== data.ganttProperties.rowUniqueID.toString()) {
                     temp = currentValue.from + currentValue.type;
                     if (currentValue.offset !== 0) {
                         temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
@@ -6677,7 +7337,7 @@ class Dependency {
         for (let i = 0; i < connectorCount; i++) {
             let connector = connectorsCollection[i];
             successorGanttRecord = this.parent.getRecordByID(connector.from);
-            if (connector.from !== ganttRecord.ganttProperties.taskId.toString()) {
+            if (connector.from !== ganttRecord.ganttProperties.rowUniqueID.toString()) {
                 if (successorGanttRecord) {
                     let predecessorCollection;
                     if (successorGanttRecord.ganttProperties.predecessor) {
@@ -6721,7 +7381,7 @@ class Dependency {
             let count;
             let parentGanttRecord;
             let record = null;
-            let currentTaskId = ganttRecord.ganttProperties.taskId.toString();
+            let currentTaskId = ganttRecord.ganttProperties.rowUniqueID.toString();
             let predecessors = predecessorsCollection.filter((data) => {
                 if (data.to === currentTaskId) {
                     return data;
@@ -6735,7 +7395,7 @@ class Dependency {
                 predecessor = predecessors[count];
                 parentGanttRecord = this.parent.getRecordByID(predecessor.from);
                 record = this.parent.getRecordByID(predecessor.to);
-                if (record.ganttProperties.isAutoSchedule) {
+                if (record.ganttProperties.isAutoSchedule || this.parent.validateManualTasksOnLinking) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
             }
@@ -6751,9 +7411,10 @@ class Dependency {
             || isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties))) {
             return;
         }
-        if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule)) {
+        if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule ||
+            this.parent.validateManualTasksOnLinking)) {
             let childRecordProperty = childGanttRecord.ganttProperties;
-            let currentTaskId = childRecordProperty.taskId.toString();
+            let currentTaskId = childRecordProperty.rowUniqueID.toString();
             let predecessorsCollection = childRecordProperty.predecessor;
             let childPredecessor = predecessorsCollection.filter((data) => {
                 if (data.to === currentTaskId) {
@@ -6768,7 +7429,7 @@ class Dependency {
             this.parent.dataOperation.updateMappingData(childGanttRecord, 'startDate');
             this.dateValidateModule.calculateEndDate(childGanttRecord);
             this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(childRecordProperty), childRecordProperty, true);
-            this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(childRecordProperty), childRecordProperty, true);
+            this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(childGanttRecord), childRecordProperty, true);
             this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(childRecordProperty.width, childRecordProperty.progress), childRecordProperty, true);
             if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
                 && this.parent.isInPredecessorValidation) {
@@ -6788,7 +7449,7 @@ class Dependency {
         let parentGanttRecord;
         let childGanttRecord;
         let validatedPredecessor = predecessorsCollection.filter((data) => {
-            if (data.to === ganttRecord.ganttProperties.taskId.toString()) {
+            if (data.to === ganttRecord.ganttProperties.rowUniqueID.toString()) {
                 return data;
             }
             else {
@@ -6975,7 +7636,7 @@ class Dependency {
             let parentGanttRecord;
             let record = null;
             let predecessor;
-            let currentTaskId = childGanttRecord.ganttProperties.taskId.toString();
+            let currentTaskId = childGanttRecord.ganttProperties.rowUniqueID.toString();
             let predecessors = predecessorsCollection.filter((data) => {
                 if (data.to === currentTaskId) {
                     return data;
@@ -7002,8 +7663,8 @@ class Dependency {
                 else {
                     this.parent.isValidationEnabled = false;
                 }
-                if ((childGanttRecord.ganttProperties.taskId.toString() === predecessor.to
-                    || childGanttRecord.ganttProperties.taskId.toString() === predecessor.from)
+                if ((childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.to
+                    || childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.from)
                     && (!validationOn || validationOn === 'predecessor')) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
@@ -7043,7 +7704,7 @@ class Dependency {
         let recPredecessor = record.ganttProperties.predecessor;
         if (recPredecessor && recPredecessor.length > 0) {
             validPredecessor = recPredecessor.filter((value) => {
-                return value.from !== record.ganttProperties.taskId.toString();
+                return value.from !== record.ganttProperties.rowUniqueID.toString();
             });
         }
         return validPredecessor;
@@ -7115,7 +7776,7 @@ class ConnectorLine {
             connectorObj.childIndex = childIndex;
             connectorObj.rowHeight = this.parent.rowHeight;
             connectorObj.type = predecessor.type;
-            connectorObj.connectorLineId = 'parent' + parentGanttRecord.taskId + 'child' + childGanttRecord.taskId;
+            connectorObj.connectorLineId = 'parent' + parentGanttRecord.rowUniqueID + 'child' + childGanttRecord.rowUniqueID;
             connectorObj.milestoneParent = parentGanttRecord.isMilestone ? true : false;
             connectorObj.milestoneChild = childGanttRecord.isMilestone ? true : false;
             if (isNullOrUndefined(isScheduledTask(parentGanttRecord)) || isNullOrUndefined(isScheduledTask(childGanttRecord))) {
@@ -8015,8 +8676,8 @@ class Tooltip$1 {
         this.toolTipObj.target = '.e-header-cell-label, .e-gantt-child-taskbar,' +
             '.e-gantt-parent-taskbar, .e-gantt-milestone, .e-gantt-unscheduled-taskbar' +
             '.e-event-markers, .e-baseline-bar, .e-event-markers,' +
-            '.e-connector-line-container, .e-indicator-span, .e-notes-info,' +
-            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone';
+            '.e-connector-line-container, .e-indicator-span, .e-notes-info, .e-gantt-manualparent-milestone,' +
+            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone, .e-gantt-manualparenttaskbar';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
         this.toolTipObj.enableHtmlSanitizer = false;
@@ -8029,6 +8690,7 @@ class Tooltip$1 {
         this.toolTipObj.isStringTemplate = true;
         this.toolTipObj.appendTo(this.parent.element);
     }
+    /* tslint:disable-next-line:max-func-body-length */
     tooltipBeforeRender(args) {
         let parent = this.parent;
         if (parent.isOnEdit) {
@@ -8102,6 +8764,18 @@ class Tooltip$1 {
                 else if (args.target.classList.contains('e-notes-info')) {
                     let ganttData = this.parent.ganttChartModule.getRecordByTarget(args.event);
                     argsData.content = this.toolTipObj.content = ganttData.ganttProperties.notes;
+                    if (isNullOrUndefined(argsData.content)) {
+                        args.cancel = true;
+                    }
+                }
+                else if (args.target.classList.contains('e-gantt-manualparenttaskbar')) {
+                    argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('manualtaskbar', data, parent, args);
+                    if (isNullOrUndefined(argsData.content)) {
+                        args.cancel = true;
+                    }
+                }
+                else if (args.target.classList.contains('e-gantt-manualparent-milestone')) {
+                    argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('manualmilestone', data, parent, args);
                     if (isNullOrUndefined(argsData.content)) {
                         args.cancel = true;
                     }
@@ -8190,6 +8864,7 @@ class Tooltip$1 {
     /**
      *  Getting tooltip content for different elements
      */
+    /* tslint:disable-next-line:max-func-body-length */
     getTooltipContent(elementType, ganttData, parent, args) {
         let content$$1;
         let data;
@@ -8207,15 +8882,18 @@ class Tooltip$1 {
                     this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr></tbody></table>';
                 break;
             case 'taskbar':
+                let scheduledTask = !ganttData.hasChildRecords || data.isAutoSchedule ? true : false;
                 let startDate = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
-                    this.parent.localeObj.getConstant('startDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.localeObj.getConstant(scheduledTask ? 'startDate' : 'subTasksStartDate') +
+                    '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(scheduledTask ? data.startDate : data.autoStartDate, this.parent.dateFormat) +
+                    '</td></tr>' : '';
                 let endDate = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
-                    this.parent.localeObj.getConstant('endDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.endDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.localeObj.getConstant(scheduledTask ? 'endDate' : 'subTasksEndDate') +
+                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' + this.parent.getFormatedDate(scheduledTask ? data.endDate : data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
                 let duration = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
-                    '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(data.duration, data.durationUnit) +
+                    '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString((scheduledTask ? data.duration : data.autoDuration), data.durationUnit) +
                     '</td></tr>' : '';
                 let progress = !isNullOrUndefined(data.progress) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('progress') + '</td><td>:</td><td>' + data.progress +
@@ -8262,6 +8940,39 @@ class Tooltip$1 {
             case 'timeline':
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';
                 break;
+            case 'manualtaskbar':
+                let autoStartDate = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                let autoEndDate = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                let durationValue = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
+                    '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(data.duration, data.durationUnit) +
+                    '</td></tr>' : '';
+                let manualStartDate = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('startDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                let manualEndDate = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('endDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.endDate, this.parent.dateFormat) + '</td></tr>' : '';
+                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + manualStartDate + autoStartDate + manualEndDate + autoEndDate + durationValue + '</tbody></table>';
+                break;
+            case 'manualmilestone':
+                let autoStart = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                let autoEnd = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                let date = '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
+                    '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr>';
+                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + date + autoStart + autoEnd + '</tbody></table>';
+                break;
         }
         return content$$1;
     }
@@ -8285,8 +8996,8 @@ class Tooltip$1 {
         let toTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[1])];
         let predecessor = fromTask.ganttProperties.predecessor.filter((pdc) => { return pdc.to === taskIds[1]; });
         let predecessorTooltipData = {
-            fromId: fromTask.ganttProperties.taskId,
-            toId: toTask.ganttProperties.taskId,
+            fromId: fromTask.ganttProperties.rowUniqueID,
+            toId: toTask.ganttProperties.rowUniqueID,
             fromName: fromTask.ganttProperties.taskName,
             toName: toTask.ganttProperties.taskName,
             linkType: predecessor[0].type,
@@ -8484,11 +9195,11 @@ let Gantt = class Gantt extends Component {
                 if (this.selectionModule) {
                     if (this.selectionSettings.mode !== 'Cell' &&
                         !isNullOrUndefined(this.currentViewData[this.selectedRowIndex])) {
-                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.taskId;
+                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.rowUniqueID;
                     }
                     else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
                         let selectCellIndex = this.selectionModule.getSelectedRowCellIndexes();
-                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.taskId;
+                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.rowUniqueID;
                     }
                 }
                 if (selectedId) {
@@ -8654,6 +9365,23 @@ let Gantt = class Gantt extends Component {
             focusSearch: 'ctrl+shift+70' //F Key
         };
         this.zoomingLevels = this.getZoomingLevels();
+        this.resourceFieldsMapping();
+        if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
+            this.resourceFields.unit = 'unit';
+        }
+        if (!isNullOrUndefined(this.taskFields.work)) {
+            this.taskType = 'FixedWork';
+        }
+        this.taskIds = [];
+    }
+    /**
+     * Method to map resource fields.
+     *
+     */
+    resourceFieldsMapping() {
+        let resourceSettings = this.resourceFields;
+        resourceSettings.id = !isNullOrUndefined(resourceSettings.id) ? resourceSettings.id : this.resourceIDMapping;
+        resourceSettings.name = !isNullOrUndefined(resourceSettings.name) ? resourceSettings.name : this.resourceNameMapping;
     }
     /**
      * To validate height and width
@@ -8741,7 +9469,7 @@ let Gantt = class Gantt extends Component {
         this.timelineModule.processTimelineUnit();
         this.timelineModule.calculateZoomingLevelsPerDayWidth(); // To calculate the perDaywidth
         // predecessor calculation
-        if (this.taskFields.dependency) {
+        if (this.predecessorModule && this.taskFields.dependency) {
             this.predecessorModule.updatePredecessors();
             if (this.isInPredecessorValidation) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
@@ -9058,6 +9786,15 @@ let Gantt = class Gantt extends Component {
         return value;
     }
     /**
+     * Get work value as string combined with work and unit values.
+     * @param {number} work - Defines the work value.
+     * @param {string} workUnit - Defines the work unit.
+     */
+    getWorkString(work, workUnit) {
+        let value = this.dateValidationModule.getWorkString(work, workUnit);
+        return value;
+    }
+    /**
      *
      * @param args
      * @private
@@ -9088,7 +9825,7 @@ let Gantt = class Gantt extends Component {
             setValue('isGanttCreated', true, args);
             this.renderComplete();
         }
-        if (this.taskFields.dependency) {
+        if (this.predecessorModule && this.taskFields.dependency) {
             this.connectorLineIds = [];
             this.updatedConnectorLineCollection = [];
             this.predecessorModule.createConnectorLinesCollection(this.currentViewData);
@@ -9290,6 +10027,9 @@ let Gantt = class Gantt extends Component {
                 case 'enableRtl':
                     isRefresh = true;
                     break;
+                case 'validateManualTasksOnLinking':
+                    this.validateManualTasksOnLinking = newProp.validateManualTasksOnLinking;
+                    break;
             }
         }
         if (isRefresh) {
@@ -9422,6 +10162,12 @@ let Gantt = class Gantt extends Component {
         if (this.showColumnMenu) {
             modules.push({
                 member: 'columnMenu',
+                args: [this]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'pdfExport',
                 args: [this]
             });
         }
@@ -9574,6 +10320,7 @@ let Gantt = class Gantt extends Component {
      * @return {void}
      * @hidden
      */
+    /* tslint:disable-next-line:max-func-body-length */
     getDefaultLocale() {
         let ganttLocale = {
             emptyRecord: 'No records to display',
@@ -9587,6 +10334,14 @@ let Gantt = class Gantt extends Component {
             notes: 'Notes',
             baselineStartDate: 'Baseline Start Date',
             baselineEndDate: 'Baseline End Date',
+            taskMode: 'Task Mode',
+            changeScheduleMode: 'Change Schedule Mode',
+            subTasksStartDate: 'SubTasks Start Date',
+            subTasksEndDate: 'SubTasks End Date',
+            scheduleStartDate: 'Schedule Start Date',
+            scheduleEndDate: 'Schedule End Date',
+            auto: 'Auto',
+            manual: 'Manual',
             type: 'Type',
             offset: 'Offset',
             resourceName: 'Resources',
@@ -9615,6 +10370,7 @@ let Gantt = class Gantt extends Component {
             zoomToFit: 'Zoom to fit',
             excelExport: 'Excel export',
             csvExport: 'CSV export',
+            pdfExport: 'Pdf export',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',
@@ -9660,7 +10416,12 @@ let Gantt = class Gantt extends Component {
             leftTaskLabel: 'Left task label',
             rightTaskLabel: 'Right task label',
             timelineCell: 'Timeline cell',
-            confirmPredecessorDelete: 'Are you sure you want to remove dependency link?'
+            confirmPredecessorDelete: 'Are you sure you want to remove dependency link?',
+            unit: 'Unit',
+            work: 'Work',
+            taskType: 'Task Type',
+            unassignedTask: 'Unassigned Task',
+            group: 'Group'
         };
         return ganttLocale;
     }
@@ -9781,6 +10542,19 @@ let Gantt = class Gantt extends Component {
         return this.excelExportModule ? this.treeGrid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
     }
     /**
+     * Export Gantt data to PDF document.
+     * @param  {pdfExportProperties} PdfExportProperties - Defines the export properties of the Gantt.
+     * @param  {isMultipleExport} isMultipleExport - Define to enable multiple export.
+     * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
+     * @return {Promise<any>}
+     * @blazorType void
+     */
+    /* tslint:disable-next-line */
+    pdfExport(pdfExportProperties, isMultipleExport, pdfDoc) {
+        return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc)
+            : null;
+    }
+    /**
      * Clears all the filtered columns in Gantt.
      * @return {void}
      */
@@ -9802,7 +10576,8 @@ let Gantt = class Gantt extends Component {
      * @private
      */
     renderWorkingDayCell(args) {
-        let nonWorkingDays = !this.includeWeekend ? this.nonWorkingDayIndex : [];
+        let includeWeekend = this.taskMode !== 'Auto' ? true : this.includeWeekend ? true : false;
+        let nonWorkingDays = !includeWeekend ? this.nonWorkingDayIndex : [];
         let holidays = this.totalHolidayDates;
         if (nonWorkingDays.length > 0 && nonWorkingDays.indexOf(args.date.getDay()) !== -1) {
             args.isDisabled = true;
@@ -9892,7 +10667,7 @@ let Gantt = class Gantt extends Component {
     setRecordValue(field, value, record, isTaskData) {
         if (this.isOnEdit || this.isOnDelete) {
             this.makeCloneData(field, record, isTaskData);
-            let id = isTaskData ? record.taskId : record.ganttProperties.taskId;
+            let id = isTaskData ? record.rowUniqueID : record.ganttProperties.rowUniqueID;
             let task = this.getRecordByID(id);
             if (task && this.editedRecords.indexOf(task) === -1) {
                 this.editedRecords.push(task);
@@ -10250,6 +11025,20 @@ let Gantt = class Gantt extends Component {
             return '';
         }
     }
+    /**
+     * Method to get class name for unscheduled tasks
+     * @param ganttProp
+     * @private
+     */
+    isUnscheduledTask(ganttProp) {
+        if (isNullOrUndefined(ganttProp.startDate) || isNullOrUndefined(ganttProp.endDate) ||
+            isNullOrUndefined(ganttProp.duration)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
     createGanttPopUpElement() {
         let popup = this.createElement('div', { className: 'e-ganttpopup', styles: 'display:none;' });
         let content$$1 = this.createElement('div', { className: 'e-content', attrs: { tabIndex: '-1' } });
@@ -10544,6 +11333,40 @@ let Gantt = class Gantt extends Component {
             }
         }
     }
+    /**
+     * To change the mode of a record.
+     * @return {void}
+     */
+    changeTaskMode(data) {
+        let tasks = this.taskFields;
+        let ganttData = this.getRecordByID(data[tasks.id]);
+        let ganttProp = ganttData.ganttProperties;
+        this.isOnEdit = true;
+        this.setRecordValue('isAutoSchedule', !ganttProp.isAutoSchedule, ganttProp, true);
+        this.setRecordValue('taskData.' + tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        this.setRecordValue(tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        this.editModule.updateTaskScheduleModes(ganttData);
+        let args = {
+            data: ganttData
+        };
+        this.editModule.initiateUpdateAction(args);
+    }
+    /**
+     * @private
+     */
+    getTaskIds() {
+        return this.taskIds;
+    }
+    /**
+     * @private
+     */
+    setTaskIds(data) {
+        if (this.viewType !== 'ProjectView') {
+            let id = data.ganttProperties.taskId;
+            id = data.level === 0 ? 'R' + id : 'T' + id;
+            this.taskIds.push(id);
+        }
+    }
 };
 __decorate([
     Property(true)
@@ -10672,6 +11495,15 @@ __decorate([
     Property(-1)
 ], Gantt.prototype, "selectedRowIndex", void 0);
 __decorate([
+    Property('hour')
+], Gantt.prototype, "workUnit", void 0);
+__decorate([
+    Property('FixedUnit')
+], Gantt.prototype, "taskType", void 0);
+__decorate([
+    Property('ProjectView')
+], Gantt.prototype, "viewType", void 0);
+__decorate([
     Collection([{ from: 8, to: 12 }, { from: 13, to: 17 }], DayWorkingTime)
 ], Gantt.prototype, "dayWorkingTime", void 0);
 __decorate([
@@ -10683,6 +11515,9 @@ __decorate([
 __decorate([
     Complex({}, TaskFields)
 ], Gantt.prototype, "taskFields", void 0);
+__decorate([
+    Complex({}, ResourceFields)
+], Gantt.prototype, "resourceFields", void 0);
 __decorate([
     Complex({}, TimelineSettings)
 ], Gantt.prototype, "timelineSettings", void 0);
@@ -10719,6 +11554,15 @@ __decorate([
 __decorate([
     Property()
 ], Gantt.prototype, "contextMenuItems", void 0);
+__decorate([
+    Property(false)
+], Gantt.prototype, "allowPdfExport", void 0);
+__decorate([
+    Property(false)
+], Gantt.prototype, "validateManualTasksOnLinking", void 0);
+__decorate([
+    Property('Auto')
+], Gantt.prototype, "taskMode", void 0);
 __decorate([
     Complex({}, FilterSettings)
 ], Gantt.prototype, "filterSettings", void 0);
@@ -10887,9 +11731,45 @@ __decorate([
 __decorate([
     Event()
 ], Gantt.prototype, "onMouseMove", void 0);
+__decorate([
+    Event()
+], Gantt.prototype, "beforePdfExport", void 0);
+__decorate([
+    Event()
+], Gantt.prototype, "pdfExportComplete", void 0);
+__decorate([
+    Event()
+], Gantt.prototype, "pdfQueryCellInfo", void 0);
+__decorate([
+    Event()
+], Gantt.prototype, "pdfQueryTaskbarInfo", void 0);
+__decorate([
+    Event()
+], Gantt.prototype, "pdfQueryTimelineCellInfo", void 0);
+__decorate([
+    Event()
+], Gantt.prototype, "pdfColumnHeaderQueryCellInfo", void 0);
 Gantt = __decorate([
     NotifyPropertyChanges
 ], Gantt);
+
+/**
+ * public Enum for `PdfHorizontalOverflowType`.
+ * @private
+ */
+var PdfHorizontalOverflowType;
+(function (PdfHorizontalOverflowType) {
+    /**
+     * Specifies the type of `NextPage`.
+     * @private
+     */
+    PdfHorizontalOverflowType[PdfHorizontalOverflowType["NextPage"] = 0] = "NextPage";
+    /**
+     * Specifies the type of `LastPage`.
+     * @private
+     */
+    PdfHorizontalOverflowType[PdfHorizontalOverflowType["LastPage"] = 1] = "LastPage";
+})(PdfHorizontalOverflowType || (PdfHorizontalOverflowType = {}));
 
 /**
  *  This file was to define all public and internal events
@@ -10945,7 +11825,8 @@ class CellEdit {
             return;
         }
         if (data.hasChildRecords && (field === taskSettings.endDate || field === taskSettings.duration
-            || field === taskSettings.dependency || field === taskSettings.progress)) {
+            || field === taskSettings.dependency || field === taskSettings.progress
+            || field === taskSettings.work || field === 'taskType')) {
             args.cancel = true;
         }
         else {
@@ -10955,14 +11836,19 @@ class CellEdit {
                     args.cell = getElement(args.cell);
                     args.row = getElement(args.row);
                 }
+                if (data.level === 0 && this.parent.viewType === 'ResourceView') {
+                    args.cancel = true;
+                }
                 callBackPromise.resolve(args);
                 if (!args.cancel) {
-                    this.isCellEdit = true;
-                    if (!isNullOrUndefined(this.parent.toolbarModule)) {
-                        this.parent.toolbarModule.refreshToolbarItems();
-                    }
                     if (args.columnName === this.parent.taskFields.notes) {
                         this.openNotesEditor(args);
+                    }
+                    else {
+                        this.isCellEdit = true;
+                        if (!isNullOrUndefined(this.parent.toolbarModule)) {
+                            this.parent.toolbarModule.refreshToolbarItems();
+                        }
                     }
                 }
             });
@@ -10982,7 +11868,7 @@ class CellEdit {
             let columnTypes = this.parent.editModule.dialogModule.updatedEditFields.map((x) => { return x.type; });
             let index = columnTypes.indexOf('Notes');
             if (index !== -1) {
-                this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.taskId);
+                this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.rowUniqueID);
                 let tabObj = document.getElementById(this.parent.element.id + '_Tab').ej2_instances[0];
                 tabObj.selectedItem = index;
             }
@@ -11043,7 +11929,7 @@ class CellEdit {
                 this.durationEdited(editedArgs);
             }
             else if (column.field === this.parent.taskFields.resourceInfo) {
-                this.resourceEdited(editedArgs, editedObj);
+                this.resourceEdited(editedArgs, editedObj, data, true);
             }
             else if (column.field === this.parent.taskFields.progress) {
                 this.progressEdited(editedArgs);
@@ -11057,6 +11943,15 @@ class CellEdit {
             }
             else if (column.field === this.parent.taskFields.notes) {
                 this.notedEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.work) {
+                this.workEdited(editedArgs);
+            }
+            else if (column.field === 'taskType' && !isNullOrUndefined(this.parent.taskFields.work)) {
+                this.typeEdited(editedArgs, editedObj);
+            }
+            else if (column.field === this.parent.taskFields.manual) {
+                this.taskmodeEdited(editedArgs);
             }
             else {
                 this.parent.setRecordValue('taskData.' + column.field, editedArgs.data[column.field], editedArgs.data);
@@ -11087,6 +11982,15 @@ class CellEdit {
     notedEdited(args) {
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.notes, args.data[this.parent.taskFields.name], args.data);
         this.parent.setRecordValue('notes', args.data[this.parent.taskFields.notes], args.data.ganttProperties, true);
+        this.updateEditedRecord(args);
+    }
+    /**
+     * To update task schedule mode cell with new value
+     * @param args
+     */
+    taskmodeEdited(args) {
+        this.parent.setRecordValue('isAutoSchedule', !args.data[this.parent.taskFields.manual], args.data.ganttProperties, true);
+        this.parent.editModule.updateTaskScheduleModes(args.data);
         this.updateEditedRecord(args);
     }
     /**
@@ -11166,6 +12070,7 @@ class CellEdit {
         this.parent.dataOperation.updateMappingData(args.data, 'startDate');
         this.parent.dataOperation.updateMappingData(args.data, 'endDate');
         this.parent.dataOperation.updateMappingData(args.data, 'duration');
+        this.parent.editModule.updateResourceRelatedFields(args.data, 'endDate');
         this.updateEditedRecord(args);
     }
     /**
@@ -11174,10 +12079,20 @@ class CellEdit {
      */
     durationEdited(args) {
         let ganttProb = args.data.ganttProperties;
-        let endDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.endDate);
-        let startDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.startDate);
         let durationString = args.data[this.parent.taskFields.duration];
         this.parent.dataOperation.updateDurationValue(durationString, ganttProb);
+        this.updateDates(args);
+        this.parent.editModule.updateResourceRelatedFields(args.data, 'duration');
+        this.updateEditedRecord(args);
+    }
+    /**
+     * To update start date, end date based on duration
+     * @param args
+     */
+    updateDates(args) {
+        let ganttProb = args.data.ganttProperties;
+        let endDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.endDate);
+        let startDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.startDate);
         let currentDuration = ganttProb.duration;
         if (isNullOrUndefined(currentDuration)) {
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
@@ -11198,7 +12113,6 @@ class CellEdit {
         this.parent.dataOperation.updateMappingData(args.data, 'endDate');
         this.parent.dataOperation.updateMappingData(args.data, 'startDate');
         this.parent.dataOperation.updateMappingData(args.data, 'duration');
-        this.updateEditedRecord(args);
     }
     /**
      * To update progress cell with new value
@@ -11209,7 +12123,9 @@ class CellEdit {
         this.parent.setRecordValue('progress', (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]), ganttRecord.ganttProperties, true);
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.progress, (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]), args.data);
         if (!args.data.hasChildRecords) {
-            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(ganttRecord.ganttProperties.width, ganttRecord.ganttProperties.progress), ganttRecord.ganttProperties, true);
+            let width = ganttRecord.ganttProperties.isAutoSchedule ? ganttRecord.ganttProperties.width :
+                ganttRecord.ganttProperties.autoWidth;
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(width, ganttRecord.ganttProperties.progress), ganttRecord.ganttProperties, true);
         }
         this.updateEditedRecord(args);
     }
@@ -11237,11 +12153,46 @@ class CellEdit {
      * @param args
      * @param editedObj
      */
-    resourceEdited(args, editedObj) {
-        if (editedObj[this.parent.taskFields.resourceInfo]) {
-            args.data.ganttProperties.resourceInfo = this.parent.dataOperation.setResourceInfo(editedObj);
+    resourceEdited(args, editedObj, previousData, isResourceEdited) {
+        let resourceSettings = this.parent.resourceFields;
+        let editedResourceId = editedObj[this.parent.taskFields.resourceInfo];
+        if (editedResourceId) {
+            let tempResourceInfo = this.parent.dataOperation.setResourceInfo(editedObj);
+            let editedResouceLength = tempResourceInfo.length;
+            let previousResource = previousData.ganttProperties.resourceInfo;
+            let index;
+            let editedResources = [];
+            let resourceData = this.parent.resources;
+            let newIndex;
+            for (let count = 0; count < editedResouceLength; count++) {
+                if (previousResource) {
+                    let previousResourceLength = previousResource.length;
+                    for (newIndex = 0; newIndex < previousResourceLength; newIndex++) {
+                        if (previousResource[newIndex][resourceSettings.id] === editedResourceId[count]) {
+                            index = newIndex;
+                            break;
+                        }
+                        else {
+                            index = -1;
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(index) && index !== -1) {
+                    editedResources.push(previousResource[index]);
+                }
+                else {
+                    let resource = resourceData.filter((resourceInfo) => {
+                        return (editedResourceId[count] === resourceInfo[resourceSettings.id]);
+                    });
+                    let ganttDataResource = extend({}, resource[0]);
+                    ganttDataResource[resourceSettings.unit] = 100;
+                    editedResources.push(ganttDataResource);
+                }
+            }
+            args.data.ganttProperties.resourceInfo = editedResources;
             this.parent.dataOperation.updateMappingData(args.data, 'resourceInfo');
-            this.updateEditedRecord(args);
+            this.parent.editModule.updateResourceRelatedFields(args.data, 'resource');
+            this.updateEditedRecord(args, isResourceEdited, previousResource);
         }
     }
     /**
@@ -11256,6 +12207,31 @@ class CellEdit {
         }
     }
     /**
+     * To update task's work cell with new value
+     * @param editedArgs
+     */
+    workEdited(editedArgs) {
+        let ganttProb = editedArgs.data.ganttProperties;
+        let workValue = editedArgs.data[this.parent.taskFields.work];
+        this.parent.setRecordValue('work', workValue, ganttProb, true);
+        this.parent.editModule.updateResourceRelatedFields(editedArgs.data, 'work');
+        this.updateDates(editedArgs);
+        this.updateEditedRecord(editedArgs);
+    }
+    /**
+     * To update task type cell with new value
+     * @param args
+     * @param editedObj
+     */
+    typeEdited(args, editedObj) {
+        let key = 'taskType';
+        let ganttProb = args.data.ganttProperties;
+        let taskType = editedObj[key];
+        this.parent.setRecordValue('taskType', taskType, ganttProb, true);
+        //this.parent.dataOperation.updateMappingData(args.data, 'taskType');
+        this.updateEditedRecord(args);
+    }
+    /**
      * To compare start date and end date from Gantt record
      * @param ganttRecord
      */
@@ -11268,8 +12244,13 @@ class CellEdit {
      * To start method save action with edited cell value
      * @param args
      */
-    updateEditedRecord(args) {
-        this.parent.editModule.initiateUpdateAction(args);
+    updateEditedRecord(args, isResourceEdited, previousResources) {
+        if (this.parent.viewType === 'ResourceView') {
+            this.parent.editModule.updateRsourceRecords(args, isResourceEdited, previousResources);
+        }
+        else {
+            this.parent.editModule.initiateUpdateAction(args);
+        }
     }
     /**
      * To remove all public private properties
@@ -11358,7 +12339,8 @@ class EditTooltip {
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
                     this.toolTipObj.offsetX = -this.taskbarEdit.taskBarEditRecord.ganttProperties.width;
                 }
-                else if (this.taskbarEdit.taskBarEditAction === 'RightResizing') {
+                else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
+                    this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
                     this.toolTipObj.offsetX = 0;
                 }
                 else if (this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
@@ -11401,6 +12383,7 @@ class EditTooltip {
                         this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
                     break;
                 case 'RightResizing':
+                case 'ParentResizing':
                     tooltipString = this.parent.localeObj.getConstant('endDate') + ' : ';
                     tooltipString += instance.formatDate(editRecord.endDate, { format: this.parent.dateFormat });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
@@ -11409,6 +12392,7 @@ class EditTooltip {
                 case 'ChildDrag':
                 case 'ParentDrag':
                 case 'MilestoneDrag':
+                case 'ManualParentDrag':
                     if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.startDate)) {
                         tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
                         tooltipString += instance.formatDate(editRecord.startDate, { format: this.parent.dateFormat });
@@ -11472,7 +12456,8 @@ class TaskbarEdit {
         this.roundOffDuration = true;
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
-        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth'];
+        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth',
+            'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth',];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     }
@@ -11540,10 +12525,10 @@ class TaskbarEdit {
         if (predecessors) {
             for (let i = 0; i < predecessors.length; i++) {
                 let predecessor = predecessors[i];
-                if (ganttProp.taskId.toString() === predecessor.from) {
+                if (ganttProp.rowUniqueID.toString() === predecessor.from) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
-                else if (ganttProp.taskId.toString() === predecessor.to) {
+                else if (ganttProp.rowUniqueID.toString() === predecessor.to) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
             }
@@ -11563,7 +12548,7 @@ class TaskbarEdit {
         }
     }
     applyActiveColor(from, to, enable) {
-        let taskId = this.taskBarEditRecord.ganttProperties.taskId.toString();
+        let taskId = this.taskBarEditRecord.ganttProperties.rowUniqueID.toString();
         let ganttRecord = (taskId === from) ? this.parent.getRecordByID(to) :
             this.parent.getRecordByID(from);
         let $tr = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(ganttRecord)];
@@ -11594,16 +12579,16 @@ class TaskbarEdit {
         else if (childRecord.predecessor) {
             for (let i = 0; i < childRecord.predecessor.length; i++) {
                 let predecessor = childRecord.predecessor[i];
-                if (predecessor.from === parentRecord.taskId.toString() &&
-                    predecessor.to === childRecord.taskId.toString()) {
+                if (predecessor.from === parentRecord.rowUniqueID.toString() &&
+                    predecessor.to === childRecord.rowUniqueID.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.connectorSecondRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
                 }
-                else if (predecessor.from === childRecord.taskId.toString() &&
-                    predecessor.to === parentRecord.taskId.toString()) {
+                else if (predecessor.from === childRecord.rowUniqueID.toString() &&
+                    predecessor.to === parentRecord.rowUniqueID.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.taskBarEditRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
@@ -11624,7 +12609,18 @@ class TaskbarEdit {
      */
     updateTaskBarEditElement(e) {
         let target = this.getElementByPosition(e);
-        let element = parentsUntil$1(target, taskBarMainContainer);
+        let element;
+        if (target.classList.contains(manualParentRightResizer) || target.classList.contains(manualParentMainContainer)
+            || target.classList.contains(manualParentTaskBar)) {
+            element = parentsUntil$1(target, manualParentMainContainer);
+        }
+        else if (target.classList.contains(manualParentMilestoneTop) || target.classList.contains(manualParentMilestoneBottom)
+            || target.classList.contains(manualParentMilestone)) {
+            element = parentsUntil$1(target, manualParentMilestone);
+        }
+        else {
+            element = parentsUntil$1(target, taskBarMainContainer);
+        }
         if (this.parent.editSettings.allowTaskbarEditing && element) {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             this.editElement = element;
@@ -11728,8 +12724,20 @@ class TaskbarEdit {
         else if (mouseDownElement.classList.contains(connectorPointRight)) {
             action = 'ConnectorPointRightDrag';
         }
+        else if (mouseDownElement.classList.contains(manualParentRightResizer)) {
+            action = 'ParentResizing';
+        }
+        else if (mouseDownElement.classList.contains(manualParentTaskBar) ||
+            mouseDownElement.classList.contains(manualParentMainContainer) ||
+            mouseDownElement.classList.contains(manualParentMilestone) ||
+            mouseDownElement.classList.contains(manualParentMilestoneTop) ||
+            mouseDownElement.classList.contains(manualParentMilestoneBottom) ||
+            mouseDownElement.classList.contains(manualParentMilestone)) {
+            action = 'ManualParentDrag';
+        }
         else if (data) {
-            action = data.hasChildRecords ? 'ParentDrag' : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
+            action = data.hasChildRecords ? this.parent.taskMode === 'Auto' ? 'ParentDrag' : ''
+                : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
         }
         return action;
     }
@@ -11813,6 +12821,9 @@ class TaskbarEdit {
         if (this.taskBarEditRecord !== null) {
             args.editingFields = this.taskBarEditRecord.ganttProperties;
             args.data = this.taskBarEditRecord;
+            if (this.parent.viewType === 'ResourceView' && args.data.level === 0) {
+                return;
+            }
             args.recordIndex = recordIndex;
             args.taskBarEditAction = this.taskBarEditAction;
             args.roundOffDuration = this.roundOffDuration;
@@ -11826,11 +12837,11 @@ class TaskbarEdit {
             else if (this.taskBarEditAction === 'LeftResizing') {
                 this.enableLeftResizing(e);
             }
-            else if (this.taskBarEditAction === 'RightResizing') {
+            else if (this.taskBarEditAction === 'RightResizing' || this.taskBarEditAction === 'ParentResizing') {
                 this.enableRightResizing(e);
             }
             else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
-                this.taskBarEditAction === 'MilestoneDrag') {
+                this.taskBarEditAction === 'MilestoneDrag' || this.taskBarEditAction === 'ManualParentDrag') {
                 this.enableDragging(e);
             }
             else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
@@ -12138,8 +13149,10 @@ class TaskbarEdit {
                     this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
                 }
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'RightResizing':
+            case 'ParentResizing':
                 left = this.getRoundOffEndLeft(item, this.roundOffDuration);
                 let tempEndDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.startDate)) {
@@ -12151,10 +13164,12 @@ class TaskbarEdit {
                     this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'ParentDrag':
             case 'ChildDrag':
             case 'MilestoneDrag':
+            case 'ManualParentDrag':
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
                 projectStartDate = this.getDateByLeft(left);
                 if (!isNullOrUndefined(item.endDate) && isNullOrUndefined(item.startDate)) {
@@ -12246,10 +13261,10 @@ class TaskbarEdit {
         if (!isRoundOff) {
             if ((tierMode !== 'Hour' && tierMode !== 'Minutes')) {
                 if (remainDaysInDecimal <= 0.5) {
-                    left = ganttRecord.left - remainDays;
+                    left = left - remainDays;
                 }
                 else if (remainDaysInDecimal > 0.5) {
-                    left = (ganttRecord.left - remainDays) + this.parent.perDayWidth / 2;
+                    left = (left - remainDays) + this.parent.perDayWidth / 2;
                 }
             }
         }
@@ -12258,16 +13273,16 @@ class TaskbarEdit {
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Hour') / (1000 * 60 * 60)));
                 remainDays = (this.parent.perDayWidth / 24) - ((this.parent.perDayWidth / 24) / remainingContribution);
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             }
             else if (tierMode === 'Minutes') {
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Minutes') / (1000 * 60)));
                 remainDays = (this.parent.perDayWidth / (24 * 60)) - ((this.parent.perDayWidth / (24 * 60)) / remainingContribution);
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             }
             else {
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             }
         }
         return left;
@@ -12334,12 +13349,18 @@ class TaskbarEdit {
         let traceParentTaskBar$$1 = this.taskBarEditElement.querySelector('.' + traceParentTaskBar);
         let traceParentProgressBar$$1 = this.taskBarEditElement.querySelector('.' + traceParentProgressBar);
         let traceConnectorPointRight = this.taskBarEditElement.querySelector('.' + rightConnectorPointOuterDiv);
+        let manualParentTaskbar = this.taskBarEditElement;
+        let manualTaskbar = this.taskBarEditElement.querySelector('.' + manualParentTaskBar);
+        let manualParentRight = this.taskBarEditElement.querySelector('.' + manualParentRightResizer);
+        let manualParentLeft = this.taskBarEditElement.querySelector('.' + manualParentLeftResizer);
         if (this.taskBarEditAction !== 'ConnectorPointRightDrag' &&
             this.taskBarEditAction !== 'ConnectorPointLeftDrag') {
-            taskBarMainContainer$$1.style.width = (width) + 'px';
-            taskBarMainContainer$$1.style.left = (item.left) + 'px';
-            leftLabelContainer$$1.style.width = (item.left) + 'px';
-            rightLabelContainer$$1.style.left = (item.left + width) + 'px';
+            if (this.taskBarEditAction !== 'ParentResizing' && this.taskBarEditAction !== 'ManualParentDrag') {
+                taskBarMainContainer$$1.style.width = (width) + 'px';
+                taskBarMainContainer$$1.style.left = (item.left) + 'px';
+                leftLabelContainer$$1.style.width = (item.left) + 'px';
+                rightLabelContainer$$1.style.left = (item.left + width) + 'px';
+            }
             if (traceConnectorPointRight) {
                 traceConnectorPointRight.style.left = (this.parent.isAdaptive ? (width + 10) : (width + 2)) + 'px';
             }
@@ -12364,6 +13385,13 @@ class TaskbarEdit {
             else if (this.taskBarEditAction === 'ParentDrag') {
                 traceParentTaskBar$$1.style.width = (width) + 'px';
                 traceParentProgressBar$$1.style.width = (item.progressWidth) + 'px';
+            }
+            else if (this.taskBarEditAction === 'ParentResizing') {
+                manualParentTaskbar.style.width = manualTaskbar.style.width = (item.width) + 'px';
+                manualParentRight.style.left = (item.width - manualParentLeft.offsetLeft) + 'px';
+            }
+            else if (this.taskBarEditAction === 'ManualParentDrag') {
+                manualParentTaskbar.style.left = (item.left - item.autoLeft) + 'px';
             }
             else {
                 traceChildTaskBar$$1.style.width = (width) + 'px';
@@ -12468,7 +13496,12 @@ class TaskbarEdit {
             this.parent.dataOperation.updateWidthLeft(args.data);
         }
         this.parent.dataOperation.updateTaskData(ganttRecord);
-        this.parent.editModule.initiateUpdateAction(args);
+        if (this.parent.viewType === 'ResourceView') {
+            this.parent.editModule.updateRsourceRecords(args);
+        }
+        else {
+            this.parent.editModule.initiateUpdateAction(args);
+        }
     }
     /**
      * To get progress in percentage.
@@ -12568,10 +13601,10 @@ class TaskbarEdit {
         let target = this.getElementByPosition(e);
         let element = target;
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
-            predecessor = fromItem.taskId + 'S';
+            predecessor = fromItem.rowUniqueID + 'S';
         }
         else if (this.taskBarEditAction === 'ConnectorPointRightDrag') {
-            predecessor = fromItem.taskId + 'F';
+            predecessor = fromItem.rowUniqueID + 'F';
         }
         if (this.connectorSecondAction) {
             if (this.connectorSecondAction === 'ConnectorPointLeftDrag') {
@@ -12699,6 +13732,8 @@ class DialogEdit {
         this.addedRecord = null;
         this.dialogEditValidationFlag = false;
         this.ganttResources = [];
+        this.previousResource = [];
+        this.isResourceUpdate = false;
         this.parent = parent;
         this.localeObj = this.parent.localeObj;
         this.beforeOpenArgs = { cancel: false };
@@ -12866,7 +13901,7 @@ class DialogEdit {
             let field = columns[i].field;
             if (field === taskSettings.id) {
                 tempData[field] = id;
-                tempData.ganttProperties.taskId = tempData[field];
+                tempData.ganttProperties.rowUniqueID = tempData[field];
             }
             else if (columns[i].field === taskSettings.startDate) {
                 if (isNullOrUndefined(tempData[taskSettings.endDate])) {
@@ -12899,6 +13934,14 @@ class DialogEdit {
                 tempData[field] = 0;
                 tempData.ganttProperties.progress = tempData[field];
             }
+            else if (columns[i].field === taskSettings.work) {
+                tempData[field] = 0;
+                tempData.ganttProperties.work = tempData[field];
+            }
+            else if (columns[i].field === 'taskType') {
+                tempData[field] = this.parent.taskType;
+                tempData.ganttProperties.taskType = tempData[field];
+            }
             else {
                 tempData[this.parent.ganttColumns[i].field] = '';
             }
@@ -12914,10 +13957,10 @@ class DialogEdit {
             let selectedRowId = gObj.selectionModule ?
                 (gObj.selectionSettings.mode === 'Row' || gObj.selectionSettings.mode === 'Both') &&
                     gObj.selectionModule.selectedRowIndexes.length === 1 ?
-                    gObj.currentViewData[gObj.selectionModule.selectedRowIndexes[0]].ganttProperties.taskId :
+                    gObj.currentViewData[gObj.selectionModule.selectedRowIndexes[0]].ganttProperties.rowUniqueID :
                     gObj.selectionSettings.mode === 'Cell' &&
                         gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ?
-                        gObj.currentViewData[gObj.selectionModule.getSelectedRowCellIndexes()[0].rowIndex].ganttProperties.taskId :
+                        gObj.currentViewData[gObj.selectionModule.getSelectedRowCellIndexes()[0].rowIndex].ganttProperties.rowUniqueID :
                         null : null;
             if (!isNullOrUndefined(selectedRowId)) {
                 this.openEditDialog(selectedRowId);
@@ -12947,6 +13990,9 @@ class DialogEdit {
             this.rowIndex = ganttObj.selectedRowIndex;
         }
         this.isEdit = true;
+        if (this.parent.viewType === 'ResourceView' && this.rowData.level === 0) {
+            return;
+        }
         if (Object.keys(this.rowData).length !== 0) {
             this.editedRecord = extend({}, {}, this.rowData, true);
             this.createDialog();
@@ -13056,8 +14102,8 @@ class DialogEdit {
                     rte.destroy();
                 }
                 else if (id === 'Resources') {
-                    let gridObj = element.ej2_instances[0];
-                    gridObj.destroy();
+                    let treeGridObj = element.ej2_instances[0];
+                    treeGridObj.destroy();
                 }
                 else if (id.indexOf('Custom') !== -1) {
                     this.destroyCustomField(element);
@@ -13231,15 +14277,16 @@ class DialogEdit {
             this.responsiveTabContent(id, ganttObj);
         }
         if (id === ganttObj.element.id + 'ResourcesTabContainer') {
-            let resourceGrid = ganttObj.element.querySelector('#' + id).ej2_instances[0];
+            let resourceTreeGrid = ganttObj.element.querySelector('#' + id).ej2_instances[0];
             let resources = this.ganttResources;
+            let currentViewData = resourceTreeGrid.getCurrentViewRecords();
             if (resources && resources.length > 0) {
-                resourceGrid.currentViewData.forEach((data, index) => {
+                currentViewData.forEach((data, index) => {
                     for (let i = 0; i < resources.length; i++) {
-                        if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping] &&
-                            !isNullOrUndefined(resourceGrid.selectionModule) &&
-                            resourceGrid.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
-                            resourceGrid.selectRow(index);
+                        if (data.taskData[ganttObj.resourceFields.id] === resources[i][ganttObj.resourceFields.id] &&
+                            !isNullOrUndefined(resourceTreeGrid.selectionModule) &&
+                            resourceTreeGrid.getSelectedRowIndexes().indexOf(index) === -1) {
+                            resourceTreeGrid.selectRow(index);
                         }
                     }
                 });
@@ -13310,6 +14357,11 @@ class DialogEdit {
                     numeric.min = 0;
                     numeric.max = 100;
                 }
+                if (taskSettings.work === column.field) {
+                    numeric.change = (args) => {
+                        this.validateScheduleFields(args, column, ganttObj);
+                    };
+                }
                 fieldsModel[column.field] = numeric;
                 break;
             case 'datepickeredit':
@@ -13341,6 +14393,22 @@ class DialogEdit {
                 fieldsModel[column.field] = dateTimePickerObj;
                 break;
             case 'dropdownedit':
+                if (column.field === 'taskType' || column.field === ganttObj.columnMapping.manual) {
+                    let dataKey = 'dataSource';
+                    let fieldsKey = 'fields';
+                    let types = [
+                        { 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }
+                    ];
+                    common[dataKey] = types;
+                    common[fieldsKey] = { value: 'Value' };
+                    let dropDownListObj = common;
+                    dropDownListObj.change = (args) => {
+                        if (column.field === taskSettings.manual) {
+                            this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
+                        }
+                        this.validateScheduleFields(args, column, ganttObj);
+                    };
+                }
                 fieldsModel[column.field] = common;
                 break;
             case 'maskededit':
@@ -13366,6 +14434,11 @@ class DialogEdit {
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
         }
+        else if (!isNullOrUndefined(args.event.path[1])) {
+            inputElement = args.event.path[1];
+            targetId = inputElement.querySelector('input').getAttribute('id');
+            inputElement = inputElement.querySelector('#' + targetId);
+        }
         let cellValue = inputElement.value;
         let colName = targetId.replace(ganttObj.element.id, '');
         this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
@@ -13379,6 +14452,9 @@ class DialogEdit {
         }
         if (!isNullOrUndefined(tasks.duration)) {
             this.updateScheduleFields(dialog, ganttProp, 'duration');
+        }
+        if (!isNullOrUndefined(tasks.work)) {
+            this.updateScheduleFields(dialog, ganttProp, 'work');
         }
         this.dialogEditValidationFlag = false;
         return true;
@@ -13408,6 +14484,14 @@ class DialogEdit {
                     && picker.value.toString() !== tempValue.toString())) {
                 picker.value = tempValue;
                 picker.dataBind();
+            }
+        }
+        else if (col.editType === 'numericedit') {
+            let numericTextBox = dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
+            tempValue = ganttProp[ganttField];
+            if (!isNullOrUndefined(tempValue)) {
+                numericTextBox.value = tempValue;
+                numericTextBox.dataBind();
             }
         }
     }
@@ -13516,6 +14600,7 @@ class DialogEdit {
                 }
             }
             this.validateDuration(currentData);
+            this.parent.editModule.updateResourceRelatedFields(currentData, 'duration');
         }
         if (taskSettings.startDate === columnName) {
             if (value !== '') {
@@ -13547,6 +14632,19 @@ class DialogEdit {
                 }
             }
             this.validateEndDate(currentData);
+        }
+        if (taskSettings.work === columnName) {
+            if (!isNullOrUndefined(value) && value !== '') {
+                this.parent.setRecordValue('work', value, ganttProp, true);
+                this.parent.editModule.updateResourceRelatedFields(currentData, 'work');
+                this.validateDuration(currentData);
+            }
+        }
+        if (columnName === 'taskType') {
+            this.parent.setRecordValue('taskType', value, ganttProp, true);
+        }
+        if (taskSettings.manual === columnName) {
+            this.parent.editModule.updateTaskScheduleModes(currentData);
         }
         return true;
     }
@@ -13609,11 +14707,14 @@ class DialogEdit {
     }
     getResourcesModel(fields) {
         let ganttObj = this.parent;
+        let resourceSettings = ganttObj.resourceFields;
         if (isNullOrUndefined(fields) || fields.length === 0) {
-            fields = [ganttObj.resourceIDMapping, ganttObj.resourceNameMapping];
+            fields = [resourceSettings.id, resourceSettings.name, resourceSettings.unit, resourceSettings.group];
         }
         let inputModel = {
             allowFiltering: true,
+            treeColumnIndex: 5,
+            editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,
             rowHeight: this.parent.isAdaptive ? 48 : null,
@@ -13625,16 +14726,34 @@ class DialogEdit {
         ];
         for (let i = 0; i < fields.length; i++) {
             let column = {};
-            if (fields[i] === ganttObj.resourceIDMapping) {
+            if (fields[i] === resourceSettings.id) {
                 column = {
-                    field: ganttObj.resourceIDMapping,
-                    headerText: this.localeObj.getConstant('id'), isPrimaryKey: true, width: '100px'
+                    field: resourceSettings.id,
+                    headerText: this.localeObj.getConstant('id'), isPrimaryKey: true, width: '100px',
+                    allowEditing: false
                 };
                 columns.push(column);
             }
-            else if (fields[i] === ganttObj.resourceNameMapping) {
+            else if (fields[i] === resourceSettings.name) {
                 column = {
-                    field: ganttObj.resourceNameMapping, headerText: this.localeObj.getConstant('name'),
+                    field: resourceSettings.name, headerText: this.localeObj.getConstant('name'),
+                    allowEditing: false
+                };
+                columns.push(column);
+            }
+            else if (fields[i] === resourceSettings.unit) {
+                column = {
+                    field: resourceSettings.unit,
+                    headerText: this.localeObj.getConstant('unit'),
+                    editType: 'numericedit'
+                };
+                columns.push(column);
+            }
+            else if (fields[i] === resourceSettings.group && !isNullOrUndefined(resourceSettings.group)) {
+                column = {
+                    field: resourceSettings.group,
+                    headerText: this.localeObj.getConstant('group'),
+                    allowEditing: false
                 };
                 columns.push(column);
             }
@@ -13747,6 +14866,12 @@ class DialogEdit {
                 else if (column.field === this.parent.taskFields.baselineEndDate) {
                     disabled = true;
                 }
+                else if (column.field === this.parent.taskFields.work) {
+                    disabled = true;
+                }
+                else if (column.field === 'taskType') {
+                    disabled = true;
+                }
             }
         }
         if (this.isEdit) {
@@ -13763,7 +14888,10 @@ class DialogEdit {
                 else if (column.field === this.parent.taskFields.progress) {
                     disabled = true;
                 }
-                else if (column.field === this.parent.taskFields.progress) {
+                else if (column.field === this.parent.taskFields.work) {
+                    disabled = true;
+                }
+                else if (column.field === 'taskType') {
                     disabled = true;
                 }
             }
@@ -13821,24 +14949,51 @@ class DialogEdit {
         gridObj.appendTo(divElement);
         return divElement;
     }
-    updateResourceCollection(args, resourceGridId) {
+    updateResourceCollection(args, resourceTreeGridId) {
         if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {
             let ganttObj = this.parent;
-            let resourceGrid = ganttObj.element.querySelector('#' + resourceGridId).ej2_instances[0];
-            if (!isNullOrUndefined(resourceGrid) && resourceGrid.selectionModule.getSelectedRecords().length > 0) {
-                this.ganttResources = extend([], resourceGrid.selectionModule.getSelectedRecords());
+            let treeGridId = ganttObj.element.querySelector('#' + resourceTreeGridId);
+            let resourceTreeGrid = treeGridId.ej2_instances[0];
+            if (!isNullOrUndefined(resourceTreeGrid) && resourceTreeGrid.getSelectedRecords().length > 0) {
+                let tempRecords = resourceTreeGrid.getSelectedRecords();
+                let index;
+                let selectedItems = [];
+                for (index = 0; index < tempRecords.length; index++) {
+                    selectedItems.push(tempRecords[index].taskData);
+                }
+                this.ganttResources = extend([], selectedItems);
             }
             else {
                 this.ganttResources = [];
             }
         }
+        else {
+            this.ganttResources = [];
+        }
     }
     renderResourceTab(itemName) {
         let ganttObj = this.parent;
+        let resourceSettings = ganttObj.resourceFields;
         let ganttData = this.beforeOpenArgs.rowData;
+        let rowResource = ganttData.ganttProperties.resourceInfo;
         let inputModel = this.beforeOpenArgs[itemName];
-        let resourceGridId = ganttObj.element.id + '' + itemName + 'TabContainer';
-        inputModel.dataSource = ganttObj.resources;
+        let resourceTreeGridId = ganttObj.element.id + '' + itemName + 'TabContainer';
+        let resourceData = extend([], [], ganttObj.resources, true);
+        this.parent.dataOperation.updateResourceUnit(resourceData);
+        if (!isNullOrUndefined(rowResource)) {
+            let count;
+            let rowResourceLength = rowResource.length;
+            let index;
+            let resourceDataLength = resourceData.length;
+            for (count = 0; count < rowResourceLength; count++) {
+                for (index = 0; index < resourceDataLength; index++) {
+                    if (rowResource[count][resourceSettings.id] === resourceData[index][resourceSettings.id]) {
+                        resourceData[index][resourceSettings.unit] = rowResource[count][resourceSettings.unit];
+                    }
+                }
+            }
+        }
+        inputModel.dataSource = resourceData;
         let resourceInfo = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i = 0; i < resourceInfo.length; i++) {
@@ -13846,20 +15001,21 @@ class DialogEdit {
             }
         }
         inputModel.rowSelected = (args) => {
-            this.updateResourceCollection(args, resourceGridId);
+            this.updateResourceCollection(args, resourceTreeGridId);
         };
         inputModel.rowDeselected = (args) => {
-            this.updateResourceCollection(args, resourceGridId);
+            this.updateResourceCollection(args, resourceTreeGridId);
         };
-        let divElement = this.createDivElement('e-resource-div', resourceGridId);
-        Grid.Inject(Selection, Filter);
-        let gridObj = new Grid(inputModel);
+        let divElement = this.createDivElement('e-resource-div', resourceTreeGridId);
+        TreeGrid.Inject(Selection, Filter, Edit$1);
+        let treeGridObj = new TreeGrid(inputModel);
         let resourceColumn = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false) {
-            gridObj.allowSelection = false;
-            gridObj.allowFiltering = false;
+            treeGridObj.allowSelection = false;
+            treeGridObj.allowFiltering = false;
+            treeGridObj.editSettings.allowEditing = false;
         }
-        gridObj.appendTo(divElement);
+        treeGridObj.appendTo(divElement);
         return divElement;
     }
     renderCustomTab(itemName) {
@@ -13933,9 +15089,9 @@ class DialogEdit {
                 continue;
             }
             let tempObject = {
-                id: data.ganttProperties.taskId.toString(),
-                text: (data.ganttProperties.taskId.toString() + '-' + data.ganttProperties.taskName),
-                value: data.ganttProperties.taskId.toString()
+                id: data.ganttProperties.rowUniqueID.toString(),
+                text: (data.ganttProperties.rowUniqueID.toString() + '-' + data.ganttProperties.taskName),
+                value: data.ganttProperties.rowUniqueID.toString()
             };
             this.preTaskIds.push(tempObject.id);
             this.preTableCollection.push(tempObject);
@@ -13951,7 +15107,7 @@ class DialogEdit {
             for (let i = 0; i < predecessor.length; i++) {
                 let from = predecessor[i].from.toString();
                 let preData = {};
-                if (ganttProp.taskId.toString() !== from) {
+                if (ganttProp.rowUniqueID.toString() !== from) {
                     preData.id = from;
                     for (let index = 0; index < idCollection.length; index++) {
                         if (idCollection[index].value === from) {
@@ -13971,7 +15127,7 @@ class DialogEdit {
     }
     updatePredecessorDropDownData(ganttData) {
         let index = -1;
-        let id = ganttData.ganttProperties.taskId.toString();
+        let id = ganttData.ganttProperties.rowUniqueID.toString();
         index = this.preTaskIds.indexOf(id);
         this.preTableCollection.splice(index, 1);
         this.preTaskIds.splice(index, 1);
@@ -13981,7 +15137,7 @@ class DialogEdit {
         let ganttProp = data.ganttProperties;
         if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
             let predecessor = ganttProp.predecessor;
-            let fromId = ganttProp.taskId.toString();
+            let fromId = ganttProp.rowUniqueID.toString();
             predecessor.forEach((item) => {
                 if (item.from.toString() === fromId) {
                     let toId = item.to;
@@ -14050,10 +15206,65 @@ class DialogEdit {
                 data: this.rowData,
                 action: 'DialogEditing'
             };
-            this.parent.editModule.initiateUpdateAction(editArgs);
+            if (this.parent.viewType === 'ResourceView') {
+                if (this.isResourceUpdate) {
+                    this.parent.editModule.updateRsourceRecords(editArgs, true, this.previousResource);
+                    this.previousResource = [];
+                }
+                else {
+                    this.parent.editModule.updateRsourceRecords(editArgs);
+                }
+            }
+            else {
+                this.parent.editModule.initiateUpdateAction(editArgs);
+            }
         }
         else {
-            this.parent.editModule.addRecord(this.addedRecord, this.parent.editSettings.newRowPosition);
+            if (this.parent.viewType === 'ResourceView') {
+                let newRecords = extend({}, this.addedRecord, true);
+                let addingRecords = [];
+                let unassignedTasks;
+                if (newRecords[this.parent.taskFields.resourceInfo].length) {
+                    // Block for if the added recoed has resources
+                    newRecords[this.parent.taskFields.resourceInfo].forEach((resourceID) => {
+                        let taskIds = this.parent.getTaskIds();
+                        addingRecords.push(this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
+                    });
+                    for (let j = 0; j < addingRecords.length; j++) {
+                        if (!addingRecords[j][this.parent.taskFields.resourceInfo]) {
+                            /* tslint:disable-next-line */
+                            this.parent.isSameResourceAdd = true;
+                            this.parent.editModule.addRecord(Object.assign({}, newRecords), 'Child', this.parent.ids.indexOf(addingRecords[j].ganttProperties.rowUniqueID));
+                            this.parent.isSameResourceAdd = false;
+                        }
+                    }
+                }
+                else {
+                    // Block for if the added record has no resources
+                    for (let i = 0; i < this.parent.currentViewData.length; i++) {
+                        /* tslint:disable-next-line */
+                        if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                            unassignedTasks = this.parent.currentViewData[i];
+                        }
+                    }
+                    this.parent.isOnEdit = false;
+                    if (unassignedTasks) {
+                        /* tslint:disable-next-line */
+                        this.parent.editModule.addRecord(Object.assign({}, newRecords), 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
+                    }
+                    else {
+                        // Block for create the unassigned task.
+                        let record = {};
+                        record[this.parent.taskFields.id] = 0;
+                        record[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+                        this.parent.editModule.addRecord(Object.assign({}, record), 'Bottom');
+                        this.parent.editModule.addRecord(Object.assign({}, newRecords), 'Child', this.parent.ids.length - 1);
+                    }
+                }
+            }
+            else {
+                this.parent.editModule.addRecord(this.addedRecord, this.parent.editSettings.newRowPosition);
+            }
         }
         return true;
     }
@@ -14092,6 +15303,7 @@ class DialogEdit {
         this.parent.setRecordValue('endDate', fromRecord.ganttProperties.endDate, toRecord.ganttProperties, true);
         this.parent.setRecordValue('duration', fromRecord.ganttProperties.duration, toRecord.ganttProperties, true);
         this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, toRecord.ganttProperties, true);
+        this.parent.setRecordValue('work', fromRecord.ganttProperties.work, toRecord.ganttProperties, true);
         if (!isNullOrUndefined(this.parent.taskFields.startDate)) {
             this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.startDate);
         }
@@ -14107,6 +15319,12 @@ class DialogEdit {
             else {
                 this.parent.setRecordValue('isMilestone', false, this.rowData.ganttProperties, true);
             }
+        }
+        if (!isNullOrUndefined(this.parent.taskFields.work)) {
+            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.work);
+        }
+        if (!isNullOrUndefined(this.parent.taskFields.manual)) {
+            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.manual);
         }
     }
     updatePredecessorTab(preElement) {
@@ -14154,16 +15372,28 @@ class DialogEdit {
         }
     }
     updateResourceTab(resourceElement) {
-        let gridObj = resourceElement.ej2_instances[0];
+        let treeGridObj = resourceElement.ej2_instances[0];
+        if (treeGridObj) {
+            treeGridObj.grid.endEdit();
+        }
         let selectedItems = this.ganttResources;
+        if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(this.rowData.ganttProperties)) {
+            if (this.ganttResources !== this.rowData.ganttProperties.resourceInfo) {
+                this.isResourceUpdate = true;
+                this.previousResource = !isNullOrUndefined(this.rowData.ganttProperties.resourceInfo) ?
+                    [...this.rowData.ganttProperties.resourceInfo] : [];
+            }
+        }
         let idArray = [];
         if (this.isEdit) {
             this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);
             this.parent.dataOperation.updateMappingData(this.rowData, 'resourceInfo');
+            this.parent.editModule.updateResourceRelatedFields(this.rowData, 'resource');
+            this.validateDuration(this.rowData);
         }
         else {
             for (let i = 0; i < selectedItems.length; i++) {
-                idArray.push(selectedItems[i][this.parent.resourceIDMapping]);
+                idArray.push(selectedItems[i][this.parent.resourceFields.id]);
             }
             this.addedRecord[this.parent.taskFields.resourceInfo] = idArray;
         }
@@ -14390,7 +15620,7 @@ class ConnectorLineEdit {
         return preIdArray;
     }
     predecessorValidation(predecessor, record) {
-        let recordId = record.taskId;
+        let recordId = record.rowUniqueID;
         let currentId;
         let currentRecord;
         for (let count = 0; count < predecessor.length; count++) {
@@ -14408,12 +15638,13 @@ class ConnectorLineEdit {
                     currentRecord = this.parent.getRecordByID(currentId).ganttProperties;
                     if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                         currentRecord.predecessor.forEach((value) => {
-                            if (currentRecord.taskId.toString() !== value.from) {
+                            if (currentRecord.rowUniqueID.toString() !== value.from) {
                                 currentIdArray.push(value.from.toString());
                             }
                         });
                     }
-                    if (recordId.toString() === currentRecord.taskId.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
+                    /* tslint:disable-next-line */
+                    if (recordId.toString() === currentRecord.rowUniqueID.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
                         return false;
                     }
                     visitedIdArray.push(currentId);
@@ -14439,7 +15670,7 @@ class ConnectorLineEdit {
      */
     validatePredecessorRelation(ganttRecord, predecessorString) {
         let flag = true;
-        let recordId = ganttRecord.ganttProperties.taskId;
+        let recordId = ganttRecord.ganttProperties.rowUniqueID;
         let predecessorIdArray;
         let currentId;
         if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
@@ -14483,14 +15714,14 @@ class ConnectorLineEdit {
                         //  let currentPredecessor='';
                         if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                             currentRecord.predecessor.forEach((value, index) => {
-                                if (currentRecord.taskId.toString() !== value.from) {
+                                if (currentRecord.rowUniqueID.toString() !== value.from) {
                                     currentIdArray.push(value.from.toString());
                                     currentIdIndex = index;
                                 }
                             });
                             //    currentPredecessor=currentRecord.predecessor[0].from
                         }
-                        if (recordId.toString() === currentRecord.taskId.toString() ||
+                        if (recordId.toString() === currentRecord.rowUniqueID.toString() ||
                             currentIdArray.indexOf(recordId.toString()) !== -1) {
                             //cycylic occurs//break;
                             return false;
@@ -14581,7 +15812,7 @@ class ConnectorLineEdit {
         }
         for (let p = 0; p < predecessorIdArray.length; p++) {
             let record = this.parent.currentViewData.filter((item) => {
-                return item && item.ganttProperties.taskId.toString() === predecessorIdArray[p].toString();
+                return item && item.ganttProperties.rowUniqueID.toString() === predecessorIdArray[p].toString();
             });
             if (record[0] && record[0].hasChildRecords) {
                 return false;
@@ -15050,7 +16281,7 @@ class Edit$2 {
      * Method to update default edit params and editors for Gantt
      */
     updateDefaultColumnEditors() {
-        let customEditorColumns = [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo];
+        let customEditorColumns = [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo, 'taskType'];
         for (let i = 0; i < customEditorColumns.length; i++) {
             if (!isNullOrUndefined(customEditorColumns[i]) && customEditorColumns[i].length > 0) {
                 let column = this.parent.getColumnByField(customEditorColumns[i], this.parent.treeGridModule.treeGridColumns);
@@ -15063,6 +16294,9 @@ class Edit$2 {
                     }
                     else if (column.field === this.parent.taskFields.resourceInfo) {
                         this.updateResourceColumnEditor(column);
+                    }
+                    else if (column.field === 'taskType') {
+                        this.updateTaskTypeColumnEditor(column);
                     }
                 }
             }
@@ -15125,6 +16359,7 @@ class Edit$2 {
      * Method to create resource custom editor
      */
     getResourceEditor() {
+        let resourceSettings = this.parent.resourceFields;
         let editObject = {};
         let editor;
         MultiSelect.Inject(CheckBoxSelection);
@@ -15132,7 +16367,7 @@ class Edit$2 {
             this.parent.treeGridModule.currentEditRow = {};
             editor = new MultiSelect({
                 dataSource: new DataManager(this.parent.resources),
-                fields: { text: this.parent.resourceNameMapping, value: this.parent.resourceIDMapping },
+                fields: { text: resourceSettings.name, value: resourceSettings.id },
                 mode: 'CheckBox',
                 showDropDownIcon: true,
                 popupHeight: '350px',
@@ -15149,14 +16384,56 @@ class Edit$2 {
             }
             for (let i = 0; i < value.length; i++) {
                 for (let j = 0; j < this.parent.resources.length; j++) {
-                    if (this.parent.resources[j][this.parent.resourceIDMapping] === value[i]) {
-                        resourcesName.push(this.parent.resources[j][this.parent.resourceNameMapping]);
+                    if (this.parent.resources[j][resourceSettings.id] === value[i]) {
+                        resourcesName.push(this.parent.resources[j][resourceSettings.name]);
                         break;
                     }
                 }
             }
             this.parent.treeGridModule.currentEditRow[this.parent.taskFields.resourceInfo] = value;
             return resourcesName.join(',');
+        };
+        editObject.destroy = () => {
+            if (editor) {
+                editor.destroy();
+            }
+        };
+        return editObject;
+    }
+    /**
+     * Method to update task type column editor for task type
+     */
+    updateTaskTypeColumnEditor(column) {
+        if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
+            column.editType = 'dropdownedit';
+            column.edit = this.getTaskTypeEditor();
+            let ganttColumn = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
+            ganttColumn.editType = 'dropdownedit';
+            ganttColumn.edit = column.edit;
+        }
+    }
+    /**
+     * Method to create task type custom editor
+     */
+    getTaskTypeEditor() {
+        let editObject = {};
+        let editor;
+        let types = [{ 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
+        editObject.write = (args) => {
+            this.parent.treeGridModule.currentEditRow = {};
+            editor = new DropDownList({
+                dataSource: new DataManager(types),
+                fields: { value: 'Value' },
+                popupHeight: '350px',
+                value: getValue('taskType', args.rowData.ganttProperties),
+            });
+            editor.appendTo(args.element);
+        };
+        editObject.read = (element) => {
+            let value = element.ej2_instances[0].value;
+            let key = 'taskType';
+            this.parent.treeGridModule.currentEditRow[key] = value;
+            return value;
         };
         editObject.destroy = () => {
             if (editor) {
@@ -15371,6 +16648,16 @@ class Edit$2 {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
             }
+            else if (tasks.work === key) {
+                ganttObj.setRecordValue('work', data[key], ganttData.ganttProperties, true);
+                this.parent.dataOperation.updateMappingData(ganttData, 'work');
+                this.parent.dataOperation.updateMappingData(ganttData, 'duration');
+                this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
+            }
+            else if (key === 'taskType') {
+                ganttObj.setRecordValue('taskType', data[key], ganttData.ganttProperties, true);
+                //this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
+            }
             else if (ganttObj.customColumns.indexOf(key) !== -1) {
                 let column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
@@ -15383,9 +16670,72 @@ class Edit$2 {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
             }
+            else if (tasks.manual === key) {
+                ganttObj.setRecordValue('isAutoSchedule', !data[key], ganttData.ganttProperties, true);
+                this.parent.setRecordValue(key, data[key], ganttData);
+                this.updateTaskScheduleModes(ganttData);
+            }
         }
         if (isScheduleValueUpdated) {
             this.validateScheduleValues(scheduleFieldNames, ganttData, data);
+        }
+    }
+    /**
+     * To update duration, work, resource unit
+     * @param currentData
+     * @param column
+     */
+    updateResourceRelatedFields(currentData, column) {
+        let ganttProp = currentData.ganttProperties;
+        let taskType = ganttProp.taskType;
+        let isEffectDriven;
+        if (!isNullOrUndefined(ganttProp.resourceInfo)) {
+            if (ganttProp.work > 0 || column === 'work') {
+                switch (taskType) {
+                    case 'FixedUnit':
+                        if (ganttProp.resourceInfo.length &&
+                            (column === 'work' || ((column === 'resource') && isEffectDriven))) {
+                            this.parent.dataOperation.updateDurationWithWork(currentData);
+                        }
+                        else if (column === 'work') {
+                            this.parent.dataOperation.updateUnitWithWork(currentData);
+                        }
+                        else {
+                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                        }
+                        break;
+                    case 'FixedWork':
+                        if (ganttProp.resourceInfo.length === 0) {
+                            return;
+                        }
+                        else {
+                            if (column === 'duration' || column === 'endDate') {
+                                this.parent.dataOperation.updateUnitWithWork(currentData);
+                                if (ganttProp.duration === 0) {
+                                    this.parent.setRecordValue('work', 0, ganttProp);
+                                    if (!isNullOrUndefined(this.parent.taskFields.work)) {
+                                        this.parent.dataOperation.updateMappingData(currentData, 'work');
+                                    }
+                                }
+                            }
+                            else {
+                                this.parent.dataOperation.updateDurationWithWork(currentData);
+                            }
+                        }
+                        break;
+                    case 'FixedDuration':
+                        if (ganttProp.resourceInfo.length && (column === 'work' || (isEffectDriven && (column === 'resource')))) {
+                            this.parent.dataOperation.updateUnitWithWork(currentData);
+                        }
+                        else {
+                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                        }
+                        break;
+                }
+            }
+            else {
+                this.parent.dataOperation.updateWorkWithDuration(currentData);
+            }
         }
     }
     validateScheduleValues(fieldNames, ganttData, data) {
@@ -15491,6 +16841,85 @@ class Edit$2 {
         return isValidatePredecessor;
     }
     /**
+     * Method to update the resource records while editing
+     * @private
+     */
+    updateRsourceRecords(args, isResourceEdited, previousResources) {
+        let editedRecords = [];
+        let unassignedTasks;
+        if (!args.data.hasChildRecords) {
+            for (let i = 0; i < this.parent.getTaskIds().length; i++) {
+                if (this.parent.getTaskIds()[i] === 'T' + args.data.ganttProperties.taskId) {
+                    editedRecords.push(this.parent.currentViewData[i]);
+                    this.updateGanttProperties(args.data, this.parent.currentViewData[i]);
+                    this.parent.dataOperation.updateTaskData(this.parent.currentViewData[i]);
+                }
+            }
+        }
+        if (isResourceEdited) {
+            // Block for if the resources of the task gets edited.
+            let addRecords = [];
+            this.deleteRow(editedRecords);
+            if (args.data.taskData[this.parent.taskFields.resourceInfo].length) {
+                args.data.taskData[this.parent.taskFields.resourceInfo].forEach((resourceID) => {
+                    let taskIds = this.parent.getTaskIds();
+                    addRecords.push(this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
+                });
+                for (let j = 0; j < addRecords.length; j++) {
+                    if (!addRecords[j][this.parent.taskFields.resourceInfo]) {
+                        let data = Object.assign({}, args.data);
+                        data[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
+                        /* tslint:disable-next-line */
+                        this.parent.isSameResourceAdd = true;
+                        this.parent.editModule.addRecord(data, 'Child', this.parent.ids.indexOf(addRecords[j].ganttProperties.rowUniqueID));
+                        this.parent.isSameResourceAdd = false;
+                    }
+                }
+            }
+            else {
+                // Block for if the added record has no resources
+                for (let i = 0; i < this.parent.currentViewData.length; i++) {
+                    if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                        unassignedTasks = this.parent.currentViewData[i];
+                    }
+                }
+                this.parent.isOnEdit = false;
+                if (unassignedTasks) {
+                    /* tslint:disable-next-line */
+                    this.parent.editModule.addRecord(Object.assign({}, args.data), 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
+                }
+                else {
+                    // Block for create the unassigned task.
+                    let unassignTask = {};
+                    unassignTask[this.parent.taskFields.id] = 0;
+                    unassignTask[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+                    this.parent.editModule.addRecord(Object.assign({}, unassignTask), 'Bottom');
+                    this.parent.editModule.addRecord(Object.assign({}, args.data), 'Child', this.parent.ids.length - 1);
+                }
+            }
+        }
+        else {
+            for (let j = 0; j < editedRecords.length; j++) {
+                let editArgs = {};
+                editArgs.data = editedRecords[j];
+                this.parent.isOnEdit = true;
+                this.initiateUpdateAction(editArgs);
+                this.parent.isOnEdit = false;
+            }
+        }
+    }
+    /**
+     * Method to copy the ganttProperties values
+     */
+    updateGanttProperties(data, updateData) {
+        let skipProperty = ['taskId', 'uniqueID', 'rowUniqueID', 'parentId'];
+        Object.keys(data.ganttProperties).forEach((property) => {
+            if (skipProperty.indexOf(property) === -1) {
+                updateData.ganttProperties[property] = data.ganttProperties[property];
+            }
+        });
+    }
+    /**
      * Method to update all dependent record on edit action
      * @param args
      * @private
@@ -15563,10 +16992,6 @@ class Edit$2 {
      */
     updateEditedTask(args) {
         let ganttRecord = args.data;
-        /** Update parent up-to zeroth level */
-        if (ganttRecord.parentItem) {
-            this.parent.dataOperation.updateParentItems(ganttRecord.parentItem);
-        }
         this.updateParentChildRecord(ganttRecord);
         if (this.parent.isConnectorLineUpdate) {
             /* validating predecessor for updated child items */
@@ -15586,6 +17011,10 @@ class Edit$2 {
                 this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
             }
         }
+        /** Update parent up-to zeroth level */
+        if (ganttRecord.parentItem || this.parent.taskMode !== 'Auto') {
+            this.parent.dataOperation.updateParentItems(ganttRecord, true);
+        }
         this.initiateSaveAction(args);
     }
     /**
@@ -15595,8 +17024,41 @@ class Edit$2 {
      */
     updateParentChildRecord(data) {
         let ganttRecord = data;
-        if (ganttRecord.hasChildRecords && this.taskbarMoved) {
+        if (ganttRecord.hasChildRecords && this.taskbarMoved && this.parent.taskMode === 'Auto') {
             this.updateChildItems(ganttRecord);
+        }
+    }
+    /**
+     * To update records while changing schedule mode.
+     * @return {void}
+     * @private
+     */
+    updateTaskScheduleModes(data) {
+        let currentValue = data[this.parent.taskFields.startDate];
+        let ganttProp = data.ganttProperties;
+        if (data.hasChildRecords && ganttProp.isAutoSchedule) {
+            this.parent.setRecordValue('startDate', ganttProp.autoStartDate, ganttProp, true);
+            this.parent.setRecordValue('endDate', ganttProp.autoEndDate, ganttProp, true);
+            this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data, true), ganttProp, true);
+            this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttProp, true), ganttProp, true);
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(ganttProp.width, ganttProp.progress), ganttProp, true);
+            this.parent.dataOperation.calculateDuration(data);
+        }
+        else if (data.hasChildRecords && !ganttProp.isAutoSchedule) {
+            this.parent.dataOperation.updateWidthLeft(data);
+            this.parent.dataOperation.calculateDuration(data);
+            this.parent.setRecordValue('autoStartDate', ganttProp.startDate, ganttProp, true);
+            this.parent.setRecordValue('autoEndDate', ganttProp.endDate, ganttProp, true);
+            this.parent.setRecordValue('autoDuration', this.parent.dataOperation.calculateAutoDuration(data), ganttProp, true);
+            this.parent.dataOperation.updateAutoWidthLeft(data);
+        }
+        else {
+            let startDate = this.parent.dateValidationModule.checkStartDate(currentValue, data.ganttProperties);
+            this.parent.setRecordValue('startDate', startDate, data.ganttProperties, true);
+            this.parent.dataOperation.updateMappingData(data, 'startDate');
+            this.parent.dateValidationModule.calculateEndDate(data);
+            this.parent.setRecordValue('taskData.' + this.parent.taskFields.manual, data[this.parent.taskFields.manual], data);
+            this.parent.dataOperation.updateWidthLeft(data);
         }
     }
     /**
@@ -15653,7 +17115,7 @@ class Edit$2 {
             if (isNaN(parentProgress)) {
                 parentProgress = 0;
             }
-            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(parent.ganttProperties.width, parentProgress), parent.ganttProperties, true);
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(parent.ganttProperties.isAutoSchedule ? parent.ganttProperties.width : parent.ganttProperties.autoWidth, parentProgress), parent.ganttProperties, true);
             this.parent.setRecordValue('progress', Math.floor(parentProgress), parent.ganttProperties, true);
             this.parent.setRecordValue('totalProgress', totalProgress, parent.ganttProperties, true);
             this.parent.setRecordValue('totalDuration', totalDuration, parent.ganttProperties, true);
@@ -15694,7 +17156,7 @@ class Edit$2 {
                 this.parent.chartRowsModule.refreshRow(rowIndex);
             }
             if (isRefreshGrid) {
-                this.parent.treeGrid.grid.setRowData(originalData.ganttProperties.taskId, originalData);
+                this.parent.treeGrid.grid.setRowData(originalData.ganttProperties.rowUniqueID, originalData);
                 let row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;
             }
@@ -15997,13 +17459,29 @@ class Edit$2 {
     deleteSelectedItems() {
         if (!this.isFromDeleteMethod) {
             let selectedRecords = [];
+            let deleteRecords = [];
             if (this.parent.selectionSettings.mode !== 'Cell') {
                 selectedRecords = this.parent.selectionModule.getSelectedRecords();
             }
             else if (this.parent.selectionSettings.mode === 'Cell') {
                 selectedRecords = this.parent.selectionModule.getCellSelectedRecords();
             }
-            this.deleteRow(selectedRecords);
+            if (this.parent.viewType === 'ResourceView') {
+                for (let i = 0; i < selectedRecords.length; i++) {
+                    /* tslint:disable-next-line */
+                    if (selectedRecords[i].parentItem) {
+                        for (let j = 0; j < this.parent.getTaskIds().length; j++) {
+                            if (this.parent.getTaskIds()[j] === 'T' + selectedRecords[i].ganttProperties.taskId) {
+                                deleteRecords.push(this.parent.currentViewData[j]);
+                            }
+                        }
+                    }
+                }
+                this.deleteRow(deleteRecords);
+            }
+            else {
+                this.deleteRow(selectedRecords);
+            }
         }
         else {
             if (this.targetedRecords.length) {
@@ -16071,6 +17549,9 @@ class Edit$2 {
             rowItems.forEach((item) => {
                 item.isDelete = true;
             });
+            if (this.parent.viewType === 'ResourceView' && !tasks.length) {
+                rowItems = [];
+            }
             for (let i = 0; i < rowItems.length; i++) {
                 let deleteRecord = rowItems[i];
                 if (this.deletedTaskDetails.indexOf(deleteRecord) !== -1) {
@@ -16115,13 +17596,13 @@ class Edit$2 {
         let predecessors = record.ganttProperties.predecessor;
         for (let i = 0; i < predecessors.length; i++) {
             let predecessor = predecessors[i];
-            if (predecessor.from.toString() === record.ganttProperties.taskId.toString()) {
+            if (predecessor.from.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 let toRecord = this.parent.getRecordByID(predecessor.to.toString());
                 let toRecordPredcessor = extend([], [], toRecord.ganttProperties.predecessor, true);
                 let index;
                 for (let t = 0; t < toRecordPredcessor.length; t++) {
-                    if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.taskId.toString()
-                        && toRecordPredcessor[t].from.toString() === record.ganttProperties.taskId.toString()) {
+                    if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.rowUniqueID.toString()
+                        && toRecordPredcessor[t].from.toString() === record.ganttProperties.rowUniqueID.toString()) {
                         index = t;
                         break;
                     }
@@ -16129,13 +17610,13 @@ class Edit$2 {
                 toRecordPredcessor.splice(index, 1);
                 this.updatePredecessorValues(toRecord, toRecordPredcessor);
             }
-            else if (predecessor.to.toString() === record.ganttProperties.taskId.toString()) {
+            else if (predecessor.to.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 let fromRecord = this.parent.getRecordByID(predecessor.from.toString());
                 let fromRecordPredcessor = extend([], [], fromRecord.ganttProperties.predecessor, true);
                 let index;
                 for (let t = 0; t < fromRecordPredcessor.length; t++) {
-                    if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.taskId.toString()
-                        && fromRecordPredcessor[t].to.toString() === record.ganttProperties.taskId.toString()) {
+                    if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.rowUniqueID.toString()
+                        && fromRecordPredcessor[t].to.toString() === record.ganttProperties.rowUniqueID.toString()) {
                         index = t;
                         break;
                     }
@@ -16236,6 +17717,10 @@ class Edit$2 {
                         deletedRecords: isBlazor() ? getTaskData(blazorArgs.data) : getTaskData(eventArgs.data),
                         changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArgs.modifiedTaskData
                     };
+                    if (isBlazor()) {
+                        let blazAddedRec = 'addedRecords';
+                        updatedData[blazAddedRec] = [];
+                    }
                     let crud = data.saveChanges(updatedData, this.parent.taskFields.id);
                     crud.then((e) => this.deleteSuccess(args))
                         .catch((e) => this.dmFailure(e, args));
@@ -16263,9 +17748,12 @@ class Edit$2 {
             if (flatIndex !== -1) {
                 flatData.splice(flatIndex, 1);
             }
-            deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
+            deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
             if (flatIndex !== -1) {
                 this.parent.ids.splice(flatIndex, 1);
+                if (this.parent.viewType === 'ResourceView') {
+                    this.parent.getTaskIds().splice(flatIndex, 1);
+                }
             }
             if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
                 this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
@@ -16333,7 +17821,7 @@ class Edit$2 {
         let ids = this.parent.ids;
         /*Validate Task Id of data*/
         if (obj[taskModel.id]) {
-            if (ids.indexOf(obj[taskModel.id].toString()) !== -1) {
+            if (ids.indexOf(obj[taskModel.id].toString()) !== -1 && !this.parent.isSameResourceAdd) {
                 obj[taskModel.id] = null;
             }
             else {
@@ -16374,7 +17862,7 @@ class Edit$2 {
     updateNewlyAddedDataBeforeAjax(obj, level, rowPosition, parentItem) {
         let cAddedRecord;
         cAddedRecord = this.parent.dataOperation.createRecord(obj, level);
-        cAddedRecord.index = parseInt(cAddedRecord.ganttProperties.taskId.toString(), 10) - 1;
+        cAddedRecord.index = parseInt(cAddedRecord.ganttProperties.rowUniqueID.toString(), 10) - 1;
         if (!isNullOrUndefined(parentItem)) {
             this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), cAddedRecord);
             let pIndex = cAddedRecord.parentItem ? cAddedRecord.parentItem.index : null;
@@ -16460,7 +17948,7 @@ class Edit$2 {
         let predecessorIndex;
         let updatedPredecessor = [];
         for (let count = 0; count < len; count++) {
-            if (predecessorCollection[count].to === parentRecordTaskData.taskId.toString()) {
+            if (predecessorCollection[count].to === parentRecordTaskData.rowUniqueID.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].from);
                 predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
                 let predecessorCollections;
@@ -16468,7 +17956,7 @@ class Edit$2 {
                 predecessorCollections.splice(predecessorIndex, 1);
                 this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
             }
-            else if (predecessorCollection[count].from === parentRecordTaskData.taskId.toString()) {
+            else if (predecessorCollection[count].from === parentRecordTaskData.rowUniqueID.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].to);
                 let stringPredecessor = this.predecessorToString(childRecord.ganttProperties.predecessor, parentRecord);
                 let prdcList = (childRecord.ganttProperties.predecessorsName.toString()).split(',');
@@ -16497,7 +17985,7 @@ class Edit$2 {
         let count = 0;
         let length = predecessorCollection.length;
         for (count; count < length; count++) {
-            if (record.ganttProperties.taskId.toString() !== predecessorCollection[count].from) {
+            if (record.ganttProperties.rowUniqueID.toString() !== predecessorCollection[count].from) {
                 let tem = predecessorCollection[count].from + predecessorCollection[count].type;
                 predecessorCollection[count].offset =
                     isNaN(predecessorCollection[count].offset) ? 0 : predecessorCollection[count].offset;
@@ -16531,12 +18019,16 @@ class Edit$2 {
             case 'Top':
                 flatRecords.splice(0, 0, record);
                 currentViewData.splice(0, 0, record);
-                ids.splice(0, 0, record.ganttProperties.taskId.toString()); // need to check NAN
+                ids.splice(0, 0, record.ganttProperties.rowUniqueID.toString()); // need to check NAN
                 break;
             case 'Bottom':
                 flatRecords.push(record);
                 currentViewData.push(record);
-                ids.push(record.ganttProperties.taskId.toString()); // need to check NAN
+                ids.push(record.ganttProperties.rowUniqueID.toString()); // need to check NAN
+                if (this.parent.viewType === 'ResourceView') {
+                    let taskId = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
+                    this.parent.getTaskIds().push(taskId);
+                }
                 break;
             case 'Above':
                 /*Record Updates*/
@@ -16565,7 +18057,7 @@ class Edit$2 {
                     recordIndex = currentItemIndex + dataChildCount + 1;
                     //Expand Add record's parent item 
                     if (!this.addRowSelectedItem.expanded) {
-                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.taskId));
+                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.rowUniqueID));
                     }
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
@@ -16598,7 +18090,11 @@ class Edit$2 {
         /* Record collection update */
         flatRecords.splice(recordIndex, 0, record);
         currentViewData.splice(updatedCollectionIndex, 0, record);
-        ids.splice(recordIndex, 0, record.ganttProperties.taskId.toString());
+        ids.splice(recordIndex, 0, record.ganttProperties.rowUniqueID.toString());
+        if (this.parent.viewType === 'ResourceView') {
+            let taskId = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
+            this.parent.getTaskIds().splice(recordIndex, 0, taskId);
+        }
         /* data Source update */
         if (!isNullOrUndefined(parentItem)) {
             childIndex = parentItem.childRecords.indexOf(this.addRowSelectedItem);
@@ -16624,7 +18120,7 @@ class Edit$2 {
      */
     constructTaskAddedEventArgs(cAddedRecord, modifiedRecords, event) {
         let eventArgs = {};
-        eventArgs.action = event;
+        eventArgs.action = eventArgs.requestType = event;
         eventArgs.data = cAddedRecord;
         eventArgs.newTaskData = getTaskData([cAddedRecord])[0];
         eventArgs.recordIndex = cAddedRecord.index;
@@ -16681,7 +18177,7 @@ class Edit$2 {
                 break;
             }
             if (getValue(this.parent.taskFields.id, dataCollection[i]).toString() ===
-                this.addRowSelectedItem.ganttProperties.taskId.toString()) {
+                this.addRowSelectedItem.ganttProperties.rowUniqueID.toString()) {
                 if (rowPosition === 'Above') {
                     dataCollection.splice(i, 0, record);
                 }
@@ -16786,7 +18282,7 @@ class Edit$2 {
                         let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query());
                         crud.then((e) => {
                             if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
-                                e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.taskId) {
+                                e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {
                                 this.parent.setRecordValue('taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
                                 this.parent.setRecordValue('taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
                                 this.parent.setRecordValue(this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
@@ -16887,7 +18383,7 @@ class Edit$2 {
         let ids = this.parent.ids;
         let flatRecordsIndex = flatRecords.indexOf(this.newlyAddedRecordBackup);
         let currentViewDataIndex = currentViewData.indexOf(this.newlyAddedRecordBackup);
-        let idsIndex = ids.indexOf(this.newlyAddedRecordBackup.ganttProperties.taskId.toString());
+        let idsIndex = ids.indexOf(this.newlyAddedRecordBackup.ganttProperties.rowUniqueID.toString());
         deleteObject(this.parent.previousRecords, flatRecords[flatRecordsIndex].uniqueID);
         if (this.newlyAddedRecordBackup.parentItem) {
             let parentItem = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
@@ -16987,10 +18483,10 @@ class Resize$1 {
 /**
  * The Filter module is used to handle filter action.
  */
-class Filter$2 {
+class Filter$1 {
     constructor(gantt) {
         this.parent = gantt;
-        TreeGrid.Inject(Filter$1);
+        TreeGrid.Inject(Filter);
         this.parent.treeGrid.allowFiltering = this.parent.allowFiltering;
         this.updateCustomFilters();
         this.parent.treeGrid.filterSettings = getActualProperties(this.parent.filterSettings);
@@ -17740,7 +19236,7 @@ class Toolbar$3 {
     constructor(parent) {
         this.predefinedItems = {};
         this.items = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
+            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
         this.parent = parent;
         this.id = this.parent.element.id;
         this.parent.on('ui-toolbarupdate', this.propertyChanged, this);
@@ -17762,7 +19258,7 @@ class Toolbar$3 {
                 this.parent.element.appendChild(this.element);
             }
             let preItems = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
-                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
+                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
             for (let item of preItems) {
                 let itemStr = item.toLowerCase();
                 let localeName = item[0].toLowerCase() + item.slice(1);
@@ -18564,7 +20060,7 @@ class ContextMenu$2 {
         }
         switch (this.item) {
             case 'TaskInformation':
-                this.parent.openEditDialog(Number(this.rowData.ganttProperties.taskId));
+                this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
                 break;
             case 'Above':
             case 'Below':
@@ -18588,7 +20084,7 @@ class ContextMenu$2 {
                 break;
             case 'Milestone':
             case 'ToMilestone':
-                this.parent.convertToMilestone(this.rowData.ganttProperties.taskId);
+                this.parent.convertToMilestone(this.rowData.ganttProperties.rowUniqueID);
                 break;
             case 'DeleteTask':
                 this.parent.editModule.deleteRecord(this.rowData);
@@ -18622,6 +20118,10 @@ class ContextMenu$2 {
                 break;
             case 'Dependency' + index:
                 this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
+                break;
+            case 'Auto':
+            case 'Manual':
+                this.parent.changeTaskMode(this.rowData);
                 break;
         }
         args.type = 'Content';
@@ -18754,6 +20254,21 @@ class ContextMenu$2 {
                         this.updateItemVisibility(item.text);
                     }
                     break;
+                case 'TaskMode':
+                    let subMenu = [];
+                    if (this.parent.taskMode !== 'Custom') {
+                        this.updateItemVisibility(item.text);
+                    }
+                    else {
+                        if (this.rowData.ganttProperties.isAutoSchedule) {
+                            subMenu.push(this.createItemModel(content, 'Manual', this.getLocale('manual')));
+                        }
+                        else {
+                            subMenu.push(this.createItemModel(content, 'Auto', this.getLocale('auto')));
+                        }
+                        item.items = subMenu;
+                    }
+                    break;
             }
         }
     }
@@ -18843,6 +20358,11 @@ class ContextMenu$2 {
                 contentMenuItem.items = [];
                 contentMenuItem.items.push({});
                 break;
+            case 'TaskMode':
+                contentMenuItem = this.createItemModel(content, item, this.getLocale('changeScheduleMode'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
+                break;
         }
         if (contentMenuItem) {
             this.contentMenuItems.push(contentMenuItem);
@@ -18859,7 +20379,7 @@ class ContextMenu$2 {
         for (let predecessor of this.predecessors) {
             let ganttData = this.parent.getRecordByID(predecessor.from);
             let ganttProp = ganttData.ganttProperties;
-            let text = ganttProp.taskId + ' - ' + ganttProp.taskName;
+            let text = ganttProp.rowUniqueID + ' - ' + ganttProp.taskName;
             let id = 'Dependency' + increment++;
             itemModel = this.createItemModel(content, id, text);
             items.push(itemModel);
@@ -18870,7 +20390,7 @@ class ContextMenu$2 {
         return ['AutoFitAll', 'AutoFit',
             'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
             'SortAscending', 'SortDescending', 'Add',
-            'DeleteDependency', 'Convert'
+            'DeleteDependency', 'Convert', 'TaskMode'
         ];
     }
     /**
@@ -18983,6 +20503,32 @@ class ExcelExport$1 {
         this.parent.treeGrid.excelExportComplete = (args) => {
             this.parent.trigger('excelExportComplete', args);
         };
+    }
+}
+
+/**
+ * Configures columnMenu collection in Gantt.
+ */
+class ColumnMenu$1 {
+    constructor(parent) {
+        TreeGrid.Inject(ColumnMenu);
+        this.parent = parent;
+    }
+    /**
+     * To get column menu collection.
+     */
+    getColumnMenu() {
+        return this.parent.treeGrid.columnMenuModule.getColumnMenu();
+    }
+    destroy() {
+        // column menu destroy module
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'columnMenu';
     }
 }
 
@@ -19114,7 +20660,7 @@ class RowDD$1 {
     }
     dropRows(args, isByMethod) {
         this.dropPosition = args.dropPosition;
-        if (args.dropPosition !== 'Invalid') {
+        if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             let gObj = this.parent;
             let draggedRecord;
             let droppedRecord;
@@ -19148,7 +20694,7 @@ class RowDD$1 {
                             }
                             this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         }
                         else {
                             count = this.parent.editModule.getChildCount(droppedRecord, 0);
@@ -19157,15 +20703,15 @@ class RowDD$1 {
                             }
                             this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+                            this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         }
                         draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
                         draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
                         draggedRecord.level = this.ganttData[recordIndex1].level;
                         if (draggedRecord.hasChildRecords) {
                             let level = 1;
-                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                             this.updateChildRecordLevel(draggedRecord, level);
+                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                         }
                         if (droppedRecord.parentItem) {
                             let rec = this.parent.getParentTask(droppedRecord.parentItem).childRecords;
@@ -19279,7 +20825,7 @@ class RowDD$1 {
             }
             this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
             this.parent.flatData.splice(childRecordsLength, 0, this.draggedRecord);
-            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.taskId.toString());
+            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
             }
@@ -19312,7 +20858,7 @@ class RowDD$1 {
                 expanded: parentItem.expanded,
                 level: parentItem.level,
                 index: parentItem.index,
-                taskId: parentItem.ganttProperties.taskId
+                taskId: parentItem.ganttProperties.rowUniqueID
             };
             draggedRecord.parentItem = createParentItem;
             draggedRecord.parentUniqueID = droppedRecord.uniqueID;
@@ -19352,7 +20898,7 @@ class RowDD$1 {
         this.draggedRecord.level = this.ganttData[recordIndex1].level;
         this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
         this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
-        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
         if (this.draggedRecord.hasChildRecords) {
             let level = 1;
             this.updateChildRecord(this.draggedRecord, recordIndex1);
@@ -19403,7 +20949,7 @@ class RowDD$1 {
             count++;
             gObj.currentViewData.splice(count, 0, currentRecord);
             gObj.flatData.splice(count, 0, currentRecord);
-            this.parent.ids.splice(count, 0, currentRecord.ganttProperties.taskId.toString());
+            this.parent.ids.splice(count, 0, currentRecord.ganttProperties.rowUniqueID.toString());
             if (gObj.taskFields.parentID && gObj.dataSource.length > 0) {
                 gObj.dataSource.splice(count, 0, currentRecord.taskData);
             }
@@ -19433,7 +20979,7 @@ class RowDD$1 {
             //method to delete the record from datasource collection
             if (deletedRow && !this.parent.taskFields.parentID) {
                 let deleteRecordIDs = [];
-                deleteRecordIDs.push(deletedRow.ganttProperties.taskId.toString());
+                deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
                 this.parent.editModule.removeFromDataSource(deleteRecordIDs);
             }
             if (gObj.taskFields.parentID) {
@@ -19530,28 +21076,3725 @@ class RowDD$1 {
 }
 
 /**
- * Configures columnMenu collection in Gantt.
+ * @hidden
  */
-class ColumnMenu$1 {
+class PdfGanttTheme {
+    constructor(theme) {
+        this.theme = theme;
+        this.ganttStyle = {};
+        this.setTheme(this.ganttStyle, this.theme);
+    }
+    get style() {
+        if (this.ganttStyle) {
+            return this.ganttStyle;
+        }
+        else {
+            this.setTheme(this.ganttStyle, 'Material');
+            return this.ganttStyle;
+        }
+    }
+    /* tslint:disable-next-line:max-func-body-length */
+    setTheme(ganttStyle, theme) {
+        this.initStyles(ganttStyle);
+        ganttStyle.columnHeader.fontSize = 9.5;
+        ganttStyle.columnHeader.fontColor = new PdfColor(0, 0, 0);
+        ganttStyle.columnHeader.fontColor.gray = 0.2;
+        ganttStyle.columnHeader.backgroundColor = new PdfColor(255, 255, 255);
+        ganttStyle.columnHeader.borderColor = new PdfColor(234, 234, 234);
+        ganttStyle.columnHeader.format.lineAlignment = 1; //Centre
+        ganttStyle.columnHeader.format.alignment = 0; //Left
+        ganttStyle.fontFamily = PdfFontFamily.Helvetica;
+        ganttStyle.cell.fontSize = 9.5;
+        ganttStyle.cell.backgroundColor = new PdfColor(255, 255, 255);
+        ganttStyle.cell.borderColor = new PdfColor(234, 234, 234);
+        ganttStyle.cell.fontColor = new PdfColor(0, 0, 0);
+        ganttStyle.cell.fontColor.gray = 0.2;
+        ganttStyle.cell.format.lineAlignment = 1; // Centre
+        ganttStyle.cell.format.alignment = 0; // Left
+        ganttStyle.footer.fontSize = 9.5;
+        ganttStyle.footer.fontStyle = 0;
+        ganttStyle.footer.format.alignment = 1; //Centre
+        ganttStyle.footer.format.lineAlignment = 1; // Middle
+        ganttStyle.timeline.fontSize = 9.5;
+        ganttStyle.timeline.fontStyle = 0;
+        ganttStyle.timeline.backgroundColor = new PdfColor(252, 252, 252);
+        ganttStyle.timeline.fontColor = new PdfColor(40, 40, 39);
+        ganttStyle.chartGridLineColor = new PdfColor(206, 206, 206);
+        ganttStyle.timeline.borderColor = new PdfColor(206, 206, 206);
+        switch (theme) {
+            case 'Bootstrap':
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(49, 122, 185);
+                ganttStyle.taskbar.progressColor = new PdfColor(33, 82, 125);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(119, 119, 119);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(85, 85, 85);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(33, 82, 125);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(85, 85, 85);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(85, 85, 85);
+                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(33, 82, 125);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(0, 0, 0);
+                break;
+            case 'Bootstrap 4':
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(0, 123, 255);
+                ganttStyle.taskbar.progressColor = new PdfColor(0, 86, 179);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(108, 117, 125);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(73, 80, 87);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 86, 179);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(73, 80, 87);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(73, 80, 87);
+                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(0, 86, 179);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(33, 37, 41);
+                break;
+            case 'Fabric':
+                ganttStyle.columnHeader.fontColor = new PdfColor(102, 102, 102);
+                ganttStyle.cell.fontColor = new PdfColor(51, 51, 51);
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(0, 120, 214);
+                ganttStyle.taskbar.progressColor = new PdfColor(0, 91, 163);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(118, 118, 118);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(80, 80, 80);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 91, 163);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(80, 80, 80);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(80, 80, 80);
+                ganttStyle.footer.fontColor = new PdfColor(51, 51, 51);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(0, 69, 122);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
+                break;
+            default:
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(88, 105, 197);
+                ganttStyle.taskbar.progressColor = new PdfColor(63, 81, 181);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(132, 132, 132);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(97, 97, 97);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(63, 81, 181);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(51, 51, 51);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(97, 97, 97);
+                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(63, 81, 181);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
+                break;
+        }
+    }
+    initStyles(ganttStyle) {
+        ganttStyle.columnHeader = {};
+        ganttStyle.columnHeader.format = new PdfStringFormat();
+        ganttStyle.cell = {};
+        ganttStyle.cell.format = new PdfStringFormat();
+        ganttStyle.timeline = {};
+        ganttStyle.footer = {};
+        ganttStyle.footer.format = new PdfStringFormat();
+        ganttStyle.label = {};
+        ganttStyle.taskbar = {};
+    }
+}
+
+/**
+ * Dictionary class
+ * @private
+ * @hidden
+ */
+class TemporaryDictionary {
+    constructor() {
+        /**
+         * @hidden
+         * @private
+         */
+        this.mKeys = [];
+        /**
+         * @hidden
+         * @private
+         */
+        this.mValues = [];
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    size() {
+        return this.mKeys.length;
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    add(key, value) {
+        if (key === undefined || key === null || value === undefined || value === null) {
+            throw new ReferenceError('Provided key or value is not valid.');
+        }
+        let index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            this.mKeys.push(key);
+            this.mValues.push(value);
+            return 1;
+        }
+        else {
+            throw new RangeError('An item with the same key has already been added.');
+        }
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    keys() {
+        return this.mKeys;
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    values() {
+        return this.mValues;
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    getValue(key) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        let index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            throw new RangeError('No item with the specified key has been added.');
+        }
+        else {
+            return this.mValues[index];
+        }
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    setValue(key, value) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        let index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            this.mKeys.push(key);
+            this.mValues.push(value);
+        }
+        else {
+            this.mValues[index] = value;
+        }
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    remove(key) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        let index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            throw new RangeError('No item with the specified key has been added.');
+        }
+        else {
+            this.mKeys.splice(index, 1);
+            this.mValues.splice(index, 1);
+            return true;
+        }
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    containsKey(key) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        let index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    clear() {
+        this.mKeys = [];
+        this.mValues = [];
+    }
+}
+
+/**
+ * PdfBorders.ts class for EJ2-PDF
+ */
+/**
+ * `PdfBorders` class used represents the cell border of the PDF grid.
+ */
+class PdfBorders {
+    // Properties
+    /**
+     * Gets or sets the `Left`.
+     * @private
+     */
+    get left() {
+        return this.leftPen;
+    }
+    set left(value) {
+        this.leftPen = value;
+    }
+    /**
+     * Gets or sets the `Right`.
+     * @private
+     */
+    get right() {
+        return this.rightPen;
+    }
+    set right(value) {
+        this.rightPen = value;
+    }
+    /**
+     * Gets or sets the `Top`.
+     * @private
+     */
+    get top() {
+        return this.topPen;
+    }
+    set top(value) {
+        this.topPen = value;
+    }
+    /**
+     * Gets or sets the `Bottom`.
+     * @private
+     */
+    get bottom() {
+        return this.bottomPen;
+    }
+    set bottom(value) {
+        this.bottomPen = value;
+    }
+    /**
+     * sets the `All`.
+     * @private
+     */
+    set all(value) {
+        this.leftPen = this.rightPen = this.topPen = this.bottomPen = value;
+    }
+    /**
+     * Gets a value indicating whether this instance `is all`.
+     * @private
+     */
+    get isAll() {
+        return ((this.leftPen === this.rightPen) && (this.leftPen === this.topPen) && (this.leftPen === this.bottomPen));
+    }
+    /**
+     * Gets the `default`.
+     * @private
+     */
+    static get default() {
+        return new PdfBorders();
+    }
+    // Constructor
+    /**
+     * Create a new instance for `PdfBorders` class.
+     * @private
+     */
+    constructor() {
+        let defaultBorderPenLeft = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenLeft.dashStyle = PdfDashStyle.Solid;
+        let defaultBorderPenRight = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenRight.dashStyle = PdfDashStyle.Solid;
+        let defaultBorderPenTop = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenTop.dashStyle = PdfDashStyle.Solid;
+        let defaultBorderPenBottom = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenBottom.dashStyle = PdfDashStyle.Solid;
+        this.leftPen = defaultBorderPenLeft;
+        this.rightPen = defaultBorderPenRight;
+        this.topPen = defaultBorderPenTop;
+        this.bottomPen = defaultBorderPenBottom;
+    }
+}
+class PdfPaddings {
+    constructor(left, right, top, bottom) {
+        /**
+         * The 'left' border padding set.
+         * @private
+         */
+        this.hasLeftPad = false;
+        /**
+         * The 'right' border padding set.
+         * @private
+         */
+        this.hasRightPad = false;
+        /**
+         * The 'top' border padding set.
+         * @private
+         */
+        this.hasTopPad = false;
+        /**
+         * The 'bottom' border padding set.
+         * @private
+         */
+        this.hasBottomPad = false;
+        if (typeof left === 'undefined') {
+            //5.76 and 0 are taken from ms-word default table margins.
+            this.leftPad = this.rightPad = 5.76;
+            //0.5 is set for top and bottom by default.
+            this.bottomPad = this.topPad = 0.5;
+        }
+        else {
+            this.leftPad = left;
+            this.rightPad = right;
+            this.topPad = top;
+            this.bottomPad = bottom;
+            this.hasLeftPad = true;
+            this.hasRightPad = true;
+            this.hasTopPad = true;
+            this.hasBottomPad = true;
+        }
+    }
+    // Properties
+    /**
+     * Gets or sets the `left` value of the edge
+     * @private
+     */
+    get left() {
+        return this.leftPad;
+    }
+    set left(value) {
+        this.leftPad = value;
+        this.hasLeftPad = true;
+    }
+    /**
+     * Gets or sets the `right` value of the edge.
+     * @private
+     */
+    get right() {
+        return this.rightPad;
+    }
+    set right(value) {
+        this.rightPad = value;
+        this.hasRightPad = true;
+    }
+    /**
+     * Gets or sets the `top` value of the edge
+     * @private
+     */
+    get top() {
+        return this.topPad;
+    }
+    set top(value) {
+        this.topPad = value;
+        this.hasTopPad = true;
+    }
+    /**
+     * Gets or sets the `bottom` value of the edge.
+     * @private
+     */
+    get bottom() {
+        return this.bottomPad;
+    }
+    set bottom(value) {
+        this.bottomPad = value;
+        this.hasBottomPad = true;
+    }
+    /**
+     * Sets value to all sides `left,right,top and bottom`.s
+     * @private
+     */
+    set all(value) {
+        this.leftPad = this.rightPad = this.topPad = this.bottomPad = value;
+        this.hasLeftPad = true;
+        this.hasRightPad = true;
+        this.hasTopPad = true;
+        this.hasBottomPad = true;
+    }
+}
+
+/**
+ * PdfGridStyleBase.ts class for EJ2-PDF
+ */
+/**
+ * Base class for the `treegrid style`,
+ */
+
+/**
+ * `PdfTreeGridStyle` class provides customization of the appearance for the 'PdfGrid'.
+ */
+class PdfTreeGridStyle {
+    //constructor
+    /**
+     * Initialize a new instance for `PdfGridStyle` class.
+     * @private
+     */
+    constructor() {
+        this.cellSpacing = 0;
+        this.borderOverlapStyle = PdfBorderOverlapStyle.Overlap;
+        this.allowHorizontalOverflow = false;
+        this.horizontalOverflowType = PdfHorizontalOverflowType.LastPage;
+        this.cellPadding = new PdfPaddings();
+    }
+}
+
+/**
+ *
+ */
+class PdfTreeGridLayouter extends ElementLayouter {
+    constructor(baseFormat) {
+        super(baseFormat);
+        this.columnRanges = [];
+        this.repeatRowIndex = -1;
+        this.currentBounds = new RectangleF(0, 0, 0, 0);
+    }
+    get treegrid() {
+        return this.elements;
+    }
+    layoutInternal(param) {
+        if (isNullOrUndefined(param)) {
+            throw Error('Argument Null Expection');
+        }
+        this.currentPage = param.page;
+        let format = param.format;
+        if (this.currentPage !== null) {
+            this.currentPageBounds = this.currentPage.getClientSize();
+        }
+        this.currentGraphics = this.currentPage.graphics;
+        if (format !== null && format.break === PdfLayoutBreakType.FitColumnsToPage) {
+            /* tslint:disable-next-line */
+            this.currentBounds = new RectangleF(new PointF(param.bounds.x, param.bounds.y), new SizeF(this.treegrid.columns.width, this.currentGraphics.clientSize.height));
+        }
+        else {
+            this.currentBounds = new RectangleF(new PointF(param.bounds.x, param.bounds.y), this.currentGraphics.clientSize);
+        }
+        if (this.treegrid.rows.count !== 0) {
+            this.currentBounds.width = (param.bounds.width > 0) ? param.bounds.width :
+                (this.currentBounds.width - this.treegrid.rows.getRow(0).cells.getCell(0).style.borders.left.width / 2);
+        }
+        else {
+            throw Error('Please add row or header into grid');
+        }
+        this.startLocation = new PointF(param.bounds.x, param.bounds.y);
+        if (param.bounds.height > 0) {
+            this.currentBounds.height = param.bounds.height;
+        }
+        if (!this.treegrid.style.allowHorizontalOverflow && !this.treegrid.isFitToWidth) {
+            this.treegrid.measureColumnsWidth();
+            this.determineColumnDrawRanges();
+        }
+        else {
+            this.treegrid.measureColumnsWidth(this.currentBounds);
+            this.columnRanges.push([0, this.treegrid.columns.count - 1]);
+        }
+        return this.layoutOnPage(param);
+    }
+    /**
+     * `Determines the column draw ranges`.
+     * @private
+     */
+    determineColumnDrawRanges() {
+        let startColumn = 0;
+        let endColumn = 0;
+        let cellWidths = 0;
+        let availableWidth = this.currentGraphics.clientSize.width - this.currentBounds.x;
+        for (let i = 0; i < this.treegrid.columns.count; i++) {
+            cellWidths += this.treegrid.columns.getColumn(i).width;
+            if (cellWidths >= availableWidth) {
+                let subWidths = 0;
+                for (let j = startColumn; j <= i; j++) {
+                    subWidths += this.treegrid.columns.getColumn(j).width;
+                    if (subWidths > availableWidth) {
+                        break;
+                    }
+                    endColumn = j;
+                }
+                this.columnRanges.push([startColumn, endColumn]);
+                startColumn = endColumn + 1;
+                //endColumn = startColumn;
+                cellWidths = (endColumn <= i) ? this.treegrid.columns.getColumn(i).width : 0;
+            }
+        }
+        this.columnRanges.push([startColumn, this.treegrid.columns.count - 1]);
+    }
+    getFormat(format) {
+        let f = format;
+        return f;
+    }
+    layoutOnPage(param) {
+        let format = this.getFormat(param.format);
+        let result = null;
+        let layoutedPages = new TemporaryDictionary();
+        let startPage = param.page;
+        for (let index = 0; index < this.columnRanges.length; index++) {
+            let range = this.columnRanges[index];
+            this.cellStartIndex = range[0];
+            this.cellEndIndex = range[1];
+            let rowsCount = this.treegrid.rows.count;
+            let i = 0;
+            let repeatRow = false;
+            //Draw row by row with the specified cell range.
+            for (let j = 0; j < rowsCount; j++) {
+                let row = this.treegrid.rows.getRow(j);
+                i++;
+                let originalHeight = this.currentBounds.y;
+                if (this.currentPage !== null && !layoutedPages.containsKey(this.currentPage)) {
+                    layoutedPages.add(this.currentPage, range);
+                }
+                let rowResult = this.drawRow(row);
+                //if height remains same, it is understood that row is not draw in the page.
+                if (originalHeight === this.currentBounds.y) {
+                    repeatRow = true;
+                    this.repeatRowIndex = this.treegrid.rows.rowCollection.indexOf(row);
+                }
+                else {
+                    repeatRow = false;
+                    this.repeatRowIndex = -1;
+                }
+                while (!rowResult.isFinish && startPage !== null) {
+                    if (this.treegrid.allowRowBreakAcrossPages) {
+                        //If there is no space in the current page, add new page and then draw the remaining row.
+                        this.currentPage = this.getNextPageFormat(format);
+                        if (this.treegrid.enableHeader) {
+                            this.drawHeader();
+                        }
+                        originalHeight = this.currentBounds.y;
+                        this.checkBounds(format);
+                        rowResult = this.drawRow(row);
+                    }
+                    else if (!this.treegrid.allowRowBreakAcrossPages && i < length) {
+                        this.currentPage = this.getNextPageFormat(format);
+                        if (this.treegrid.enableHeader) {
+                            this.drawHeader();
+                        }
+                        break;
+                    }
+                    else if (i >= length) {
+                        break;
+                    }
+                }
+                if (!rowResult.isFinish && startPage !== null && format.layout !== PdfLayoutType.OnePage && repeatRow) {
+                    this.startLocation.x = this.currentBounds.x;
+                    this.currentPage = this.getNextPageFormat(format);
+                    if (this.treegrid.enableHeader) {
+                        this.drawHeader();
+                    }
+                    this.startLocation.y = this.currentBounds.y;
+                    if (format.paginateBounds === new RectangleF(0, 0, 0, 0)) {
+                        this.currentBounds.x += this.startLocation.x;
+                    }
+                    if (this.currentBounds.x === PdfBorders.default.left.width / 2) {
+                        this.currentBounds.y += this.startLocation.x;
+                    }
+                    this.drawRow(row);
+                    if (this.currentPage !== null && !layoutedPages.containsKey(this.currentPage)) {
+                        layoutedPages.add(this.currentPage, range);
+                    }
+                }
+            }
+            if (this.columnRanges.indexOf(range) < this.columnRanges.length - 1 &&
+                startPage !== null && format.layout !== PdfLayoutType.OnePage) {
+                this.currentPage = this.getNextPageFormat(format);
+                this.checkBounds(format);
+            }
+        }
+        result = this.getLayoutResult();
+        if (this.treegrid.style.allowHorizontalOverflow
+            && this.treegrid.style.horizontalOverflowType === PdfHorizontalOverflowType.NextPage) {
+            this.reArrangePages(layoutedPages);
+        }
+        return result;
+    }
+    checkBounds(format) {
+        let location = new PointF(PdfBorders.default.right.width / 2, PdfBorders.default.top.width / 2);
+        if (format.paginateBounds === new RectangleF(0, 0, 0, 0) && this.startLocation === location) {
+            this.currentBounds.x += this.startLocation.x;
+            this.currentBounds.y += this.startLocation.y;
+        }
+    }
+    drawHeader() {
+        this.drawRow(this.treegrid.rows.getRow(0));
+    }
+    reArrangePages(layoutPages) {
+        let document = this.currentPage.document;
+        let pages = [];
+        let keys = layoutPages.keys();
+        for (let i = 0; i < keys.length; i++) {
+            let page = keys[i];
+            page.section = null;
+            pages.push(page);
+            document.pages.remove(page);
+        }
+        for (let i = 0; i < layoutPages.size(); i++) {
+            let count = (layoutPages.size() / this.columnRanges.length);
+            for (let j = i; j < layoutPages.size(); j += count) {
+                let page = pages[j];
+                if (document.pages.indexOf(page) === -1) {
+                    document.pages.add(page);
+                }
+            }
+        }
+    }
+    getNextPageFormat(format) {
+        let section = this.currentPage.section;
+        let nextPage = null;
+        let index = section.indexOf(this.currentPage);
+        if (index === section.count - 1) {
+            nextPage = section.add();
+        }
+        else {
+            nextPage = section.getPages()[index + 1];
+        }
+        this.currentGraphics = nextPage.graphics;
+        this.currentBounds = new RectangleF(new PointF(0, 0), nextPage.getClientSize());
+        return nextPage;
+    }
+    getLayoutResult() {
+        let bounds = new RectangleF(this.startLocation, new SizeF(this.currentBounds.width, this.currentBounds.y -
+            this.startLocation.y));
+        return new PdfTreeGridLayoutResult(this.currentPage, bounds);
+    }
+    checkIfDefaultFormat(format) {
+        let defaultFormat = new PdfStringFormat();
+        return (format.alignment === defaultFormat.alignment && format.characterSpacing === defaultFormat.characterSpacing &&
+            format.clipPath === defaultFormat.clipPath && format.firstLineIndent === defaultFormat.firstLineIndent &&
+            format.horizontalScalingFactor === defaultFormat.horizontalScalingFactor &&
+            format.lineAlignment === defaultFormat.lineAlignment
+            && format.lineLimit === defaultFormat.lineLimit && format.lineSpacing === defaultFormat.lineSpacing &&
+            format.measureTrailingSpaces === defaultFormat.measureTrailingSpaces && format.noClip === defaultFormat.noClip &&
+            format.paragraphIndent === defaultFormat.paragraphIndent && format.rightToLeft === defaultFormat.rightToLeft &&
+            format.subSuperScript === defaultFormat.subSuperScript && format.wordSpacing === defaultFormat.wordSpacing &&
+            format.wordWrap === defaultFormat.wordWrap);
+    }
+    drawRow(row, layoutResult, height) {
+        //.. Check if required space available.
+        //.....If the row conains spans which  falls through more than one page, then draw the row to next page.
+        if (isNullOrUndefined(layoutResult)) {
+            let result = new RowLayoutResult();
+            let height = row.rowBreakHeight > 0 ? row.rowBreakHeight : row.height;
+            if (height > this.currentPageBounds.height) {
+                if (this.treegrid.allowRowBreakAcrossPages) {
+                    result.isFinish = true;
+                    this.drawRowWithBreak(result, row, height);
+                }
+                else {
+                    // If AllowRowBreakAcrossPages is not true, draw the row till it fits the page.
+                    result.isFinish = false;
+                    this.drawRow(row, result, height);
+                }
+            }
+            else if (this.currentBounds.y + height > this.currentPageBounds.height ||
+                this.currentBounds.y + height > this.currentBounds.height) {
+                if (this.repeatRowIndex > -1 && this.repeatRowIndex === row.rowIndex) {
+                    if (this.treegrid.allowRowBreakAcrossPages) {
+                        result.isFinish = true;
+                        this.drawRowWithBreak(result, row, height);
+                    }
+                    else {
+                        result.isFinish = false;
+                        this.drawRow(row, result, height);
+                    }
+                }
+                else {
+                    result.isFinish = false;
+                }
+            }
+            else {
+                result.isFinish = true;
+                this.drawRow(row, result, height);
+            }
+            return result;
+        }
+        else {
+            let location = new PointF(this.currentBounds.x, this.currentBounds.y);
+            layoutResult.bounds = new RectangleF(location, new SizeF(0, 0));
+            let leftAdjustment = 0;
+            height = this.reCalculateHeight(row, height);
+            for (let i = this.cellStartIndex; i <= this.cellEndIndex; i++) {
+                let cell = row.cells.getCell(i);
+                let column = this.treegrid.columns.getColumn(i);
+                if (column.isTreeColumn) {
+                    leftAdjustment = (row.level) * 10;
+                }
+                let cancelSpans = ((i > this.cellEndIndex + 1) && (cell.columnSpan > 1));
+                if (!cancelSpans) {
+                    for (let j = 1; j < cell.columnSpan; j++) {
+                        row.cells.getCell(i + j).isCellMergeContinue = true;
+                    }
+                }
+                let size = new SizeF(column.width, height);
+                if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
+                    cell.style.format = column.format;
+                }
+                /* tslint:disable-next-line */
+                let stringResult = cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+                /* tslint:disable-next-line */
+                if (row.treegrid.style.allowHorizontalOverflow && (cell.columnSpan > this.cellEndIndex || i + cell.columnSpan > this.cellEndIndex + 1) && this.cellEndIndex < row.cells.count - 1) {
+                    row.rowOverflowIndex = this.cellEndIndex;
+                }
+                location.x += column.width;
+                leftAdjustment = 0;
+            }
+            this.currentBounds.y += height;
+            /* tslint:disable-next-line */
+            layoutResult.bounds = new RectangleF(new PointF(layoutResult.bounds.x, layoutResult.bounds.y), new SizeF(location.x, location.y));
+            return null;
+        }
+    }
+    /**
+     *
+     */
+    drawRowWithBreak(result, row, height) {
+        let location = new PointF(this.currentBounds.x, this.currentBounds.y);
+        result.bounds = new RectangleF(location, new SizeF(0, 0));
+        let leftAdjustment = 0;
+        this.treegridHeight = this.currentBounds.height;
+        // Calculate the remaining height.
+        row.rowBreakHeight = this.currentBounds.y + height - this.currentBounds.height;
+        // No need to explicit break if the row height is equal to treegrid height.
+        for (let c = 0; c < row.cells.count; c++) {
+            let cell = row.cells.getCell(c);
+            let cellHeight = cell.measureHeight();
+            if (cellHeight === height && cell.value === null) {
+                row.rowBreakHeight = this.currentBounds.y + height - this.currentBounds.height;
+            }
+        }
+        for (let i = this.cellStartIndex; i <= this.cellEndIndex; i++) {
+            let column = this.treegrid.columns.getColumn(i);
+            if (column.isTreeColumn) {
+                leftAdjustment = row.level * 10;
+            }
+            let cell = row.cells.getCell(i);
+            let cancelSpans = ((cell.columnSpan + i > this.cellEndIndex + 1) && (cell.columnSpan > 1));
+            if (!cancelSpans) {
+                for (let j = 1; j < cell.columnSpan; j++) {
+                    row.cells.getCell(i + j).isCellMergeContinue = true;
+                }
+            }
+            let tHeight = this.treegridHeight > 0 ? this.treegridHeight : this.currentBounds.height;
+            let size = new SizeF(column.width, tHeight);
+            if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
+                cell.style.format = column.format;
+            }
+            /* tslint:disable-next-line */
+            let stringResult = cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+            result.isFinish = (!result.isFinish) ? result.isFinish : cell.finishedDrawingCell;
+            location.x += column.width;
+            leftAdjustment = 0;
+            this.currentBounds.y += this.treegridHeight > 0 ? this.treegridHeight : height;
+            result.bounds = new RectangleF(new PointF(result.bounds.x, result.bounds.y), new SizeF(location.x, location.y));
+        }
+    }
+    /**
+     * `Recalculate row height` for the split cell to be drawn.
+     * @private
+     */
+    reCalculateHeight(row, height) {
+        let newHeight = 0;
+        for (let i = this.cellStartIndex; i <= this.cellEndIndex; i++) {
+            if (!isNullOrUndefined(row.cells.getCell(i).remainingString) ||
+                row.cells.getCell(i).remainingString === '') {
+                newHeight = Math.max(newHeight, row.cells.getCell(i).measureHeight());
+            }
+        }
+        return Math.max(height, newHeight);
+    }
+}
+class PdfTreeGridLayoutResult extends PdfLayoutResult {
+    /**
+     * Constructor
+     * @private
+     */
+    constructor(page, bounds) {
+        super(page, bounds);
+    }
+}
+/**
+ * `PdfGridLayoutFormat` class represents a flexible grid that consists of columns and rows.
+ */
+class PdfTreeGridLayoutFormat extends PdfLayoutFormat {
+    /**
+     * Initializes a new instance of the `PdfGridLayoutFormat` class.
+     * @private
+     */
+    constructor(baseFormat) {
+        if (typeof baseFormat === 'undefined') {
+            super();
+        }
+        else {
+            super(baseFormat);
+        }
+    }
+}
+
+/**
+ * PdfTreeGrid Class for EJ2-PDF
+ */
+class PdfTreeGrid extends PdfLayoutElement {
+    constructor() {
+        super();
+        this.treeGridSize = new SizeF(0, 0);
+        this.treeColumnIndex = 0;
+        this.allowRowBreakAcrossPages = true;
+        this.enableHeader = true;
+        this.isFitToWidth = false;
+        this.columns = new PdfTreeGridColumnCollection(this);
+        this.rows = new PdfTreeGridRowCollection(this);
+        this.headers = new PdfTreeGridHeaderCollection(this);
+        this.style = new PdfTreeGridStyle();
+        this.rowHeight = 0;
+    }
+    //Properties
+    /**
+     * Gets a value indicating whether the `start cell layout event` should be raised.
+     * @private
+     */
+    get raiseBeginCellDraw() {
+        return (typeof this.beginCellDraw !== 'undefined' && typeof this.beginCellDraw !== null);
+    }
+    /**
+     * Gets a value indicating whether the `end cell layout event` should be raised.
+     * @private
+     */
+    get raiseEndCellDraw() {
+        return (typeof this.endCellDraw !== 'undefined' && typeof this.endCellDraw !== null);
+    }
+    get size() {
+        if ((this.treeGridSize.width === 0 && this.treeGridSize.height === 0)) {
+            this.treeGridSize = this.calculateTreeGridSize();
+        }
+        return this.treeGridSize;
+    }
+    set size(value) {
+        this.treeGridSize = value;
+    }
+    /**
+     * `Draws` the element on the page with the specified page, 'RectangleF' class and layout format
+     * @private
+     */
+    /* tslint:disable-next-line */
+    draw(arg1, arg2, arg3, arg4) {
+        if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2.x, arg2.y);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
+            return this.drawHelper(arg1, arg2, arg3, null);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2, null);
+        }
+        else if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(arg1, arg2.x, arg2.y, arg3);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null)) {
+            let width = (arg1.graphics.clientSize.width - arg2);
+            let layoutRectangle = new RectangleF(arg2, arg3, width, 0);
+            return this.drawHelper(arg1, layoutRectangle, arg4);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'boolean') {
+            return this.drawHelper(arg1, arg2, null);
+        }
+        else {
+            return this.drawHelper(arg1, arg2, arg3);
+        }
+    }
+    measureColumnsWidth(bounds) {
+        if (typeof bounds !== 'undefined') {
+            let widths = this.columns.getDefaultWidths(bounds.width - bounds.x);
+            for (let i = 0; i < this.columns.count; i++) {
+                if (this.columns.getColumn(i).width < 0) {
+                    this.columns.getColumn(i).width = widths[i];
+                }
+            }
+        }
+        else {
+            let widths = [];
+            let cellWidth = 0;
+            let rowLevel = 0;
+            // if(this.headers.count > 0){
+            //     let colCount: number = this.headers.getHeader(0).cells.count;
+            //     for(let i: number = 0; i < colCount; i++){
+            //         let rowCount: number = this.headers.count;
+            //         for(let j: number = 0; j < rowCount; j++){
+            //             let tempWidth: number = this.headers.getHeader(j).cells.getCell(i).width;
+            //             let rowWidth: number = this.initialWidth > 0 ? Math.min(this.initialWidth, tempWidth) :
+            //                 tempWidth;
+            //             cellWidth = Math.max(cellWidth, rowWidth);
+            //         }
+            //         widths.push(cellWidth);
+            //     }
+            // }
+            let colCount = this.columns.count;
+            for (let i = 0; i < colCount; i++) {
+                let rowCount = this.rows.count;
+                for (let j = 0; j < rowCount; j++) {
+                    let tempWidth = this.rows.getRow(j).cells.getCell(i).width;
+                    let rowWidth = this.initialWidth > 0 ? Math.min(this.initialWidth, tempWidth) : tempWidth;
+                    cellWidth = Math.max(cellWidth, rowWidth);
+                    cellWidth = Math.max(this.columns.getColumn(i).width, cellWidth);
+                    if (this.columns.getColumn(i).isTreeColumn) {
+                        rowLevel = Math.max(rowLevel, this.rows.getRow(j).level);
+                    }
+                }
+                if (this.columns.getColumn(i).isTreeColumn) {
+                    widths.push(cellWidth + (rowLevel * 10));
+                }
+                else {
+                    widths.push(cellWidth);
+                }
+                cellWidth = 0;
+            }
+            for (let i = 0; i < this.columns.count; i++) {
+                if (this.columns.getColumn(i).width < 0) {
+                    this.columns.getColumn(i).width = widths[i];
+                }
+            }
+        }
+    }
+    calculateTreeGridSize() {
+        let height = 0;
+        let width = this.columns.width;
+        for (let i = 0; i < this.headers.count; i++) {
+            let row = this.headers.getHeader(i);
+            height += row.height;
+        }
+        for (let i = 0; i < this.rows.count; i++) {
+            let row = this.rows.getRow(i);
+            height += row.height;
+        }
+        return new SizeF(width, height);
+    }
+    drawGrid(page, x, y, format) {
+        this.initialWidth = page.graphics.clientSize.width;
+        let layout = new RectangleF(0, 0, page.getClientSize().height, 0);
+        return this.draw(page, layout, format);
+    }
+    layout(param) {
+        if (this.rows.count !== 0) {
+            let style = this.rows.getRow(0).cells.getCell(0).style;
+            if (style.borders.left.width !== 1) {
+                let x = style.borders.left.width / 2;
+                let y = style.borders.top.width / 2;
+                if (param.bounds.x === PdfBorders.default.right.width / 2 &&
+                    param.bounds.y === PdfBorders.default.right.width / 2) {
+                    let newBound = new RectangleF(new PointF(x, y), new SizeF(this.size.width, this.size.height));
+                    param.bounds = newBound;
+                }
+            }
+        }
+        this.setSpan();
+        this.layouter = new PdfTreeGridLayouter(this);
+        let result = this.layouter.layoutInternal(param);
+        return result;
+    }
+    onBeginCellDraw(args) {
+        if (this.raiseBeginCellDraw) {
+            this.beginCellDraw(this, args);
+        }
+    }
+    onEndCellDraw(args) {
+        if (this.raiseEndCellDraw) {
+            this.endCellDraw(this, args);
+        }
+    }
+    /* tslint:disable-next-line:max-func-body-length */
+    setSpan() {
+        let colSpan = 1;
+        let rowSpan = 1;
+        let currentCellIndex = 0;
+        let currentRowIndex = 0;
+        let maxSpan = 0;
+        let rowCount = this.headers.count;
+        for (let i = 0; i < rowCount; i++) {
+            let row = this.headers.getHeader(i);
+            maxSpan = 0;
+            let colCount = row.cells.count;
+            for (let j = 0; j < colCount; j++) {
+                let cell = row.cells.getCell(j);
+                maxSpan = Math.max(maxSpan, cell.rowSpan);
+                //Skip setting span map for already coverted rows/columns.
+                if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
+                    if (cell.columnSpan + j > row.cells.count) {
+                        throw new Error('Invalid span specified at row ' + j.toString() + ' column ' + i.toString());
+                    }
+                    if (cell.rowSpan + i > this.headers.count) {
+                        throw new Error('Invalid span specified at Header ' + j.toString() + ' column ' + i.toString());
+                    }
+                    if (cell.columnSpan > 1 && cell.rowSpan > 1) {
+                        colSpan = cell.columnSpan;
+                        rowSpan = cell.rowSpan;
+                        currentCellIndex = j;
+                        currentRowIndex = i;
+                        cell.isCellMergeStart = true;
+                        cell.isRowMergeStart = true;
+                        //Set Column merges for first row
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            row.cells.getCell(currentCellIndex).isRowMergeContinue = true;
+                            row.cells.getCell(currentCellIndex).rowSpan = rowSpan;
+                            colSpan--;
+                        }
+                        currentCellIndex = j;
+                        colSpan = cell.columnSpan;
+                        //Set Row Merges and column merges foreach subsequent rows.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
+                            rowSpan--;
+                            while (colSpan > 1) {
+                                currentCellIndex++;
+                                this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                                this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
+                                colSpan--;
+                            }
+                            colSpan = cell.columnSpan;
+                            currentCellIndex = j;
+                        }
+                    }
+                    else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
+                        colSpan = cell.columnSpan;
+                        currentCellIndex = j;
+                        cell.isCellMergeStart = true;
+                        //Set Column merges.
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            colSpan--;
+                        }
+                    }
+                    else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
+                        rowSpan = cell.rowSpan;
+                        currentRowIndex = i;
+                        //Set row Merges.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            rowSpan--;
+                        }
+                    }
+                }
+            }
+            row.maximumRowSpan = maxSpan;
+        }
+        colSpan = rowSpan = 1;
+        currentCellIndex = currentRowIndex = 0;
+        rowCount = this.rows.count;
+        for (let i = 0; i < rowCount; i++) {
+            let row = this.rows.getRow(i);
+            let colcount = row.cells.count;
+            for (let j = 0; j < colcount; j++) {
+                let cell = row.cells.getCell(j);
+                //Skip setting span map for already coverted rows/columns.
+                if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
+                    if (cell.columnSpan + j > row.cells.count) {
+                        throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
+                    }
+                    if (cell.rowSpan + i > this.rows.count) {
+                        throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
+                    }
+                    if (cell.columnSpan > 1 && cell.rowSpan > 1) {
+                        colSpan = cell.columnSpan;
+                        rowSpan = cell.rowSpan;
+                        currentCellIndex = j;
+                        currentRowIndex = i;
+                        cell.isCellMergeStart = true;
+                        cell.isRowMergeStart = true;
+                        //set Column merges for first row.
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            colSpan--;
+                        }
+                        currentCellIndex = j;
+                        colSpan = cell.columnSpan;
+                        // Set row merges and column merges for each subsequentt rows.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            rowSpan--;
+                            while (colSpan > 1) {
+                                currentCellIndex++;
+                                this.rows.getRow(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                                colSpan--;
+                            }
+                            colSpan = cell.columnSpan;
+                            currentCellIndex = j;
+                        }
+                    }
+                    else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
+                        colSpan = cell.columnSpan;
+                        currentCellIndex = j;
+                        cell.isCellMergeStart = true;
+                        //set Column merges.
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            colSpan--;
+                        }
+                    }
+                    else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
+                        rowSpan = cell.rowSpan;
+                        currentRowIndex = i;
+                        //set row merges.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            rowSpan--;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ *
+ */
+class PdfTreeGridCell {
+    constructor(row) {
+        this.cellWidth = 0;
+        this.cellHeight = 0;
+        /** @private */
+        this.finishedDrawingCell = true;
+        if (isNullOrUndefined(row)) {
+            this.rowSpan = 1;
+            this.columnSpan = 1;
+        }
+        else {
+            this.row = row;
+        }
+        this.style = {};
+    }
+    /**
+     * Gets the `height` of the PdfTreeGrid cell.[Read-Only].
+     * @private
+     */
+    get height() {
+        if (this.cellHeight === 0) {
+            this.cellHeight = this.measureHeight();
+        }
+        return this.cellHeight;
+    }
+    set height(value) {
+        this.cellHeight = value;
+    }
+    /**
+     * Gets the `width` of the PdfTreeGrid cell.[Read-Only].
+     * @private
+     */
+    get width() {
+        if (this.cellWidth === 0) {
+            this.cellWidth = this.measureWidth();
+        }
+        return Math.round(this.cellWidth);
+    }
+    set width(value) {
+        this.cellWidth = value;
+    }
+    measureWidth() {
+        let width = 0;
+        let layouter = new PdfStringLayouter();
+        if (typeof this.value === 'string') {
+            /* tslint:disable-next-line */
+            let font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            /* tslint:disable-next-line */
+            let slr = layouter.layout(this.value, font, this.style.format, new SizeF(Number.MAX_VALUE, Number.MAX_VALUE), false, new SizeF(0, 0));
+            width += slr.actualSize.width;
+            width += (this.style.borders.left.width + this.style.borders.right.width) * 2;
+        }
+        if (typeof this.row.treegrid.style.cellPadding.left !== 'undefined' && this.row.treegrid.style.cellPadding.hasLeftPad) {
+            width += this.row.treegrid.style.cellPadding.left;
+        }
+        if (typeof this.row.treegrid.style.cellPadding.right !== 'undefined' && this.row.treegrid.style.cellPadding.hasRightPad) {
+            width += this.row.treegrid.style.cellPadding.right;
+        }
+        width += this.row.treegrid.style.cellSpacing;
+        return width;
+    }
+    /**
+     * @private
+     */
+    /* tslint:disable */
+    measureHeight() {
+        let rowHeight = this.row.treegrid.rowHeight;
+        let height = 0;
+        let width = this.calculateWidth();
+        width -= this.row.treegrid.style.cellPadding.right + this.row.treegrid.style.cellPadding.left;
+        width -= this.style.borders.left.width + this.style.borders.right.width;
+        let layouter = new PdfStringLayouter();
+        if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
+            let currentValue = this.value;
+            if (!this.finishedDrawingCell) {
+                currentValue = !(isNullOrUndefined(this.remainingString) || this.remainingString === '') ? this.remainingString : this.value;
+            }
+            let font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            let slr = layouter.layout(currentValue, font, this.style.format, new SizeF(width, 0), false, new SizeF(0, 0));
+            height += slr.actualSize.height;
+            height += (this.style.borders.top.width + this.style.borders.bottom.width) * 2;
+        }
+        height += this.row.treegrid.style.cellPadding.top + this.row.treegrid.style.cellPadding.bottom;
+        height += this.row.treegrid.style.cellSpacing;
+        return height > rowHeight ? height : rowHeight;
+    }
+    /* tslint:enable */
+    calculateWidth() {
+        let cellIndex = this.row.cells.indexOf(this);
+        let columnSpan = this.columnSpan;
+        let width = 0;
+        for (let i = 0; i < columnSpan; i++) {
+            width += this.row.treegrid.columns.getColumn(cellIndex + i).width;
+        }
+        if (this.row.treegrid.columns.getColumn(cellIndex).isTreeColumn) {
+            width -= (this.row.level * 10);
+        }
+        return width;
+    }
+    /**
+     * `Draws` the specified graphics.
+     * @private
+     */
+    draw(graphics, bounds, cancelSubsequentSpans, leftAdjustment) {
+        let result = null;
+        if (cancelSubsequentSpans) {
+            // Cancel all subsequent cell spans, if no space exists.
+            let currentCellIndex = this.row.cells.indexOf(this);
+            for (let i = currentCellIndex + 1; i <= currentCellIndex + this.columnSpan; i++) {
+                this.row.cells.getCell(i).isCellMergeContinue = false;
+                this.row.cells.getCell(i).isRowMergeContinue = false;
+            }
+            this.columnSpan = 1;
+        }
+        // Skip cells which were already covered by span map.
+        if (this.isCellMergeContinue || this.isRowMergeContinue) {
+            if (this.isCellMergeContinue && this.row.treegrid.style.allowHorizontalOverflow) {
+                if ((this.row.rowOverflowIndex > 0 && (this.row.cells.indexOf(this) !== this.row.rowOverflowIndex + 1)) ||
+                    (this.row.rowOverflowIndex === 0 && this.isCellMergeContinue)) {
+                    return result;
+                }
+                else {
+                    return result;
+                }
+            }
+        }
+        //bounds = this.adjustContentLayoutArea(bounds);
+        this.drawCellBackground(graphics, bounds);
+        let textPen = null;
+        let textBrush = new PdfSolidBrush(this.style.fontColor);
+        let font = null;
+        if (this.row.isParentRow) {
+            font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, PdfFontStyle.Bold);
+        }
+        else {
+            font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+        }
+        let innerLayoutArea = bounds;
+        if (!this.isHeaderCell) {
+            innerLayoutArea.x = innerLayoutArea.x;
+            innerLayoutArea.width = innerLayoutArea.width;
+        }
+        if (innerLayoutArea.height >= graphics.clientSize.height) {
+            // To break row to next page
+            if (this.row.treegrid.allowRowBreakAcrossPages) {
+                innerLayoutArea.height -= innerLayoutArea.y;
+                bounds.height -= bounds.y;
+            }
+            else {
+                innerLayoutArea.height = graphics.clientSize.height;
+                bounds.height = graphics.clientSize.height;
+            }
+        }
+        innerLayoutArea = this.adjustContentLayoutArea(innerLayoutArea);
+        if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
+            let temp = null;
+            if (this.finishedDrawingCell) {
+                temp = (this.remainingString === '') ? this.remainingString : this.value;
+                /* tslint:disable-next-line */
+                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
+            }
+            else {
+                /* tslint:disable-next-line */
+                graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
+            }
+            result = graphics.stringLayoutResult;
+        }
+        if (this.style.borders != null) {
+            this.drawCellBorder(graphics, bounds);
+        }
+        return result;
+    }
+    /**
+     * Draw the `cell background`.
+     * @private
+     */
+    drawCellBackground(graphics, bounds) {
+        let backgroundBrush = new PdfSolidBrush(this.style.backgroundColor);
+        if (backgroundBrush != null) {
+            graphics.save();
+            graphics.drawRectangle(backgroundBrush, bounds.x, bounds.y, bounds.width, bounds.height);
+            graphics.restore();
+        }
+        // if (this.style.backgroundImage != null) {
+        //     let image: PdfImage = this.getBackgroundImage();
+        //     graphics.drawImage(this.style.backgroundImage, bounds.x, bounds.y, bounds.width, bounds.height);
+        // }
+    }
+    /**
+     * `Adjusts the text layout area`.
+     * @private
+     */
+    adjustContentLayoutArea(bounds) {
+        //Add Padding value to its Cell Bounds
+        let returnBounds = new RectangleF(new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
+        let cellPadding = this.style.padding;
+        if (this.value instanceof PdfTreeGrid) {
+            let size = this.value.size;
+            if (this.style.format.alignment === PdfTextAlignment.Center) {
+                returnBounds.x += cellPadding.left + (returnBounds.width - size.width) / 2;
+                returnBounds.y += cellPadding.top + (returnBounds.height - size.height) / 2;
+            }
+            else if (this.style.format.alignment === PdfTextAlignment.Left) {
+                returnBounds.x += cellPadding.left;
+                returnBounds.y += cellPadding.top;
+            }
+            else if (this.style.format.alignment === PdfTextAlignment.Right) {
+                returnBounds.x += cellPadding.left + (returnBounds.width - size.width);
+                returnBounds.y += cellPadding.top;
+            }
+        }
+        else {
+            returnBounds.x += cellPadding.left;
+            returnBounds.y += cellPadding.top;
+        }
+        return returnBounds;
+    }
+    /**
+     * @private
+     */
+    drawCellBorder(graphics, bounds) {
+        if (this.row.treegrid.style.borderOverlapStyle === PdfBorderOverlapStyle.Inside) {
+            bounds.x += this.style.borders.left.width;
+            bounds.y += this.style.borders.top.width;
+            bounds.width -= this.style.borders.right.width;
+            bounds.height -= this.style.borders.bottom.width;
+        }
+        if (this.style.borders.isAll && this.isHeaderCell) {
+            graphics.drawRectangle(this.style.borders.left, bounds.x, bounds.y, bounds.width, bounds.height);
+            graphics.restore();
+            return;
+        }
+        else {
+            let p1 = new PointF(bounds.x, bounds.y + bounds.height);
+            let p2 = new PointF(bounds.x, bounds.y);
+            let pen = this.style.borders.left;
+            if (this.style.borders.left.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+            p1 = new PointF(bounds.x + bounds.width, bounds.y);
+            p2 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
+            pen = this.style.borders.right;
+            if ((bounds.x + bounds.width) > (graphics.clientSize.width - (pen.width / 2))) {
+                p1 = new PointF(graphics.clientSize.width - (pen.width / 2), bounds.y);
+                p2 = new PointF(graphics.clientSize.width - (pen.width / 2), bounds.y + bounds.height);
+            }
+            if (this.style.borders.right.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+            p1 = new PointF(bounds.x, bounds.y);
+            p2 = new PointF(bounds.x + bounds.width, bounds.y);
+            pen = this.style.borders.top;
+            if (this.style.borders.top.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+            p1 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
+            p2 = new PointF(bounds.x, bounds.y + bounds.height);
+            pen = this.style.borders.bottom;
+            if (bounds.y + bounds.height > graphics.clientSize.height - pen.width / 2) {
+                p1 = new PointF(bounds.x + bounds.width, graphics.clientSize.height - pen.width / 2);
+                p2 = new PointF(bounds.x, graphics.clientSize.height - pen.width / 2);
+            }
+            if (this.style.borders.bottom.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+        }
+    }
+}
+/**
+ * `PdfTreeGridCellCollection` class provides access to an ordered,
+ * strongly typed collection of 'PdfTreeGridCell' objects.
+ * @private
+ */
+class PdfTreeGridCellCollection {
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfGridCellCollection` class with the row.
+     * @private
+     */
+    constructor(row) {
+        this.treegridRow = row;
+        this.cells = [];
+    }
+    //Properties
+    /**
+     * Gets the current `cell`.
+     * @private
+     */
+    getCell(index) {
+        if (index < 0 || index >= this.count) {
+            throw new Error('IndexOutOfRangeException');
+        }
+        return this.cells[index];
+    }
+    /**
+     * Gets the cells `count`.[Read-Only].
+     * @private
+     */
+    get count() {
+        return this.cells.length;
+    }
+    //Implementation    
+    /**
+     * `Adds` this instance.
+     * @private
+     */
+    add(cell) {
+        if (typeof cell === 'undefined') {
+            let tempcell = new PdfTreeGridCell();
+            this.add(tempcell);
+            return cell;
+        }
+        else {
+            cell.row = this.treegridRow;
+            this.cells.push(cell);
+        }
+    }
+    /**
+     * Returns the `index of` a particular cell in the collection.
+     * @private
+     */
+    indexOf(cell) {
+        return this.cells.indexOf(cell);
+    }
+}
+/**
+ *
+ */
+class PdfTreeGridRow {
+    constructor(treegrid) {
+        this.treegridRowOverflowIndex = 0;
+        this.rowHeight = 0;
+        this.rowWidth = 0;
+        /* tslint:disable-next-line */
+        this._isParentRow = false;
+        this.intendLevel = 0;
+        this.pdfTreeGrid = treegrid;
+    }
+    get cells() {
+        if (isNullOrUndefined(this.treegridCells)) {
+            this.treegridCells = new PdfTreeGridCellCollection(this);
+        }
+        return this.treegridCells;
+    }
+    get isParentRow() {
+        return this._isParentRow;
+    }
+    set isParentRow(value) {
+        this._isParentRow = value;
+    }
+    get treegrid() {
+        return this.pdfTreeGrid;
+    }
+    set treegrid(value) {
+        this.pdfTreeGrid = value;
+    }
+    /**
+     * `Height` of the row yet to be drawn after split.
+     * @private
+     */
+    get rowBreakHeight() {
+        if (typeof this.treegridRowBreakHeight === 'undefined') {
+            this.treegridRowBreakHeight = 0;
+        }
+        return this.treegridRowBreakHeight;
+    }
+    set rowBreakHeight(value) {
+        this.treegridRowBreakHeight = value;
+    }
+    /**
+     * `over flow index` of the row.
+     * @private
+     */
+    get rowOverflowIndex() {
+        return this.treegridRowOverflowIndex;
+    }
+    set rowOverflowIndex(value) {
+        this.treegridRowOverflowIndex = value;
+    }
+    get level() {
+        return this.intendLevel;
+    }
+    set level(value) {
+        this.intendLevel = value;
+    }
+    /**
+     * Gets or sets the `height` of the row.
+     * @private
+     */
+    get height() {
+        if (this.rowHeight === 0) {
+            this.rowHeight = this.measureHeight();
+        }
+        return this.rowHeight;
+    }
+    set height(value) {
+        this.rowHeight = value;
+    }
+    /**
+     * Gets or sets the `width` of the row.
+     * @private
+     */
+    get width() {
+        if (this.rowWidth === 0) {
+            this.rowWidth = this.measureWidth();
+        }
+        return this.rowWidth;
+    }
+    get rowIndex() {
+        return this.treegrid.rows.rowCollection.indexOf(this);
+    }
+    measureWidth() {
+        let columns = this.treegrid.columns.columns;
+        let totalWidth = 0;
+        for (let i = 0; i < columns.length; i++) {
+            let column = columns[i];
+            totalWidth += column.width;
+        }
+        return totalWidth;
+    }
+    measureHeight() {
+        let rowHeight = this.cells.getCell(0).height;
+        for (let i = 0; i < this.cells.count; i++) {
+            let cell = this.cells.getCell(i);
+            if (cell.columnSpan === 1 || cell.rowSpan === 1) {
+                rowHeight = Math.max(rowHeight, cell.height);
+            }
+            else {
+                rowHeight = Math.min(rowHeight, cell.height);
+            }
+            cell.height = rowHeight;
+        }
+        return rowHeight;
+    }
+}
+/**
+ * `PdfTreeGridRowCollection` class provides access to an ordered, strongly typed collection of 'PdfTreeGridRow' objects.
+ * @private
+ */
+class PdfTreeGridRowCollection {
+    // Constructor
+    /**
+     * Initializes a new instance of the `PdfTreeGridRowCollection` class with the parent grid.
+     * @private
+     */
+    constructor(treegrid) {
+        this.rows = [];
+        this.treegrid = treegrid;
+    }
+    //Properties
+    /**
+     * Gets the number of header in the `PdfTreeGrid`.[Read-Only].
+     * @private
+     */
+    get count() {
+        return this.rows.length;
+    }
+    //Implementation
+    /**
+     * Return the row collection of the `treegrid`.
+     * @private
+     */
+    get rowCollection() {
+        return this.rows;
+    }
+    addRow(row) {
+        if (typeof row === 'undefined') {
+            let row = new PdfTreeGridRow(this.treegrid);
+            this.addRow(row);
+            return row;
+        }
+        else {
+            if (row.cells.count === 0) {
+                for (let i = 0; i < this.treegrid.columns.count; i++) {
+                    row.cells.add(new PdfTreeGridCell());
+                }
+            }
+            this.rows.push(row);
+        }
+    }
+    /**
+     * Return the row by index.
+     * @private
+     */
+    getRow(index) {
+        return this.rows[index];
+    }
+}
+/**
+ * `PdfTreeGridHeaderCollection` class provides customization of the settings for the header.
+ * @private
+ */
+class PdfTreeGridHeaderCollection {
+    //constructor
+    /**
+     * Initializes a new instance of the `PdfTreeGridHeaderCollection` class with the parent grid.
+     * @private
+     */
+    constructor(treegrid) {
+        /**
+         * The array to store the `rows` of the grid header.
+         * @private
+         */
+        this.rows = [];
+        this.treegrid = treegrid;
+        this.rows = [];
+    }
+    //Properties
+    /**
+     * Gets a 'PdfTreeGridRow' object that represents the `header` row in a 'PdfGridHeaderCollection' control.[Read-Only].
+     * @private
+     */
+    getHeader(index) {
+        return (this.rows[index]);
+    }
+    /**
+     * Gets the `number of header` in the 'PdfGrid'.[Read-Only]
+     * @private
+     */
+    get count() {
+        return this.rows.length;
+    }
+    //Implementation
+    /**
+     * `Adds` the specified row.
+     * @private
+     */
+    add(row) {
+        this.rows.push(row);
+    }
+    indexOf(row) {
+        return this.rows.indexOf(row);
+    }
+}
+class PdfTreeGridColumn {
+    constructor(treegrid) {
+        this.columnWidth = 0;
+        this.treeColumnIndex = false;
+        /* tslint:disable-next-line */
+        this._headerText = '';
+        /* tslint:disable-next-line */
+        this._field = '';
+        this.treegrid = treegrid;
+    }
+    get headerText() {
+        return this._headerText;
+    }
+    set headerText(value) {
+        this._headerText = value;
+    }
+    get field() {
+        return this._field;
+    }
+    set field(value) {
+        this._field = value;
+    }
+    get width() {
+        return this.columnWidth;
+    }
+    set width(value) {
+        this.columnWidth = value;
+    }
+    get isTreeColumn() {
+        return this.treeColumnIndex;
+    }
+    set isTreeColumn(value) {
+        this.treeColumnIndex = value;
+    }
+    /**
+     * Gets or sets the information about the text `formatting`.
+     * @private
+     */
+    get format() {
+        if (this.stringFormat == null) {
+            this.stringFormat = new PdfStringFormat(); //GetDefaultFormat();
+        }
+        return this.stringFormat;
+    }
+    set format(value) {
+        this.stringFormat = value;
+    }
+}
+/**
+ * `PdfTreeGridColumnCollection` class provides access to an ordered,
+ * strongly typed collection of 'PdfTreeGridColumn' objects.
+ * @private
+ */
+class PdfTreeGridColumnCollection {
+    //properties
+    //Constructors
+    /**
+     * Initializes a new instance of the `PdfTreeGridColumnCollection` class with the parent grid.
+     * @private
+     */
+    constructor(treegrid) {
+        /**
+         * @private
+         */
+        this.internalColumns = [];
+        /**
+         * @private
+         */
+        this.columnWidth = 0;
+        this.treegrid = treegrid;
+        this.internalColumns = [];
+    }
+    //Implementation
+    /**
+     * `Add` a new column to the 'PdfGrid'.
+     * @private
+     */
+    add(count) {
+        // public add(column : PdfGridColumn) : void
+        // public add(arg : number|PdfGridColumn) : void {
+        // if (typeof arg === 'number') {
+        for (let i = 0; i < count; i++) {
+            this.internalColumns.push(new PdfTreeGridColumn(this.treegrid));
+            for (let index = 0; index < this.treegrid.rows.count; index++) {
+                let row = this.treegrid.rows.getRow(index);
+                let cell = new PdfTreeGridCell();
+                cell.value = '';
+                row.cells.add(cell);
+            }
+        }
+        // } else {
+        //     let column : PdfGridColumn = new PdfGridColumn(this.grid);
+        //     this.columns.push(column);
+        //     return column;
+        // }
+    }
+    /**
+     * Gets the `number of columns` in the 'PdfGrid'.[Read-Only].
+     * @private
+     */
+    get count() {
+        return this.internalColumns.length;
+    }
+    /**
+     * Gets the `widths`.
+     * @private
+     */
+    get width() {
+        if (this.columnWidth === 0) {
+            this.columnWidth = this.measureColumnsWidth();
+        }
+        return this.columnWidth;
+    }
+    /**
+     * Gets the `array of PdfGridColumn`.[Read-Only]
+     * @private
+     */
+    get columns() {
+        return this.internalColumns;
+    }
+    /**
+     * Gets the `PdfTreeGridColumn` from the specified index.[Read-Only]
+     * @private
+     */
+    getColumn(index) {
+        if (index >= 0 && index <= this.columns.length) {
+            return this.columns[index];
+        }
+        else {
+            throw Error('can not get the column from the index: ' + index);
+        }
+    }
+    //Implementation
+    /**
+     * `Calculates the column widths`.
+     * @private
+     */
+    measureColumnsWidth() {
+        let totalWidth = 0;
+        this.treegrid.measureColumnsWidth();
+        for (let i = 0, count = this.internalColumns.length; i < count; i++) {
+            totalWidth += this.internalColumns[i].width;
+        }
+        return totalWidth;
+    }
+    /**
+     * Gets the `widths of the columns`.
+     * @private
+     */
+    getDefaultWidths(totalWidth) {
+        let widths = [];
+        let subFactor = this.count;
+        for (let i = 0; i < this.count; i++) {
+            widths[i] = this.internalColumns[i].width;
+            if (this.internalColumns[i].width > 0) {
+                totalWidth -= this.internalColumns[i].width;
+                subFactor--;
+            }
+            else {
+                widths[i] = 0;
+            }
+        }
+        for (let i = 0; i < this.count; i++) {
+            let width = totalWidth / subFactor;
+            if (widths[i] <= 0) {
+                widths[i] = width;
+            }
+        }
+        return widths;
+    }
+}
+
+/**
+ * Gantt Pdf Export base library
+ */
+
+/**
+ * @hidden
+ * `ExportHelper` for `PdfExport` & `ExcelExport`
+ */
+class ExportHelper {
     constructor(parent) {
-        TreeGrid.Inject(ColumnMenu);
         this.parent = parent;
     }
     /**
-     * To get column menu collection.
-     */
-    getColumnMenu() {
-        return this.parent.treeGrid.columnMenuModule.getColumnMenu();
-    }
-    destroy() {
-        // column menu destroy module
-    }
-    /**
-     * For internal use only - Get the module name.
+     * @return {void}
      * @private
      */
+    processGridExport(data, gantt, props) {
+        this.flatData = data;
+        this.gantt = gantt;
+        this.exportValueFormatter = new ExportValueFormatter(this.parent.locale);
+        this.exportProps = props;
+        this.rowIndex = 0;
+        this.colIndex = 0;
+        this.columns = this.parent.treeGrid.columns;
+        this.gantt.treeColumnIndex = this.parent.treeColumnIndex;
+        this.gantt.rowHeight = pixelToPoint(this.parent.rowHeight);
+        this.gantt.style.cellPadding.left = 0;
+        this.gantt.style.cellPadding.right = 0;
+        this.ganttStyle = this.gantt.ganttStyle;
+        this.gantt.borderColor = this.ganttStyle.chartGridLineColor;
+        this.processHeaderContent();
+        this.processGanttContent();
+        this.processTimeline();
+        this.processTaskbar();
+        this.processPredecessor();
+    }
+    processHeaderContent() {
+        this.rowIndex++;
+        this.row = this.gantt.rows.addRow();
+        let index = 0;
+        this.columns.forEach((column) => {
+            if (this.isColumnVisible(column)) {
+                this.processColumnHeader(column, index);
+                index++;
+            }
+        });
+    }
+    processColumnHeader(column, index) {
+        this.gantt.columns.add(1);
+        let pdfColumn = this.gantt.columns.getColumn(index);
+        if (this.parent.treeColumnIndex === index) {
+            pdfColumn.isTreeColumn = true;
+        }
+        let width = parseInt(column.width, 10);
+        pdfColumn.width = pixelToPoint(width);
+        this.totalColumnWidth += pdfColumn.width;
+        pdfColumn.headerText = column.headerText;
+        pdfColumn.field = column.field;
+        let cell = this.row.cells.getCell(index);
+        cell.value = column.headerText;
+        cell.isHeaderCell = true;
+        let treeGridHeaderHeight = this.parent.timelineModule.isSingleTier ? 45 : 60;
+        this.row.height = pixelToPoint(treeGridHeaderHeight);
+        this.copyStyles(this.ganttStyle.columnHeader, cell, false);
+        if (column.headerTextAlign) {
+            cell.style.format.alignment = PdfTextAlignment[column.headerTextAlign];
+        }
+        let args = {
+            cell: cell,
+            style: cell.style,
+            value: cell.value,
+            column: column
+        };
+        if (this.parent.pdfColumnHeaderQueryCellInfo) {
+            this.parent.trigger('pdfColumnHeaderQueryCellInfo', args);
+        }
+        cell.value = args.value;
+    }
+    isColumnVisible(column) {
+        let visibleColumn = column.visible || this.exportProps.includeHiddenColumn;
+        let templateColumn = !isNullOrUndefined(column.template) ? false : true;
+        return (visibleColumn && templateColumn);
+    }
+    processGanttContent() {
+        if (this.flatData.length === 0) {
+            this.renderEmptyGantt();
+        }
+        else {
+            this.flatData.forEach((data) => {
+                this.row = this.gantt.rows.addRow();
+                if (data.hasChildRecords) {
+                    this.gantt.rows.getRow(this.rowIndex).isParentRow = true;
+                    this.processRecordRow(data);
+                }
+                else {
+                    this.processRecordRow(data);
+                }
+                this.rowIndex++;
+            });
+        }
+    }
+    /**
+     * Method for processing the timeline details
+     */
+    processTimeline() {
+        let timelineSettings = this.parent.timelineModule;
+        this.gantt.chartHeader.topTierHeight = this.gantt.chartHeader.bottomTierHeight
+            = (this.parent.timelineModule.isSingleTier ? 45 : 60 / 2);
+        this.gantt.chartHeader.topTierCellWidth = timelineSettings.topTierCellWidth;
+        this.gantt.chartHeader.bottomTierCellWidth = timelineSettings.bottomTierCellWidth;
+        this.gantt.chartHeader.topTier = extend([], [], timelineSettings.topTierCollection, true);
+        this.gantt.chartHeader.bottomTier = extend([], [], timelineSettings.bottomTierCollection, true);
+        this.gantt.chartHeader.width = timelineSettings.totalTimelineWidth;
+        this.gantt.chartHeader.height = this.gantt.rows.getRow(0).height;
+        this.gantt.timelineStartDate = new Date(timelineSettings.timelineStartDate.getTime());
+    }
+    /**
+     * Method for create the predecessor collection for rendering
+     */
+    processPredecessor() {
+        if (isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
+            this.parent.predecessorModule.createConnectorLinesCollection(this.parent.currentViewData);
+            this.parent.updatedConnectorLineCollection.forEach((data) => {
+                let predecessor = this.gantt.predecessor.add();
+                predecessor.parentLeft = data.parentLeft;
+                predecessor.childLeft = data.childLeft;
+                predecessor.parentWidth = data.parentWidth;
+                predecessor.childWidth = data.childWidth;
+                predecessor.parentIndex = data.parentIndex;
+                predecessor.childIndex = data.childIndex;
+                predecessor.rowHeight = data.rowHeight;
+                predecessor.type = data.type;
+                predecessor.milestoneParent = data.milestoneParent;
+                predecessor.milestoneChild = data.milestoneChild;
+                predecessor.lineWidth = this.parent.connectorLineWidth > 5 ? pixelToPoint(5) : pixelToPoint(this.parent.connectorLineWidth);
+                predecessor.connectorLineColor = this.ganttStyle.connectorLineColor;
+                this.gantt.predecessorCollection.push(predecessor);
+            });
+        }
+    }
+    processRecordRow(data) {
+        this.colIndex = 0;
+        this.row.level = data.level;
+        this.columns.forEach((column) => {
+            if (this.isColumnVisible(column)) {
+                this.processRecordCell(data, column, this.row);
+                this.colIndex++;
+            }
+        });
+    }
+    processRecordCell(data, column, row) {
+        let cell = row.cells.getCell(this.colIndex);
+        let taskFields = this.parent.taskFields;
+        let ganttProps = data.ganttProperties;
+        if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
+            cell.value = this.parent.getFormatedDate(data[column.field]);
+        }
+        else if (column.field === taskFields.duration) {
+            cell.value = this.parent.getDurationString(ganttProps.duration, ganttProps.durationUnit);
+        }
+        else if (column.field === taskFields.resourceInfo) {
+            cell.value = ganttProps.resourceNames;
+        }
+        else {
+            cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
+        }
+        cell.isHeaderCell = false;
+        cell.style.padding = new PdfPaddings();
+        this.copyStyles(this.ganttStyle.cell, cell, row.isParentRow);
+        if (this.colIndex !== this.parent.treeColumnIndex) {
+            cell.style.format.alignment = PdfTextAlignment[column.textAlign];
+        }
+        else {
+            cell.style.format.paragraphIndent = cell.row.level * 10;
+        }
+        if (this.parent.pdfQueryCellInfo != null) {
+            let args = {
+                data: data,
+                value: cell.value,
+                column: column,
+                style: cell.style,
+                cell: cell
+            };
+            args.value = this.exportValueFormatter.formatCellValue(args);
+            if (this.parent.pdfQueryCellInfo) {
+                this.parent.trigger('pdfQueryCellInfo', args);
+            }
+            cell.value = args.value;
+        }
+    }
+    /**
+     * Method for create the taskbar collection for rendering
+     */
+    processTaskbar() {
+        this.flatData.forEach((data) => {
+            let taskbar = this.gantt.taskbar.add();
+            let ganttProp = data.ganttProperties;
+            taskbar.left = ganttProp.left;
+            taskbar.progress = ganttProp.progress;
+            taskbar.isScheduledTask = isScheduledTask(ganttProp);
+            if (isScheduledTask) {
+                if (isNullOrUndefined(ganttProp.endDate) && isNullOrUndefined(ganttProp.duration)) {
+                    taskbar.unscheduledTaskBy = 'startDate';
+                }
+                else if (isNullOrUndefined(ganttProp.startDate) && isNullOrUndefined(ganttProp.duration)) {
+                    taskbar.unscheduledTaskBy = 'endDate';
+                }
+                else {
+                    taskbar.unscheduledTaskBy = 'duration';
+                    taskbar.unscheduleStarteDate = this.parent.dateValidationModule.getValidStartDate(data.ganttProperties);
+                    taskbar.unscheduleEndDate = this.parent.dateValidationModule.getValidEndDate(data.ganttProperties);
+                }
+            }
+            else {
+                taskbar.unscheduleStarteDate = null;
+                taskbar.unscheduleEndDate = null;
+            }
+            taskbar.startDate = ganttProp.startDate;
+            taskbar.endDate = ganttProp.endDate;
+            taskbar.width = ganttProp.width;
+            taskbar.height = this.parent.chartRowsModule.taskBarHeight;
+            taskbar.isMilestone = ganttProp.isMilestone;
+            taskbar.milestoneColor = new PdfColor(this.ganttStyle.taskbar.milestoneColor);
+            taskbar.isParentTask = data.hasChildRecords;
+            if (ganttProp.isMilestone) {
+                taskbar.height = ganttProp.width;
+            }
+            if (data[this.parent.labelSettings.leftLabel]) {
+                taskbar.leftTaskLabel.value = data[this.parent.labelSettings.leftLabel].toString();
+            }
+            if (data[this.parent.labelSettings.rightLabel]) {
+                taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
+            }
+            let reduceLeft = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+            taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
+            taskbar.fontFamily = this.ganttStyle.fontFamily;
+            taskbar.progressWidth = ganttProp.progressWidth;
+            taskbar.labelColor = new PdfColor(this.ganttStyle.label.fontColor);
+            taskbar.progressFontColor = new PdfColor(this.ganttStyle.taskbar.progressFontColor);
+            if (taskbar.isParentTask) {
+                taskbar.taskColor = new PdfColor(this.ganttStyle.taskbar.parentTaskColor);
+                taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.parentTaskBorderColor);
+                taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.parentProgressColor);
+            }
+            else {
+                taskbar.taskColor = new PdfColor(this.ganttStyle.taskbar.taskColor);
+                taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.taskBorderColor);
+                taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.progressColor);
+            }
+            taskbar.gridLineColor = new PdfColor(this.ganttStyle.chartGridLineColor);
+            this.gantt.taskbarCollection.push(taskbar);
+            let taskStyle = {};
+            taskStyle.progressFontColor = taskbar.progressFontColor;
+            taskStyle.taskColor = taskbar.taskColor;
+            taskStyle.taskBorderColor = taskbar.taskBorderColor;
+            taskStyle.progressColor = taskbar.progressColor;
+            taskStyle.milestoneColor = taskbar.milestoneColor;
+            let args = {
+                taskbar: taskStyle,
+                data: data
+            };
+            if (this.parent.pdfQueryTaskbarInfo) {
+                this.parent.trigger('pdfQueryTaskbarInfo', args);
+            }
+        });
+    }
+    /**
+     * set text alignment of each columns in exporting grid
+     * @private
+     */
+    getHorizontalAlignment(textAlign, format) {
+        if (format === undefined) {
+            format = new PdfStringFormat();
+        }
+        switch (textAlign) {
+            case 'Right':
+                format.alignment = PdfTextAlignment.Right;
+                break;
+            case 'Center':
+                format.alignment = PdfTextAlignment.Center;
+                break;
+            case 'Justify':
+                format.alignment = PdfTextAlignment.Justify;
+                break;
+            case 'Left':
+                format.alignment = PdfTextAlignment.Left;
+                break;
+        }
+        return format;
+    }
+    /**
+     * set vertical alignment of each columns in exporting grid
+     * @private
+     */
+    getVerticalAlignment(verticalAlign, format, textAlign) {
+        if (format === undefined) {
+            format = new PdfStringFormat();
+            format = this.getHorizontalAlignment(textAlign, format);
+        }
+        switch (verticalAlign) {
+            case 'Bottom':
+                format.lineAlignment = PdfVerticalAlignment.Bottom;
+                break;
+            case 'Middle':
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                break;
+            case 'Top':
+                format.lineAlignment = PdfVerticalAlignment.Top;
+                break;
+        }
+        return format;
+    }
+    getFontFamily(fontFamily) {
+        switch (fontFamily) {
+            case 'TimesRoman':
+                return 2;
+            case 'Courier':
+                return 1;
+            case 'Symbol':
+                return 3;
+            case 'ZapfDingbats':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    /* tslint:disable-next-line:no-any */
+    getFont(content) {
+        if (content.font) {
+            return content.font;
+        }
+        let fontSize = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
+        let fontFamily = (!isNullOrUndefined(content.style.fontFamily)) ?
+            (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.TimesRoman;
+        let fontStyle = PdfFontStyle.Regular;
+        if (!isNullOrUndefined(content.style.bold) && content.style.bold) {
+            fontStyle |= PdfFontStyle.Bold;
+        }
+        if (!isNullOrUndefined(content.style.italic) && content.style.italic) {
+            fontStyle |= PdfFontStyle.Italic;
+        }
+        if (!isNullOrUndefined(content.style.underline) && content.style.underline) {
+            fontStyle |= PdfFontStyle.Underline;
+        }
+        if (!isNullOrUndefined(content.style.strikeout) && content.style.strikeout) {
+            fontStyle |= PdfFontStyle.Strikeout;
+        }
+        return new PdfStandardFont(fontFamily, fontSize, fontStyle);
+    }
+    renderEmptyGantt() {
+        let row = this.gantt.rows.addRow();
+        row.cells.getCell(0).isHeaderCell = false;
+        row.height = pixelToPoint(this.parent.rowHeight);
+        this.copyStyles(this.ganttStyle.columnHeader, row.cells.getCell(0), row.isParentRow);
+        let count = this.columns.length;
+        this.mergeCells(0, 0, count);
+    }
+    mergeCells(rowIndex, colIndex, lastColIndex) {
+        this.gantt.rows.getRow(rowIndex).cells.getCell(colIndex).columnSpan = lastColIndex;
+    }
+    copyStyles(style, cell, isParentRow) {
+        cell.style.fontColor = new PdfColor(style.fontColor);
+        cell.style.backgroundColor = new PdfColor(style.backgroundColor);
+        cell.style.borderColor = new PdfColor(style.borderColor);
+        cell.style.fontSize = style.fontSize;
+        cell.style.fontStyle = style.fontStyle;
+        cell.style.format = extend({}, {}, style.format, true);
+        cell.style.borders = new PdfBorders();
+        cell.style.borders.all = new PdfPen(cell.style.borderColor);
+        cell.style.padding = new PdfPaddings();
+        cell.style.padding.all = 10;
+    }
+    /**
+     * @return {void}
+     * @private
+     */
+    initializePdf(pdfDoc) {
+        this.pdfDoc = pdfDoc;
+        let widths = [];
+        let treeColumnIndex = 0;
+        let tWidth = (this.pdfDoc.pageSettings.width - 82);
+        if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82)) {
+            this.gantt.style.allowHorizontalOverflow = true;
+        }
+        else if ((tWidth / this.columns.length) < widths[treeColumnIndex]) {
+            this.gantt.columns.getColumn(treeColumnIndex).width = widths[treeColumnIndex];
+        }
+        let section = this.pdfDoc.sections.add();
+        if (this.exportProps.enableFooter || isNullOrUndefined(this.exportProps.enableFooter)) {
+            //code for draw the footer content            
+            let bounds = new RectangleF(0, 0, pdfDoc.pageSettings.width, 35);
+            let pen = new PdfPen(this.ganttStyle.chartGridLineColor);
+            let footer = new PdfPageTemplateElement(bounds);
+            let footerBrush = new PdfSolidBrush(this.ganttStyle.footer.backgroundColor);
+            footer.graphics.drawRectangle(pen, footerBrush, 0, 0, pdfDoc.pageSettings.width, 35);
+            /* tslint:disable-next-line */
+            let font = new PdfStandardFont(this.ganttStyle.fontFamily, this.ganttStyle.footer.fontSize, this.ganttStyle.footer.fontStyle);
+            let brush = new PdfSolidBrush(this.ganttStyle.footer.fontColor);
+            let pageNumber = new PdfPageNumberField(font);
+            let count = new PdfPageCountField(font, brush);
+            let compositeField = new PdfCompositeField(font, brush, 'Page {0}', pageNumber, count);
+            compositeField.stringFormat = this.ganttStyle.footer.format;
+            compositeField.bounds = bounds;
+            compositeField.draw(footer.graphics, new PointF(0, 0));
+            pdfDoc.template.bottom = footer;
+        }
+    }
+}
+/**
+ * @hidden
+ * `ExportValueFormatter` for `PdfExport` & `ExcelExport`
+ */
+class ExportValueFormatter {
+    constructor(culture) {
+        this.valueFormatter = new ValueFormatter(culture);
+        this.internationalization = new Internationalization(culture);
+    }
+    /* tslint:disable-next-line:no-any */
+    returnFormattedValue(args, customFormat) {
+        if (!isNullOrUndefined(args.value) && args.value) {
+            return this.valueFormatter.getFormatFunction(customFormat)(args.value);
+        }
+        else {
+            return '';
+        }
+    }
+    /**
+     * @private
+     */
+    /* tslint:disable-next-line:no-any */
+    formatCellValue(args) {
+        if (args.isForeignKey) {
+            args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
+        }
+        if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
+            return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
+        }
+        else if (args.column.type === 'boolean') {
+            return args.value ? 'true' : 'false';
+            /* tslint:disable-next-line:max-line-length */
+        }
+        else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {
+            if (typeof args.value === 'string') {
+                args.value = new Date(args.value);
+            }
+            if (typeof args.column.format === 'string') {
+                let format;
+                if (args.column.type === 'date') {
+                    format = { type: 'date', skeleton: args.column.format };
+                }
+                else if (args.column.type === 'time') {
+                    format = { type: 'time', skeleton: args.column.format };
+                }
+                else {
+                    format = { type: 'dateTime', skeleton: args.column.format };
+                }
+                return this.returnFormattedValue(args, format);
+            }
+            else {
+                if (args.column.format instanceof Object && args.column.format.type === undefined) {
+                    return (args.value.toString());
+                }
+                else {
+                    /* tslint:disable-next-line:max-line-length */
+                    let customFormat;
+                    if (args.column.type === 'date') {
+                        /* tslint:disable-next-line:max-line-length */
+                        customFormat = { type: args.column.format.type, format: args.column.format.format, skeleton: args.column.format.skeleton };
+                    }
+                    else if (args.column.type === 'time') {
+                        customFormat = { type: 'time', format: args.column.format.format, skeleton: args.column.format.skeleton };
+                    }
+                    else {
+                        customFormat = { type: 'dateTime', format: args.column.format.format, skeleton: args.column.format.skeleton };
+                    }
+                    return this.returnFormattedValue(args, customFormat);
+                }
+            }
+        }
+        else {
+            if ((!isNullOrUndefined(args.column.type) && !isNullOrUndefined(args.value)) || !isNullOrUndefined(args.value)) {
+                return (args.value).toString();
+            }
+            else {
+                return '';
+            }
+        }
+    }
+}
+
+/**
+ * @hidden
+ */
+class PdfGanttTaskbarCollection {
+    constructor(parent) {
+        /**
+         * @private
+         */
+        this.leftTaskLabel = {};
+        /**
+         * @private
+         */
+        this.rightTaskLabel = {};
+        this.startPage = -1;
+        this.endPage = -1;
+        this.parent = parent;
+    }
+    add() {
+        return new PdfGanttTaskbarCollection(this.parent);
+    }
+    /**
+     * Get the next PDF page
+     */
+    GetNextPage(page) {
+        let section = page.section;
+        let nextPage = null;
+        let index = section.indexOf(page);
+        if (index === section.count - 1) {
+            nextPage = section.add();
+        }
+        else {
+            nextPage = section.getPages()[index + 1];
+        }
+        return nextPage;
+    }
+    /**
+     * Draw the taskbar, chart back ground
+     * @private
+     */
+    /* tslint:disable */
+    drawTaskbar(page, startPoint, detail, cumulativeWidth, rowHeight, taskbar) {
+        let taskGraphics = page.graphics;
+        let isNextPage = false;
+        let pageSize = page.getClientSize();
+        let taskPen = new PdfPen(taskbar.gridLineColor, 0.5);
+        let yPoint = startPoint.y + rowHeight;
+        //code for while current pdf page is exceed 
+        if (yPoint > pageSize.height) {
+            page = this.GetNextPage(page);
+            taskGraphics = page.graphics;
+            startPoint.y = 0;
+            if (this.parent.pdfExportModule.gantt.enableHeader) {
+                this.parent.pdfExportModule.gantt.chartHeader.drawPageTimeline(page, startPoint, detail);
+                startPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+            }
+            yPoint = startPoint.y + rowHeight;
+            isNextPage = true;
+        }
+        this.drawLeftLabel(page, startPoint, detail, cumulativeWidth);
+        //Draw Taskbar
+        let font = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
+        let fontColor = null;
+        let fontBrush = new PdfSolidBrush(this.progressFontColor);
+        let progressFormat = new PdfStringFormat();
+        progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
+        progressFormat.alignment = PdfTextAlignment.Right;
+        let pageIndex = -1;
+        if (!taskbar.isMilestone) {
+            let taskbarPen = new PdfPen(taskbar.taskBorderColor);
+            let taskBrush = new PdfSolidBrush(taskbar.taskColor);
+            let progressPen = new PdfPen(taskbar.progressColor);
+            let progressBrush = new PdfSolidBrush(taskbar.progressColor);
+            let adjustHeight = pixelToPoint((this.parent.rowHeight - this.height) / 2.0);
+            pageIndex = page.section.indexOf(page);
+            let startDate = isNullOrUndefined(this.unscheduleStarteDate) ? this.startDate : this.unscheduleStarteDate;
+            let endDate = isNullOrUndefined(this.unscheduleEndDate) ? this.endDate : this.unscheduleEndDate;
+            //Task start and end date both are in the range of header split up start and end date
+            if (detail.startDate <= startDate && endDate <= detail.endDate) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = Object.assign({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
+                    this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
+                }
+                else {
+                    taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
+                    if (this.progress > 0 && this.progressWidth > 0 && this.isScheduledTask) {
+                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
+                        if (!isNullOrUndefined(this.parent.taskFields.progress) && !isNullOrUndefined(this.parent.labelSettings.taskLabel)) {
+                            taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(this.progressWidth), pixelToPoint(this.height), progressFormat);
+                        }
+                    }
+                }
+                this.isCompleted = true;
+                this.startPage = pageIndex;
+                this.endPage = pageIndex;
+            }
+            //Task start date is in the range of header split up start and end date
+            else if (detail.startDate <= startDate && detail.endDate >= startDate && !(endDate < detail.endDate)) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = Object.assign({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                let renderWidth = 0;
+                this.width = this.width - (detail.totalWidth - (this.left - cumulativeWidth));
+                renderWidth = (detail.totalWidth - (this.left - cumulativeWidth));
+                if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
+                    this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
+                }
+                else {
+                    taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
+                    if (this.progress > 0 && this.progressWidth > 0 && this.isScheduledTask) {
+                        let progressBoundsWidth = 0;
+                        if (this.progressWidth <= renderWidth) {
+                            progressBoundsWidth = this.progressWidth;
+                        }
+                        else {
+                            progressBoundsWidth = renderWidth;
+                        }
+                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                        this.progressWidth -= progressBoundsWidth;
+                        if (this.progressWidth === 0 && this.progress !== 0 && this.parent.labelSettings.taskLabel) {
+                            taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(progressBoundsWidth), pixelToPoint(this.height), progressFormat);
+                        }
+                    }
+                }
+                this.left = 0;
+                this.isCompleted = false;
+                this.startPage = pageIndex;
+            }
+            //Task end date is in the range of header split up start and end date 
+            else if (endDate <= detail.endDate && detail.startDate <= endDate && !this.isCompleted) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = Object.assign({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
+                if (this.isScheduledTask) {
+                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
+                    if (this.progressWidth === 0 && this.progress !== 0) {
+                        taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(this.progressWidth), pixelToPoint(this.height), progressFormat);
+                    }
+                }
+                this.isCompleted = true;
+                this.endPage = pageIndex;
+            }
+            //Header splitup start and end date with in the task start and end date.
+            //So the task is takes entire width of page.
+            else if (startDate < detail.startDate && endDate > detail.endDate) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = Object.assign({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(detail.totalWidth), pixelToPoint(taskbar.height));
+                if (this.progress > 0 && this.progressWidth > 0 && this.isScheduledTask) {
+                    let progressBoundsWidth = 0;
+                    if (this.progressWidth <= detail.totalWidth) {
+                        progressBoundsWidth = this.progressWidth;
+                    }
+                    else {
+                        progressBoundsWidth = detail.totalWidth;
+                    }
+                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                    this.progressWidth -= progressBoundsWidth;
+                    if (this.progressWidth === 0 && this.progress !== 0) {
+                        taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(progressBoundsWidth), pixelToPoint(this.height), progressFormat);
+                    }
+                }
+                this.isCompleted = false;
+                this.width -= detail.totalWidth;
+            }
+        }
+        else {
+            this.drawMilestone(page, startPoint, detail, cumulativeWidth);
+        }
+        this.drawRightLabel(page, startPoint, detail, cumulativeWidth);
+        return isNextPage;
+    }
+    /* tslint:enable */
+    /**
+     * Draw task right side label
+     */
+    drawRightLabel(page, startPoint, detail, cumulativeWidth) {
+        let graphics = page.graphics;
+        let left;
+        if (this.rightTaskLabel.isLeftCalculated) {
+            left = this.rightTaskLabel.left;
+        }
+        else {
+            left = pixelToPoint(this.rightTaskLabel.left);
+        }
+        let actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+        if (detail.startPoint <= left && left < detail.endPoint &&
+            !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
+            let result = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
+            let font = new PdfStandardFont(this.fontFamily, 9);
+            let adjustHeight = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
+            let point = new PointF(actualLeft, startPoint.y + adjustHeight);
+            let size = new SizeF(result.actualSize.width, result.actualSize.height);
+            let labelBounds = new RectangleF(point, size);
+            let labelFormat = new PdfStringFormat();
+            labelFormat.alignment = PdfTextAlignment.Right;
+            labelFormat.lineAlignment = PdfVerticalAlignment.Middle;
+            if (result.actualSize.width > 0) {
+                let fontColor = null;
+                let fontBrush = new PdfSolidBrush(this.labelColor);
+                /* tslint:disable-next-line */
+                graphics.drawString(result.lines[0].text, font, fontColor, fontBrush, labelBounds.x, labelBounds.y, result.actualSize.width, result.actualSize.height, labelFormat);
+                if (result.remainder !== null) {
+                    this.rightTaskLabel.value = result.remainder;
+                    this.rightTaskLabel.left = detail.endPoint;
+                    this.rightTaskLabel.isLeftCalculated = true;
+                }
+                else {
+                    this.rightTaskLabel.isCompleted = true;
+                }
+            }
+            else {
+                this.rightTaskLabel.left = detail.endPoint;
+            }
+        }
+    }
+    /**
+     * Draw task left task label
+     */
+    drawLeftLabel(page, startPoint, detail, cumulativeWidth) {
+        let graphics = page.graphics;
+        let left;
+        if (!isNullOrUndefined(this.leftTaskLabel.value)) {
+            let labelLeft = 0;
+            labelLeft = this.left;
+            if (!this.leftTaskLabel.isLeftCalculated) {
+                let result = this.getWidth(this.leftTaskLabel.value, Number.MAX_VALUE, 15);
+                let reduceLeft = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+                left = pixelToPoint(labelLeft - reduceLeft) - result.actualSize.width;
+                this.leftTaskLabel.left = left;
+                this.leftTaskLabel.isLeftCalculated = true;
+            }
+            else {
+                left = this.leftTaskLabel.left;
+            }
+            let actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
+                && !this.leftTaskLabel.isCompleted) {
+                let result = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
+                let font = new PdfStandardFont(this.fontFamily, 10);
+                let adjustHeight = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
+                let rightLabelpoint = new PointF(actualLeft, startPoint.y + adjustHeight);
+                let rightLabelSize = new SizeF(result.actualSize.width, result.actualSize.height);
+                let rightLabelBounds = new RectangleF(rightLabelpoint, rightLabelSize);
+                let rightLabelFormat = new PdfStringFormat();
+                rightLabelFormat.alignment = PdfTextAlignment.Right;
+                rightLabelFormat.lineAlignment = PdfVerticalAlignment.Middle;
+                if (result.actualSize.width > 0) {
+                    let fontColor = null;
+                    let fontBrush = new PdfSolidBrush(this.labelColor);
+                    /* tslint:disable-next-line */
+                    graphics.drawString(result.lines[0].text, font, fontColor, fontBrush, rightLabelBounds.x, rightLabelBounds.y, result.actualSize.width, result.actualSize.height, rightLabelFormat);
+                    if (result.remainder !== null) {
+                        this.leftTaskLabel.value = result.remainder;
+                        this.leftTaskLabel.left = detail.endPoint;
+                    }
+                    else {
+                        this.leftTaskLabel.isCompleted = true;
+                    }
+                }
+                else {
+                    this.leftTaskLabel.left = detail.endPoint;
+                }
+            }
+        }
+    }
+    getWidth(value, width, height) {
+        let font = new PdfStandardFont(this.fontFamily, 10);
+        let layouter = new PdfStringLayouter();
+        let progressFormat = new PdfStringFormat();
+        progressFormat.alignment = PdfTextAlignment.Left;
+        progressFormat.wordWrap = PdfWordWrapType.Character;
+        progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
+        /* tslint:disable-next-line */
+        let result = layouter.layout(value, font, progressFormat, new SizeF(width, height), false, new SizeF(width, height));
+        return result;
+    }
+    /**
+     * Draw Unscheduled Task
+     */
+    drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight) {
+        let taskBrush = new PdfSolidBrush(this.taskColor);
+        /* tslint:disable-next-line */
+        taskGraphics.drawRectangle(taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(3), pixelToPoint(this.height));
+    }
+    /**
+     * Draw milestone task
+     */
+    drawMilestone(page, startPoint, detail, cumulativeWidth) {
+        if (detail.startDate <= this.startDate && this.startDate <= detail.endDate) {
+            let taskGraphics = page.graphics;
+            let pageIndex = page.section.indexOf(page);
+            this.taskStartPoint = Object.assign({}, startPoint);
+            let milestonePen = new PdfPen(this.milestoneColor);
+            let adjustHeight = pixelToPoint(((this.parent.rowHeight - this.height) / 2.0));
+            let milestoneBrush = new PdfSolidBrush(this.milestoneColor);
+            taskGraphics.save(); //saving graphics state  
+            let height = Math.floor(this.parent.chartRowsModule.taskBarHeight * 0.6);
+            /* tslint:disable-next-line */
+            taskGraphics.translateTransform(startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+            taskGraphics.rotateTransform(45); //apply rotation
+            /* tslint:disable-next-line */
+            taskGraphics.drawRectangle(milestonePen, milestoneBrush, 0, 0, pixelToPoint(height), pixelToPoint(height));
+            taskGraphics.restore(); //restoring graphics state 
+            this.endPage = this.startPage = pageIndex;
+        }
+    }
+}
+
+/**
+ *
+ */
+class PdfTimeline {
+    constructor(gantt) {
+        this.width = 0;
+        this.gantt = gantt;
+        this.parent = gantt.parent;
+        this.topTierPoint = new PointF();
+        this.bottomTierPoint = new PointF();
+        this.topTierIndex = 0;
+        this.bottomTierIndex = 0;
+        this.prevTopTierIndex = 0;
+        this.prevBottomTierIndex = 0;
+    }
+    /**
+     * @private
+     * @param page
+     * @param startPoint
+     * @param detail
+     */
+    drawTimeline(page, startPoint, detail) {
+        let remainWidth = Math.floor(detail.totalWidth);
+        let renderWidth = 0;
+        let headerGraphics = page.graphics;
+        this.topTierPoint.x = startPoint.x;
+        this.topTierPoint.y = startPoint.y;
+        this.prevTopTierIndex = this.topTierIndex;
+        this.prevBottomTierIndex = this.bottomTierIndex;
+        while (remainWidth > 0) {
+            let pHeader = this.topTier[this.topTierIndex];
+            if (this.topTier.length > this.topTierIndex) {
+                let isCompleted = false;
+                if (!this.topTier[this.topTierIndex].isFinished) {
+                    if (remainWidth >= pHeader.width) {
+                        renderWidth = pHeader.width;
+                        pHeader.isFinished = true;
+                        pHeader.completedWidth = renderWidth;
+                        isCompleted = true;
+                    }
+                    else {
+                        renderWidth = remainWidth;
+                        isCompleted = false;
+                        pHeader.isFinished = false;
+                        pHeader.width = pHeader.width - remainWidth;
+                        pHeader.completedWidth = renderWidth;
+                    }
+                }
+                //Primary header Event Arguments
+                /* tslint:disable-next-line */
+                this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, renderWidth, pHeader.value, true);
+                this.topTierPoint.x += pixelToPoint(renderWidth);
+                remainWidth -= renderWidth;
+                if (isCompleted) {
+                    this.topTierIndex++;
+                }
+            }
+            else {
+                remainWidth = 0;
+            }
+        }
+        remainWidth = Math.floor(detail.totalWidth);
+        let height = this.parent.timelineModule.isSingleTier ? 0 : this.topTierHeight;
+        this.bottomTierPoint = new PointF(startPoint.x, pixelToPoint(startPoint.y + height));
+        while (remainWidth > 0) {
+            let secondHeader = this.bottomTier[this.bottomTierIndex];
+            if (this.bottomTier.length > this.bottomTierIndex) {
+                let isCompleted = true;
+                let width = secondHeader.width;
+                if (remainWidth < width) {
+                    width = remainWidth;
+                    isCompleted = false;
+                    secondHeader.completedWidth = width;
+                }
+                //Secondary header Event Arguments
+                /* tslint:disable-next-line */
+                this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false);
+                this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(width);
+                remainWidth -= width;
+                secondHeader.completedWidth = width;
+                if (isCompleted) {
+                    this.bottomTierIndex++;
+                }
+            }
+            else {
+                remainWidth = 0;
+            }
+        }
+    }
+    /**
+     * Draw the specific gantt chart side header when the taskbar exceeds the page
+     * @private
+     */
+    drawPageTimeline(page, startPoint, detail) {
+        let headerGraphics = page.graphics;
+        this.topTierPoint = extend({}, {}, startPoint, true);
+        for (let index = this.prevTopTierIndex; index <= this.topTierIndex; index++) {
+            if (this.topTier.length > index) {
+                let pHeader = this.topTier[index];
+                if (pHeader.completedWidth > 0) {
+                    //Primary header Event Arguments
+                    /* tslint:disable-next-line */
+                    this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, pHeader.completedWidth, pHeader.value, true);
+                    this.topTierPoint.x += pixelToPoint(pHeader.completedWidth);
+                }
+            }
+        }
+        this.bottomTierPoint.x = startPoint.x;
+        this.bottomTierPoint.y = pixelToPoint(startPoint.y + this.topTierHeight);
+        for (let index = this.prevBottomTierIndex; index <= this.bottomTierIndex; index++) {
+            if (this.bottomTier.length > index) {
+                let secondHeader = this.bottomTier[index];
+                if (secondHeader.completedWidth > 0) {
+                    //Secondary header Event Arguments
+                    /* tslint:disable-next-line */
+                    this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, secondHeader.width, secondHeader.value, false);
+                    this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
+                }
+            }
+        }
+    }
+    /**
+     * Method to trigger pdf query timelinecell event
+     */
+    /* tslint:disable-next-line */
+    triggerQueryTimelinecell(page, x, y, height, width, value, isTopTier) {
+        let graphics = page.graphics;
+        let timelineStyle = {};
+        let ganttStyle = this.gantt.ganttStyle;
+        timelineStyle.borderColor = new PdfColor(ganttStyle.timeline.borderColor);
+        timelineStyle.fontColor = new PdfColor(ganttStyle.timeline.fontColor);
+        timelineStyle.fontSize = ganttStyle.timeline.fontSize;
+        timelineStyle.fontStyle = ganttStyle.timeline.fontStyle;
+        timelineStyle.backgroundColor = new PdfColor(ganttStyle.timeline.backgroundColor);
+        if (ganttStyle.timeline.padding) {
+            timelineStyle.padding = ganttStyle.timeline.padding;
+        }
+        let format = new PdfStringFormat();
+        if (isNullOrUndefined(ganttStyle.timeline.format)) {
+            if (isTopTier) {
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                format.alignment = PdfTextAlignment.Left;
+            }
+            else {
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                format.alignment = PdfTextAlignment.Center;
+                format.wordWrap = PdfWordWrapType.Character;
+            }
+        }
+        else {
+            format = ganttStyle.timeline.format;
+        }
+        timelineStyle.format = format;
+        let eventArgs = {
+            timelineCell: timelineStyle,
+            value: value,
+        };
+        if (this.parent.pdfQueryTimelineCellInfo) {
+            this.parent.trigger('pdfQueryTimelineCellInfo', eventArgs);
+        }
+        let e = eventArgs.timelineCell;
+        let rectPen = new PdfPen(eventArgs.timelineCell.borderColor);
+        let rectBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
+        graphics.drawRectangle(rectPen, rectBrush, x, y, pixelToPoint(width), pixelToPoint(height));
+        let font = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
+        let textBrush = new PdfSolidBrush(eventArgs.timelineCell.fontColor);
+        let pLeft = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
+        let pTop = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;
+        /* tslint:disable-next-line */
+        graphics.drawString(eventArgs.value, font, null, textBrush, x + pLeft, y + pTop, pixelToPoint(width), pixelToPoint(height), e.format);
+    }
+}
+
+/**
+ * @hidden
+ */
+class PdfGanttPredecessor {
+    /**
+     * @hidden
+     */
+    add() {
+        return new PdfGanttPredecessor(this.parent);
+    }
+    constructor(parent, pdfGantt) {
+        this.parent = parent;
+        this.pdfGantt = pdfGantt;
+    }
+    /**
+     * Calculate the predecesor line point and draw the predecessor
+     * @return {void}
+     * @private
+     */
+    drawPredecessor(pdfGantt) {
+        this.pdfGantt = pdfGantt;
+        let pages = pdfGantt.result.page.section.getPages();
+        let parentTask = pdfGantt.taskbarCollection[this.parentIndex];
+        let childTask = pdfGantt.taskbarCollection[this.childIndex];
+        let startPage = new PdfPage();
+        let endPage = new PdfPage();
+        let predecessorType = '';
+        let parentPageData;
+        let childPageData;
+        let parentY = 0;
+        let childY = 0;
+        switch (this.type) {
+            case 'FS':
+                if (childTask.startPage > -1 && parentTask.endPage > -1) {
+                    startPage = pages[parentTask.endPage];
+                    endPage = pages[childTask.startPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                            predecessorType = 'FSType1';
+                        }
+                        else {
+                            predecessorType = 'FSType2';
+                        }
+                    }
+                    else {
+                        if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                            predecessorType = 'FSType3';
+                        }
+                        else {
+                            predecessorType = 'FSType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+            case 'SF':
+                if (childTask.endPage > -1 && parentTask.startPage > -1) {
+                    startPage = pages[parentTask.startPage];
+                    endPage = pages[childTask.endPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft > this.childLeft + this.childWidth) {
+                            predecessorType = 'SFType1';
+                        }
+                        else {
+                            predecessorType = 'SFType2';
+                        }
+                    }
+                    else {
+                        if (this.parentLeft > this.childLeft + this.childWidth) {
+                            predecessorType = 'SFType3';
+                        }
+                        else {
+                            predecessorType = 'SFType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+            case 'FF':
+                if (childTask.endPage > -1 && parentTask.endPage > -1) {
+                    startPage = pages[parentTask.endPage];
+                    endPage = pages[childTask.endPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.endPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                            predecessorType = 'FFType1';
+                        }
+                        else {
+                            predecessorType = 'FFType2';
+                        }
+                    }
+                    else {
+                        if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                            predecessorType = 'FFType3';
+                        }
+                        else {
+                            predecessorType = 'FFType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+            case 'SS':
+                if (childTask.startPage > -1 && parentTask.startPage > -1) {
+                    startPage = pages[parentTask.startPage];
+                    endPage = pages[childTask.startPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.startPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft >= this.childLeft) {
+                            predecessorType = 'SSType1';
+                        }
+                        else {
+                            predecessorType = 'SSType2';
+                        }
+                    }
+                    else {
+                        if (this.parentLeft >= this.childLeft) {
+                            predecessorType = 'SSType3';
+                        }
+                        else {
+                            predecessorType = 'SSType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+        }
+        let midPoint = Math.round((this.parent.rowHeight - 1) / 2.0);
+        midPoint = pixelToPoint(midPoint);
+        /* tslint:disable-next-line */
+        let point1, point2, point3, point4, point5, point6;
+        point1 = point2 = point3 = point4 = point5 = point6 = new PointF();
+        let parentTaskpoint = Object.assign({}, parentTask.taskStartPoint);
+        let childTaskpoint = Object.assign({}, childTask.taskStartPoint);
+        parentY = parentTaskpoint.y + parentPageData.startPoint.y;
+        childY = childTaskpoint.y + childPageData.startPoint.y;
+        let ffpoint1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth), parentY + midPoint);
+        let sspoint1 = new PointF(pixelToPoint(this.parentLeft) - 1, parentY + midPoint);
+        let ffpoint3 = new PointF(pixelToPoint(this.childLeft - 20), childY + midPoint);
+        let ffpoint4 = new PointF(pixelToPoint(this.childLeft - 6 - this.lineWidth) - 1, childY + midPoint);
+        let sspoint4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 6 + this.lineWidth) + 1, childY + midPoint);
+        switch (predecessorType) {
+            case 'FSType1':
+            case 'FSType3':
+                point1 = ffpoint1;
+                point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+                point3 = ffpoint3;
+                point4 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'FSType2':
+                point1 = ffpoint1;
+                point2 = new PointF(point1.x + 10, parentY + midPoint);
+                point3 = new PointF(point1.x + 10, childY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft - 20), childY + 2);
+                point5 = ffpoint3;
+                point6 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+            case 'FSType4':
+                point1 = ffpoint1;
+                point2 = new PointF(point1.x + 10, parentY + midPoint);
+                point3 = new PointF(point1.x + 10, parentY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft - 20), parentY + 2);
+                point5 = ffpoint3;
+                point6 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+            case 'FFType1':
+            case 'FFType3':
+                point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'FFType2':
+            case 'FFType4':
+                point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth + 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SSType1':
+            case 'SSType3':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SSType2':
+            case 'SSType4':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SFType1':
+            case 'SFType3':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SFType2':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), childY + 2);
+                point5 = new PointF(point4.x, childY + midPoint);
+                point6 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+            case 'SFType4':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, parentY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + 2);
+                point5 = new PointF(point4.x, childY + midPoint);
+                point6 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+        }
+    }
+    /**
+     * @private
+     * Method to draw the predecessor lines with calculated connector points
+     */
+    /* tslint:disable-next-line */
+    connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6) {
+        this.drawLine(startPage, point1, point2);
+        this.drawLine(startPage, point2, point3);
+        this.drawLine(startPage, point3, point4);
+        if (!isNullOrUndefined(point5) && !isNullOrUndefined(point6)) {
+            this.drawLine(startPage, point4, point5);
+            this.drawLine(startPage, point5, point6);
+        }
+        this.drawArrow(endPage, childTask, midPoint);
+    }
+    /**
+     * @private
+     * Method to check the predecessor line  occurs within the page
+     */
+    contains(rect, x, y) {
+        return rect.x <= x &&
+            x < rect.x + rect.width &&
+            rect.y <= y &&
+            y < rect.y + rect.height;
+    }
+    /**
+     * @private
+     * Find the PDF page index of given point
+     */
+    findPageIndex(point) {
+        let pageIndex = -1;
+        for (let index = 0; index < this.pdfGantt.pdfPageDetail.length; index++) {
+            let pageData = this.pdfGantt.pdfPageDetail[index];
+            let pageRect = new RectangleF(pageData.startPoint.x, pageData.startPoint.y, pageData.width, pageData.height);
+            if (this.contains(pageRect, point.x, point.y)) {
+                pageIndex = index;
+                break;
+            }
+        }
+        return pageIndex;
+    }
+    /**
+     * @private
+     * Draw predecessor line
+     */
+    drawLine(page, startPoint, endPoint) {
+        let pdfPages = this.pdfGantt.result.page.section.getPages();
+        let graphics = page.graphics;
+        let newEndPoint = Object.assign({}, endPoint);
+        let newStartPoint = Object.assign({}, endPoint);
+        let checkStartPoint = Object.assign({}, endPoint);
+        let pageData = this.pdfGantt.pdfPageDetail[page.section.indexOf(page) - this.pdfGantt.chartPageIndex];
+        let pageRect = new RectangleF(pageData.startPoint.x, pageData.startPoint.y, pageData.width, pageData.height);
+        let startPointCheck = this.contains(pageRect, startPoint.x, startPoint.y);
+        let endPointCheck = this.contains(pageRect, endPoint.x, endPoint.y);
+        let pageIndex = -1;
+        startPoint = new PointF(startPoint.x, startPoint.y);
+        endPoint = new PointF(endPoint.x, endPoint.y);
+        if (!startPointCheck && !endPointCheck) {
+            pageIndex = this.findPageIndex(startPoint);
+            if (pageIndex > -1) {
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                newStartPoint = startPoint;
+                newEndPoint = endPoint;
+                this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
+            }
+        }
+        else if (endPointCheck && !startPointCheck) {
+            pageIndex = this.findPageIndex(startPoint);
+            if (pageIndex > -1) {
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                newStartPoint = startPoint;
+                newEndPoint = endPoint;
+                this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
+            }
+        }
+        else if (!endPointCheck && startPointCheck) {
+            let pageRectLeft = pageRect.x;
+            let pageRectRight = pageRect.x + pageRect.width;
+            let pageRectBottom = pageRect.y + pageRect.height;
+            let pageRectTop = pageRect.y;
+            if (pageRectLeft > endPoint.x) {
+                checkStartPoint.x = endPoint.x = pageRectLeft - 1;
+                newStartPoint.x = pageRectLeft - 1;
+            }
+            else if (pageRectRight < endPoint.x) {
+                checkStartPoint.x = endPoint.x = pageRectRight;
+                newStartPoint.x = pageRectRight;
+                checkStartPoint.x += 1;
+            }
+            else if (pageRectBottom < endPoint.y) {
+                checkStartPoint.y = endPoint.y = pageRectBottom;
+                newStartPoint.y = pageRectBottom;
+                checkStartPoint.y += 1;
+                if (this.pdfGantt.enableHeader) {
+                    newStartPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                }
+            }
+            else if (pageRectTop > endPoint.y) {
+                newStartPoint.y = checkStartPoint.y = pageRectTop - 1;
+                endPoint.y = pageRectTop;
+                if (this.pdfGantt.enableHeader) {
+                    checkStartPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                    endPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                }
+            }
+            pageIndex = this.findPageIndex(checkStartPoint);
+            if (pageIndex !== -1) {
+                this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
+            }
+        }
+        if (startPointCheck) {
+            startPoint = new PointF(startPoint.x, startPoint.y);
+            endPoint = new PointF(endPoint.x, endPoint.y);
+            startPoint.x = startPoint.x + pageData.pageStartX - pageData.startPoint.x;
+            startPoint.y = startPoint.y - pageData.startPoint.y;
+            endPoint.x = endPoint.x + pageData.pageStartX - pageData.startPoint.x;
+            endPoint.y = endPoint.y - pageData.startPoint.y;
+            let brush = new PdfSolidBrush(this.connectorLineColor);
+            let predecessorPen = new PdfPen(brush, pixelToPoint(this.lineWidth));
+            graphics.drawLine(predecessorPen, startPoint, endPoint);
+        }
+    }
+    /**
+     * @private
+     * Draw predecessor arrow
+     */
+    drawArrow(page, childTask, midPoint) {
+        let pageData = this.pdfGantt.pdfPageDetail[page.section.indexOf(page) - this.pdfGantt.chartPageIndex];
+        /* tslint:disable-next-line */
+        let pageRect = new RectangleF(new PointF(pageData.startPoint.x, pageData.startPoint.y), new SizeF(pageData.width, pageData.height));
+        let startPoint = new PointF();
+        let pdfPages = page.section.getPages();
+        let width = 6 + this.lineWidth;
+        let point2;
+        if (this.type === 'FS' || this.type === 'SS') {
+            startPoint = new PointF(pixelToPoint(this.childLeft) - 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+        }
+        else {
+            startPoint = new PointF(pixelToPoint(this.childLeft + this.childWidth) + 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+        }
+        let startPointCheck = this.contains(pageRect, startPoint.x, startPoint.y);
+        if (!startPointCheck) {
+            let pageIndex = this.findPageIndex(startPoint);
+            if (pageIndex > -1) {
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                page = pdfPages[pageIndex + this.pdfGantt.chartPageIndex];
+            }
+        }
+        let graphics = page.graphics;
+        startPoint.x = startPoint.x - pageData.startPoint.x + pageData.pageStartX;
+        startPoint.y = startPoint.y - pageData.startPoint.y;
+        let point1 = new PointF(startPoint.x, startPoint.y + midPoint);
+        if (this.type === 'FS' || this.type === 'SS') {
+            point2 = new PointF(point1.x - pixelToPoint(width), point1.y - pixelToPoint(width));
+        }
+        else {
+            point2 = new PointF(point1.x + pixelToPoint(width), point1.y - pixelToPoint(width));
+        }
+        let point3 = new PointF(point2.x, point2.y + pixelToPoint(2 * width));
+        let brush = new PdfSolidBrush(this.connectorLineColor);
+        let predecessorPen = new PdfPen(brush, pixelToPoint(this.lineWidth));
+        graphics.drawLine(predecessorPen, point1, point2);
+        graphics.drawLine(predecessorPen, point2, point3);
+        graphics.drawLine(predecessorPen, point3, point1);
+    }
+}
+
+/**
+ *
+ */
+class PdfGantt extends PdfTreeGrid {
+    constructor(parent) {
+        super();
+        this.exportProps = {};
+        this.parent = parent;
+        this.chartHeader = new PdfTimeline(this);
+        this.predecessor = new PdfGanttPredecessor(parent, this);
+        this.headerDetails = [];
+        this.pdfPageDetail = [];
+        this.taskbarCollection = [];
+        this.predecessorCollection = [];
+    }
+    get taskbar() {
+        if (isNullOrUndefined(this.taskbars)) {
+            this.taskbars = new PdfGanttTaskbarCollection(this.parent);
+        }
+        return this.taskbars;
+    }
+    drawChart(result) {
+        this.result = result;
+        this.totalPages = this.result.page.section.count;
+        this.perColumnPages = this.totalPages / this.layouter.columnRanges.length;
+        this.calculateRange();
+        this.drawGantttChart();
+        this.drawPageBorder();
+    }
+    //Calcualte the header range for each pdf page based on schedule start and end date.
+    /* tslint:disable-next-line:max-func-body-length */
+    calculateRange() {
+        let lastColumnRange = this.layouter.columnRanges[this.layouter.columnRanges.length - 1];
+        let totalColumnWidth = 0;
+        let isPageFinished = true;
+        let pageWidth = 0;
+        let remainWidth = 0;
+        let point = 0;
+        let headerWidth = pixelToPoint(this.chartHeader.width);
+        let timelineSettings = this.parent.timelineModule;
+        for (let index = lastColumnRange[0]; index <= lastColumnRange[1]; index++) {
+            totalColumnWidth += this.layouter.treegrid.columns.getColumn(index).width;
+        }
+        totalColumnWidth += 0.5;
+        if (totalColumnWidth + 100 < this.result.page.getClientSize().width) {
+            remainWidth = this.result.page.getClientSize().width - totalColumnWidth;
+            this.chartPageIndex = this.startPageIndex = this.totalPages - this.perColumnPages;
+            isPageFinished = false;
+            this.startPoint = new PointF(totalColumnWidth, 0);
+        }
+        else {
+            let nextPage = this.result.page.section.add();
+            this.chartPageIndex = this.startPageIndex = this.totalPages;
+            isPageFinished = true;
+            this.startPoint = new PointF(point, 0);
+        }
+        while (Math.round(point) < Math.round(headerWidth)) {
+            if (isPageFinished) {
+                pageWidth = this.result.page.getClientSize().width;
+            }
+            else {
+                pageWidth = remainWidth;
+                isPageFinished = true;
+            }
+            let detail = {};
+            let range = [];
+            let convertedWidth = pixelToPoint(this.chartHeader.bottomTierCellWidth);
+            let width = 0;
+            if (this.chartHeader.bottomTierCellWidth !== 0) {
+                width = (Math.floor(pageWidth / convertedWidth) * convertedWidth);
+            }
+            range[0] = point;
+            if (headerWidth - point <= width) {
+                range[1] = headerWidth;
+                detail.totalWidth = pointToPixel(headerWidth - point);
+            }
+            else {
+                range[1] = point + width;
+                detail.totalWidth = pointToPixel(width);
+            }
+            detail.startPoint = range[0];
+            detail.endPoint = range[1];
+            if (this.parent.cloneProjectStartDate.getHours() === 0 && this.parent.cloneProjectStartDate.getMinutes() === 0
+                && this.parent.cloneProjectStartDate.getSeconds() === 0) {
+                this.parent.cloneProjectStartDate.setHours(8);
+            }
+            let timelineStartDate = this.parent.dataOperation.getDateFromFormat(this.parent.cloneProjectStartDate);
+            let count = isNullOrUndefined(timelineSettings.customTimelineSettings.bottomTier.count) ?
+                timelineSettings.customTimelineSettings.topTier.count : timelineSettings.customTimelineSettings.bottomTier.count;
+            let scheduleType = timelineSettings.customTimelineSettings.bottomTier.unit === 'None' ?
+                timelineSettings.customTimelineSettings.topTier.unit : timelineSettings.customTimelineSettings.bottomTier.unit;
+            switch (scheduleType) {
+                case 'Minutes':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    let sDays = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
+                    detail.startDate.setMinutes(detail.startDate.getMinutes() + sDays * count);
+                    detail.startDate.setSeconds(detail.startDate.getSeconds() + 1);
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    let eDays = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
+                        / (this.chartHeader.bottomTierCellWidth));
+                    detail.endDate.setMinutes(detail.endDate.getMinutes() + eDays * count);
+                    break;
+                case 'Hour':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    let sDays1 = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
+                    detail.startDate.setHours(detail.startDate.getHours() + sDays1 * count);
+                    detail.startDate.setMinutes(detail.startDate.getMinutes() + 1);
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    let eDays1 = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
+                        / (this.chartHeader.bottomTierCellWidth));
+                    detail.endDate.setHours(detail.endDate.getHours() + eDays1 * count);
+                    break;
+                case 'Day':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    let startDays = (Math.round(detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth)));
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
+                    let endDays = Math.round(((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth))) - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays * count);
+                    break;
+                case 'Week':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    let startDays1 = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7);
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
+                    let endDays1 = Math.round((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays1 * count);
+                    break;
+                case 'Month':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    let startDays2 = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 31);
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays2 * count);
+                    let endDays2 = Math.round((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 31 - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays2 * count);
+                    break;
+                case 'Year':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    let startDays3 = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 365);
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays3 * count);
+                    let endDays3 = Math.round((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 365 - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays3 * count);
+                    break;
+            }
+            this.headerDetails.push(detail);
+            point += width;
+        }
+    }
+    drawPageBorder() {
+        let pages = this.result.page.section.getPages();
+        for (let index = 0; index < pages.length; index++) {
+            let page = pages[index];
+            let graphics = page.graphics;
+            let pageSize = page.getClientSize();
+            let pen = new PdfPen(new PdfColor(206, 206, 206));
+            graphics.drawRectangle(pen, 0, 0, pageSize.width, pageSize.height);
+        }
+    }
+    //Draw the gantt chart side
+    drawGantttChart() {
+        let taskbarPoint = this.startPoint;
+        let pagePoint = new PointF();
+        let pageStartX = 0;
+        let cumulativeWidth = 0;
+        let cumulativeHeight = 0;
+        let pageData;
+        this.headerDetails.forEach((detail, index) => {
+            let page = this.result.page.section.getPages()[this.startPageIndex];
+            this.chartHeader.drawTimeline(page, this.startPoint, detail);
+            taskbarPoint.y = taskbarPoint.y + pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
+            pageStartX = taskbarPoint.x;
+            cumulativeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
+            this.headerDetails[this.headerDetails.indexOf(detail)].startIndex = this.startPageIndex;
+            this.headerDetails[this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
+            for (let i = 0; i < this.taskbarCollection.length; i++) {
+                let task = this.taskbarCollection[i];
+                let rowHeight = this.rows.getRow(i + 1).height;
+                let page = this.result.page.section.getPages()[this.startPageIndex];
+                /* tslint:disable-next-line */
+                let isNextPage = task.drawTaskbar(page, taskbarPoint, detail, cumulativeWidth, rowHeight, this.taskbarCollection[i]);
+                if (isNextPage) {
+                    if (this.enableHeader) {
+                        taskbarPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+                    }
+                    else {
+                        taskbarPoint.y = 0;
+                    }
+                    this.startPageIndex++;
+                    pageData = {};
+                    pageData.height = cumulativeHeight;
+                    pageData.pageStartX = pageStartX;
+                    pageData.startPoint = Object.assign({}, pagePoint);
+                    pageData.width = pixelToPoint(detail.totalWidth);
+                    this.pdfPageDetail.push(pageData);
+                    pagePoint.y += pageData.height;
+                    if (this.enableHeader) {
+                        cumulativeHeight = this.chartHeader.height;
+                    }
+                    else {
+                        taskbarPoint.y = 0;
+                        cumulativeHeight = 0;
+                    }
+                }
+                taskbarPoint.y += rowHeight;
+                cumulativeHeight += rowHeight;
+                
+            }
+            this.headerDetails[index].endIndex = this.startPageIndex;
+            cumulativeWidth += detail.totalWidth;
+            pageData = {};
+            pageData.height = cumulativeHeight;
+            pageData.pageStartX = pageStartX;
+            pageData.startPoint = Object.assign({}, pagePoint);
+            pageData.width = pixelToPoint(detail.totalWidth);
+            this.pdfPageDetail.push(pageData);
+            pagePoint.x += pageData.width;
+            pagePoint.y = 0;
+            if (this.enableHeader) {
+                cumulativeHeight = this.chartHeader.height;
+            }
+            else {
+                taskbarPoint.y = 0;
+            }
+            if (this.headerDetails.indexOf(detail) !== this.headerDetails.length - 1) {
+                let nextPage = this.result.page.section.add();
+                this.startPageIndex = this.result.page.section.count - 1;
+                taskbarPoint = this.startPoint = new PointF(0, 0);
+            }
+        });
+        // Draw predecessor line.
+        for (let i = 0; i < this.predecessorCollection.length; i++) {
+            let predecessor = this.predecessorCollection[i];
+            predecessor.drawPredecessor(this);
+        }
+    }
+}
+
+/**
+ *
+ * @hidden
+ */
+class PdfExport {
+    /**
+     * @hidden
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.helper = new ExportHelper(this.parent);
+        this.pdfDocument = undefined;
+    }
+    /**
+     *
+     */
     getModuleName() {
-        return 'columnMenu';
+        return 'pdfExport';
+    }
+    /**
+     * To destroy Pdf export module.
+     * @private
+     */
+    destroy() {
+        // Destroy Method
+    }
+    initGantt() {
+        this.pdfDocument = undefined;
+        this.gantt = new PdfGantt(this.parent);
+        // this.gantt.exportValueFormatter = new ExportValueFormatter(this.parent.locale);        
+    }
+    /**
+     *
+     */
+    /* tslint:disable-next-line */
+    export(pdfExportProperties, isMultipleExport, pdfDoc) {
+        let args = {
+            requestType: 'beforePdfExport',
+            ganttObject: this.parent,
+            cancel: false
+        };
+        this.parent.trigger('beforePdfExport', args);
+        if (getValue('cancel', args)) {
+            return new Promise((resolve, reject) => {
+                return resolve();
+            });
+        }
+        return new Promise((resolve, reject) => {
+            this.exportWithData(pdfDoc, resolve, pdfExportProperties, isMultipleExport);
+        });
+    }
+    /* tslint:disable-next-line */
+    exportWithData(pdfDoc, resolve, pdfExportProperties, isMultipleExport) {
+        let data = [];
+        if (isNullOrUndefined(pdfExportProperties)) {
+            pdfExportProperties = {};
+        }
+        if (pdfExportProperties.exportType === 'CurrentViewData') {
+            data = this.parent.currentViewData;
+        }
+        else {
+            data = this.parent.flatData;
+        }
+        this.initGantt();
+        if (!isNullOrUndefined(pdfDoc)) {
+            this.pdfDocument = pdfDoc;
+        }
+        else {
+            this.pdfDocument = new PdfDocument();
+        }
+        this.processExport(data, pdfExportProperties, isMultipleExport).then(() => {
+            this.parent.trigger('pdfExportComplete', {});
+            resolve(this.pdfDocument);
+        });
+    }
+    /* tslint:disable-next-line */
+    processExport(data, pdfExportProperties, isMultipleExport) {
+        let section = this.pdfDocument.sections.add();
+        this.processSectionExportProperties(section, pdfExportProperties);
+        let pdfPage = section.pages.add();
+        return new Promise((resolve, reject) => {
+            this.helper.processGridExport(data, this.gantt, pdfExportProperties);
+            this.helper.initializePdf(this.pdfDocument);
+            resolve();
+        }).then(() => {
+            let format = new PdfTreeGridLayoutFormat();
+            format.break = PdfLayoutBreakType.FitElement;
+            let layouter = this.gantt.drawGrid(pdfPage, 0, 0, format);
+            this.gantt.drawChart(layouter);
+            if (!isMultipleExport) {
+                // save the PDF
+                if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.fileName) {
+                    this.pdfDocument.save(pdfExportProperties.fileName);
+                }
+                else {
+                    this.pdfDocument.save('Export.pdf');
+                }
+                this.pdfDocument.destroy();
+            }
+            return this.pdfDocument;
+        });
+    }
+    processSectionExportProperties(section, pdfExportProperties) {
+        //To set section page size and page orientation.
+        if (!isNullOrUndefined(pdfExportProperties)) {
+            let pdfPageSettings = new PdfPageSettings();
+            if (!isNullOrUndefined(pdfExportProperties.pageOrientation && pdfExportProperties.pageOrientation === 'Portrait')) {
+                pdfPageSettings.orientation = PdfPageOrientation.Portrait;
+            }
+            else {
+                pdfPageSettings.orientation = PdfPageOrientation.Landscape;
+            }
+            if (!isNullOrUndefined(pdfExportProperties.pageSize)) {
+                pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
+            }
+            section.setPageSettings(pdfPageSettings);
+            if (!isNullOrUndefined(pdfExportProperties.ganttStyle)) {
+                let defaultGanttTheme = new PdfGanttTheme(pdfExportProperties.theme).style;
+                this.gantt.ganttStyle = extend({}, defaultGanttTheme, pdfExportProperties.ganttStyle, true);
+            }
+            else {
+                this.gantt.ganttStyle = new PdfGanttTheme(pdfExportProperties.theme).style;
+            }
+        }
+        else {
+            this.gantt.ganttStyle = new PdfGanttTheme(pdfExportProperties.theme).style;
+        }
+    }
+    getPageSize(pageSize) {
+        switch (pageSize) {
+            case 'Letter':
+                return new SizeF(612, 792);
+            case 'Note':
+                return new SizeF(540, 720);
+            case 'Legal':
+                return new SizeF(612, 1008);
+            case 'A0':
+                return new SizeF(2380, 3368);
+            case 'A1':
+                return new SizeF(1684, 2380);
+            case 'A2':
+                return new SizeF(1190, 1684);
+            case 'A3':
+                return new SizeF(842, 1190);
+            case 'A5':
+                return new SizeF(421, 595);
+            case 'A6':
+                return new SizeF(297, 421);
+            case 'A7':
+                return new SizeF(210, 297);
+            case 'A8':
+                return new SizeF(148, 210);
+            case 'A9':
+                return new SizeF(105, 148);
+            // case 'A10':
+            //     return new SizeF(74, 105);
+            case 'B0':
+                return new SizeF(2836, 4008);
+            case 'B1':
+                return new SizeF(2004, 2836);
+            case 'B2':
+                return new SizeF(1418, 2004);
+            case 'B3':
+                return new SizeF(1002, 1418);
+            case 'B4':
+                return new SizeF(709, 1002);
+            case 'B5':
+                return new SizeF(501, 709);
+            case 'Archa':
+                return new SizeF(648, 864);
+            case 'Archb':
+                return new SizeF(864, 1296);
+            case 'Archc':
+                return new SizeF(1296, 1728);
+            case 'Archd':
+                return new SizeF(1728, 2592);
+            case 'Arche':
+                return new SizeF(2592, 3456);
+            case 'Flsa':
+                return new SizeF(612, 936);
+            case 'HalfLetter':
+                return new SizeF(396, 612);
+            case 'Letter11x17':
+                return new SizeF(792, 1224);
+            case 'Ledger':
+                return new SizeF(1224, 792);
+            default:
+                return new SizeF(595, 842);
+        }
     }
 }
 
@@ -19567,5 +24810,5 @@ class ColumnMenu$1 {
  * Gantt index file
  */
 
-export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, ExcelExport$1 as ExcelExport, RowDD$1 as RowDD, ColumnMenu$1 as ColumnMenu, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
+export { Gantt, PdfHorizontalOverflowType, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, pixelToPoint, pointToPixel, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$1 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, ExcelExport$1 as ExcelExport, ColumnMenu$1 as ColumnMenu, RowDD$1 as RowDD, PdfExport, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings, ResourceFields };
 //# sourceMappingURL=ej2-gantt.es2015.js.map

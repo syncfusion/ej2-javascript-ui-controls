@@ -2,11 +2,12 @@ import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
-import { MenuSelectArgs, addSheetTab, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, locale } from '../common/index';
+import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
-import { openHyperlink, initiateHyperlink, editHyperlink } from '../common/index';
-import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort } from '../common/index';
-import { getRangeIndexes, getColumnHeaderText, getCellIndexes } from '../../workbook/common/index';
+import { openHyperlink, initiateHyperlink, editHyperlink, hideShow, HideShowEventArgs, applyProtect } from '../common/index';
+import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale } from '../common/index';
+import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel } from '../../workbook/common/index';
+import { RowModel, ColumnModel, SheetModel } from '../../workbook/base/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -55,12 +56,12 @@ export class ContextMenu {
     /**
      * Select event handler.
      */
+    // tslint:disable-next-line
     private selectHandler(args: MenuEventArgs): void {
-        let selectArgs: MenuSelectArgs = extend({ cancel: false }, args) as MenuSelectArgs;
-        this.parent.trigger('contextMenuItemSelect', selectArgs);
+        let selectArgs: MenuSelectEventArgs = extend({ cancel: false }, args) as MenuSelectEventArgs;
+        this.parent.trigger('contextMenuItemSelect', selectArgs); let id: string = this.parent.element.id + '_cmenu';
         if (!selectArgs.cancel) {
             let l10n: L10n = this.parent.serviceLocator.getService(locale); let indexes: number[];
-            let id: string = this.parent.element.id + '_cmenu';
             switch (args.item.id) {
                 case id + '_cut':
                     this.parent.notify(cut, { isAction: true, promise: Promise });
@@ -80,13 +81,14 @@ export class ContextMenu {
                 case id + '_rename':
                     this.parent.notify(renameSheetTab, {});
                     break;
-                case id + '_delete':
+                case id + '_delete_sheet':
                     this.parent.notify(removeSheetTab, {});
                     break;
-                case id + '_insert':
-                    this.parent.notify(addSheetTab, { text: 'Insert' });
+                case id + '_insert_sheet':
+                    this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetTab - 1,
+                        end: this.parent.activeSheetTab - 1, modelType: 'Sheet', isAction: true });
                     break;
-                case id + '_sheet_hide':
+                case id + '_hide_sheet':
                     this.parent.notify(hideSheet, null);
                     break;
                 case id + '_ascending':
@@ -108,13 +110,35 @@ export class ContextMenu {
                 case id + '_reapplyfilter':
                     this.parent.notify(reapplyFilter, null);
                     break;
-                case id + '_hiderow':
+                case id + '_hide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-                    this.parent.showHideRow(true, indexes[0], indexes[2]);
+                    this.parent.notify(hideShow, <HideShowEventArgs>{
+                        startIndex: indexes[0], endIndex: indexes[2], hide: true, isCol: false, actionUpdate: true });
                     break;
-                case id + '_unhiderow':
+                case id + '_unhide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-                    this.parent.showHideRow(false, indexes[0], indexes[2]);
+                    this.parent.notify(hideShow, <HideShowEventArgs>{
+                        startIndex: indexes[0], endIndex: indexes[2], hide: false, isCol: false, actionUpdate: true });
+                    break;
+                case id + '_hide_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(hideShow, <HideShowEventArgs>{
+                        startIndex: indexes[1], endIndex: indexes[3], hide: true, isCol: true, actionUpdate: true });
+                    break;
+                case id + '_unhide_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(hideShow, <HideShowEventArgs>{
+                        startIndex: indexes[1], endIndex: indexes[3], hide: false, isCol: true, actionUpdate: true });
+                    break;
+                case id + '_insert_row': case id + '_delete_row':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
+                        this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true });
+                    break;
+                case id + '_insert_column': case id + '_delete_column':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
+                        this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true });
                     break;
                 case id + '_hyperlink':
                     this.parent.notify(initiateHyperlink, null);
@@ -128,10 +152,23 @@ export class ContextMenu {
                 case id + '_removeHyperlink':
                     this.parent.removeHyperlink(this.parent.getActiveSheet().selectedRange);
                     break;
-                default:
-                // Rename functionality goes here
+                case id + '_protect':
+                    let sheet: SheetModel = this.parent.getActiveSheet(); sheet.isProtected = !sheet.isProtected; let isActive: boolean;
+                    sheet.isProtected ? isActive = false : isActive = true;  this.parent.notify(applyProtect, { isActive: isActive });
+                    break;
             }
         }
+    }
+    private getInsertModel(startIndex: number, endIndex: number): RowModel[] | ColumnModel[] {
+        let model: RowModel[] = [];
+        for (let i: number = startIndex; i <= endIndex; i++) {
+            if (i === startIndex) {
+                model.push({ index: i });
+            } else {
+                model.push({});
+            }
+        }
+        return model;
     }
 
     /**
@@ -186,28 +223,46 @@ export class ContextMenu {
             this.setHyperLink(items, id);
         } else if (target === 'RowHeader') {
             this.setClipboardData(items, l10n, id);
-            //this.setHideShowItems(items, l10n, 'Row', id);
+            let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
+            this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
         } else if (target === 'ColumnHeader') {
             this.setClipboardData(items, l10n, id);
+            let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
+            this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
         } else if (target === 'SelectAll') {
             this.setClipboardData(items, l10n, id);
             this.setFilterItems(items, id);
             this.setSortItems(items, id);
         } else if (target === 'Footer') {
             items.push({
-                text: l10n.getConstant('Insert'), id: id + '_insert'
+                text: l10n.getConstant('Insert'), id: id + '_insert_sheet'
             });
             items.push({
-                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete'
+                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete_sheet'
             });
             items.push({
                 text: l10n.getConstant('Rename'), id: id + '_rename'
             });
             items.push({
-                text: l10n.getConstant('Hide'), id: id + '_sheet_hide'
+                text: l10n.getConstant('Hide'), id: id + '_hide_sheet'
             });
+            this.setProtectSheetItems(items, id);
         }
         return items;
+    }
+    private setProtectSheetItems(items: MenuItemModel[], id: string): void {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        if (this.parent.getActiveSheet().isProtected) {
+            items.push({
+                text: l10n.getConstant('UnprotectSheet'), id: id + '_protect', iconCss: 'e-icons e-protect-icon',
+            });
+        } else {
+            items.push({
+                text: l10n.getConstant('ProtectSheet'), id: id + '_protect', iconCss: 'e-icons e-protect-icon',
+            });
+        }
     }
 
     /**
@@ -250,13 +305,14 @@ export class ContextMenu {
     }
 
     private setHyperLink(items: MenuItemModel[], id: string): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
         if (this.parent.allowHyperlink) {
             let l10n: L10n = this.parent.serviceLocator.getService(locale);
-            if (!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
-             !document.activeElement.classList.contains('e-hyperlink')) {
-                items.push({
-                    text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
-                });
+            if ((!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
+                !document.activeElement.classList.contains('e-hyperlink')) || (sheet.isProtected && !sheet.protectSettings.insertLink)) {
+                    items.push({
+                        text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
+                    });
             } else {
                 items.push(
                     { text: l10n.getConstant('EditHyperlink'), iconCss: 'e-icons e-edithyperlink-icon', id: id + '_editHyperlink' },
@@ -291,16 +347,25 @@ export class ContextMenu {
         }
     }
 
-    private setHideShowItems(items: MenuItemModel[], l10n: L10n, layout: string, id: string): void {
+    private setInsertDeleteItems(items: MenuItemModel[], l10n: L10n, layout: string, id: string, indexes: number[]): void {
         items.push({ separator: true });
-        let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-        if (indexes[0] === indexes[2] || indexes[1] === indexes[3]) {
-            items.push({ text: l10n.getConstant('Hide' + layout), id: id + '_hide' + layout.toLowerCase() });
+        ['Insert', 'Delete'].forEach((action: string): void => {
+            if (indexes[0] === indexes[1]) {
+                items.push({ text: l10n.getConstant(`${action}${layout}`), id: id + `_${action.toLowerCase()}_${layout.toLowerCase()}` });
+            } else {
+                items.push({ text: l10n.getConstant(`${action}${layout}s`), id: id + `_${action.toLowerCase()}_${layout.toLowerCase()}` });
+            }
+        });
+    }
+
+    private setHideShowItems(items: MenuItemModel[], l10n: L10n, layout: string, id: string, indexes: number[]): void {
+        if (indexes[0] === indexes[1]) {
+            items.push({ text: l10n.getConstant(`Hide${layout}`), id: id + `_hide_${layout.toLowerCase()}` });
         } else {
-            items.push({ text: l10n.getConstant('Hide' + layout + 's'), id: id + '_hide' + layout.toLowerCase() });
+            items.push({ text: l10n.getConstant(`Hide${layout}s`), id: id + `_hide_${layout.toLowerCase()}` });
         }
-        if (this.parent.hiddenRowsCount(indexes[0], indexes[2])) {
-            items.push({ text: l10n.getConstant('UnHide' + layout + 's'), id: id + '_unhide' + layout.toLowerCase() });
+        if (this.parent.hiddenCount(indexes[0], indexes[1], `${layout.toLowerCase()}s`)) {
+            items.push({ text: l10n.getConstant(`UnHide${layout}s`), id: id + `_unhide_${layout.toLowerCase()}` });
         }
     }
 

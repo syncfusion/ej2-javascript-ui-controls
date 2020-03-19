@@ -237,6 +237,7 @@ describe('Bullet Chat Axis', () => {
     describe('Vertical orientation', () => {
         let bullet: BulletChart;
         let svg: Element;
+        let value: string;
         let bulletElement: Element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(bulletElement);
@@ -331,7 +332,8 @@ describe('Bullet Chat Axis', () => {
             bullet.dataBind();
 
             svg = document.getElementById('container_BulletChartTitle');
-            expect(svg.getAttribute('x')).toEqual('20.666666666666668');
+            value = svg.getAttribute('x');
+            expect(value === '20.666666666666668' || value === '15').toBe(true);
             done();
         });
         it('Title as Bottom', (done: Function) => {

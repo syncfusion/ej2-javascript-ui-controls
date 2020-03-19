@@ -50,7 +50,6 @@ export interface ISparklineLoadedEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the Load Event arguments.
- * @deprecated
  */
 export interface ISparklineLoadEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */

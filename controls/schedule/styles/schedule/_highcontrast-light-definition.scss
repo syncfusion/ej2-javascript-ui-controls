@@ -46,7 +46,7 @@ $schedule-timezone-enable-nrml-height: 60px !default;
 $schedule-timezone-enable-bgr-height: 70px !default;
 $schedule-appointment-bg-color: lighten($success-bg, 5%) !default;
 $schedule-appointment-details-padding: 0 4px !default;
-$schedule-appointment-font-color: $content-font !default;
+$schedule-appointment-font-color: $invert-font !default;
 $schedule-appointment-active-border-color: $selection-bg !default;
 $schedule-appointment-border-color: $bg-base-10 !default;
 $schedule-appointment-border-radius: 2px !default;
@@ -163,6 +163,8 @@ $schedule-timeline-work-cells-border: 0 0 1px 1px !default;
 $schedule-rtl-timeline-work-cells-border: 0 1px 1px 0 !default;
 $schedule-timeline-resources-width: 200px !default;
 $schedule-timeline-appointment-height: 38px !default;
+$schedule-timeline-year-work-cells-height: 70px !default;
+$schedule-timeline-year-work-cells-width: 60px !default;
 
 $schedule-tree-bg-color: $content-bg-color !default;
 $schedule-popup-overlay-bg-color: #383838 !default;

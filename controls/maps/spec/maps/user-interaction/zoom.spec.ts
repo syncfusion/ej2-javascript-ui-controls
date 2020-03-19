@@ -8,8 +8,8 @@ import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Zoom, Bubble, Marker } from '../../../src/maps/index';
 import { getElementByID } from '../layers/colormapping.spec';
 import { randomcountriesData } from '../data/us-data.spec';
-import { Rect } from '../../../src/maps/utils/helper';
-import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { Rect, getElement } from '../../../src/maps/utils/helper';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble);
 
 let MapData: Object = World_Map;
@@ -44,7 +44,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ]
             }, '#' + id);
@@ -91,7 +91,7 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.enablePersistence = true;
             map.mapsArea.border.width = 0;
-            map.refresh(); 
+            map.refresh();
         });
 
         it('Checking with Zoom out button -geometry ', () => {
@@ -108,6 +108,8 @@ describe('Zoom feature tesing for map control', () => {
                     map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
                 }
             };
+            map.width = '400px';
+            map.height = '400px';
             map.refresh();
         });
 
@@ -164,15 +166,15 @@ describe('Zoom feature tesing for map control', () => {
         });
         it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-               let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -243.7363423664989 -129.16655152836194 ) ");
+                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+                expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -187.70715126367102 -99.21828842120752 ) ");
             };
-            map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
+            map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });
         it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-               let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 10 ) translate( -320.00944464999986 -193.71892683177944 ) ");
+                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+                expect(element.getAttribute("transform")).toBe("scale( 10 ) translate( -246.93412391666658 -149.3926670651955 ) ");
             };
             map.zoomToCoordinates(19.1555762, 72.8849595, null, null);
         });
@@ -194,7 +196,6 @@ describe('Zoom feature tesing for map control', () => {
 
         it('Checking with Zoom in button - bing map ', () => {
             map.load = (args: ILoadEventArgs) => {
-                debugger
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -229,6 +230,8 @@ describe('Zoom feature tesing for map control', () => {
                     visible: true,
                     valuePath: 'name'
                 },
+                latitudeValuePath: null,
+                longitudeValuePath: null,
                 dataSource: [{
                     name: 'Manhattan, New York, USA',
                     latitude: 40.7489,
@@ -264,7 +267,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = getElementByID(map.element.id + '_svg');
             };
-            map.zoomToCoordinates( 52.4643089, 13.4107368, 19.1555762, 72.8849595);
+            map.zoomToCoordinates(52.4643089, 13.4107368, 19.1555762, 72.8849595);
         });
         it('Checking with double tab zooming ', () => {
             map.loaded = (args: ILoadedEventArgs) => {
@@ -299,7 +302,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -392,26 +395,28 @@ describe('Zoom feature tesing for map control', () => {
             map.layers[0].markerClusterSettings = {
                 allowClustering: true,
                 shape: 'Image',
-                height:30,
-                width:30,
+                height: 30,
+                width: 30,
                 fill: 'blue',
-                opacity: 0.5, 
-                imageUrl :'./images/cluster_icon.svg'                            
+                opacity: 0.5,
+                imageUrl: './images/cluster_icon.svg'
             };
             map.layers[0].markerSettings = [
                 {
                     visible: true,
+                    latitudeValuePath: null,
+                    longitudeValuePath: null,
                     dataSource: [
-                        { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno'},
-                            { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel'},
-                            { latitude: 40.7424509, longitude: -74.0081468, name: 'New York'},
-                            { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro'},
-                            { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto'},
-                            { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris'},
-                            { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin'},
-                            { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai'},
-                            { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato'},
-                            { latitude: 51.5326602, longitude: -0.1262422, name: 'London'}
+                        { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno' },
+                        { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel' },
+                        { latitude: 40.7424509, longitude: -74.0081468, name: 'New York' },
+                        { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro' },
+                        { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto' },
+                        { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris' },
+                        { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin' },
+                        { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai' },
+                        { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato' },
+                        { latitude: 51.5326602, longitude: -0.1262422, name: 'London' }
                     ]
                 },
                 {
@@ -423,7 +428,7 @@ describe('Zoom feature tesing for map control', () => {
                     ],
                     animationDuration: 0
                 },];
-            map.scale = 1; 
+            map.scale = 1;
             map.refresh();
         });
     });
@@ -444,7 +449,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -519,7 +524,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -607,7 +612,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -624,7 +629,10 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with pinch zooming - zoom in', () => {
             let rect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
             let down: ITouches[] = [{ pageX: rect.left + 100, pageY: rect.top + 100 }, { pageX: rect.left + 200, pageY: rect.top + 200 }];
-            let move: ITouches[] = [{ pageX: rect.left - 100, pageY: (rect.top + 200) }, { pageX: (rect.left + 300), pageY: rect.top - 200 }];
+            let move: ITouches[] = [
+                { pageX: rect.left - 100, pageY: (rect.top + 200) },
+                { pageX: (rect.left + 300), pageY: rect.top - 200 }
+            ];
             map.zoomModule.touchStartList = down;
             map.zoomModule.touchMoveList = move;
             map.isTileMap = false;
@@ -646,8 +654,14 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with pinch zooming - zoom out', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let rect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
-                let down: ITouches[] = [{ pageX: rect.left + 100, pageY: rect.top + 100 }, { pageX: rect.left + 200, pageY: rect.top + 200 }];
-                let move: ITouches[] = [{ pageX: rect.left - 100, pageY: (rect.top + 100) }, { pageX: (rect.left - 200), pageY: rect.top + 200 }];
+                let down: ITouches[] = [
+                    { pageX: rect.left + 100, pageY: rect.top + 100 },
+                    { pageX: rect.left + 200, pageY: rect.top + 200 }
+                ];
+                let move: ITouches[] = [
+                    { pageX: rect.left - 100, pageY: (rect.top + 100) },
+                    { pageX: (rect.left - 200), pageY: rect.top + 200 }
+                ];
                 map.zoomModule.touchStartList = down;
                 map.zoomModule.touchMoveList = move;
                 map.zoomModule.performPinchZooming(<TouchEvent>{});
@@ -674,8 +688,14 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with pinch zooming - zoom in', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let rect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
-                let down: ITouches[] = [{ pageX: rect.left + 100, pageY: rect.top + 100 }, { pageX: rect.left + 200, pageY: rect.top + 200 }];
-                let move: ITouches[] = [{ pageX: rect.left + 100, pageY: (rect.top + 100) }, { pageX: (rect.left - 200), pageY: rect.top + 200 }];
+                let down: ITouches[] = [
+                    { pageX: rect.left + 100, pageY: rect.top + 100 },
+                    { pageX: rect.left + 200, pageY: rect.top + 200 }
+                ];
+                let move: ITouches[] = [
+                    { pageX: rect.left + 100, pageY: (rect.top + 100) },
+                    { pageX: (rect.left - 200), pageY: rect.top + 200 }
+                ];
                 map.zoomModule.touchStartList = down;
                 map.zoomModule.touchMoveList = move;
                 map.zoomModule.currentScale = 1;
@@ -709,7 +729,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4',
                     }
                 ],
                 zoomSettings: {
@@ -808,7 +828,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -865,7 +885,7 @@ describe('Zoom feature tesing for map control', () => {
                 pageY: element.getBoundingClientRect().top
             };
             map.zoomSettings.enable = true;
-            let selection = document.getElementById(map.element.id + "_Secondary_Element").appendChild(
+            let selection = document.getElementById(map.element.id + '_Secondary_Element').appendChild(
                 createElement('div', { id: map.element.id + '_Selection_Rect_Zooming' })
             );
             map.zoomModule.zoomingRect = { x: 0, y: 0, height: 0, width: 0 };
@@ -959,55 +979,133 @@ describe('Zoom feature tesing for map control', () => {
             map.refresh();
         });
         it('To zoom the OSM layer with center position and marker clustering', () => {
-                map.loaded = (args: ILoadedEventArgs) => {
-                    map.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 5);
-                    let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
-                    expect(element.childElementCount).toBeGreaterThanOrEqual(1);
-                };
-                map.layersCollection[0].layerType = 'OSM';
-                map.layers[0].markerClusterSettings = {
-                    allowClustering: true,
-                    shape: 'Image',
-                    height:30,
-                    width:30,
-                    fill: 'blue',
-                    opacity: 0.5, 
-                    imageUrl :'./images/cluster_icon.svg'                            
-                };
-                map.layers[0].markerSettings = [
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 5);
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layersCollection[0].layerType = 'OSM';
+            map.layers[0].markerClusterSettings = {
+                allowClustering: true,
+                shape: 'Image',
+                height: 30,
+                width: 30,
+                fill: 'blue',
+                opacity: 0.5,
+                imageUrl: './images/cluster_icon.svg'
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    latitudeValuePath: null,
+                    longitudeValuePath: null,
+                    dataSource: [
+                        { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno' },
+                        { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel' },
+                        { latitude: 40.7424509, longitude: -74.0081468, name: 'New York' },
+                        { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro' },
+                        { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto' },
+                        { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris' },
+                        { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin' },
+                        { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai' },
+                        { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato' },
+                        { latitude: 51.5326602, longitude: -0.1262422, name: 'London' }
+                    ]
+                },
+                {
+                    visible: true,
+                    template: '<div id="marker1" class="markerTemplate">Asia' +
+                        '</div>',
+                    dataSource: [
+                        { latitude: 50.32087157990324, longitude: 90.015625 }
+                    ],
+                    animationDuration: 0
+                },];
+            map.refresh();
+        });
+        it('Checking with Zoom using public methode', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById('container_tile_parent');
+                expect(element.getAttribute('style')).toBe(
+                    'position: absolute; left: 18px; top: 18px; height: 492px; width: 492px; overflow: hidden;');
+            };
+            map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
+        });
+    });
+
+    describe('Checkzoom center position after screen resize ', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let zoomEle: Element;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                layers: [
                     {
-                        visible: true,
-                        dataSource: [
-                            { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno'},
-                                { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel'},
-                                { latitude: 40.7424509, longitude: -74.0081468, name: 'New York'},
-                                { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro'},
-                                { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto'},
-                                { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris'},
-                                { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin'},
-                                { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai'},
-                                { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato'},
-                                { latitude: 51.5326602, longitude: -0.1262422, name: 'London'}
-                        ]
-                    },
-                    {
-                        visible: true,
-                        template: '<div id="marker1" class="markerTemplate">Asia' +
-                            '</div>',
-                        dataSource: [
-                            { latitude: 50.32087157990324, longitude: 90.015625 }
-                        ],
-                        animationDuration: 0
-                    },];
-                map.refresh();
-            });
-            it('Checking with Zoom using public methode', () => {
-                map.loaded = (args: ILoadedEventArgs) => {
-                   let element: Element = document.getElementById("container_tile_parent");
-                   expect(element.getAttribute("style")).toBe("position: absolute; left: 18px; top: 18px; height: 492px; width: 492px; overflow: hidden;");
-                };
-                map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
-            });
+                        shapeData: MapData,
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L'
+                    }
+                ],
+                zoomSettings: {
+                    enable: true,
+                    zoomOnClick: true
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Check map center position', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                zoomEle = getElement('container_LayerIndex_0_Polygon_Group');
+                expect(zoomEle.getAttribute('transform')).toBe('scale( 1 ) translate( 10 77.26847093771161 ) ');
+            };
+            map.refresh();
+        });
+
+        it('Check center position after change container size in shape type layer', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                zoomEle = getElement('container_LayerIndex_0_Polygon_Group');
+                expect(zoomEle.getAttribute('transform')).toBe('scale( 1 ) translate( 10 63.596017495087295 ) ');
+            }
+            map.width = '412px';
+            map.height = '412px';
+            map.refresh();
+        });
+        it('Check center position in OSM type layer', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                zoomEle = getElement('container_tile_parent');
+                expect(zoomEle).not.toBe(null);
+                // expect(zoomEle.childElementCount).toBe(1);
+                zoomEle = getElement('tile0');
+                // expect(zoomEle.getAttribute('style')).toBe('position:absolute;left: -0.5px;top: 19.5px;height: 256px;width: 256px;');
+            }
+            map.width = '512px';
+            map.height = '512px';
+            map.layers[0].layerType = "OSM";
+            map.refresh();
+        });
+        it('Check center position after container resize in OSM type layer', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                zoomEle = getElement('container_tile_parent');
+                expect(zoomEle).not.toBe(null);
+                // expect(zoomEle.childElementCount).toBe(1);
+                zoomEle = getElement('tile0');
+                // expect(zoomEle.getAttribute('style')).toBe('position:;left: -154px;top: -134px;height: 256px;width: 256px;');
+            }
+            map.width = '206px';
+            map.height = '206px';
+            map.refresh();
+        });
     });
 
     describe('Checking with mouse canel event ', () => {
@@ -1026,7 +1124,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ],
                 zoomSettings: {
@@ -1109,7 +1207,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: World_Map,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         shapePropertyPath: 'continent',
                         shapeDataPath: 'continent',
                         dataSource: randomcountriesData,
@@ -1141,11 +1239,11 @@ describe('Zoom feature tesing for map control', () => {
                             width: 30,
                             template: '<div id="template"><p>{{:Name}}</p></div>',
                             dataSource: [
-                                { "Name": "USA", "latitude": 38.8833, "longitude": -77.0167 },
-                                { "Name": "Brazil", "latitude": -15.7833, "longitude": -47.8667 },
-                                { "Name": "India", "latitude": 21.0000, "longitude": 78.0000 },
-                                { "Name": "China", "latitude": 35.0000, "longitude": 103.0000 },
-                                { "Name": "Indonesia", "latitude": -6.1750, "longitude": 106.8283 }
+                                { 'Name': 'USA', 'latitude': 38.8833, 'longitude': -77.0167 },
+                                { 'Name': 'Brazil', 'latitude': -15.7833, 'longitude': -47.8667 },
+                                { 'Name': 'India', 'latitude': 21.0000, 'longitude': 78.0000 },
+                                { 'Name': 'China', 'latitude': 35.0000, 'longitude': 103.0000 },
+                                { 'Name': 'Indonesia', 'latitude': -6.1750, 'longitude': 106.8283 }
                             ]
                         }],
                         shapeSettings: {
@@ -1204,12 +1302,14 @@ describe('Zoom feature tesing for map control', () => {
                 visible: true,
                 height: 30,
                 width: 30,
+                latitudeValuePath: null,
+                longitudeValuePath: null,
                 dataSource: [
-                    { "Name": "USA", "latitude": 38.8833, "longitude": -77.0167 },
-                    { "Name": "Brazil", "latitude": -15.7833, "longitude": -47.8667 },
-                    { "Name": "India", "latitude": 21.0000, "longitude": 78.0000 },
-                    { "Name": "China", "latitude": 35.0000, "longitude": 103.0000 },
-                    { "Name": "Indonesia", "latitude": -6.1750, "longitude": 106.8283 }
+                    { 'Name': 'USA', 'latitude': 38.8833, 'longitude': -77.0167 },
+                    { 'Name': 'Brazil', 'latitude': -15.7833, 'longitude': -47.8667 },
+                    { 'Name': 'India', 'latitude': 21.0000, 'longitude': 78.0000 },
+                    { 'Name': 'China', 'latitude': 35.0000, 'longitude': 103.0000 },
+                    { 'Name': 'Indonesia', 'latitude': -6.1750, 'longitude': 106.8283 }
                 ]
             }];
             map.scale = 1;
@@ -1238,14 +1338,70 @@ describe('Zoom feature tesing for map control', () => {
                 height: 30,
                 width: 30,
                 dataSource: [
-                    { "Name": "USA", "latitude": 38.8833, "longitude": -77.0167 },
-                    { "Name": "Brazil", "latitude": -15.7833, "longitude": -47.8667 },
-                    { "Name": "India", "latitude": 21.0000, "longitude": 78.0000 },
-                    { "Name": "China", "latitude": 35.0000, "longitude": 103.0000 },
-                    { "Name": "Indonesia", "latitude": -6.1750, "longitude": 106.8283 }
+                    { 'Name': 'USA', 'latitude': 38.8833, 'longitude': -77.0167 },
+                    { 'Name': 'Brazil', 'latitude': -15.7833, 'longitude': -47.8667 },
+                    { 'Name': 'India', 'latitude': 21.0000, 'longitude': 78.0000 },
+                    { 'Name': 'China', 'latitude': 35.0000, 'longitude': 103.0000 },
+                    { 'Name': 'Indonesia', 'latitude': -6.1750, 'longitude': 106.8283 }
                 ],
                 animationDuration: 2
             }];
+            map.scale = 1;
+            map.refresh();
+        });
+        it('Checking with marker enableComplexProperty while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id);
+                let rect: ClientRect = element.getBoundingClientRect();
+                let delta: number = 130;
+                for (let i: number = 0; i < 10; i++) {
+                    let wheelArgs: Object = {
+                        preventDefault: prevent,
+                        wheelDelta: delta++,
+                        detail: 3,
+                        clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                        pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                    };
+                    map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
+                }
+            };
+            map.layers[0].markerSettings = [{
+                visible: true,
+                height: 30,
+                width: 30,
+                latitudeValuePath: 'data.latitude',
+                longitudeValuePath: 'data: longtitude',
+                colorValuePath: "data.color",
+                shapeValuePath: "data.shape",
+                dataSource: [
+                    { 'Name': 'USA', 'latitude': 38.8833, 'longitude': -77.0167, color: "red", shape: 'Circle', data: { shape: 'Rectangle', color: "red", 'Name': 'USA', 'latitude': 38.8833, 'longitude': -77.0167 } },
+                    { 'Name': 'Brazil', 'latitude': -15.7833, 'longitude': -47.8667, color: "blue", shape: 'Circle', data: { shape: 'Rectangle', color: "blue", 'Name': 'Brazil', 'latitude': -15.7833, 'longitude': -47.8667 } },
+                    { 'Name': 'India', 'latitude': 21.0000, 'longitude': 78.0000, color: "green", shape: 'Circle', data: { shape: 'Rectangle', color: "green", 'Name': 'India', 'latitude': 21.0000, 'longitude': 78.0000 } },
+                    { 'Name': 'China', 'latitude': 35.0000, 'longitude': 103.0000, color: "yellow", shape: 'Circle', data: { shape: 'Rectangle', color: "yellow", 'Name': 'China', 'latitude': 35.0000, 'longitude': 103.0000 } },
+                    { 'Name': 'Indonesia', 'latitude': -6.1750, 'longitude': 106.8283, color: "black", shape: 'Circle', data: { shape: 'Rectangle', color: "black", 'Name': 'Indonesia', 'latitude': -6.1750, 'longitude': 106.8283 } }
+                ],
+                animationDuration: 2
+            },
+            {
+                visible: true,
+                height: 30,
+                width: 30,
+                latitudeValuePath: 'latitude',
+                longitudeValuePath: 'longtitude',
+                colorValuePath: "color",
+                shapeValuePath: "shape",
+                dataSource: [
+                    { 'Name': 'USA', 'latitude': 38.8833, 'longitude': -77.0167, color: "red", shape: 'Circle', data: { shape: 'Rectangle', color: "red", 'Name': 'USA', 'latitude': 38.8833, 'longitude': -77.0167 } },
+                    { 'Name': 'Brazil', 'latitude': -15.7833, 'longitude': -47.8667, color: "blue", shape: 'Circle', data: { shape: 'Rectangle', color: "blue", 'Name': 'Brazil', 'latitude': -15.7833, 'longitude': -47.8667 } },
+                    { 'Name': 'India', 'latitude': 21.0000, 'longitude': 78.0000, color: "green", shape: 'Circle', data: { shape: 'Rectangle', color: "green", 'Name': 'India', 'latitude': 21.0000, 'longitude': 78.0000 } },
+                    { 'Name': 'China', 'latitude': 35.0000, 'longitude': 103.0000, color: "yellow", shape: 'Circle', data: { shape: 'Rectangle', color: "yellow", 'Name': 'China', 'latitude': 35.0000, 'longitude': 103.0000 } },
+                    { 'Name': 'Indonesia', 'latitude': -6.1750, 'longitude': 106.8283, color: "black", shape: 'Circle', data: { shape: 'Rectangle', color: "black", 'Name': 'Indonesia', 'latitude': -6.1750, 'longitude': 106.8283 } }
+                ],
+                animationDuration: 2
+            }
+            ];
             map.scale = 1;
             map.refresh();
         });
@@ -1270,26 +1426,26 @@ describe('Zoom feature tesing for map control', () => {
             map.layers[0].markerClusterSettings = {
                 allowClustering: true,
                 shape: 'Image',
-                height:30,
-                width:30,
+                height: 30,
+                width: 30,
                 fill: 'blue',
-                opacity: 0.5, 
-                imageUrl :'./images/cluster_icon.svg'                            
+                opacity: 0.5,
+                imageUrl: './images/cluster_icon.svg'
             };
             map.layers[0].markerSettings = [
                 {
                     visible: true,
                     dataSource: [
-                        { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno'},
-                            { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel'},
-                            { latitude: 40.7424509, longitude: -74.0081468, name: 'New York'},
-                            { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro'},
-                            { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto'},
-                            { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris'},
-                            { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin'},
-                            { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai'},
-                            { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato'},
-                            { latitude: 51.5326602, longitude: -0.1262422, name: 'London'}
+                        { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno' },
+                        { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel' },
+                        { latitude: 40.7424509, longitude: -74.0081468, name: 'New York' },
+                        { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro' },
+                        { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto' },
+                        { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris' },
+                        { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin' },
+                        { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai' },
+                        { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato' },
+                        { latitude: 51.5326602, longitude: -0.1262422, name: 'London' }
                     ],
                     animationDuration: 0
                 },
@@ -1335,7 +1491,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: usMap,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -1457,6 +1613,33 @@ describe('Zoom feature tesing for map control', () => {
             map.layers[0].layerType = 'Bing';
             map.refresh();
         });
+        it('Checking with OSM map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomModule['zoomingRect'] = new Rect(0, 0, 100, 200);
+                map.zoomModule.performRectZooming();
+                map.zoomModule.isPanning = true;
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'pointerdown',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(eventObj as PointerEvent);
+                eventObj['target'] = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.zoomModule.performToolBarAction(eventObj as PointerEvent);
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.layers[0].layerType = 'OSM';
+            map.refresh();
+        });
         it('Checking panning', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
@@ -1507,7 +1690,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: World_Map,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -1649,9 +1832,9 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with Zoom using public methode', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById("container_tile_parent");
-                   expect(element.getAttribute("style")).toBe("position: absolute; left: 18px; top: 37px; height: 473px; width: 492px; overflow: hidden;");
+                expect(element.getAttribute("style")).toBe("position: absolute; left: 18px; top: 37px; height: 473px; width: 492px; overflow: hidden;");
             };
-            map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
+            map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });
     });
 
@@ -1661,7 +1844,7 @@ describe('Zoom feature tesing for map control', () => {
         let ele: HTMLDivElement;
         let prevent: Function = (): void => {
             //Prevent Function
-        };      
+        };
         beforeAll(() => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
@@ -1675,7 +1858,7 @@ describe('Zoom feature tesing for map control', () => {
                 zoomSettings: {
                     enable: true,
                     zoomFactor: 4
-                },                
+                },
                 layers: [{
                     shapeData: World_Map,
                     shapePropertyPath: 'continent',
@@ -1684,7 +1867,7 @@ describe('Zoom feature tesing for map control', () => {
                         autofill: true,
                         colorValuePath: 'color'
                     },
-                    dataSource: randomcountriesData                    
+                    dataSource: randomcountriesData
                 },
                 ]
             }, '#' + id);
@@ -1697,12 +1880,12 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.zoomFactor = 3;           
+            map.zoomSettings.zoomFactor = 3;
             map.refresh();
         });
         it('Checking zoom factor zooming', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                
+
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
                 let eventObj: Object = {
                     target: element,
@@ -1712,24 +1895,24 @@ describe('Zoom feature tesing for map control', () => {
                     pageY: element.getBoundingClientRect().top
                 };
                 map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
-             
-            };  
-            map.previousProjection  = 'Mercator' ;      
-            map.refresh();
-        }); 
-        it('Checking zoom factor with different projection type', () => {
-            map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.zoomFactor = 3;
-            map.projectionType = 'Miller';            
+            map.previousProjection = 'Mercator';
             map.refresh();
         });
         it('Checking zoom factor with different projection type', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
             };
-            map.zoomSettings.zoomFactor = 5;           
+            map.zoomSettings.zoomFactor = 3;
+            map.projectionType = 'Miller';
+            map.refresh();
+        });
+        it('Checking zoom factor with different projection type', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+
+            };
+            map.zoomSettings.zoomFactor = 5;
             map.refresh();
         });
     });
@@ -1762,7 +1945,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: usMap,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -1796,8 +1979,8 @@ describe('Zoom feature tesing for map control', () => {
                     stopImmediatePropagation: prevent,
                     pageX: element.getBoundingClientRect().left,
                     pageY: element.getBoundingClientRect().top
-                };  
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
             };
             map.layers[0].dataLabelSettings.smartLabelMode = "None";
             map.layers[0].dataLabelSettings.intersectionAction = "Hide"
@@ -1822,7 +2005,7 @@ describe('Zoom feature tesing for map control', () => {
                     pageX: element1.getBoundingClientRect().left,
                     pageY: element1.getBoundingClientRect().top
                 };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj1); 
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj1);
             };
             map.layers[0].dataLabelSettings.smartLabelMode = "Trim";
             map.refresh();
@@ -1837,7 +2020,7 @@ describe('Zoom feature tesing for map control', () => {
                     pageX: element.getBoundingClientRect().left,
                     pageY: element.getBoundingClientRect().top
                 };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
                 let element1: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
                 let eventObj1: Object = {
                     target: element,
@@ -1846,7 +2029,7 @@ describe('Zoom feature tesing for map control', () => {
                     pageX: element1.getBoundingClientRect().left,
                     pageY: element1.getBoundingClientRect().top
                 };
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj1); 
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj1);
             };
             map.layers[0].dataLabelSettings.smartLabelMode = "Hide";
             map.refresh();
@@ -1895,7 +2078,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: usMap,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                         tooltipSettings: {
                             visible: false
                         },
@@ -1928,8 +2111,8 @@ describe('Zoom feature tesing for map control', () => {
                     stopImmediatePropagation: prevent,
                     pageX: element.getBoundingClientRect().left,
                     pageY: element.getBoundingClientRect().top
-                };  
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
             };
             map.layers[0].dataLabelSettings.smartLabelMode = "Trim";
             map.layers[0].dataLabelSettings.intersectionAction = "Trim";
@@ -1944,8 +2127,8 @@ describe('Zoom feature tesing for map control', () => {
                     stopImmediatePropagation: prevent,
                     pageX: element.getBoundingClientRect().left,
                     pageY: element.getBoundingClientRect().top
-                };  
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
             };
             map.scale = 1;
             map.layers[0].dataLabelSettings.smartLabelMode = "Trim";
@@ -1960,8 +2143,8 @@ describe('Zoom feature tesing for map control', () => {
                     stopImmediatePropagation: prevent,
                     pageX: element.getBoundingClientRect().left,
                     pageY: element.getBoundingClientRect().top
-                };  
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
             };
             map.scale = 1;
             map.layers[0].dataLabelSettings.smartLabelMode = "Hide";
@@ -1976,13 +2159,13 @@ describe('Zoom feature tesing for map control', () => {
                     stopImmediatePropagation: prevent,
                     pageX: element.getBoundingClientRect().left,
                     pageY: element.getBoundingClientRect().top
-                };  
-                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
             };
             map.scale = 1;
             map.enablePersistence = true;
             map.refresh();
-        });      
+        });
     });
     describe('Checking public methode zooming', () => {
         let id: string = 'container';
@@ -2001,7 +2184,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        key: 'AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L',
                     }
                 ]
             }, '#' + id);
@@ -2017,11 +2200,11 @@ describe('Zoom feature tesing for map control', () => {
         });
         it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-               let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -243.7363423664989 -129.16655152836194 ) ");
+                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+                expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -243.7363423664989 -129.16655152836194 ) ");
             };
-            map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
-        }); 
+            map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
+        });
     });
     it('memory leak', () => {
         profile.sample();

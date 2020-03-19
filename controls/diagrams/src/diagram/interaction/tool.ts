@@ -444,12 +444,19 @@ export class ConnectTool extends ToolBase {
         if (isBlazor()) {
             let trigger: DiagramEvent = DiagramEvent.connectionChange;
             let temparg: IBlazorConnectionChangeEventArgs;
+            this.tempArgs.state = 'Changed';
+            let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
+            let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+            let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+            this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
+                { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
+                { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
             temparg = await this.commandHandler.triggerEvent(trigger, this.tempArgs) as IBlazorConnectionChangeEventArgs;
             if (temparg) {
                 this.commandHandler.updateConnectorValue(temparg);
             }
         }
-        if (this.isConnected && (args.source as SelectorModel).connectors) {
+        if (!isBlazor() && this.isConnected && (args.source as SelectorModel).connectors) {
             let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
             let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
             let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
@@ -1250,7 +1257,7 @@ export class ResizeTool extends ToolBase {
         let object: NodeModel | SelectorModel;
         this.commandHandler.updateSelector();
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
-        if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
+        if (!isBlazor() && (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
             let deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
             this.blocked = this.scaleObjects(
                 deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
@@ -1504,7 +1511,9 @@ export class ConnectorDrawingTool extends ConnectTool {
             args.source = this.drawingObject;
             if ((args.target || (args.actualObject && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
+                this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);
+                this.commandHandler.diagram.allowServerDataBinding = true;
             }
             this.endPoint = 'ConnectorTargetEnd';
         }

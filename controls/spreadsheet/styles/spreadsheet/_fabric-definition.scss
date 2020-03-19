@@ -13,6 +13,7 @@ $cell-background: #fff !default;
 $cell-color: #000 !default;
 $cell-border-color: #e0e0e0 !default;
 $hdr-cell-border-color: $cell-border-color !default;
+$dlg-error-color: #dd2c2c !default;
 //enddefault
 //selection
 $selection-bg-color: rgba($theme-primary, .12) !default;
@@ -84,3 +85,23 @@ $hyper-text-border: #979797  !default;
 $filter-icon-margin-bottom: 10px !default;
 $filter-icon-bigger-margin-bottom: 18px !default;
 //End Filtering
+//Find And Replace
+$find-popup-border-top-color: #fafafa !default;
+$find-popup-border-color: #e0e0e0 !default;
+$find-tool-dlg-width: 351px !default;
+$find-tool-dlg-height: 44px !default;
+$find-dlg-width: 521px !default;
+$find-dlg-height: 521px !default;
+$find-goto-dlg-height: 234px !default;
+$find-alert-dlg-height: 195px !default;
+$bigger-find-tool-dlg-width: 419px !default;
+$bigger-find-tool-dlg-height: 55px !default;
+$bigger-goto-alert-dlg-height: 190px !default;
+$bigger-find-alert-dlg-height: 210px !default;
+$bigger-find-goto-dlg-height: 258px !default;
+//End Find And Replace
+//Protect Sheet
+$protect-dlg-height: 406px !default;
+$protect-dlg-width: 300px !default;
+//End Protect Sheet
+

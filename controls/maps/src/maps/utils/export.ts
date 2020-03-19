@@ -67,6 +67,7 @@ export class ExportUtils {
      * @param fileName 
      */
     public export(type: ExportType, fileName: string, exportDownload?: boolean, orientation?: PdfPageOrientation): Promise<string> {
+        // tslint:disable-next-line:max-func-body-length
         let promise: Promise<string> = new Promise((resolve: Function, reject: Function) => {
             let canvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
@@ -77,9 +78,17 @@ export class ExportUtils {
             });
             let isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            let svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                this.control.svgObject.outerHTML +
-                '</svg>';
+            let toolbarEle: HTMLElement = document.getElementById(this.control.element.id + '_ToolBar');
+            let svgParent: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+            let svgData: string;
+            if (!this.control.isTileMap) {
+                svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    this.control.svgObject.outerHTML + '</svg>';
+            } else {
+                let tileSvg: Element = document.getElementById(this.control.element.id + '_Tile_SVG');
+                svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                    this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
+            }
             let url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
@@ -97,38 +106,115 @@ export class ExportUtils {
                     resolve(null);
                 }
             } else {
+                let pdfDocument: PdfDocument = new PdfDocument();
                 let image: HTMLImageElement = new Image();
                 let ctx: CanvasRenderingContext2D = canvasElement.getContext('2d');
-                image.onload = (() => {
-                    ctx.drawImage(image, 0, 0);
-                    window.URL.revokeObjectURL(url);
-                    if (type === 'PDF') {
-                        let document: PdfDocument = new PdfDocument();
-                        let imageString: string = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                        document.pageSettings.orientation = orientation;
-                        imageString = imageString.slice(imageString.indexOf(',') + 1);
-                        document.pages.add().graphics.drawImage(
-                            new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height
-                        );
-                        if (exportDownload) {
-                            document.save(fileName + '.pdf');
-                            document.destroy();
-                        } else {
-                            resolve(null);
-                        }
-                    } else {
-                        if (exportDownload) {
-                            this.triggerDownload(
-                                fileName, type,
-                                canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'),
-                                isDownload
+                if (!this.control.isTileMap) {
+                    image.onload = (() => {
+                        ctx.drawImage(image, 0, 0);
+                        window.URL.revokeObjectURL(url);
+                        if (type === 'PDF') {
+                            let imageString: string = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                            pdfDocument.pageSettings.orientation = orientation;
+                            imageString = imageString.slice(imageString.indexOf(',') + 1);
+                            pdfDocument.pages.add().graphics.drawImage(
+                                new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height
                             );
+                            if (exportDownload) {
+                                pdfDocument.save(fileName + '.pdf');
+                                pdfDocument.destroy();
+                            } else {
+                                resolve(null);
+                            }
                         } else {
-                            resolve(canvasElement.toDataURL('image/png'));
+                            if (exportDownload) {
+                                this.triggerDownload(
+                                    fileName, type, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'),
+                                    isDownload
+                                );
+                            } else {
+                                resolve(canvasElement.toDataURL('image/png'));
+                            }
+                        }
+                    });
+                    image.src = url;
+                } else {
+                    let xHttp: XMLHttpRequest = new XMLHttpRequest();
+                    let tileLength: number = this.control.mapLayerPanel.tiles.length;
+                    for (let i: number = 0; i <= tileLength + 1; i++) {
+                        let tile: HTMLElement = document.getElementById('tile_' + (i - 1));
+                        let tileImg: HTMLImageElement = new Image();
+                        tileImg.crossOrigin = 'Anonymous';
+                        ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
+                        ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
+                        ctx.font = this.control.titleSettings.textStyle.size + ' Arial';
+                        ctx.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
+                        ctx.fillText(
+                            this.control.titleSettings.text,
+                            parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')),
+                            parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                        tileImg.onload = (() => {
+                            if (i === 0 || i === tileLength + 1) {
+                                if (i === 0) {
+                                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                                    ctx.rect(
+                                        0, parseFloat(svgParent.style.top),
+                                        parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                    ctx.clip();
+                                } else {
+                                    ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                                }
+                            } else {
+                                ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                    (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
+                            }
+                            ctx.drawImage(tileImg, 0, 0);
+                            if (i === tileLength + 1) {
+                                if (type === 'PDF') {
+                                    localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
+                                    let x: string = localStorage.getItem('saved-image-example');
+                                    pdfDocument.pageSettings.orientation = orientation;
+                                    x = x.slice(x.indexOf(',') + 1);
+                                    pdfDocument.pages.add().graphics.drawImage(
+                                        new PdfBitmap(x), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height
+                                    );
+                                    if (exportDownload) {
+                                        pdfDocument.save(fileName + '.pdf');
+                                        pdfDocument.destroy();
+                                    } else {
+                                        resolve(null);
+                                    }
+                                } else {
+                                    localStorage.setItem('local-canvasImage', canvasElement.toDataURL('image/png'));
+                                    let localBase64: string = localStorage.getItem('local-canvasImage');
+                                    if (exportDownload) {
+                                        this.triggerDownload(fileName, type, localBase64, isDownload);
+                                        localStorage.removeItem('local-canvasImage');
+                                    } else {
+                                        resolve(localBase64);
+                                    }
+                                }
+                            }
+                        });
+                        if (i === 0 || i === tileLength + 1) {
+                            if (i === 0) {
+                                tileImg.src = url;
+                            } else {
+                                setTimeout(() => {
+                                    tileImg.src = window.URL.createObjectURL(new Blob(
+                                        [(new XMLSerializer()).serializeToString(document.getElementById(
+                                            this.control.element.id + '_Tile_SVG'))],
+                                        { type: 'image/svg+xml' }));
+                                // tslint:disable-next-line:align
+                                }, 300);
+                            }
+                        } else {
+                            xHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                            xHttp.send();
+                            tileImg.src = tile.children[0].getAttribute('src');
                         }
                     }
-                });
-                image.src = url;
+                }
             }
         });
         return promise;

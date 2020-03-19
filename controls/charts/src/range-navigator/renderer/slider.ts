@@ -230,7 +230,7 @@ export class RangeSlider {
     }
     /**
      * Trigger changed event
-     * @private
+     * @param private 
      */
     public triggerEvent(range: VisibleRangeModel): void {
         let argsData: IChangedEventArgs;
@@ -409,9 +409,12 @@ export class RangeSlider {
             trigger = false;
         } else if (this.currentSlider === 'firstLevelLabels' || this.currentSlider === 'secondLevelLabels') {
             let secondLabel: VisibleLabels = control.rangeAxis[this.currentSlider][this.labelIndex + 1];
+            /**
+             * One millisecond is subtracted from the label to indicate the previous label value
+             */
             this.performAnimation(
                 control.rangeAxis[this.currentSlider][this.labelIndex].value,
-                (secondLabel ? secondLabel.value : range.max), control
+                (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), control
             );
             trigger = false;
         }

@@ -8,8 +8,8 @@ import { removeElement, RectOption, PolygonOption, createTooltip, minMax, getEle
 import { textElement,  } from '../../common/utils/helper';
 import { PathOption, Rect, measureText, TextOption, Size, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Zoom } from './zooming';
-import { zoomComplete, onZooming } from '../../common/model/constants';
-import { IZoomCompleteEventArgs, IZoomingEventArgs, IAxisData } from '../../chart/model/chart-interface';
+import { zoomComplete } from '../../common/model/constants';
+import { IZoomCompleteEventArgs } from '../../chart/model/chart-interface';
 
 /**
  * Zooming Toolkit created here
@@ -258,9 +258,8 @@ export class Toolkit {
         let argsData: IZoomCompleteEventArgs;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
-        let zoomingEventArgs: IZoomingEventArgs;
-        let zoomedAxisCollection: IAxisData[] = [];
-        for (let axis of (chart.axisCollections as Axis[])) {
+        for (let i: number = 0; i < chart.axisCollections.length; i++) {
+            let axis: Axis = chart.axisCollections[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -275,26 +274,7 @@ export class Toolkit {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-            zoomedAxisCollection.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-
-        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                this.setDefferedZoom(chart)
-             });
-             return false;
-        } else {
-            return(this.setDefferedZoom(chart))
-        }
-       
-        
-    }
-
-    private setDefferedZoom(chart: Chart): boolean  {
         chart.disableTrackTooltip = false;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
@@ -358,7 +338,8 @@ export class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData: IZoomCompleteEventArgs;
-            for (let axis of (axes as Axis[])) {
+            for (let i = 0; i < axes.length; i++) {
+                let axis: Axis = axes[i] as Axis;
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition

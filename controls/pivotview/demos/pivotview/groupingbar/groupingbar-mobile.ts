@@ -78,3 +78,4 @@ function onChange(args: any) {
         pivotGridObj.groupingBarSettings.showValueTypeIcon = args.checked
     }
 }
+/* tslint:enable */

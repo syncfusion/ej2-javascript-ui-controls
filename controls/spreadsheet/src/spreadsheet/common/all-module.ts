@@ -1,8 +1,10 @@
 import { Spreadsheet } from '../index';
-import { Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, CellFormat } from '../actions/index';
-import { CollaborativeEditing, UndoRedo, Resize, SpreadsheetHyperlink } from '../actions/index';
+import { Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, CellFormat, WrapText, ProtectSheet } from '../actions/index';
+import { CollaborativeEditing, UndoRedo, Resize, SpreadsheetHyperlink, Insert, Delete, FindAndReplace } from '../actions/index';
 import { Ribbon, FormulaBar, SheetTabs, Open, Save, NumberFormat, Formula, Sort, Filter } from '../integrations/index';
 import { DataBind } from '../../workbook/integrations/index';
+import { DataValidation } from '../actions/data-validation';
+
 
 /**
  * Spreadsheet all module.
@@ -16,7 +18,8 @@ export class AllModule {
     constructor() {
         Spreadsheet.Inject(
             Ribbon, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open,
-            Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink);
+            Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText,
+            Insert, Delete, DataValidation, ProtectSheet, FindAndReplace);
     }
 
     /**

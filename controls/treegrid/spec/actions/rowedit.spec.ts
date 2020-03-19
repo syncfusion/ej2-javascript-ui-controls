@@ -2224,6 +2224,44 @@ describe('Edit module', () => {
     });
   });
 
+ describe('Ensuring random adding in newRowPosition Below', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below'},
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{field: 'taskID', headerText: 'Task ID', isPrimaryKey: true},
+                  {field: 'taskName', headerText: 'Task Name'},
+                  {field: 'startDate', headerText: 'Start Date'},
+                  {field: 'progress', headerText: 'Progress'}]
+        },
+        done
+      );
+    });
+    it('Add Row', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        let childRecords: string = 'childRecords';
+        expect(gridObj.getCurrentViewRecords()[0]['childRecords'].length === 4).toBe(true);
+        done()
+      };
+      gridObj.actionComplete = actionComplete;
+      gridObj.selectRow(0);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "1111";
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+   
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
   describe('Remote Data Editing with Child Mode', () => {
     
     let gridObj: TreeGrid;
@@ -2307,5 +2345,37 @@ describe('Edit module', () => {
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 }); 
+
+
+describe('Hirarchy misalignment when setrowdata is used to replace the value', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
+
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+            ]
+      },
+      done
+    );
+  });
+  it('hierarchical misalignment', (done: Function) => {
+    gridObj.setRowData(2,{taskID: 2, taskName :"aaaa"});
+    expect(gridObj.getRows()[1].getElementsByClassName('e-treecolumn-container')[0].querySelectorAll('span.e-icons').length).toBe(3);
+        done();
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+      });
 });
+
 

@@ -516,7 +516,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Anchor element click testing", (done: Function) => {
-            QTBarModule.linkQTBar.showPopup(10, 244, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(10, 244, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -528,7 +528,7 @@ describe("Quick Toolbar - Actions Module", () => {
 
         it("Anchor element 'Right' align with click testing", (done: Function) => {
             linkEle.style.cssFloat = 'right';
-            QTBarModule.linkQTBar.showPopup(10, 131, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(10, 131, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -552,7 +552,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
-            QTBarModule.textQTBar.showPopup(10, 244, trg.children[3]);
+            QTBarModule.textQTBar.showPopup(10, 244, trg.children[1]);
             setTimeout(() => {
                 let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(pop.offsetLeft >= 30).toBe(true);
@@ -587,7 +587,7 @@ describe("Quick Toolbar - Actions Module", () => {
             let iframe: HTMLIFrameElement = <HTMLIFrameElement>document.querySelector("iframe.e-rte-content");
             trg = <HTMLElement>iframe.contentDocument.body;
             imgEle = <HTMLElement>trg.children[0];
-            linkEle = <HTMLElement>trg.children[2];
+            linkEle = <HTMLElement>trg.children[0].children[2];
             pageY = window.scrollY + rteEle.getBoundingClientRect().top;
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", true, true);
@@ -693,7 +693,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Anchor element click testing", (done: Function) => {
-            QTBarModule.linkQTBar.showPopup(10, pageY + 47, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(10, pageY + 47, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -706,7 +706,7 @@ describe("Quick Toolbar - Actions Module", () => {
         it("Anchor element 'Right' align with click testing", (done: Function) => {
             linkEle.style.cssFloat = 'right';
             pageYOffset({ clientY: 10 } as MouseEvent, rteObj.element, true);
-            QTBarModule.linkQTBar.showPopup(210, pageY + 47, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(210, pageY + 47, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -730,7 +730,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
-            QTBarModule.textQTBar.showPopup(10, pageY + 244, trg.children[3]);
+            QTBarModule.textQTBar.showPopup(10, pageY + 244, trg.children[1]);
             setTimeout(() => {
                 let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(pop.offsetLeft >= 30).toBe(true);
@@ -864,7 +864,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Anchor element click testing", (done: Function) => {
-            QTBarModule.linkQTBar.showPopup(10, 244, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(10, 244, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -876,7 +876,7 @@ describe("Quick Toolbar - Actions Module", () => {
 
         it("Anchor element 'Right' align with click testing", (done: Function) => {
             linkEle.style.cssFloat = 'right';
-            QTBarModule.linkQTBar.showPopup(10, 131, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(10, 131, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -899,7 +899,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
-            QTBarModule.textQTBar.showPopup(10, 244, trg.children[3]);
+            QTBarModule.textQTBar.showPopup(10, 244, trg.children[1]);
             setTimeout(() => {
                 let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(pop.offsetLeft >= 30).toBe(true);
@@ -936,7 +936,7 @@ describe("Quick Toolbar - Actions Module", () => {
             let iframe: HTMLIFrameElement = <HTMLIFrameElement>document.querySelector("iframe.e-rte-content");
             trg = <HTMLElement>iframe.contentDocument.body;
             imgEle = <HTMLElement>trg.children[0].children[0];
-            linkEle = <HTMLElement>trg.children[2];
+            linkEle = <HTMLElement>trg.children[0].children[2];
             pageY = window.scrollY + rteEle.getBoundingClientRect().top;
             clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", true, true);
@@ -1047,7 +1047,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Anchor element click testing", (done: Function) => {
-            QTBarModule.linkQTBar.showPopup(10, pageY + 47, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(10, pageY + 47, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -1059,7 +1059,7 @@ describe("Quick Toolbar - Actions Module", () => {
 
         it("Anchor element 'Right' align with click testing", (done: Function) => {
             linkEle.style.cssFloat = 'right';
-            QTBarModule.linkQTBar.showPopup(210, pageY + 47, trg.children[2]);
+            QTBarModule.linkQTBar.showPopup(210, pageY + 47, trg.children[0].children[2]);
             setTimeout(() => {
                 let anchorPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(anchorPop.offsetLeft >= 10).toBe(true);
@@ -1083,7 +1083,7 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
-            QTBarModule.textQTBar.showPopup(10, pageY + 244, trg.children[3]);
+            QTBarModule.textQTBar.showPopup(10, pageY + 244, trg.children[1]);
             setTimeout(() => {
                 let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(pop.offsetLeft >= 30).toBe(true);
@@ -1830,54 +1830,4 @@ describe("Quick Toolbar - Actions Module", () => {
             expect(pop).toBe(undefined);
         });
     });
-    // fdescribe("Quick toolbar - showPopup method with popup open testing", () => {
-    //     let rteEle: HTMLElement;
-    //     let rteObj: any;
-    //     let trg: HTMLElement;
-    //     let QTBarModule: IRenderer;
-    //     let style: HTMLStyleElement = document.createElement('style');
-
-    //     beforeAll((done: Function) => {
-    //         let css: string = ".e-richtexteditor { margin-top: 100px; height: 500px; position: relative; }" +
-    //         ".e-toolbar { display: block; white-space: nowrap; position: relative; }" +
-    //         ".e-rte-quick-popup .e-toolbar-items { display: inline-block; }" +
-    //         ".e-rte-quick-popup .e-toolbar-item { display: inline-block; }" +
-    //         ".e-rte-quick-popup .e-toolbar-item { position: absolute; display: block; }" +
-    //         ".e-toolbar-item { display: inline-block; } .e-rte-quick-popup { position: absolute; }";
-    //         style.type = "text/css";
-    //         style.id = "toolbar-style";
-    //         style.appendChild(document.createTextNode(css));
-    //         document.head.appendChild(style);
-    //         rteObj = renderRTE({
-    //             toolbarSettings: {
-    //                 items: ['SourceCode', 'Undo', 'Redo']
-    //             },
-    //             height: '100px',
-    //             value: '<p><img id="imageTarget" alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px; height: 100px;"></p>'
-    //         });
-    //         rteEle = rteObj.element;
-    //         trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-    //         let clickEvent: MouseEvent = document.createEvent("MouseEvents");
-    //         clickEvent.initEvent("mousedown", true, true);
-    //         trg.dispatchEvent(clickEvent);
-    //         QTBarModule = getQTBarModule(rteObj);
-    //         done();
-    //     });
-
-    //     afterAll(() => {
-    //         document.head.removeChild(style);
-    //         destroy(rteObj);
-    //     });
-
-    //     it("Popup open testing", (done: Function) => {
-    //         let imgTrg: Element = document.querySelector('#imageTarget');
-    //         QTBarModule.imageQTBar.showPopup(200, 1, imgTrg);
-    //         setTimeout(() => {
-    //             let linkPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-    //             expect(linkPop.classList.contains('e-popup-close')).toBe(false);
-    //             expect(linkPop.classList.contains('e-popup-open')).toBe(true);
-    //             done();
-    //         }, 400);
-    //     });
-    // });
 });

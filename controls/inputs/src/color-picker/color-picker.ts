@@ -1529,9 +1529,13 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.tileRipple = null;
         this.ctrlBtnRipple();
         this.ctrlBtnRipple = null;
-        detach(this.element.nextElementSibling);
-        wrapper.parentElement.insertBefore(this.element, wrapper);
-        detach(wrapper);
+        if (this.element.nextElementSibling) {
+            detach(this.element.nextElementSibling);
+        }
+        if (wrapper) {
+            wrapper.parentElement.insertBefore(this.element, wrapper);
+            detach(wrapper);
+        }
         this.container = null;
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);

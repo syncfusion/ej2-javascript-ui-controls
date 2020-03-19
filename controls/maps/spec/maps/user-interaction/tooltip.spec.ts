@@ -421,6 +421,263 @@ describe('Map layer testing', () => {
             tooltip.layers[0].tooltipSettings.valuePath = 'name';
             tooltip.refresh();
         });
+        it('enabel Property tooltip format checking for layer', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.textContent).toBe('€9.00');
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.format = null;
+            tooltip.layers[0].tooltipSettings.format = ' ${data.Electors}';
+            tooltip.layers[0].shapeDataPath= 'data.State';
+            tooltip.layers[0].dataSource= electiondata;
+            tooltip.layers[0].shapePropertyPath ='name';
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip valuePath checking for layer', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.textContent).toBe('€9.00');
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.format = null;
+            tooltip.layers[0].tooltipSettings.valuePath = 'data.State';
+            tooltip.layers[0].shapeDataPath= 'data.State';
+            tooltip.layers[0].dataSource= electiondata;
+            tooltip.layers[0].shapePropertyPath ='name';
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip valuePath with wrong value checking for layer', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.textContent).toBe('€9.00');
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.format = null;
+            tooltip.layers[0].tooltipSettings.valuePath = 'State';
+            tooltip.layers[0].shapeDataPath= 'data.State';
+            tooltip.layers[0].dataSource= electiondata;
+            tooltip.layers[0].shapePropertyPath ='name';
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip valuePath with wrong value 2 checking for layer', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.textContent).toBe('€9.00');
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.format = null;
+            tooltip.layers[0].tooltipSettings.valuePath = 'data.Stat';
+            tooltip.layers[0].shapeDataPath= 'data.State';
+            tooltip.layers[0].dataSource= electiondata;
+            tooltip.layers[0].shapePropertyPath ='name';
+            tooltip.refresh();
+        });        
+        it('enabel Property tooltip checking format for bubble', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                let event: PointerEvent = <PointerEvent>trigger.onPointerMove(spec, 140, 230, 1, 'touch');
+                (tooltip.mapsTooltipModule['renderTooltip'])(event);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+               // expect(tooltipElement.textContent).toBe('Alabama  Vote Counts €9.00  Bubble');
+                done();
+            };
+            tooltip.format = null;
+            tooltip.layers[0].bubbleSettings[0].dataSource= electiondata;
+            tooltip.layers[0].bubbleSettings[0].valuePath= 'data.Electors';
+            tooltip.layers[0].bubbleSettings[0].colorValuePath= 'data.color';
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.visible = true;
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.valuePath ='data.color';
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = '${data.State} <br> Vote Counts ${data.Electors} <br> Bubble';
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip checking format for marker', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement(markerId + 1);
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            tooltip.mapsTooltipModule['isTouch'] = false;
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+            tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+            expect(tooltipElement.textContent).toBe('Colorado  Lat 39.5501  Marker');
+            done();
+            };
+            tooltip.format = null;
+            tooltip.layers[0].markerSettings[0].dataSource= [
+                { Name: 'California', latitude: 36.7783, longitude: -119.4179, data:{Name: 'California', latitude: 36.7783, longitude: -119.4179} },
+                { Name: 'Colorado', latitude: 39.5501, longitude: -105.7821, data:{Name: 'Colorado', latitude: 39.5501, longitude: -105.7821} },
+                { Name: 'New York', latitude: 40.7128, longitude: -74.0060, data:{Name: 'New York', latitude: 40.7128, longitude: -74.0060} },
+            ];
+            tooltip.layers[0].markerSettings[0].latitudeValuePath = 'data.latitude';
+            tooltip.layers[0].markerSettings[0].longitudeValuePath = 'data.longitude';
+            tooltip.layers[0].markerSettings[0].height= 30;
+            tooltip.layers[0].markerSettings[0].width = 30;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.visible = true;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.valuePath ='data.Name';
+            tooltip.layers[0].markerSettings[0].tooltipSettings.format = '${data.Name} <br> Lat ${data.latitude} <br> Marker';
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip checking template for marker', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(markerId + 1);
+                trigger.mousemoveEvent(spec, 0, 0, 191, 231);
+                trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+                tooltipElement = document.getElementById('mapst_mapsTooltipparent_template');
+                expect(tooltipElement.textContent).toBe('marker_Colorado_39.5501');
+                done();
+            };
+            let layer: LayerSettingsModel = tooltip.layers[0];
+            layer.bubbleSettings[0].dataSource= electiondata;
+            layer.bubbleSettings[0].valuePath= 'data.Electors';
+            layer.bubbleSettings[0].colorValuePath= 'data.color';
+            layer.bubbleSettings[0].tooltipSettings.visible = true;
+            layer.bubbleSettings[0].tooltipSettings.valuePath ='data.color';
+            layer.markerSettings[0].latitudeValuePath = 'data.latitude';
+            layer.markerSettings[0].longitudeValuePath = 'data.longitude';
+            layer.markerSettings[0].height= 30;
+            layer.markerSettings[0].width = 30;
+            layer.markerSettings[0].tooltipSettings.visible = true;
+            layer.markerSettings[0].tooltipSettings.valuePath ='data.Name';
+            layer.tooltipSettings.template = '<div class="black">shape_<div>${data.State}_</div><div>${data.Electors}</div></div>';
+            layer.bubbleSettings[0].tooltipSettings.template = '<div class="black">bubble_<div>${data.State}_</div><div>${data.Electors}</div></div>';
+            layer.markerSettings[0].tooltipSettings.template = '<div class="black">marker_<div>${data.Name}_</div><div>${data.latitude}</div></div>';
+            layer.dataSource = electiondata;
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip visible false checking for bubble', () => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 140, 230);
+                tooltipElements = document.getElementsByClassName('mapst_Secondary_Element')
+                expect(tooltipElements.length).toBe(0);
+            };
+            let layer: LayerSettingsModel = tooltip.layers[0];
+            layer.bubbleSettings[0].dataSource= electiondata;
+            layer.bubbleSettings[0].valuePath= 'data.Electors';
+            layer.bubbleSettings[0].colorValuePath= 'data.color';
+            layer.bubbleSettings[0].tooltipSettings.valuePath ='data.color';
+            layer.bubbleSettings[0].tooltipSettings.visible = false;
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip checking for bubble valuePath', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                expect(tooltipElement.textContent).toBe('Alabama');
+                done();
+            };
+            let layer: LayerSettingsModel = tooltip.layers[0];
+            tooltip.format = null;
+            layer.bubbleSettings[0].tooltipSettings.template = null;
+            layer.bubbleSettings[0].tooltipSettings.format = null;
+            layer.bubbleSettings[0].dataSource = electiondata;
+            layer.bubbleSettings[0].tooltipSettings.visible = true,
+            layer.bubbleSettings[0].tooltipSettings.valuePath = 'data.State';
+            tooltip.refresh();
+        });
+         it('enabel Property tooltip checking for layer valuePath', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(bubbleId + 0);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                expect(tooltipElement.textContent).toBe('Alabama');
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltip.layers[0].dataSource = electiondata;
+            tooltip.layers[0].shapeDataPath = 'data.State'
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.format = null;
+            tooltip.layers[0].tooltipSettings.visible = true;
+            tooltip.layers[0].tooltipSettings.valuePath = 'data.State';
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip checking for Marker valuePath', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(markerId + 1);
+                trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+                tooltip.mapsTooltipModule['isTouch'] = false;
+                trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+                trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+                trigger.mousemoveEvent(spec, 0, 0, 190, 230);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                expect(tooltipElement.textContent).toBe('Colorado');
+                done();
+            };
+            tooltip.layers[0].markerSettings[0].latitudeValuePath ='data.latitude';
+            tooltip.layers[0].markerSettings[0].longitudeValuePath = 'data.longitude';
+            tooltip.layers[0].markerSettings[0].tooltipSettings.template = null;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.format = null;
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.visible = false;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.visible = true;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.valuePath = 'data.Name';
+            tooltip.layers[0].markerSettings[0].dataSource = [
+                { Name: 'California', latitude: 36.7783, longitude: -119.4179, data:{Name: 'California', latitude: 36.7783, longitude: -119.4179} },
+                { Name: 'Colorado', latitude: 39.5501, longitude: -105.7821, data:{Name: 'Colorado', latitude: 39.5501, longitude: -105.7821} },
+                { Name: 'New York', latitude: 40.7128, longitude: -74.0060, data:{Name: 'New York', latitude: 40.7128, longitude: -74.0060} },
+            ]
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip checking for Marker bubble valuePath', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltip.mapsTooltipModule['isTouch'] = false;
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                //expect(tooltipElement.childElementCount > 1).toBe(true);
+                done();
+            };
+            tooltip.layers[0].markerSettings[0].latitudeValuePath ='data.latitude';
+            tooltip.layers[0].markerSettings[0].longitudeValuePath = 'data.longitude';
+            tooltip.layers[0].markerSettings[0].tooltipSettings.template = null;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.format = null;
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.visible = false;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.visible = false;
+            tooltip.layers[0].dataSource = electiondata;
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.visible = true;
+            tooltip.refresh();
+        });
+        it('enabel Property tooltip checking for shape Texas valuePath', (done: Function) => {
+            tooltip.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltip.mapsTooltipModule['isTouch'] = false;
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.childElementCount > 1).toBe(true);
+                done();
+            };
+            tooltip.layers[0].markerSettings[0].tooltipSettings.template = null;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.format = null;
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.visible = false;
+            tooltip.layers[0].markerSettings[0].tooltipSettings.visible = false;
+            tooltip.layers[0].dataSource = [{ name: "Texas", data:{name: "Texas"} }, ];
+            tooltip.layers[0].shapePropertyPath = 'name';
+            tooltip.layers[0].shapeDataPath = 'data.name';
+            tooltip.layers[0].tooltipSettings.template = null;
+            tooltip.layers[0].tooltipSettings.visible = true;
+            tooltip.layers[0].tooltipSettings.valuePath = 'data.name';
+            tooltip.refresh();
+        });
     });
     describe('tooltip testing', () => {
         let id: string = 'mapst';

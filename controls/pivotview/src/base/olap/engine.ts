@@ -181,9 +181,9 @@ export class OlapEngine {
         this.enableValueSorting = false;
         this.sortObject = {};
         this.globalize = new Internationalization();
-        /* tslint:disable */
+        /* tslint:disable:no-any */
         this.locale = (this.globalize as any).getCulture();
-        /* tslint:enable */
+        /* tslint:enable:no-any */
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
         if (dataSourceSettings.url) {
@@ -477,7 +477,11 @@ export class OlapEngine {
                         axis: 'row',
                         actualText: this.getUniqueName(members[measurePos].querySelector('UName').textContent),
                         colIndex: 0,
-                        formattedText: members[measurePos].querySelector('Caption').textContent,
+                        formattedText: (typeColl[measurePos] === '3' &&
+                            this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)] &&
+                            this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption) ?
+                            this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption :
+                            members[measurePos].querySelector('Caption').textContent,
                         hasChild: false,
                         level: - 1,
                         rowIndex: position,
@@ -505,16 +509,18 @@ export class OlapEngine {
                         if (member.querySelector('UName').textContent !== prevUNArray[memPos] && typeColl[memPos] !== '2'
                             && ((Object.keys(prevParent).length > 0 ? prevParent.isDrilled : withoutAllDrilled) ?
                                 (typeColl[memPos] === '3' && (allType[memPos - 1] && allType[memPos + 1] !== 0)) : true)) {
-                            /* tslint:disable-next-line:max-line-length */
                             let lvl: number = Number(member.querySelector('LNum').textContent) -
                                 ((allType[memPos] && typeColl[memPos] !== '3') ? 1 : minLevel[memPos]);
                             /* tslint:disable-next-line:no-string-literal */
                             let isNamedSet: boolean = this.namedSetsPosition['row'][memPos] ? true : false;
+                            let uniqueName: string = this.getUniqueName(member.querySelector('UName').textContent);
                             (pivotValues[position] as IAxisSet[]) = [{
                                 axis: 'row',
-                                actualText: this.getUniqueName(member.querySelector('UName').textContent),
+                                actualText: uniqueName,
                                 colIndex: 0,
-                                formattedText: member.querySelector('Caption').textContent,
+                                formattedText: (typeColl[memPos] === '3' && this.dataFields[uniqueName] &&
+                                    this.dataFields[uniqueName].caption) ? this.dataFields[uniqueName].caption :
+                                    member.querySelector('Caption').textContent,
                                 hasChild: Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
                                 level: lvl,
                                 rowIndex: position,
@@ -600,7 +606,6 @@ export class OlapEngine {
             this.onDemandDrillEngine = pivotValues;
         }
     }
-    /* tslint:disable-next-line:max-line-length */
     private frameTupCollection(
         members: NodeListOf<Element>, maxLevel: number[], tupPos: number, tupInfo: ITupInfo[],
         showSubTotals: boolean, hideTotalsObject: { [key: string]: number }, axis: string): number[] {
@@ -621,13 +626,13 @@ export class OlapEngine {
             let member: Element = members[memPos];
             let memberlevel: number = Number(member.querySelector('LNum').textContent);
             let memberUName: string = member.querySelector('UName').textContent;
-            /* tslint:disable */
+            /* tslint:disable:no-any */
             if (Number(member.querySelector('MEMBER_TYPE').textContent) > 3) {
                 member.querySelector('MEMBER_TYPE').textContent = (memberUName as any).startsWith('[Measures]') ? '3' : '1';
             }
             let memberType: string = (memberUName as any).startsWith('[Measures]') ? '3' :
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
-            /* tslint:enable */
+            /* tslint:enable:no-any */
             let memberCaption: string = member.querySelector('Caption').textContent;
             if (this.fieldList[memberCaption] && this.fieldList[memberCaption].type === 'CalculatedField') {
                 memberCaption = this.fieldList[memberCaption].caption;
@@ -682,12 +687,12 @@ export class OlapEngine {
                             this.drilledSets[currUName].querySelector('PARENT_UNIQUE_NAME').textContent;
                     }
                 }
-                /* tslint:disable */
+                /* tslint:disable:no-any */
                 let uNames: string = (Object as any).values(this.headerGrouping[memPos].UName).join('~~');
                 uNameCollection = uNameCollection === '' ? uNames :
                     (uNameCollection + '::' + uNames);
                 let captions: string = (Object as any).values(this.headerGrouping[memPos].Caption).join('~~');
-                /* tslint:enable */
+                /* tslint:enable:no-any */
                 if (memPos !== measurePosition) {
                     captionCollection = captionCollection === '' ? captions :
                         (captionCollection + '::' + captions);
@@ -886,7 +891,6 @@ export class OlapEngine {
                         }
                         isSubTotIncluded = false;
                         position++;
-                        /* tslint:disable-next-line:max-line-length */
                     } else if ((lastSavedInfo as ITupInfo).drillStartPos === drillStartPos ?
                         ((lastSavedInfo as ITupInfo).startDrillUniquename !== startDrillUniquename ||
                             (lastSavedInfo as ITupInfo).allCount === allCount) : true) {
@@ -1169,19 +1173,20 @@ export class OlapEngine {
                     /* tslint:disable */
                     let levelName: string = (Object as any).values(colMembers).join('.');
                     let isNamedSet: boolean = this.namedSetsPosition['column'][memPos] ? true : false;
+                    let uName: string = this.getUniqueName(member.querySelector('UName').textContent);
                     (this.pivotValues[spanMemPos] as IAxisSet[])[position] = {
                         axis: 'column',
-                        actualText: this.getUniqueName(member.querySelector('UName').textContent),
+                        actualText: uName,
                         colIndex: position,
-                        formattedText: member.querySelector('Caption').textContent,
+                        formattedText: (memberType === '3' && this.dataFields[uName] &&
+                            this.dataFields[uName].caption) ? this.dataFields[uName].caption :
+                            member.querySelector('Caption').textContent,
                         hasChild: Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
-                        /* tslint:disable-next-line:max-line-length */
                         level: memDup > 1 ? -1 : (Number(member.querySelector('LNum').textContent) - ((allType[memPos] && memberType !== '3') ? 1 : 0)),
                         rowIndex: spanMemPos,
                         ordinal: tupPos,
                         memberType: Number(memberType),
                         isDrilled: isDrilled || this.tupColumnInfo[tupPos].drillInfo[memPos].isDrilled,
-                        /* tslint:disable-next-line:max-line-length */
                         parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
                         levelUniqueName: member.querySelector('LName').textContent,
                         hierarchy: member.getAttribute('Hierarchy'),
@@ -1235,7 +1240,7 @@ export class OlapEngine {
         }
     }
 
-    /* tslint:disable */
+    /* tslint:disable:max-func-body-length */
     private performRowSorting(): void {
         if (this.enableSort && this.tupRowInfo.length > 0) {
             let rowCount: number = this.pivotValues.length;
@@ -1247,7 +1252,8 @@ export class OlapEngine {
             for (let rPos: number = this.colDepth; rPos < rowCount; rPos++) {
                 let currentCell: IAxisSet = (this.pivotValues[rPos] as IAxisSet[])[0];
                 let currentTuple: ITupInfo = this.tupRowInfo[currentCell.ordinal];
-                let uniqueName: string = currentTuple ? currentTuple.uNameCollection : '';
+                let uniqueName: string = currentTuple ? (currentTuple.measurePosition === 0 && currentCell.memberType === 3 ?
+                    currentTuple.measureName : currentTuple.uNameCollection) : '';
                 if (uniqueName !== '') {
                     if (withoutAllLastPos > -1) {
                         uniqueName = this.frameUniqueName(uniqueName, currentCell, currentTuple);
@@ -1274,9 +1280,11 @@ export class OlapEngine {
                 }
             }
             let isMeasureAvail: boolean = Object.keys(measureObjects).length > 0 && this.tupRowInfo[0].measurePosition > 0;
+            /* tslint:disable:typedef */
             let levels: number[] = Object.keys(lvlGrouping).map((item: string) => {
                 return Number(item);
             }).sort((a, b) => (a > b) ? 1 : ((b > a) ? -1 : 0));
+            /* tslint:enable:typedef */
             let sortLvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
             for (let lPos: number = levels.length - 1; lPos >= 0; lPos--) {
                 let parentGrouping: { [key: string]: IAxisSet[] } = {};
@@ -1292,18 +1300,17 @@ export class OlapEngine {
                     }
                 }
                 let pKeys: string[] = Object.keys(parentGrouping);
-                /* tslint:disable:typedef */
                 for (let kPos: number = 0; kPos < pKeys.length; kPos++) {
                     parentGrouping[pKeys[kPos]] = this.sortRowHeaders(parentGrouping[pKeys[kPos]]);
                 }
-                /* tslint:enable:typedef */
                 if (sortLvlGrouping[levels[lPos + 1]]) {
                     for (let kPos: number = 0; kPos < pKeys.length; kPos++) {
                         let groupSets: IAxisSet[] = [];
                         let axisSets: IAxisSet[] = parentGrouping[pKeys[kPos]];
                         for (let aPos: number = 0; aPos < axisSets.length; aPos++) {
                             let tupInfo: ITupInfo = this.tupRowInfo[axisSets[aPos].ordinal];
-                            let uName: string = tupInfo.uNameCollection;
+                            let uName: string = (tupInfo.measurePosition === 0 && axisSets[aPos].memberType === 3) ?
+                                tupInfo.measureName : tupInfo.uNameCollection;
                             groupSets.push(axisSets[aPos]);
                             if (withoutAllLastPos > -1) {
                                 uName = this.frameUniqueName(uName, axisSets[aPos], tupInfo);
@@ -1335,7 +1342,6 @@ export class OlapEngine {
                             }
                             if (!isMembersIncluded &&
                                 sortLvlGrouping[levels[lPos + 1]][uName]) {
-                                /* tslint:disable-next-line:max-line-length */
                                 groupSets = groupSets.concat(sortLvlGrouping[levels[lPos + 1]][uName]);
                             }
                         }
@@ -1368,7 +1374,9 @@ export class OlapEngine {
             gSumFlag = false;
             gSumGrouping = this.sortRowHeaders(gSumGrouping);
             for (let rPos: number = this.colDepth; rPos < rowCount; rPos++) {
+                /* tslint:disable:no-string-literal */
                 let cell: IAxisSet[] = gSumFlag ? gSumGrouping : sortLvlGrouping[levels[0]]['parent'];
+                /* tslint:enable:no-string-literal */
                 let currPos: number = gSumFlag ? (newPos - totPos) : newPos;
                 if (cell[currPos]) {
                     this.pivotValues[rPos] = [cell[currPos]];
@@ -1383,7 +1391,7 @@ export class OlapEngine {
             }
         }
     }
-    /* tslint:disable:max-func-body-length */
+    /* tslint:disable */
     private performColumnSorting(): void {
         if (this.enableSort) {
             for (let i: number = 0; i < this.dataSourceSettings.columns.length; i++) {
@@ -1403,27 +1411,48 @@ export class OlapEngine {
                         if (!header[k].isNamedSet) {
                             if ((header[k] as IAxisSet).memberType != 2 && header[k].hierarchy
                                 != '[Measures]' && (header[k] as IAxisSet).level != -1) {
-                                isNullOrUndefined(arrange[(header[k] as IAxisSet).formattedText]) ?
-                                    arrange[(header[k] as IAxisSet).formattedText] = [] : arrange[k];
-                                arrange[(header[k] as IAxisSet).formattedText][(header[k] as IAxisSet).colIndex] = header[k];
-                            }
-                            else if (Object.keys(arrange).length > 0) {
+                                if (isNullOrUndefined(arrange[header[k].formattedText]) || isNullOrUndefined(this.pivotValues[j - 1])) {
+                                    arrange[header[k].formattedText] = arrange[header[k].formattedText] ? arrange[header[k].formattedText] : [];
+                                    arrange[header[k].formattedText][header[k].colIndex] = header[k];
+                                } else if (arrange[header[k].formattedText] && this.pivotValues[j - 1]) {
+                                    let prevRowCell: any = this.pivotValues[j - 1][header[k].colIndex];
+                                    let prevColIndex: number = (Object as any).values(arrange[header[k].formattedText])[0].colIndex;
+                                    let prevColRowCell: any = this.pivotValues[j - 1][prevColIndex];
+                                    if (prevRowCell.formattedText !== prevColRowCell.formattedText) {
+                                        let key: string[] = Object.keys(arrange);
+                                        key = this.sortColumnHeaders(key, this.sortObject[header[k - 1].levelUniqueName] ||
+                                            this.sortObject[header[k].hierarchy]);
+                                        isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
+                                        for (let keyPos: number = 0; keyPos < key.length; keyPos++) {
+                                            let length: number = Object.keys(arrange[key[keyPos]]).length;
+                                            for (let cellPos: number = 0; cellPos < length; cellPos++) {
+                                                value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
+                                                (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
+                                                    arrange[key[keyPos]][Number(Object.keys(arrange[key[keyPos]])[cellPos])];
+                                            }
+                                        }
+                                        arrange = {};
+                                        arrange[header[k].formattedText] = [];
+                                        arrange[header[k].formattedText][header[k].colIndex] = header[k];
+                                    } else {
+                                        arrange[header[k].formattedText][header[k].colIndex] = header[k];
+                                    }
+                                }
+                            } else if (Object.keys(arrange).length > 0) {
                                 (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
                                 key = Object.keys(arrange);
-                                /* tslint:disable:typedef */
                                 key = this.sortColumnHeaders(key, this.sortObject[header[k - 1].levelUniqueName] ||
                                     this.sortObject[header[k].hierarchy]);
                                 isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
                                 for (let l: number = 0; l < key.length; l++) {
                                     let length: number = Object.keys(arrange[key[l]]).length;
                                     for (let q: number = 0; q < length; q++) {
-                                        value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
+                                        value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
                                         (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
                                             arrange[key[l]][Number(Object.keys(arrange[key[l]])[q])];
                                     }
                                 }
-                            }
-                            else if (((header[k] as IAxisSet).level === -1 || (header[k] as IAxisSet).level === 0) &&
+                            } else if (((header[k] as IAxisSet).level === -1 || (header[k] as IAxisSet).level === 0) &&
                                 Object.keys(arrange).length >= 0 && header[k].hierarchy != '[Measures]') {
                                 (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
                             }
@@ -1434,26 +1463,24 @@ export class OlapEngine {
                                 let weight: string[] = Object.keys(arrange[(header[k] as IAxisSet).formattedText]);
                                 if (height > 1) {
                                     for (let hgt: number = 0; hgt < height; hgt++) {
-                                        value = (grandTotal[index] as Object[]).length == 0 ? 1 : 0;
+                                        value = (grandTotal[index] as Object[]).length === 0 ? 1 : 0;
                                         (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] =
                                             arrange[(header[k] as IAxisSet).formattedText][Number(weight[hgt])];
                                     }
-                                }
-                                else {
+                                } else {
                                     (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
                                 }
                             }
                             if (Object.keys(grandTotal[index]).length > 0) {
-                                value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
+                                value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
                                 let height1: number = (grandTotal[index] as Object[]).length;
                                 if (height1 > 2) {
                                     for (let hgt1: number = 1; hgt1 < height1; hgt1++) {
-                                        value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
+                                        value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
                                         (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
                                             (grandTotal[index] as Object[])[hgt1];
                                     }
-                                }
-                                else {
+                                } else {
                                     (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
                                         (grandTotal[index] as Object[])[1] || (grandTotal[index] as Object[])[0];
                                 }
@@ -1465,14 +1492,13 @@ export class OlapEngine {
                     if (Object.keys(arrange).length > 0) {
                         (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
                         keys = Object.keys(arrange);
-                        /* tslint:disable:typedef */
                         let order: string = this.sortObject[header[k - 1].levelUniqueName] || this.sortObject[header[k - 1].hierarchy];
                         key = this.sortColumnHeaders(keys, order);
                         isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
                         for (let len: number = 0; len < keys.length; len++) {
                             let leng: number = Object.keys(arrange[keys[len]]).length;
                             for (let q: number = 0; q < leng; q++) {
-                                value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
+                                value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
                                 (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
                                     arrange[key[len]][Number(Object.keys(arrange[keys[len]])[q])];
                             }
@@ -1518,10 +1544,10 @@ export class OlapEngine {
         if (headers.length > 0 && headers[0].memberType !== 3 && !headers[0].isNamedSet) {
             let order: string = (this.sortObject[headers[0].hierarchy] || this.sortObject[headers[0].levelUniqueName]);
             if (order === 'Ascending' || order === undefined) {
-                headers == headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText > b.formattedText) ? 1 :
+                headers === headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText > b.formattedText) ? 1 :
                     ((b.formattedText > a.formattedText) ? -1 : 0));
             } else if (order === 'Descending') {
-                headers == headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText < b.formattedText) ? 1 :
+                headers === headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText < b.formattedText) ? 1 :
                     ((b.formattedText < a.formattedText) ? -1 : 0));
             } else {
                 headers;
@@ -1537,6 +1563,7 @@ export class OlapEngine {
         }
         return keys;
     }
+    /* tslint:enable */
     private frameSortObject(): void {
         if (this.enableSort) {
             for (let fPos: number = 0; fPos < this.sortSettings.length; fPos++) {
@@ -1544,7 +1571,6 @@ export class OlapEngine {
             }
         }
     }
-    /* tslint:enable */
     private getParentUname(uniqueNameColl: string, cell: IAxisSet, isMeasureAvail: boolean, isLastMeasure: boolean): string {
         let parentString: string = '';
         if (isMeasureAvail && !isLastMeasure) {
@@ -1725,7 +1751,6 @@ export class OlapEngine {
                         showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
                     }
                     valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
-                    /* tslint:disable:max-line-length */
                     formattedText = !showTotals ? '' :
                         ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
                             valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
@@ -1739,6 +1764,10 @@ export class OlapEngine {
                         this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
                         (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
                             this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
+                    /* tslint:disable */
+                    let isGrand: boolean = (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].measurePosition === 0 ? this.tupRowInfo[rowOrdinal].allStartPos === 1 : this.tupRowInfo[rowOrdinal].allStartPos === 0) : false) ||
+                        (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].measurePosition === 0 ? this.tupColumnInfo[colOrdinal].allStartPos === 1 : this.tupColumnInfo[colOrdinal].allStartPos === 0) : false);
+                    /* tslint:enable */
                     columns[colPos] = {
                         axis: 'value',
                         actualText: measureName,
@@ -1750,7 +1779,8 @@ export class OlapEngine {
                         value: !isNullOrUndefined(value) ? Number(value) : null,
                         colIndex: colPos,
                         rowIndex: rowPos,
-                        isSum: isSum
+                        isSum: isSum,
+                        isGrandSum: isGrand
                     };
                 }
                 this.valueContent[rowPos - this.rowStartPos][colPos] = columns[colPos];
@@ -2075,15 +2105,40 @@ export class OlapEngine {
                 this.savedFieldList[fieldName].isExcelFilter = false;
                 // this.savedFieldList[fieldName].aggregateType = aggregateType;
                 this.savedFieldList[fieldName].sort = sortOrder;
+                this.savedFieldList[fieldName].allowDragAndDrop = true;
+                this.savedFieldList[fieldName].showFilterIcon = true;
+                this.savedFieldList[fieldName].showSortIcon = true;
+                this.savedFieldList[fieldName].showEditIcon = true;
+                this.savedFieldList[fieldName].showRemoveIcon = true;
+                this.savedFieldList[fieldName].showValueTypeIcon = true;
                 this.savedFieldListData[i].sort = sortOrder;
+                this.savedFieldListData[i].allowDragAndDrop = true;
+                this.savedFieldListData[i].showFilterIcon = true;
+                this.savedFieldListData[i].showSortIcon = true;
+                this.savedFieldListData[i].showEditIcon = true;
+                this.savedFieldListData[i].showRemoveIcon = true;
+                this.savedFieldListData[i].showValueTypeIcon = true;
                 if (isInit) {
                     this.savedFieldList[fieldName].filter = [];
                     this.savedFieldList[fieldName].actualFilter = [];
                 }
             }
+            /* tslint:disable:max-line-length */
             if (this.dataFields[fieldName] && this.savedFieldList[fieldName] && this.selectedItems.indexOf(fieldName) > -1) {
                 this.savedFieldList[fieldName].isSelected = true;
+                this.savedFieldList[fieldName].allowDragAndDrop = (this.dataFields[fieldName] ? this.dataFields[fieldName].allowDragAndDrop : true);
+                this.savedFieldList[fieldName].showFilterIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showFilterIcon : true);
+                this.savedFieldList[fieldName].showSortIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showSortIcon : true);
+                this.savedFieldList[fieldName].showEditIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showEditIcon : true);
+                this.savedFieldList[fieldName].showRemoveIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showRemoveIcon : true);
+                this.savedFieldList[fieldName].showValueTypeIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showValueTypeIcon : true);
                 this.savedFieldListData[i].isSelected = true;
+                this.savedFieldListData[i].allowDragAndDrop = (this.dataFields[fieldName] ? this.dataFields[fieldName].allowDragAndDrop : true);
+                this.savedFieldListData[i].showFilterIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showFilterIcon : true);
+                this.savedFieldListData[i].showSortIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showSortIcon : true);
+                this.savedFieldListData[i].showEditIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showEditIcon : true);
+                this.savedFieldListData[i].showRemoveIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showRemoveIcon : true);
+                this.savedFieldListData[i].showValueTypeIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showValueTypeIcon : true);
             } else {
                 if (this.dataFields[parentID] && this.savedFieldList[parentID] && this.selectedItems.indexOf(parentID) > -1) {
                     this.savedFieldListData[i].isSelected = true;
@@ -2091,6 +2146,7 @@ export class OlapEngine {
                     this.savedFieldListData[i].isSelected = false;
                 }
             }
+            /* tslint:enable:max-line-length */
             if ((this.savedFieldList[fieldName] && this.savedFieldList[fieldName].isCalculatedField) ||
                 fieldName.toLowerCase() === '[calculated members].[_0]') {
                 let isAvail: boolean = false;
@@ -2147,17 +2203,16 @@ export class OlapEngine {
         };
         this.getTreeData(args, this.getFieldListItems.bind(this), { dataSourceSettings: dataSourceSettings, action: 'loadFieldElements' });
     }
+    /* tslint:disable:max-line-length */
     public getTreeData(args: ConnectionInfo, successMethod: Function, customArgs: object): void {
         let connectionString: ConnectionInfo = this.getConnectionInfo(args.url, args.LCID);
-        /* tslint:disable-next-line:max-line-length */
         let soapMessage: string = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Header/><Body><Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><RequestType>' +
             args.request + '</RequestType><Restrictions><RestrictionList><CATALOG_NAME>' + args.catalog +
-            /* tslint:disable-next-line:max-line-length */
             '</CATALOG_NAME><CUBE_NAME>' + args.cube + '</CUBE_NAME></RestrictionList></Restrictions><Properties><PropertyList><Catalog>' + args.catalog +
-            /* tslint:disable-next-line:max-line-length */
             '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier></PropertyList></Properties></Discover></Body></Envelope>';
         this.doAjaxPost('POST', connectionString.url, soapMessage, successMethod, customArgs);
     }
+    /* tslint:enable:max-line-length */
     private getAxisFields(): void {
         this.rows = this.dataSourceSettings.rows ? this.dataSourceSettings.rows : [];
         this.columns = this.dataSourceSettings.columns ? this.dataSourceSettings.columns : [];
@@ -2175,7 +2230,9 @@ export class OlapEngine {
             }
         }
         if (!this.isMeasureAvail && this.values.length > 0) {
-            let measureField: IFieldOptions = { name: '[Measures]', caption: 'Measures' };
+            let measureField: IFieldOptions = {
+                name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
+            };
             if (this.valueAxis === 'row') {
                 this.rows.push(measureField);
             } else {
@@ -2331,7 +2388,6 @@ export class OlapEngine {
     //     let mdxQuery: string = 'SELECT (' + query + ')' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
     //     let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
     //     let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
-    //     /* tslint:disable-next-line:max-line-length */
     //     this.doAjaxPost('POST', connectionString.url, xmla, this.generateAllMembers.bind(this), 
     // { dataSourceSettings: dataSourceSettings, action: 'fetchAllMembers' });
     // }
@@ -2411,7 +2467,7 @@ export class OlapEngine {
         this.gridJSON = gridJSON;
     }
 
-    /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable:max-line-length */
     public getFilterMembers(dataSourceSettings: IDataOptions, fieldName: string, levelCount: number, isSearchFilter?: boolean, loadLevelMember?: boolean): string {
         // let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE';
         let levels: IOlapField[] = this.fieldList[fieldName].levels;
@@ -2429,10 +2485,8 @@ export class OlapEngine {
         }
         return filterQuery;
     }
-    /* tslint:disable-next-line:max-line-length */
     public getMembers(dataSourceSettings: IDataOptions, fieldName: string, isAllFilterData?: boolean, filterParentQuery?: string, loadLevelMember?: boolean): void {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
-        /* tslint:disable-next-line:max-line-length */
         let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let mdxQuery: string;
         let hasAllMember: boolean = this.fieldList[fieldName].hasAllMember;
@@ -2453,41 +2507,32 @@ export class OlapEngine {
             // this.fieldList[fieldName].isHierarchy = true;
             this.fieldList[fieldName].members = {};
             this.fieldList[fieldName].currrentMembers = {};
-            /* tslint:disable-next-line:max-line-length */
         }
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, loadLevelMembers: loadLevelMember, action: 'fetchMembers' });
     }
     public getChildMembers(dataSourceSettings: IDataOptions, memberUQName: string, fieldName: string): void {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
-        /* tslint:disable-next-line:max-line-length */
         let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
-        /* tslint:disable-next-line:max-line-length */
         // var mdxQuery = 'SELECT SUBSET({' + memberUQName + '.CHILDREN}, 0, 5000)' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
-        /* tslint:disable-next-line:max-line-length */
         let mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.CHILDREN})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
         let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
-        /* tslint:disable-next-line:max-line-length */
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, action: 'fetchChildMembers' });
     }
     public getCalcChildMembers(dataSourceSettings: IDataOptions, memberUQName: string): void {
         this.calcChildMembers = [];
-        /* tslint:disable-next-line:max-line-length */
         let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.MEMBERS})' +
             dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
-        /* tslint:disable-next-line:max-line-length */
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, action: 'fetchCalcChildMembers' });
     }
-    /* tslint:disable-next-line:max-line-length */
     public getSearchMembers(dataSourceSettings: IDataOptions, fieldName: string, searchString: string, maxNodeLimit: number, isAllFilterData?: boolean, levelCount?: number): void {
         this.fieldList[fieldName].searchMembers = [];
         this.fieldList[fieldName].currrentMembers = {};
         if (searchString !== '') {
             // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
-            /* tslint:disable-next-line:max-line-length */
             let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
             let hierarchy: string = fieldName.replace(/\&/g, '&amp;');
             let mdxQuery: string = 'WITH SET [SearchMembersSet] AS &#39;FILTER(' + (isAllFilterData ? hierarchy + '.ALLMEMBERS, ' :
@@ -2499,7 +2544,6 @@ export class OlapEngine {
                 'SELECT SUBSET([SearchSet], 0, ' + maxNodeLimit + ')' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
             let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
             let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
-            /* tslint:disable-next-line:max-line-length */
             this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, action: 'fetchSearchMembers' });
         } else {
             return;
@@ -2517,11 +2561,9 @@ export class OlapEngine {
             let memberUqName: string = member.querySelector('UName').textContent;
             let caption: string = member.querySelector('Caption').textContent;
             let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName };
-            /* tslint:disable-next-line:max-line-length */
             let parentUqName: string = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
             if (parentUqName === '' && memberType === '1') {
                 filterMembers = {
-                    /* tslint:disable-next-line:max-line-length */
                     hasChildren: (field.querySelector('CHILDREN_CARDINALITY') ? (field.querySelector('CHILDREN_CARDINALITY').textContent !== '0') ? true : false : false),
                     isSelected: false,
                     id: memberUqName,
@@ -2531,12 +2573,10 @@ export class OlapEngine {
                     htmlAttributes: nodeAttr
                 };
                 if (customArgs.action === 'fetchMembers' || customArgs.action === 'fetchChildMembers') {
-                    /* tslint:disable-next-line:max-line-length */
                     this.fieldList[fieldName].members[memberUqName] = { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
                     this.fieldList[fieldName].filterMembers.push(filterMembers);
                     this.fieldList[fieldName].childMembers.push(filterMembers);
                 } else if (customArgs.action === 'fetchSearchMembers') {
-                    /* tslint:disable-next-line:max-line-length */
                     this.fieldList[fieldName].currrentMembers[memberUqName] = { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
                     this.fieldList[fieldName].searchMembers.push(filterMembers);
                     filterMembers.expanded = true;
@@ -2546,7 +2586,6 @@ export class OlapEngine {
             } else if (parentUqName !== '' && memberType === '1') {
                 if (parentUqName === allMember && memberType === '1') {
                     filterMembers = {
-                        /* tslint:disable-next-line:max-line-length */
                         hasChildren: (field.querySelector('CHILDREN_CARDINALITY') ? (field.querySelector('CHILDREN_CARDINALITY').textContent !== '0') ? true : false : false),
                         id: memberUqName,
                         name: caption,
@@ -2558,12 +2597,10 @@ export class OlapEngine {
                     if (customArgs.action === 'fetchMembers' || customArgs.action === 'fetchChildMembers') {
                         this.fieldList[fieldName].filterMembers.push(filterMembers);
                         this.fieldList[fieldName].childMembers.push(filterMembers);
-                        /* tslint:disable-next-line:max-line-length */
                         this.fieldList[fieldName].members[memberUqName] = { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
                     } else if (customArgs.action === 'fetchSearchMembers') {
                         filterMembers.expanded = true;
                         this.fieldList[fieldName].searchMembers.push(filterMembers);
-                        /* tslint:disable-next-line:max-line-length */
                         this.fieldList[fieldName].currrentMembers[memberUqName] = { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
                     } else {
                         this.calcChildMembers.push(filterMembers);
@@ -2572,10 +2609,8 @@ export class OlapEngine {
                     if (customArgs.action === 'fetchMembers' && this.fieldList[fieldName].members[memberUqName]) {
                         continue;
                     }
-                    /* tslint:disable-next-line:max-line-length */
                     let nodeSelect: boolean = (customArgs.loadLevelMembers ? this.fieldList[fieldName].members[parentUqName].isSelected : false);
                     filterMembers = {
-                        /* tslint:disable-next-line:max-line-length */
                         hasChildren: (field.querySelector('CHILDREN_CARDINALITY') ? (field.querySelector('CHILDREN_CARDINALITY').textContent !== '0') ? true : false : false),
                         htmlAttributes: nodeAttr,
                         isSelected: false,
@@ -2589,12 +2624,10 @@ export class OlapEngine {
                         this.fieldList[fieldName].isHierarchy = false;
                         this.fieldList[fieldName].filterMembers.push(filterMembers);
                         this.fieldList[fieldName].childMembers.push(filterMembers);
-                        /* tslint:disable-next-line:max-line-length */
                         this.fieldList[fieldName].members[memberUqName] = { name: memberUqName, caption: caption, parent: parentUqName, isNodeExpand: false, isSelected: nodeSelect };
                     } else if (customArgs.action === 'fetchSearchMembers') {
                         this.fieldList[fieldName].searchMembers.push(filterMembers);
                         filterMembers.expanded = true;
-                        /* tslint:disable-next-line:max-line-length */
                         this.fieldList[fieldName].currrentMembers[memberUqName] = { name: memberUqName, caption: caption, parent: parentUqName, isNodeExpand: false, isSelected: false };
                     } else {
                         this.calcChildMembers.push(filterMembers);
@@ -2605,6 +2638,7 @@ export class OlapEngine {
             }
         }
     }
+    /* tslint:enable:max-line-length */
     // private generateAllMembers(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
     //     let members: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axis[name="Axis0"] Member'));
     //     for (let member of members) {
@@ -2699,8 +2733,14 @@ export class OlapEngine {
                         isHierarchy: true,
                         isExcelFilter: false,
                         isCalculatedField: true,
+                        allowDragAndDrop: (this.dataFields[field.name] ? this.dataFields[field.name].allowDragAndDrop : true),
+                        showFilterIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showFilterIcon : true),
+                        showSortIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showSortIcon : true),
+                        showEditIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showEditIcon : true),
+                        showRemoveIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showRemoveIcon : true),
+                        showValueTypeIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showValueTypeIcon : true),
                         fieldType: (expression.toLowerCase().indexOf('measure') > -1 ? 'Measure' : 'Dimension'),
-                        parentHierarchy: (expression.toLowerCase().indexOf('measure') > -1 ? undefined : field.hierarchyUniqueName),
+                        parentHierarchy: (expression.toLowerCase().indexOf('measure') > -1 ? undefined : field.hierarchyUniqueName)
                     };
                     fieldListElements.push(calcField);
                     this.fieldList[calcField.id] = calcField;
@@ -2810,7 +2850,13 @@ export class OlapEngine {
                 members: {},
                 currrentMembers: {},
                 isHierarchy: true,
-                isExcelFilter: false
+                isExcelFilter: false,
+                allowDragAndDrop: (this.dataFields[id] ? this.dataFields[id].allowDragAndDrop : true),
+                showFilterIcon: (this.dataFields[id] ? this.dataFields[id].showFilterIcon : true),
+                showSortIcon: (this.dataFields[id] ? this.dataFields[id].showSortIcon : true),
+                showEditIcon: (this.dataFields[id] ? this.dataFields[id].showEditIcon : true),
+                showRemoveIcon: (this.dataFields[id] ? this.dataFields[id].showRemoveIcon : true),
+                showValueTypeIcon: (this.dataFields[id] ? this.dataFields[id].showValueTypeIcon : true)
             };
             dimensionElements.push(fieldObj);
             this.fieldList[id] = fieldObj;
@@ -2913,7 +2959,13 @@ export class OlapEngine {
                     levelCount: 1,
                     /* tslint:disable-next-line:max-line-length */
                     isHierarchy: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? false : true : false),
-                    isExcelFilter: false
+                    isExcelFilter: false,
+                    allowDragAndDrop: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].allowDragAndDrop : true),
+                    showFilterIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showFilterIcon : true),
+                    showSortIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSortIcon : true),
+                    showEditIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showEditIcon : true),
+                    showRemoveIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showRemoveIcon : true),
+                    showValueTypeIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showValueTypeIcon : true)
                 };
                 dimensionElements.push(fieldObj);
                 this.fieldList[hierarchyName] = fieldObj;
@@ -3050,7 +3102,13 @@ export class OlapEngine {
                 searchMembers: [],
                 members: {},
                 currrentMembers: {},
-                formatString: formatString
+                formatString: formatString,
+                allowDragAndDrop: (this.dataFields[measureName] ? this.dataFields[measureName].allowDragAndDrop : true),
+                showFilterIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showFilterIcon : true),
+                showSortIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showSortIcon : true),
+                showEditIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showEditIcon : true),
+                showRemoveIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showRemoveIcon : true),
+                showValueTypeIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showValueTypeIcon : true)
             };
             dimensionElements.push(fieldObj);
             this.fieldList[measureName] = fieldObj;
@@ -3155,6 +3213,7 @@ export class OlapEngine {
                 data: data,
                 dataType: 'xml',
                 type: type,
+                beforeSend: this.beforeSend.bind(this),
                 onSuccess: (args: string | Object, request: Ajax) => {
                     let parser: DOMParser = new DOMParser();
                     // parsing string type result as XML
@@ -3168,24 +3227,31 @@ export class OlapEngine {
         );
         ajax.send();
     }
+    private beforeSend(args: string | Object): void {
+        if (this.dataSourceSettings.authentication.userName && this.dataSourceSettings.authentication.password) {
+            /* tslint:disable */
+            (args as any).httpRequest.setRequestHeader("Authorization",
+                "Basic " + btoa(this.dataSourceSettings.authentication.userName + ":" +
+                    this.dataSourceSettings.authentication.password));
+            /* tslint:enable */
+        }
+    }
     private getSoapMsg(dataSourceSettings: IDataOptions, query: string): string {
         let xmlMsg: string = '';
         let sourceInfo: string = '';
         let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
+        /* tslint:disable:max-line-length */
         if (this.isMondrian) {
             sourceInfo = '';
-            /* tslint:disable-next-line:max-line-length */
             xmlMsg = '<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><SOAP-ENV:Body><Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><Command><Statement><![CDATA[' +
                 query + ']]></Statement></Command><Properties><PropertyList><DataSourceInfo>' + sourceInfo +
-                /* tslint:disable-next-line:max-line-length */
                 '</DataSourceInfo><Catalog>' + dataSourceSettings.catalog + '</Catalog><AxisFormat>TupleFormat</AxisFormat><Content>Data</Content><Format>Multidimensional</Format></PropertyList></Properties></Execute></SOAP-ENV:Body></SOAP-ENV:Envelope>';
         } else {
-            /* tslint:disable-next-line:max-line-length */
             xmlMsg = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Header></Header> <Body> <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\"> <Command> <Statement> ' +
                 query + ' </Statement> </Command> <Properties> <PropertyList> <Catalog>' + dataSourceSettings.catalog +
-                /* tslint:disable-next-line:max-line-length */
                 '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier></PropertyList> </Properties> </Execute> </Body> </Envelope>';
         }
+        /* tslint:enable:max-line-length */
         return xmlMsg;
     }
     public getConnectionInfo(connectionString: string, locale: string | number): ConnectionInfo {
@@ -3241,7 +3307,6 @@ export interface IOlapField extends IField {
     levels?: IOlapField[];
     levelCount?: number;
     memberType?: number;
-    isCalculatedField?: boolean;
     fieldType?: string;
     parentHierarchy?: string;
 }
@@ -3261,9 +3326,9 @@ export interface ConnectionInfo {
 export interface FieldData {
     hierarchy?: IOlapField[];
     hierarchySuccess?: Document;
-    /* tslint:disable */
+    /* tslint:disable:no-any */
     measures?: any;
-    /* tslint:enable */
+    /* tslint:enable:no-any */
     dataSourceSettings?: IDataOptions;
     action?: string;
     reportElement?: string[];

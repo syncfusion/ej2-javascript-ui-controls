@@ -349,7 +349,6 @@ export let remoteData: Object[] = [
         Type: "Improvement"
     }
 ];
-
 export let rotatedLabels: Object[] = [{ x: "Alfreds FutterkisteObere Str. 57", y: 29.46, size: null, fill: null },
 { x: "Alfred's FutterkisteObere Str. 57", y: 196.12, size: null, fill: null },
 { x: "Ana Trujillo Emparedados y heladosAvda. de la Constitución 2222", y: 97.42, size: null, fill: null },

@@ -49,6 +49,7 @@ export interface AccumulationAnnotationSettingsModel {
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
      * @default 'Middle'
+     * @deprecated
      */
 
     verticalAlignment?: Position;
@@ -59,6 +60,7 @@ export interface AccumulationAnnotationSettingsModel {
      * * Far - Align the annotation element as bottom side.
      * * Center - Align the annotation element as mid point.
      * @default 'Center'
+     * @deprecated
      */
 
     horizontalAlignment?: Alignment;

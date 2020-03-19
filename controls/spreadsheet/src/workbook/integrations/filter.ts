@@ -57,7 +57,7 @@ export class WorkbookFilter {
         } else {
             let range: number[] = getSwapRange(getIndexesFromAddress(args.range));
 
-            if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+            if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
                 deferred.reject('Select a cell or range inside the used range and try again.');
                 return;
             }
@@ -65,7 +65,7 @@ export class WorkbookFilter {
                 range[0] = 0; range[1] = 0; range[3] = sheet.usedRange.colIndex;
             }
 
-            range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+            range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             range[0] = range[0] + 1; //ignore first row        
             let address: string = getRangeAddress(range);
             getData(this.parent, `${sheet.name}!${address}`, true, true).then((jsonData: {[key: string]: CellModel}[]) => {
@@ -91,7 +91,7 @@ export class WorkbookFilter {
             let rowKey: string = '__rowIndex';
             jsonData.forEach((data: {[key: string]: CellModel}, index: number) => {
                 if (!data) { return; }
-                this.parent.showHideRow(result.indexOf(data) < 0, parseInt(data[rowKey] as string, 10) - 1);
+                this.parent.hideRow(parseInt(data[rowKey] as string, 10) - 1, undefined, result.indexOf(data) < 0);
             });
         }
     }
@@ -103,7 +103,7 @@ export class WorkbookFilter {
         if (this.filterRange) {
             let range: number[] =  getCellIndexes(this.filterRange);
             let sheet: SheetModel = this.parent.getActiveSheet();
-            this.parent.showHideRow(false, range[0], sheet.usedRange.rowIndex - 1);
+            this.parent.hideRow(range[0], sheet.usedRange.rowIndex - 1, false);
         }
     }
 

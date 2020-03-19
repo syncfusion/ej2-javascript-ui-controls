@@ -55,7 +55,6 @@ export interface IAnimationCompleteEventArgs extends ICircularGaugeEventArgs {
 
 /**
  * Specifies AxisLabelRender event arguments for circular gauge.
- * @deprecated
  */
 export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
     /**
@@ -138,6 +137,10 @@ export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
      * event tooltip argument as append to body
      */
     appendInBodyTag: Boolean;
+    /**
+     * event tooltip argument type
+     */
+    type: string;
 
 }
 
@@ -180,9 +183,13 @@ export interface IPointerDragEventArgs {
      */
     pointer?: Pointer;
     /**
+     * range event argument 
+     */
+    range?: Range;
+    /**
      * currentValue event argument 
      */
-    currentValue: number;
+    currentValue?: number;
     /**
      * previousValue event argument 
      */
@@ -190,11 +197,19 @@ export interface IPointerDragEventArgs {
     /**
      * index of the current pointer argument 
      */
-    pointerIndex: number;
+    pointerIndex?: number;
     /**
      * index of the current pointer`s axis argument 
      */
     axisIndex: number;
+    /**
+     * index of the current range argument 
+     */
+    rangeIndex ?: number;
+    /**
+     * type of the event.
+     */
+    type ?: string;
 }
 
 /**
@@ -249,6 +264,21 @@ export interface IVisiblePointer {
      * pointerIndex event argument 
      */
     pointerIndex?: number;
+
+}
+
+/**
+ * Specifies visible range
+ */
+export interface IVisibleRange {
+    /**
+     * axisIndex event argument 
+     */
+    axisIndex?: number;
+    /**
+     * rangeIndex event argument 
+     */
+    rangeIndex?: number;
 
 }
 
@@ -316,6 +346,10 @@ export interface IThemeStyle {
 
 }
 
+
+/**
+ * Specifies LegendRender event arguments for circular gauge.
+ */
 export interface ILegendRenderEventArgs extends ICircularGaugeEventArgs {
     /** Defines the current legend shape */
     shape: GaugeShape;

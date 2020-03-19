@@ -705,32 +705,38 @@ describe('DatePicker Control', () => {
             destroy(editorObj);
         });
         it('Inline - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Date',
                 value: date,
                 mode: 'Inline',
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });
         it('Popup - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'Date',
                 mode: 'Popup',
                 value: date,
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });

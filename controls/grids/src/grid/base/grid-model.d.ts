@@ -1,4 +1,4 @@
-﻿import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';import { Query, DataManager, DataUtil, DataOptions } from '@syncfusion/ej2-data';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';import { getRowHeight, setColumnIndex, Global } from './util';import * as events from '../base/constant';import { ReturnType } from '../base/type';import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI } from './interface';import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs } from './interface';import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel, NotifyArgs } from './interface';import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs} from './interface';import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';import { Render } from '../renderer/render';import { Column, ColumnModel, ActionEventArgs } from '../models/column';import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, ClipMode } from './enum';import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition } from './enum';import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode } from './enum';import { ColumnQueryModeType } from './enum';import { Data } from '../actions/data';import { Cell } from '../models/cell';import { RowRenderer } from '../renderer/row-renderer';import { CellRenderer } from '../renderer/cell-renderer';import { CellRendererFactory } from '../services/cell-render-factory';import { ServiceLocator } from '../services/service-locator';import { ValueFormatter } from '../services/value-formatter';import { RendererFactory } from '../services/renderer-factory';import { ColumnWidthService } from '../services/width-controller';import { AriaService } from '../services/aria-service';import { FocusStrategy } from '../services/focus-strategy';import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';import { PageSettings } from '../models/page-settings';import { ColumnChooserSettings } from '../models/column-chooser-settings';import { Sort } from '../actions/sort';import { Page } from '../actions/page';import { Selection } from '../actions/selection';import { Filter } from '../actions/filter';import { Search } from '../actions/search';import { Resize } from '../actions/resize';import { Reorder } from '../actions/reorder';import { RowDD } from '../actions/row-reorder';import { ShowHide } from '../actions/show-hide';import { Scroll } from '../actions/scroll';import { InfiniteScroll } from '../actions/infinite-scroll';import { Group } from '../actions/group';import { Print } from '../actions/print';import { DetailRow } from '../actions/detail-row';import { Toolbar } from '../actions/toolbar';import { AggregateRow } from '../models/aggregate';import { Edit } from '../actions/edit';import { Row } from '../models/row';import { ColumnChooser } from '../actions/column-chooser';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Clipboard } from '../actions/clipboard';import { CommandColumn } from '../actions/command-column';import { ContextMenu } from '../actions/context-menu';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnMenu } from '../actions/column-menu';import { CheckState } from './enum';import { Aggregate } from '../actions/aggregate';import { ILogger } from '../actions/logger';import { gridObserver, BlazorAction } from '../actions/blazor-action';
+﻿import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';import { Query, DataManager, DataUtil, DataOptions } from '@syncfusion/ej2-data';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';import { getRowHeight, setColumnIndex, Global } from './util';import * as events from '../base/constant';import { ReturnType } from '../base/type';import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI } from './interface';import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs } from './interface';import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel, NotifyArgs } from './interface';import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, ColumnDataStateChangeEventArgs} from './interface';import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';import { Render } from '../renderer/render';import { Column, ColumnModel, ActionEventArgs } from '../models/column';import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, ClipMode } from './enum';import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition } from './enum';import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode } from './enum';import { ColumnQueryModeType } from './enum';import { Data } from '../actions/data';import { Cell } from '../models/cell';import { RowRenderer } from '../renderer/row-renderer';import { CellRenderer } from '../renderer/cell-renderer';import { CellRendererFactory } from '../services/cell-render-factory';import { ServiceLocator } from '../services/service-locator';import { ValueFormatter } from '../services/value-formatter';import { RendererFactory } from '../services/renderer-factory';import { ColumnWidthService } from '../services/width-controller';import { AriaService } from '../services/aria-service';import { FocusStrategy } from '../services/focus-strategy';import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';import { PageSettings } from '../models/page-settings';import { ColumnChooserSettings } from '../models/column-chooser-settings';import { Sort } from '../actions/sort';import { Page } from '../actions/page';import { Selection } from '../actions/selection';import { Filter } from '../actions/filter';import { Search } from '../actions/search';import { Resize } from '../actions/resize';import { Reorder } from '../actions/reorder';import { RowDD } from '../actions/row-reorder';import { ShowHide } from '../actions/show-hide';import { Scroll } from '../actions/scroll';import { InfiniteScroll } from '../actions/infinite-scroll';import { Group } from '../actions/group';import { Print } from '../actions/print';import { DetailRow } from '../actions/detail-row';import { Toolbar } from '../actions/toolbar';import { AggregateRow } from '../models/aggregate';import { Edit } from '../actions/edit';import { Row } from '../models/row';import { ColumnChooser } from '../actions/column-chooser';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Clipboard } from '../actions/clipboard';import { CommandColumn } from '../actions/command-column';import { ContextMenu } from '../actions/context-menu';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnMenu } from '../actions/column-menu';import { CheckState } from './enum';import { Aggregate } from '../actions/aggregate';import { ILogger } from '../actions/logger';import { gridObserver, BlazorAction } from '../actions/blazor-action';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -114,8 +114,8 @@ export interface PredicateModel {
      * <br/>Number | Date<br/></td></tr> 
      * </table> 
      * @default null
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
+     * @blazorType Syncfusion.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.Blazor.Operator.None
      */
     operator?: string;
 
@@ -187,12 +187,6 @@ export interface PredicateModel {
 export interface InfiniteScrollSettingsModel {
 
     /**
-     * If `enableScroll` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
-     * @default false
-     */
-    enableScroll?: boolean;
-
-    /**
      * If `enableCache` is set to true, the Grid will cache the loaded data to be reused next time it is needed.
      * @default false
      */
@@ -202,7 +196,7 @@ export interface InfiniteScrollSettingsModel {
      * Defines the number of blocks to be maintained in Grid while settings enableCache as true.
      * @default 3
      */
-    maxBlock?: number;
+    maxBlocks?: number;
 
     /**
      * Defines the number of blocks will render at the initial Grid rendering while enableCache is enabled.
@@ -394,8 +388,8 @@ export interface SearchSettingsModel {
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
      * @default 'contains'
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.Contains
+     * @blazorType Syncfusion.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.Blazor.Operator.Contains
      */
     operator?: string;
 
@@ -457,7 +451,10 @@ export interface GroupSettingsModel {
     showDropArea?: boolean;
 
     /**
-    allowGroupReordering?: boolean;
+     * If `allowReordering` is set to true, Grid allows the grouped elements to be reordered.     
+     * @default false
+     */
+    allowReordering?: boolean;
 
     /**
      * If `showToggleButton` set to true, then the toggle button will be showed in the column headers which can be used to group
@@ -604,6 +601,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Gets the parent Grid details.
+     * @deprecated
      */
     parentDetails?: ParentDetails;
 
@@ -683,6 +681,14 @@ export interface GridModel extends ComponentModel{
     enableColumnVirtualization?: boolean;
 
     /**
+     * If `enableInfiniteScrolling` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
+     * This helps to load large dataset in Grid.
+     * @default false
+     * @deprecated
+     */
+    enableInfiniteScrolling?: boolean;
+
+    /**
      * Configures the search behavior in the Grid. 
      * @default { ignoreCase: true, fields: [], operator: 'contains', key: '' }    
      */
@@ -737,7 +743,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Configures the infinite scroll settings.  
-     * @default { enableScroll: false, enableCache: false, maxBlock: 5, initialBlocks: 5 }    
+     * @default { enableCache: false, maxBlocks: 5, initialBlocks: 5 }    
      * @deprecated
      */
     infiniteScrollSettings?: InfiniteScrollSettingsModel;
@@ -958,7 +964,7 @@ export interface GridModel extends ComponentModel{
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with data processing.    
      * @default null    
-     * @blazorType Syncfusion.EJ2.Blazor.Data.Query 
+     * @blazorType Syncfusion.Blazor.Data.Query 
      */
     query?: Query;
 
@@ -1356,7 +1362,7 @@ export interface GridModel extends ComponentModel{
      * Triggers when toolbar item is clicked.
      * @event
      * @blazorProperty 'OnToolbarClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 
@@ -1490,7 +1496,7 @@ export interface GridModel extends ComponentModel{
      * Triggers when click on context menu.
      * @event
      * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     contextMenuClick?: EmitType<MenuEventArgs>;
 
@@ -1505,7 +1511,7 @@ export interface GridModel extends ComponentModel{
      * Triggers when click on column menu.
      * @event
      * @blazorProperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
      */
     columnMenuClick?: EmitType<MenuEventArgs>;
 
@@ -1536,6 +1542,15 @@ export interface GridModel extends ComponentModel{
      * @deprecated 
      */
     beforeAutoFill?: EmitType<BeforeAutoFillEventArgs>;
+
+    /**
+     * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done to get column `dataSource`.
+     * In this event,the current view column data and total record count should be assigned to the column `dataSource` based
+     * on the action performed.
+     * @event
+     * @deprecated  
+     */
+    columnDataStateChange?: EmitType<ColumnDataStateChangeEventArgs>;
 
     /**
      * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.

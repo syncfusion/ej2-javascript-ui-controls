@@ -31,6 +31,7 @@ export interface ChartAnnotationSettingsModel {
      * * Far - Align the annotation element as right side.
      * * Center - Align the annotation element as mid point.
      * @default 'Center'
+     * @deprecated
      */
 
     horizontalAlignment?: Alignment;
@@ -59,6 +60,7 @@ export interface ChartAnnotationSettingsModel {
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
      * @default 'Middle'
+     * @deprecated
      */
 
     verticalAlignment?: Position;
@@ -194,14 +196,14 @@ export interface StripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    start?: Object | number | Date;
+    start?: number | Date;
 
     /**
      * End value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    end?: Object | number | Date;
+    end?: number | Date;
 
     /**
      * Size of the strip line, when it starts from the origin.
@@ -241,14 +243,14 @@ export interface StripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatEvery?: Object | number | Date;
+    repeatEvery?: number | Date;
 
     /**
      * repeatUntil value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatUntil?: Object | number | Date;
+    repeatUntil?: number | Date;
 
     /**
      * isSegmented value of the strip line
@@ -262,14 +264,14 @@ export interface StripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentStart?: Object | number | Date;
+    segmentStart?: number | Date;
 
     /**
      * segmentEnd value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentEnd?: Object | number | Date;
+    segmentEnd?: number | Date;
 
     /**
      * segmentAxisName of the strip line.
@@ -302,6 +304,7 @@ export interface StripLineSettingsModel {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
+     * @deprecated
      */
     horizontalAlignment?: Anchor;
 
@@ -311,6 +314,7 @@ export interface StripLineSettingsModel {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
+     * @deprecated
      */
     verticalAlignment?: Anchor;
 

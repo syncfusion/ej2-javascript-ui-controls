@@ -144,7 +144,8 @@ export class DetailsView {
                 beforeCopy: (args: BeforeCopyEventArgs) => { args.cancel = true; },
                 load: function (args: Object): void {
                     this.focusModule.destroy();
-                }
+                },
+                locale: this.parent.locale
             });
             this.gridObj.isStringTemplate = true;
             this.gridObj.appendTo('#' + this.parent.element.id + CLS.GRID_ID);
@@ -273,20 +274,16 @@ export class DetailsView {
                 modifiedSize = '';
             } else {
                 let sizeValue: number = getValue('size', args.data);
-                if ((sizeValue / 1024) === 0) {
-                    modifiedSize = '0 KB';
-                } else {
-                    let intl: Internationalization = new Internationalization();
-                    let value: string = intl.formatNumber((sizeValue / 1024), { format: 'n' });
-                    modifiedSize = value + ' KB';
-                }
+                let intl: Internationalization = new Internationalization(this.parent.locale);
+                let value: string = intl.formatNumber((sizeValue / 1024), { format: 'n' });
+                modifiedSize = value + ' ' + getLocaleText(this.parent, 'KB');
             }
             sizeEle.innerHTML = modifiedSize;
         }
         if (this.parent.isMobile) {
             if (getValue('_fm_modified', args.data) !== undefined && args.row.querySelector('.e-fe-date')) {
                 let dateEle: Element = args.row.querySelector('.e-fe-date');
-                let intl: Internationalization = new Internationalization();
+                let intl: Internationalization = new Internationalization(this.parent.locale);
                 let columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
                 let format: Object;
                 for (let i: number = 0; i < columns.length; i++) {
@@ -635,7 +632,7 @@ export class DetailsView {
                 this.onSearchFiles(args);
             }
             this.adjustHeight();
-            if (this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
+            if (this.gridObj.sortSettings.columns.length > 0 && this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
                 this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
             }
         }

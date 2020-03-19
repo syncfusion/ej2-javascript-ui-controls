@@ -4,12 +4,11 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, measureText, textElement, TextOption, Size, PathOption } from '@syncfusion/ej2-svg-base';
 import { RectOption, CircleOption } from '../../chart/index';
 import { RangeModel } from '../model/bullet-base-model';
-import { IFeatureBarBounds, IBarRenderEventArgs  } from '../model/bullet-interface';
+import { IFeatureBarBounds } from '../model/bullet-interface';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { AnimationModel } from '../../common/model/base-model';
 import { getAnimationFunction,  } from '../../common/utils/helper';
 import { TargetType } from '../utils/enum';
-import { barRender } from '../../common/model/constants';
 
 interface IFeatureMeasureType {
     pointX: number;
@@ -144,21 +143,15 @@ export class ScaleGroup {
         let bounds: IFeatureMeasureType;
         for (let i: number = 0; i < dataCount; i++) {
             data = bulletChart.dataSource[i];
-            let argsData: IBarRenderEventArgs;
-            argsData = {
-                name: barRender, bulletChart: bulletChart, value: data[bulletChart.valueField], target: data[bulletChart.targetField],
-                category: data[bulletChart.categoryField]
-            };
-            bulletChart.trigger(barRender, argsData);
-            categoryValue = <string>argsData.category;
+            categoryValue = data[bulletChart.categoryField];
             if (isHorizontal) {
                 lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
             } else {
                 lPoint = initialBoundsStart + (featureBarSize * i) + (featureBarSize / 2) - bulletChart.valueHeight / 2;
             }
-            bounds = this.calculateFeatureMeasureBounds(+argsData.value, categoryValue, isHorizontal);
+            bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
             if (data && bulletChart.type === 'Dot') {
-                let value: number = +argsData.value;
+                let value: number = data[bulletChart.valueField];
                 if (isHorizontal) {
                     bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
                         ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
@@ -280,14 +273,8 @@ export class ScaleGroup {
         let compareMeasureOptions: object;
         let svgElement: Element;
         for (let k: number = 0; k < dataCount; k++) {
-            let argsData: IBarRenderEventArgs;
-            argsData = {
-                // tslint:disable-next-line:max-line-length
-                name: barRender, bulletChart: bulletChart, value: bulletChart.dataSource[k][bulletChart.valueField], target: bulletChart.dataSource[k][bulletChart.targetField],
-                category: bulletChart.dataSource[k][bulletChart.categoryField]
-            };
-            bulletChart.trigger(barRender, argsData);
-            values = values.concat(<number>argsData.target);
+            value = bulletChart.dataSource[k][bulletChart.targetField];
+            values = values.concat(value);
             for (let i: number = 0; i < values.length; i++) {
                 targetType = targetTypes[i % targetTypeLength];
                 if (values[i] >= minimum && values[i] <= maximum) {
@@ -323,7 +310,8 @@ export class ScaleGroup {
         let shapeObject: object;
         let shapeElement: Element;
         let bulletChart: BulletChart = this.bulletChart;
-        let size: number = bulletChart.targetWidth;
+        let strokeWidth: number = (targetType === 'Cross') ? bulletChart.targetWidth - 1 : 1;
+        let size: number = (targetType === 'Circle') ? bulletChart.targetWidth - 1 : bulletChart.targetWidth;
         let lx: number = isHorizontal ? x1 + (size / 2) :  y1 + ((y2 - y1) / 2);
         let ly: number = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
         let id: string = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
@@ -333,13 +321,13 @@ export class ScaleGroup {
             shapeElement = bulletChart.renderer.drawLine(shapeObject);
         } else if (targetType === 'Circle') {
             shapeObject = new CircleOption(
-                id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor }, 1, lx, ly, size
+                id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor || 'black' }, 1, lx, ly, size
             );
             shapeElement = bulletChart.renderer.drawCircle(shapeObject);
         } else {
             let crossDirection: string = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
             (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
-            shapeObject = new PathOption(id, 'transparent', 1, bulletChart.targetColor, 1, '', crossDirection);
+            shapeObject = new PathOption(id, 'transparent', strokeWidth, bulletChart.targetColor, 1, '', crossDirection);
             shapeElement = bulletChart.renderer.drawPath(shapeObject);
         }
         shapeElement.setAttribute('class', className);
@@ -357,7 +345,7 @@ export class ScaleGroup {
                 (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
             'y2': y2,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor
+            'stroke': bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     }
@@ -371,7 +359,7 @@ export class ScaleGroup {
             'x2': x2,
             'y2': y1,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor
+            'stroke': bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     }
@@ -455,8 +443,6 @@ export class ScaleGroup {
             valueX = parseInt(valueBarElement.getAttribute('x'), 10);
             centerY = isValuePlot ? valueY : valueY + elementBarHeight;
             centerX = valueX;
-        } else {
-            return null;
         }
         valueBarElement.style.visibility = 'hidden';
         new Animation({}).animate(valueBarElement, {
@@ -500,8 +486,6 @@ export class ScaleGroup {
             x = parseFloat(targetBarelement.getAttribute('x1'));
             centerY = y;
             centerX = x;
-        } else {
-            return null;
         }
         targetBarelement.style.visibility = 'hidden';
         this.animateRect(targetBarelement, centerX, centerY, index + 1);

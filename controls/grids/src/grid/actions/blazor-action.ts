@@ -1,5 +1,5 @@
 import { IGrid, ActionArgs, NotifyArgs } from '../base/interface';
-import { Observer, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Observer, isBlazor, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
@@ -9,6 +9,7 @@ import { CellType, AggregateType } from '../base/enum';
 import { ReturnType } from '../base/type';
 import { AggregateRow } from '../models/aggregate';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { SortSettingsModel, GroupSettingsModel } from '../base/grid-model';
 
 export const gridObserver: Observer = new Observer();
@@ -22,6 +23,9 @@ export class BlazorAction {
 
     private aria: AriaService = new AriaService();
     private actionArgs: ActionArgs = {};
+    private dataSourceChanged: boolean;
+    private virtualContentModule: VirtualContentRenderer;
+    private virtualHeight: number = 0;
 
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -40,6 +44,10 @@ export class BlazorAction {
         this.parent.on('updateaction', this.modelChanged, this);
         this.parent.on(events.modelChanged, this.modelChanged, this);
         this.parent.on('group-expand-collapse', this.onGroupClick, this);
+        this.parent.on('setcolumnstyles', this.setColVTableWidthAndTranslate, this);
+        this.parent.on('refresh-virtual-indices', this.editSuccess, this);
+        this.parent.on('contentcolgroup', this.contentColGroup, this);
+        this.parent.on(events.dataSourceModified, this.dataSourceModified, this);
      }
 
     public removeEventListener(): void {
@@ -54,6 +62,10 @@ export class BlazorAction {
         this.parent.off('updateaction', this.modelChanged);
         this.parent.off(events.modelChanged, this.modelChanged);
         this.parent.off('group-expand-collapse', this.onGroupClick);
+        this.parent.off('setcolumnstyles', this.setColVTableWidthAndTranslate);
+        this.parent.off('refresh-virtual-indices', this.editSuccess);
+        this.parent.off('contentcolgroup', this.contentColGroup);
+        this.parent.off(events.dataSourceModified, this.dataSourceModified);
      }
 
     public getModuleName(): string { return 'blazor'; };
@@ -146,6 +158,24 @@ export class BlazorAction {
     }
 
     public dataSuccess(args: ReturnType): void {
+        if (this.parent.enableVirtualization && Object.keys(this.actionArgs).length === 0) {
+            this.actionArgs.requestType = 'virtualscroll';
+        }
+        let startIndex: string = 'startIndex'; let endIndex: string = 'endIndex';
+        this.actionArgs[startIndex] = args[startIndex];
+        this.actionArgs[endIndex] = args[endIndex];
+        if (this.parent.enableVirtualization) {
+            this.virtualContentModule = (<VirtualContentRenderer>this.parent.contentModule);
+            if (this.virtualContentModule.activeKey === 'downArrow' || this.virtualContentModule.activeKey === 'upArrow') {
+                let row: Element = this.parent.getRowByIndex(this.virtualContentModule.blzRowIndex);
+                if (row) {
+                    this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
+                    // tslint:disable-next-line:no-any
+                    ((<HTMLTableRowElement>row).cells[0] as any).focus({ preventScroll: true });
+                    this.virtualContentModule.blazorDataLoad = false;
+                }
+            }
+        }
         if (args.foreignColumnsData) {
             let columns: Column[] = this.parent.getColumns();
             for (let i: number = 0; i < columns.length; i++) {
@@ -214,7 +244,76 @@ export class BlazorAction {
         }
         this.parent.renderModule.dataManagerSuccess(args, <NotifyArgs>this.actionArgs);
         this.parent.getMediaColumns();
+        if (this.parent.enableVirtualization) {
+            this.wireEvents();
+            this.virtualContentModule = (<VirtualContentRenderer>this.parent.contentModule);
+            this.setColVTableWidthAndTranslate();
+            if (this.parent.groupSettings.columns.length) {
+                this.virtualContentModule.setVirtualHeight(this.virtualHeight);
+            }
+        }
         this.actionArgs = this.parent.currentAction = {};
+    }
+
+    public removeDisplayNone(): void {
+        let renderedContentRows: NodeListOf<HTMLElement> = this.parent.getContentTable().querySelectorAll('tr');
+        for (let i: number = 0; i < renderedContentRows.length; i++) {
+            let renderedContentCells: NodeListOf<HTMLElement> = renderedContentRows[i].querySelectorAll('td');
+            for (let j: number = 0; j < renderedContentCells.length; j++) {
+                renderedContentCells[j].style.display = '';
+            }
+        }
+    }
+
+    public setVirtualTrackHeight(args: {VisibleGroupedRowsCount: number}): void {
+            this.virtualHeight = args.VisibleGroupedRowsCount * this.parent.getRowHeight();
+            this.virtualContentModule.setVirtualHeight(this.virtualHeight);
+    }
+
+    public setColVTableWidthAndTranslate(args?: {refresh: boolean}): void {
+        if (this.parent.enableColumnVirtualization && this.virtualContentModule.prevInfo &&
+            (JSON.stringify(this.virtualContentModule.currentInfo.columnIndexes) !==
+            JSON.stringify(this.virtualContentModule.prevInfo.columnIndexes)) || ((args && args.refresh))) {
+            let translateX: number = this.virtualContentModule.getColumnOffset(this.virtualContentModule.startColIndex - 1);
+            let width: string =  this.virtualContentModule.getColumnOffset(this.virtualContentModule.endColIndex - 1) - translateX + '';
+            this.virtualContentModule.header.virtualEle.setWrapperWidth(width);
+            this.virtualContentModule.virtualEle.setWrapperWidth(width);
+            this.virtualContentModule.header.virtualEle.adjustTable(translateX, 0);
+            this.parent.getContentTable().parentElement.style.width = width + 'px';
+        }
+        if (this.dataSourceChanged) {
+            this.virtualContentModule.getPanel().firstElementChild.scrollTop = 0;
+            this.virtualContentModule.getPanel().firstElementChild.scrollLeft = 0;
+            if (this.virtualContentModule.header.virtualEle) {
+                this.virtualContentModule.header.virtualEle.adjustTable(0, 0);
+            }
+            this.parent.getContentTable().parentElement.style.transform = 'translate(0px,0px)';
+            this.virtualContentModule.refreshOffsets();
+            this.virtualContentModule.refreshVirtualElement();
+            this.dataSourceChanged = false;
+        }
+    }
+
+    private dataSourceModified(): void {
+        this.dataSourceChanged = true;
+    }
+
+    private wireEvents(): void {
+        EventHandler.add(this.parent.element, 'wheel', this.wheelScrollHandler, this);
+        EventHandler.add(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler, this);
+    }
+
+    private unWireEvents(): void {
+        EventHandler.remove(this.parent.element, 'wheel', this.wheelScrollHandler);
+        EventHandler.remove(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler);
+    }
+
+    private wheelScrollHandler(): void {
+        this.parent.isWheelScrolled = true;
+    }
+
+    private mouseLeaveHandler(): void {
+        this.parent.isWheelScrolled = false;
     }
 
     private setClientOffSet(args: ReturnType, index: number): void {
@@ -237,6 +336,10 @@ export class BlazorAction {
     public onGroupClick(args: object): void {
         let adaptor: string = 'interopAdaptor'; let content: string = 'contentModule';
         let invokeMethodAsync: string = 'invokeMethodAsync';
+        let exactTopIndex: string = 'exactTopIndex';
+        args[exactTopIndex] = Math.round((this.parent.element.querySelector('.e-content').scrollTop) / this.parent.getRowHeight());
+        let rowHeight: string = 'rowHeight';
+        args[rowHeight] = this.parent.getRowHeight();
         this.parent[adaptor][invokeMethodAsync]('OnGroupExpandClick', args).then(() => {
             this.parent[content].rowElements = [].slice.call(this.parent.getContentTable().querySelectorAll('tr.e-row[data-uid]'));
         });
@@ -285,6 +388,26 @@ export class BlazorAction {
         gObj.setProperties({filterSettings: {columns: []}}, true);
     }
 
+    private contentColGroup(): void {
+        let gObj: IGrid = this.parent;
+        let contentTable: Element = gObj.getContent().querySelector('.e-table');
+        contentTable.insertBefore(contentTable.querySelector(`#content-${gObj.element.id}colGroup`), contentTable.querySelector('tbody'));
+        if (gObj.frozenRows) {
+            let headerTable: Element =  gObj.getHeaderContent().querySelector('.e-table');
+            headerTable.insertBefore(headerTable.querySelector(`#${gObj.element.id}colGroup`), headerTable.querySelector('tbody'));
+        }
+        if (gObj.getFrozenColumns() !== 0) {
+            let movableContentTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('.e-table');
+            movableContentTable.insertBefore(movableContentTable.querySelector(`#${gObj.element.id}colGroup`),
+                                             movableContentTable.querySelector('tbody'));
+            if (gObj.frozenRows) {
+                let movableHeaderTable: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('.e-table');
+                movableHeaderTable.insertBefore(movableHeaderTable.querySelector(`#${gObj.element.id}colGroup`),
+                                                movableHeaderTable.querySelector('tbody'));
+            }
+        }
+    }
+
     public dataFailure(args: { result: Object[] }): void {
         this.parent.renderModule.dataManagerFailure(args, <NotifyArgs>this.actionArgs);
         this.actionArgs = this.parent.currentAction = {};
@@ -292,5 +415,8 @@ export class BlazorAction {
 
      public destroy(): void {
         this.removeEventListener();
+        if (this.parent.enableVirtualization) {
+            this.unWireEvents();
+        }
      }
 }

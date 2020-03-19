@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 17.4.40 (2019-12-24)
+## 18.1.36-beta (2020-03-19)
 
 ### Pdf Export
 
@@ -10,13 +10,9 @@
 
 - Performance issue with true type font is fixed.
 
-## 17.4.39 (2019-12-17)
-
-### Pdf Export
-
-#### Bug Fixes
-
 - Preservation issue with PDF colour empty constructor is fixed.
+
+- Preservation issue with PDF Grid in Angular sample browser is fixed.
 
 ## 17.3.9-beta (2019-09-20)
 

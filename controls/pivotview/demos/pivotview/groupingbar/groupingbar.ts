@@ -17,20 +17,28 @@ let pivotGridObj: PivotView = new PivotView({
         dataSource: pivot_dataset as IDataSet[],
         expandAll: false,
         enableSorting: true,
+        allowLabelFilter: true,
+        allowValueFilter: true,
         sortSettings: [{ name: 'company', order: 'Descending' }],
-        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
-        { name: 'company', type: 'Include', items: ['NIPAZ'] },
-        { name: 'gender', type: 'Include', items: ['male'] }],
+        formatSettings: [{ name: 'balance', format: 'C' }, { name: 'price', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
+        drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+        filterSettings: [
+            { name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') },
+            { name: 'age', type: 'Number', condition: 'Between', value1: '25', value2: '35' },
+            { name: 'eyeColor', type: 'Exclude', items: ['blue'] },
+            { name: 'name', type: 'Exclude', items: ['Knight Wooten'] }
+        ],
         calculatedFieldSettings: [{ name: 'price', formula: '(("Sum(balance)"*10^3+"Count(quantity)")/100)+"Sum(balance)"' },
         { name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }],
-        rows: [{ name: 'company', caption: 'Industry' }, { name: 'state' }],
-        columns: [{ name: 'name' }],
-        values: [{ name: 'balance', caption: 'Balance($)' }, { name: 'price', type: 'CalculatedField' },
-        { name: 'quantity' }], filters: [{ name: 'gender' }]
+        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+        values: [{ name: 'balance' }, { name: 'price', type: 'CalculatedField' }, { name: 'quantity' }],
+        filters: [{ name: 'name' }]
     },
     allowCalculatedField: true,
     showGroupingBar: true,
-    showFieldList: true
+    showFieldList: true,
+    height: 500
 });
 
 pivotGridObj.appendTo('#PivotView');
@@ -72,3 +80,4 @@ function onChange(args: any) {
         pivotGridObj.groupingBarSettings.showValueTypeIcon = args.checked
     }
 }
+/* tslint:enable */

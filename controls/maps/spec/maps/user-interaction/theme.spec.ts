@@ -29,7 +29,6 @@ describe('Map layer testing', () => {
         let tooltipElement: HTMLElement;
         let markerId: string = id + '_LayerIndex_0_MarkerIndex_0_dataIndex_';
         beforeAll(() => {
-            debugger;
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             maps = new Maps({
@@ -212,7 +211,6 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            debugger;
             expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#ffffff');
         });
         it('Checking with tooltip color', () => {
@@ -349,7 +347,6 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            debugger;
             expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#ffffff');
         });
         it('checking with MaterialDarktooltip color', () => {
@@ -487,7 +484,6 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            debugger;
             expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#000000');
         });
         it('checking with Highcontrast tooltip default color', () => {
@@ -621,7 +617,6 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             trigger.mousemoveEvent(element, 0, 0, 190, 230);
             tooltipElement = document.getElementById('container_mapsTooltip_text');
-            debugger;
             expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
         });
         it('checking with Bootstrap4tooltip default color', () => {

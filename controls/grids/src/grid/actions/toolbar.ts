@@ -261,6 +261,17 @@ export class Toolbar {
                         y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
                         gObj.createColumnchooser(x, y, targetEle);
                         break;
+                    case 'copy':
+                        if (isBlazor()) {
+                            gObj.copy();
+                        }
+                        break;
+                    case 'copyheader':
+                    case 'copyHeader':
+                        if (isBlazor()) {
+                            gObj.copy(true);
+                        }
+                        break;
                 }
             }
         });

@@ -928,6 +928,7 @@ export class Toolbar {
         // tslint:disable-next-line:max-line-length
         this.fileInputElement = createElement('input', { id: this.pdfViewer.element.id + '_fileUploadElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file' } });
         this.fileInputElement.setAttribute('accept', '.pdf');
+        this.fileInputElement.setAttribute('aria-label', 'file upload element');
         toolbarElement.appendChild(this.fileInputElement);
     }
 
@@ -1114,8 +1115,12 @@ export class Toolbar {
 
     // tslint:disable-next-line
     private addComments(targetElement: any): void {
-        if (targetElement.id === this.pdfViewer.element.id + '_comment') {
-            targetElement.classList.add('e-pv-select');
+        if (targetElement.id === this.pdfViewer.element.id + '_comment' || targetElement.id === this.pdfViewer.element.id + '_commentIcon') {
+            if (targetElement.id === this.pdfViewer.element.id + '_commentIcon' && targetElement.parentElement) {
+                targetElement.parentElement.classList.add('e-pv-select');
+            } else {
+                targetElement.classList.add('e-pv-select');
+            }
         } else {
             if (this.pdfViewer.enableRtl) {
                 targetElement.className = 'e-pv-comment-selection-icon e-pv-icon e-icon-left e-right';

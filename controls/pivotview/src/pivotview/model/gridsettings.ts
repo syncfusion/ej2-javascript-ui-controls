@@ -38,6 +38,7 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
       * * `Multiple`: Allows selection of multiple rows or columns or cells. 
       * @blazorType PivotTableSelectionType
       * @default Single 
+      * @blazorDefaultValue PivotTableSelectionType.Single
       */
      @Property('Single')
      public type: SelectionType;
@@ -66,6 +67,7 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
       *  rows can be selected by using CTRL or SHIFT key.
       * @blazorType PivotTableCheckboxSelectionType
       * @default Default
+      * @blazorDefaultValue PivotTableCheckboxSelectionType.Default
       */
      @Property('Default')
      public checkboxMode: CheckboxSelectionType;
@@ -106,6 +108,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * * `Default`: Displays grid lines based on the theme.
       * @blazorType PivotTableGridLine
       * @default Both
+      * @blazorDefaultValue PivotTableGridLine.Both
       */
      @Property('Both')
      public gridLines: GridLine;
@@ -156,6 +159,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * also it will display tooltip while hover on ellipsis applied cell.
       * @blazorType PivotTableClipMode
       * @default Ellipsis
+      * @blazorDefaultValue PivotTableClipMode.Ellipsis
       */
      @Property('Ellipsis')
      public clipMode: ClipMode;
@@ -195,6 +199,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * * `CurrentPage`: Prints the current page of the Grid.
       * @blazorType PivotTablePrintMode
       * @default AllPages
+      * @blazorDefaultValue PivotTablePrintMode.AllPages
       */
      @Property('AllPages')
      public printMode: PrintMode;

@@ -804,6 +804,220 @@ describe('Circular-Gauge Control', () => {
         });
     });
 
+
+    describe('Checking the behaviour of range in the presence of range bar pointer', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        let location: GaugeLocation;
+        let value: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{
+                    lineStyle: { width: 1.5, color: ' #9E9E9E' },
+                    radius: '95%',
+                    labelStyle: {
+                        position: 'Inside', autoAngle: true,
+                        hiddenLabel: 'None', font: { color: '#333333' }
+                    }, majorTicks: {
+                        position: 'Inside',
+                        width: 2, height: 10, color: '#757575'
+                    }, minorTicks: {
+                        position: 'Inside', width: 2,
+                        height: 5, color: '#757575'
+                    },
+                    minimum: 0, maximum: 160, startAngle: 220, endAngle: 140,
+                    ranges: [
+                        {
+                            start: 0, end: 100,
+                            radius: '100%',
+                            startWidth: 30, endWidth: 30,
+                            color: '#E0E0E0',
+                        },
+                    ],
+                    pointers: [{
+                            animation: { enable: false },
+                            value: 80, radius: '100%', color: '#333333',
+                            markerHeight: 15, markerWidth: 15, type: 'RangeBar',
+                            markerShape: 'Triangle',
+                            pointerWidth: 30,
+                        }]
+                }],
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+       
+        it('Checking range position', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('380.890044174712');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Inside';
+            gauge.refresh();
+        });
+
+        it('Checking opacity of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('opacity')).toBe('1');
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking color of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#E0E0E0');
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking stroke of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('stroke')).toBe('#E0E0E0');
+                done();
+            };
+            gauge.refresh();
+        });
+      
+        it('Checking stroke of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('stroke-width')).toBe('0');
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking stroke of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('stroke-dasharray')).toBe('0');
+                done();
+            };
+            gauge.refresh();
+        });
+
+    });
+
+    describe('Checking the behaviour of range in the absence of pointer', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        let location: GaugeLocation;
+        let value: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{
+                    lineStyle: { width: 1.5, color: ' #9E9E9E' },
+                    radius: '95%',
+                    labelStyle: {
+                        position: 'Inside', autoAngle: true,
+                        hiddenLabel: 'None', font: { color: '#333333' }
+                    }, majorTicks: {
+                        position: 'Inside',
+                        width: 2, height: 10, color: '#757575'
+                    }, minorTicks: {
+                        position: 'Inside', width: 2,
+                        height: 5, color: '#757575'
+                    },
+                    minimum: 0, maximum: 160, startAngle: 220, endAngle: 140,
+                    ranges: [
+                        {
+                            start: 0, end: 100,
+                            radius: '100%',
+                            startWidth: 30, endWidth: 30,
+                            color: '#E0E0E0',
+                        },
+                    ],
+                }],
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+       
+        it('Checking range position', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('380.890044174712');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Inside';
+            gauge.refresh();
+        });
+
+        it('Checking opacity of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('opacity')).toBe('1');
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking color of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('fill')).toBe('#E0E0E0');
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking stroke of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('stroke')).toBe('#E0E0E0');
+                done();
+            };
+            gauge.refresh();
+        });
+      
+        it('Checking stroke of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('stroke-width')).toBe('0');
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking stroke of the range', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                expect(svg.getAttribute('stroke-dasharray')).toBe('0');
+                done();
+            };
+            gauge.refresh();
+        });
+
+    });
+
+ 
+    
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

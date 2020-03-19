@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex, Collection, isBlazor } from '@syncfusion/ej2-base';
+﻿import { Component, EventHandler, Property, Event, EmitType, Complex, Collection, isBlazor } from '@syncfusion/ej2-base';
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
@@ -85,6 +85,10 @@ export interface SliderChangeEventArgs {
      * It is used to get the action applied on the Slider.
      */
     action: string;
+    /**
+     * It is used to check whether the event triggered is via user or programmatic way.
+     */
+    isInteracted: boolean;
 }
 
 /**
@@ -614,7 +618,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * We can trigger tooltipChange event when we change the Sider tooltip value.
-     * @deprecated
      * @event
      * @blazorProperty 'OnTooltipChange'
      */
@@ -711,7 +714,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * @private
      */
     public render(): void {
-        this.initialize();
+        if (!isBlazor() || !this.isServerRendered) {
+            this.initialize();
+        }
         this.initRender();
         this.wireEvents();
         this.setZindex();
@@ -758,11 +763,18 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * @private
      */
     private initRender(): void {
-        this.sliderContainer = this.createElement('div', { className: classNames.sliderContainer + ' ' + classNames.controlWrapper });
-        this.element.parentNode.insertBefore(this.sliderContainer, this.element);
-        this.sliderContainer.appendChild(this.element);
-        this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
-        this.element.appendChild(this.sliderTrack);
+        if (isBlazor() && this.isServerRendered) {
+            this.sliderContainer = this.element.parentElement;
+            this.sliderTrack = this.element.querySelector('.e-slider-track');
+            this.hiddenInput = this.element.parentElement.querySelector('.e-slider-input');
+        } else {
+            this.sliderContainer = this.createElement('div', { className: classNames.sliderContainer + ' ' + classNames.controlWrapper });
+            this.element.parentNode.insertBefore(this.sliderContainer, this.element);
+            this.sliderContainer.appendChild(this.element);
+            this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
+            this.element.appendChild(this.sliderTrack);
+        }
+
         this.element.tabIndex = -1;
         this.getThemeInitialization();
         this.setHandler();
@@ -770,16 +782,18 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.limits.enabled) {
             this.createLimitBar();
         }
-        this.setOrientClass();
-        this.hiddenInput = <HTMLInputElement>(this.createElement('input', {
-            attrs: {
-                type: 'hidden', value: (isNullOrUndefined(this.value) ? this.min.toString() : this.value.toString()),
-                name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
-                    '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
-            }
-        }));
-        this.hiddenInput.tabIndex = -1;
-        this.sliderContainer.appendChild(this.hiddenInput);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.setOrientClass();
+            this.hiddenInput = <HTMLInputElement>(this.createElement('input', {
+                attrs: {
+                    type: 'hidden', value: (isNullOrUndefined(this.value) ? this.min.toString() : this.value.toString()),
+                    name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
+                        '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
+                }
+            }));
+            this.hiddenInput.tabIndex = -1;
+            this.sliderContainer.appendChild(this.hiddenInput);
+        }
         if (this.showButtons) { this.setButtons(); }
         this.setEnableRTL();
         if (this.type === 'Range') {
@@ -804,15 +818,17 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.tooltip.isVisible) {
             this.renderTooltip();
         }
-        if (!this.enabled) {
-            addClass([this.sliderContainer], [classNames.sliderDisabled]);
-        } else {
-            removeClass([this.sliderContainer], [classNames.sliderDisabled]);
-        }
-        if (this.readonly) {
-            addClass([this.sliderContainer], [classNames.readonly]);
-        } else {
-            removeClass([this.sliderContainer], [classNames.readonly]);
+        if (!isBlazor() || !this.isServerRendered) {
+            if (!this.enabled) {
+                addClass([this.sliderContainer], [classNames.sliderDisabled]);
+            } else {
+                removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+            }
+            if (this.readonly) {
+                addClass([this.sliderContainer], [classNames.readonly]);
+            } else {
+                removeClass([this.sliderContainer], [classNames.readonly]);
+            }
         }
     }
 
@@ -841,20 +857,27 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private createLimitBar(): void {
-        let firstElementClassName: string = this.type !== 'Range' ? classNames.limitBarDefault :
-            classNames.limitBarFirst;
-        firstElementClassName += ' ' + classNames.limits;
-        this.limitBarFirst = <HTMLElement>(this.createElement('div', {
-            attrs: { class: firstElementClassName }
-        }));
-        this.element.appendChild(this.limitBarFirst);
-        if (this.type === 'Range') {
-            this.limitBarSecond = <HTMLElement>(this.createElement('div', {
-                attrs: {
-                    class: classNames.limitBarSecond + ' ' + classNames.limits
-                }
+        if (isBlazor() && this.isServerRendered) {
+            this.limitBarFirst = this.element.querySelectorAll('.e-limits')[0] as HTMLElement;
+            if (this.type === 'Range') {
+                this.limitBarSecond = this.element.querySelectorAll('.e-limit-second')[0] as HTMLElement;
+            }
+        } else {
+            let firstElementClassName: string = this.type !== 'Range' ? classNames.limitBarDefault :
+                classNames.limitBarFirst;
+            firstElementClassName += ' ' + classNames.limits;
+            this.limitBarFirst = <HTMLElement>(this.createElement('div', {
+                attrs: { class: firstElementClassName }
             }));
-            this.element.appendChild(this.limitBarSecond);
+            this.element.appendChild(this.limitBarFirst);
+            if (this.type === 'Range') {
+                this.limitBarSecond = <HTMLElement>(this.createElement('div', {
+                    attrs: {
+                        class: classNames.limitBarSecond + ' ' + classNames.limits
+                    }
+                }));
+                this.element.appendChild(this.limitBarSecond);
+            }
         }
     }
 
@@ -902,23 +925,32 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
     private createSecondHandle(): void {
-        this.secondHandle = this.createElement('div', {
-            attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
-            }
-        });
-        this.secondHandle.classList.add(classNames.sliderSecondHandle);
-        this.element.appendChild(this.secondHandle);
+        if (isBlazor() && this.isServerRendered) {
+            this.secondHandle = this.element.querySelector('.e-handle-second');
+        } else {
+            this.secondHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.secondHandle.classList.add(classNames.sliderSecondHandle);
+            this.element.appendChild(this.secondHandle);
+        }
     }
 
     private createFirstHandle(): void {
-        this.firstHandle = this.createElement('div', {
-            attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
-            }
-        });
-        this.firstHandle.classList.add(classNames.sliderFirstHandle);
-        this.element.appendChild(this.firstHandle);
+
+        if (isBlazor() && this.isServerRendered) {
+            this.firstHandle = this.element.querySelector('.e-handle-first');
+        } else {
+            this.firstHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.firstHandle.classList.add(classNames.sliderFirstHandle);
+            this.element.appendChild(this.firstHandle);
+        }
         if (this.isMaterialTooltip) {
             this.materialHandle = this.createElement('div', {
                 attrs: {
@@ -1026,22 +1058,24 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setEnableRTL(): void {
-        this.enableRtl && this.orientation !== 'Vertical' ? addClass([this.sliderContainer], classNames.rtl) :
-            removeClass([this.sliderContainer], classNames.rtl);
-        let preDir: string = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
-        if (this.enableRtl) {
-            this.horDir = 'right';
-            this.verDir = 'bottom';
-        } else {
-            this.horDir = 'left';
-            this.verDir = 'bottom';
-        }
-        let currDir: string = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
-        if (preDir !== currDir) {
-            if (this.orientation === 'Horizontal') {
-                setStyleAttribute(this.firstHandle, { 'right': '', 'left': 'auto' });
-                if (this.type === 'Range') {
-                    setStyleAttribute(this.secondHandle, { 'top': '', 'left': 'auto' });
+        if (!isBlazor() || !this.isServerRendered) {
+            this.enableRtl && this.orientation !== 'Vertical' ? addClass([this.sliderContainer], classNames.rtl) :
+                removeClass([this.sliderContainer], classNames.rtl);
+            let preDir: string = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (this.enableRtl) {
+                this.horDir = 'right';
+                this.verDir = 'bottom';
+            } else {
+                this.horDir = 'left';
+                this.verDir = 'bottom';
+            }
+            let currDir: string = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (preDir !== currDir) {
+                if (this.orientation === 'Horizontal') {
+                    setStyleAttribute(this.firstHandle, { 'right': '', 'left': 'auto' });
+                    if (this.type === 'Range') {
+                        setStyleAttribute(this.secondHandle, { 'top': '', 'left': 'auto' });
+                    }
                 }
             }
         }
@@ -1054,8 +1088,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             value: this.value,
             text: ''
         };
-        this.setTooltipContent();
-        args.text = text = this.tooltipObj.content as string;
+        if (isBlazor() && this.isServerRendered) {
+            args.text = this.formatContent(this.tooltipFormatInfo, false);
+        } else {
+            this.setTooltipContent();
+            args.text = text = this.tooltipObj.content as string;
+        }
         this.trigger('tooltipChange', args, (observedArgs: SliderChangeEventArgs) => {
             this.addTooltipClass(observedArgs.text);
             if (text !== observedArgs.text) {
@@ -1330,7 +1368,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         });
         if (this.isMaterialTooltip) {
             this.sliderContainer.classList.add(classNames.materialSlider);
-            this.tooltipValue();
+            if (!isBlazor()) {
+                this.tooltipValue();
+            }
             this.tooltipObj.animation.close.effect = 'None';
             this.tooltipObj.open(this.firstHandle);
         }
@@ -1341,17 +1381,23 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setButtons(): void {
-        this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
-        this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
-        this.firstBtn.tabIndex = -1;
-        this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
-        this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
-        this.secondBtn.tabIndex = -1;
-        this.sliderContainer.classList.add(classNames.sliderButtonClass);
-        this.sliderContainer.appendChild(this.firstBtn);
-        this.sliderContainer.appendChild(this.secondBtn);
-        this.sliderContainer.appendChild(this.element);
-        this.buttonTitle();
+        if (isBlazor() && this.isServerRendered) {
+            this.firstBtn = this.element.parentElement.querySelector('.e-slider-button.e-first-button');
+            this.secondBtn = this.element.parentElement.querySelector('.e-slider-button.e-second-button');
+
+        } else {
+            this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
+            this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.firstBtn.tabIndex = -1;
+            this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
+            this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.secondBtn.tabIndex = -1;
+            this.sliderContainer.classList.add(classNames.sliderButtonClass);
+            this.sliderContainer.appendChild(this.firstBtn);
+            this.sliderContainer.appendChild(this.secondBtn);
+            this.sliderContainer.appendChild(this.element);
+            this.buttonTitle();
+        }
     }
 
     private buttonTitle(): void {
@@ -1403,8 +1449,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.getHandle().classList.add('e-large-thumb-size');
         }
     }
+
     private repeatHandlerUp(e: MouseEvent): void {
-        this.changeEvent('changed');
+        this.changeEvent('changed', e);
         this.closeTooltip();
         clearInterval(this.repeatInterval);
         this.getHandle().focus();
@@ -1432,13 +1479,18 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     // tslint:disable-next-line:max-func-body-length
     private renderScale(): void {
+        let liElementPosition: number = 0;
         let orien: string = this.orientation === 'Vertical' ? 'v' : 'h';
         let spanText: number;
         this.noOfDecimals = this.numberOfDecimals(this.step);
-        this.ul = this.createElement('ul', {
-            className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
-            attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
-        });
+        if (isBlazor() && this.isServerRendered) {
+            this.ul = this.element.querySelector('ul');
+        } else {
+            this.ul = this.createElement('ul', {
+                className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
+                attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
+            });
+        }
         this.ul.style.zIndex = '-1';
         if (Browser.isAndroid && orien === 'h') {
             this.ul.classList.add(classNames.sliderTickPosition);
@@ -1457,7 +1509,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         let customStep: number = this.customTickCounter(bigNum);
         let count: number = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
             (bigNum * customStep) + bigNum : Math.abs((max - min) / steps);
-        this.element.appendChild(this.ul);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.element.appendChild(this.ul);
+        }
         let li: HTMLElement; let start: number = parseFloat(this.min.toString());
         if (orien === 'v') { start = parseFloat(this.max.toString()); }
         let left: number = 0;
@@ -1514,10 +1568,20 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 for (let j: number = 0; j < repeat; j++) {
                     this.createTick(li, start, tickWidth);
                 }
+                if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
             } else if (isNullOrUndefined(this.customValues)) {
                 this.formatTicksValue(li, start);
+                if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
             }
-            this.ul.appendChild(li);
+            if (!isBlazor() || !this.isServerRendered) {
+                this.ul.appendChild(li);
+            }
             this.tickElementCollection.push(li);
             let decimalPoints: number;
             if (isNullOrUndefined(this.customValues)) {
@@ -1535,6 +1599,32 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
         this.ticksAlignment(orien, tickWidth);
+    }
+    private updateTicksValues(start: number, liElement: Element): void {
+        if (liElement.childElementCount > 0) {
+            for (let i: number = 0; i < liElement.childElementCount; i++) {
+                this.blazortTicksValue(liElement, start, liElement.children[i]);
+            }
+        } else {
+            this.blazortTicksValue(liElement, start, null);
+        }
+    }
+
+    private blazortTicksValue(li: Element, start: number, span: Element): void {
+        const tickText: string = this.formatNumber(start);
+        const text: string = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
+            this.formatString(start, this.ticksFormatInfo).formatString : tickText;
+        let eventArgs: SliderTickEventArgs = { value: start, text: text, tickElement: li };
+        this.trigger('renderingTicks', eventArgs, (observedArgs: SliderTickEventArgs) => {
+            li.setAttribute('title', observedArgs.text.toString());
+            if (span) {
+                if (this.enableHtmlSanitizer) {
+                    span.innerHTML = SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                } else {
+                    span.innerHTML = observedArgs.text.toString();
+                }
+            }
+        });
     }
 
     private ticksAlignment(orien: string, tickWidth: number, triggerEvent: boolean = true): void {
@@ -1613,8 +1703,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private tickValuePosition(): void {
+        this.firstChild = this.element.querySelector('ul').children[0];
         let first: { width: number, height: number } = (this.firstChild as HTMLElement).getBoundingClientRect();
         let firstChild: { width: number, height: number };
+        let otherChild: { width: number, height: number };
         let smallStep: number = this.ticks.smallStep;
         let count: number = Math.abs((parseFloat(formatUnit(this.max))) - (parseFloat(formatUnit(this.min)))) / smallStep;
         if (this.firstChild.children.length > 0) {
@@ -1632,7 +1724,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             (first.height * 2) : (first.width * 2);
         for (let i: number = 0; i < this.firstChild.children.length; i++) {
             if (this.orientation === 'Vertical') {
-                (this.firstChild.children[i] as HTMLElement).style.top = -(firstChild.height / 2) + 'px';
+                if (!isBlazor() || !this.isServerRendered) {
+                    (this.firstChild.children[i] as HTMLElement).style.top = -(firstChild.height / 2) + 'px';
+                }
             } else {
                 if (!this.enableRtl) {
                     (this.firstChild.children[i] as HTMLElement).style.left = -(firstChild.width / 2) + 'px';
@@ -1643,9 +1737,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
         for (let i: number = 0; i < other.length; i++) {
-            let otherChild: { width: number, height: number } = (other[i] as HTMLElement).getBoundingClientRect();
+            otherChild = (other[i] as HTMLElement).getBoundingClientRect();
             if (this.orientation === 'Vertical') {
-                setStyleAttribute(other[i] as HTMLElement, { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                if (!isBlazor() || !this.isServerRendered) {
+                    setStyleAttribute(other[i] as HTMLElement, { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                }
             } else {
                 setStyleAttribute(other[i] as HTMLElement, { left: (tickWidth - otherChild.width) / 2 + 'px' });
             }
@@ -1653,28 +1749,69 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.enableRtl && this.lastChild.children.length && count !== 0) {
             (this.lastChild.children[0] as HTMLElement).style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
             if (this.ticks.placement === 'Both') {
-                (this.lastChild.children[1] as HTMLElement).style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+                if (!isBlazor()) {
+                    (this.lastChild.children[1] as HTMLElement).style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+                }
             }
         }
         if (count === 0) {
             if (this.orientation === 'Horizontal') {
                 if (!this.enableRtl) {
                     (this.firstChild as HTMLElement).classList.remove(classNames.sliderLastTick);
-                    (this.firstChild as HTMLElement).style.left = this.firstHandle.style.left;
+                    if (!isBlazor()) {
+                        (this.firstChild as HTMLElement).style.left = this.firstHandle.style.left;
+                    }
                 } else {
                     (this.firstChild as HTMLElement).classList.remove(classNames.sliderLastTick);
                     (this.firstChild as HTMLElement).style.right = this.firstHandle.style.right;
-                    (this.firstChild.children[0] as HTMLElement).style.left =
-                        (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
-                    if (this.ticks.placement === 'Both') {
-                        (this.firstChild.children[1] as HTMLElement).style.left =
+                    if (!isBlazor()) {
+                        (this.firstChild.children[0] as HTMLElement).style.left =
                             (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        if (this.ticks.placement === 'Both') {
+                            (this.firstChild.children[1] as HTMLElement).style.left =
+                                (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        }
                     }
                 }
             }
-            if (this.orientation === 'Vertical') {
-                (this.firstChild as HTMLElement).classList.remove(classNames.sliderLastTick);
+            if (!isBlazor() || !this.isServerRendered) {
+                if (this.orientation === 'Vertical') {
+                    (this.firstChild as HTMLElement).classList.remove(classNames.sliderLastTick);
+                }
             }
+        }
+        if (isBlazor() && this.isServerRendered) {
+            let args: object;
+            if (this.firstChild != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { firstTickPostion: (this.firstChild.children[0] as HTMLElement).style.left };
+                } else {
+                    args = { firstTickPostion: -(firstChild.height / 2) + 'px' };
+                }
+            }
+            if (other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { otherTicksPosition: (other[0] as HTMLElement).style.left };
+                } else {
+                    args = { otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px' };
+                }
+            }
+            if (this.firstChild != null && other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = {
+                        firstTickPostion: (this.firstChild.children[0] as HTMLElement).style.left,
+                        otherTicksPosition: (other[0] as HTMLElement).style.left
+                    };
+                } else {
+                    args = {
+                        firstTickPostion: -(firstChild.height / 2) + 'px',
+                        otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px'
+                    };
+                }
+            }
+            // tslint:disable
+            (this as any).interopAdaptor.invokeMethodAsync('SliderTicksData', args);
+            // tslint:enable
         }
     }
 
@@ -1926,11 +2063,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.handlePos1 = values[1];
                 this.preHandlePos1 = this.handlePos1;
             }
-            this.setHandlePosition();
+            this.setHandlePosition(null);
             this.handleStart();
             this.value = this.handleVal1;
             this.setAriaAttrValue(this.firstHandle);
-            this.changeEvent('changed');
+            this.changeEvent('changed', null);
         } else {
             this.validateRangeValue();
         }
@@ -1967,7 +2104,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private setHandlePosition(): void {
+    private setHandlePosition(event: MouseEvent | TouchEvent): void {
         let handle: HTMLElement[];
         let pos: number = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
         if (this.isMaterialTooltip) {
@@ -1983,8 +2120,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             } else {
                 handle.style.bottom = `${pos}px`;
             }
+            if (isBlazor() && this.isServerRendered) {
+                handle.style.removeProperty('visibility');
+            }
         });
-        this.changeEvent('change');
+        this.changeEvent('change', event);
     }
 
     private getHandle(): HTMLElement {
@@ -1994,18 +2134,18 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private setRangeValue(): void {
         this.updateRangeValue();
         this.activeHandle = 1;
-        this.setHandlePosition();
+        this.setHandlePosition(null);
         this.activeHandle = 2;
-        this.setHandlePosition();
+        this.setHandlePosition(null);
         this.activeHandle = 1;
     }
 
-    private changeEvent(eventName: string): void {
+    private changeEvent(eventName: string, e: MouseEvent | TouchEvent | KeyboardEvent): void {
         let previous: number | number[] = eventName === 'change' ? this.previousVal : this.previousChanged;
         if (this.type !== 'Range') {
             this.setProperties({ 'value': this.handleVal1 }, true);
             if (previous !== this.value) {
-                this.trigger(eventName, this.changeEventArgs(eventName));
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.firstHandle);
@@ -2015,7 +2155,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if ((<number[]>previous).length === (<number[]>this.value).length
                 && (this.value as number[])[0] !== (<number[]>previous)[0] || (this.value as number[])[1] !== (<number[]>previous)[1]
             ) {
-                this.trigger(eventName, this.changeEventArgs(eventName));
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
                 this.setPreviousVal(eventName, this.value);
             }
             this.setAriaAttrValue(this.getHandle());
@@ -2023,14 +2163,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.hiddenInput.value = this.value.toString();
     }
 
-    private changeEventArgs(eventName: string): SliderChangeEventArgs {
+    private changeEventArgs(eventName: string, e: MouseEvent | TouchEvent | KeyboardEvent): SliderChangeEventArgs {
         let eventArgs: SliderChangeEventArgs;
         if (this.tooltip.isVisible && this.tooltipObj) {
-            this.tooltipValue();
+            if (!isBlazor() || !this.isServerRendered) {
+                this.tooltipValue();
+            }
             eventArgs = {
                 value: this.value,
                 previousValue: eventName === 'change' ? this.previousVal : this.previousChanged,
-                action: eventName, text: <string>this.tooltipObj.content
+                action: eventName, text: <string>this.tooltipObj.content, isInteracted: isNullOrUndefined(e) ? false : true
             };
         } else {
             eventArgs = {
@@ -2039,7 +2181,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 action: eventName, text: isNullOrUndefined(this.ticksFormatInfo.format) ? this.value.toString() :
                     (this.type !== 'Range' ? this.formatString(this.value as number, this.ticksFormatInfo).formatString :
                         (this.formatString((this.value as number[])[0], this.ticksFormatInfo).formatString + ' - ' +
-                            this.formatString((this.value as number[])[1], this.ticksFormatInfo).formatString))
+                            this.formatString((this.value as number[])[1], this.ticksFormatInfo).formatString)),
+                isInteracted: isNullOrUndefined(e) ? false : true
             };
         }
         return eventArgs;
@@ -2178,9 +2321,14 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.setLimitBar();
         }
         if (this.ticks.placement !== 'None' && this.ul) {
-            this.removeElement(this.ul);
-            this.ul = undefined;
+            if (!isBlazor()) {
+                this.removeElement(this.ul);
+                this.ul = undefined;
+            }
             this.renderScale();
+            if (isBlazor()) {
+                this.tickValuePosition();
+            }
         }
         this.handleStart();
         if (!this.tooltip.isVisible) {
@@ -2191,7 +2339,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             });
         }
-        this.refreshTooltip(this.tooltipTarget);
+        if (!isBlazor() || !this.isServerRendered) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
         this.setBarColor();
     }
 
@@ -2231,7 +2381,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.type !== 'Default') {
                 this.setRangeBar();
             }
-            this.setHandlePosition();
+            this.setHandlePosition(null);
         }
     }
 
@@ -2385,7 +2535,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = transition.rangeBar;
         }
-        this.setHandlePosition();
+        this.setHandlePosition(evt);
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -2492,15 +2642,15 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
         this.activeHandle = 1;
-        this.setHandlePosition();
+        this.setHandlePosition(event);
         this.activeHandle = 2;
-        this.setHandlePosition();
+        this.setHandlePosition(event);
         this.tooltipToggle(this.rangeBar);
         this.setRangeBar();
     }
 
-    private sliderBarUp(): void {
-        this.changeEvent('changed');
+    private sliderBarUp(event: MouseEvent): void {
+        this.changeEvent('changed', event);
         this.handleFocusOut();
         this.firstHandle.classList.remove(classNames.sliderActiveHandle);
         if (this.type === 'Range') {
@@ -2588,7 +2738,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = 'none';
         }
-        this.setHandlePosition();
+        this.setHandlePosition(evt);
         if (this.isMaterial && !this.tooltip.isVisible &&
             !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
@@ -2600,7 +2750,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private dragRangeBarUp(event: MouseEvent & TouchEvent): void {
-        this.changeEvent('changed');
+        this.changeEvent('changed', event);
         this.closeTooltip();
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
@@ -2756,7 +2906,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
         this.closeTooltip();
-        this.changeEvent('changed');
+        this.changeEvent('changed', event);
     }
 
     private hover(event: MouseEvent): void {
@@ -2795,7 +2945,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             element.parentNode.removeChild(element);
         }
     }
-    private changeSliderType(type: SliderType): void {
+    private changeSliderType(type: SliderType, args: string): void {
         if (this.isMaterialTooltip && this.materialHandle) {
             this.sliderContainer.classList.remove(classNames.materialSlider);
             this.removeElement(this.materialHandle);
@@ -2849,7 +2999,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.renderTooltip();
             this.wireMaterialTooltipEvent(false);
         }
-        this.updateConfig();
+        this.setBarColor();
+        if ((!isBlazor() && !this.isServerRendered) || args !== 'tooltip' ) {
+            this.updateConfig();
+        }
     }
 
     private changeRtl(): void {
@@ -2868,14 +3021,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private changeOrientation(): void {
-        this.changeSliderType(this.type);
+        this.changeSliderType(this.type, 'null');
     }
 
     private updateConfig(): void {
         this.setEnableRTL();
         this.setValue();
         if (this.tooltip.isVisible) {
-            this.refreshTooltip(this.tooltipTarget);
+            if (!isBlazor()) {
+                this.refreshTooltip(this.tooltipTarget);
+            }
         }
         if (this.ticks.placement !== 'None') {
             if (this.ul) {
@@ -2931,12 +3086,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');
         }
-        this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
-        detach(this.sliderContainer);
+        if (!isBlazor() && !this.isServerRendered) {
+            this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
+            detach(this.sliderContainer);
+        }
         if (this.tooltip.isVisible) {
             this.tooltipObj.destroy();
         }
-        this.element.innerHTML = '';
+        if (!isBlazor() && !this.isServerRendered) {
+            this.element.innerHTML = '';
+        }
     }
 
     /**
@@ -2957,7 +3116,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                         this.setProperties({ 'value': value }, true);
                         if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
                             this.setValue();
-                            this.refreshTooltip(this.tooltipTarget);
+                            if (!isBlazor() || !this.isServerRendered) {
+                                this.refreshTooltip(this.tooltipTarget);
+                            }
                             if (this.type === 'Range') {
                                 if (isNullOrUndefined(newProp.value) || (oldProp.value as number[])[1] === (value as number[])[1]) {
                                     this.activeHandle = 1;
@@ -2971,35 +3132,71 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'min':
                 case 'step':
                 case 'max':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.setMinMaxValue();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'tooltip':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
-                        this.setTooltip();
+                        this.setTooltip(prop);
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'type':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
                         && !isNullOrUndefined(oldProp.type)) {
-                        this.changeSliderType(oldProp.type);
+                        this.changeSliderType(oldProp.type, prop);
                         this.setZindex();
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'enableRtl':
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                        this.isServerRendered = false;
+                    }
                     if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
                         this.rtl = oldProp.enableRtl;
                         this.changeRtl();
+                    }
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'limits':
                     this.limitsPropertyChange();
                     break;
                 case 'orientation':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.changeOrientation();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'ticks':
+
                     if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
-                        detach(this.ul);
+                        if (!isBlazor() || !this.isServerRendered) {
+                            detach(this.ul);
+                        }
                         Array.prototype.forEach.call(this.sliderContainer.classList, (className: string) => {
                             if (className.match(/e-scale-/)) {
                                 this.sliderContainer.classList.remove(className);
@@ -3024,28 +3221,57 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                             this.wireButtonEvt(false);
                         }
                     } else {
-                        if (this.firstBtn && this.secondBtn) {
-                            this.sliderContainer.removeChild(this.firstBtn);
-                            this.sliderContainer.removeChild(this.secondBtn);
-                            this.sliderContainer.classList.remove(classNames.sliderButtonClass);
-                            this.firstBtn = undefined;
-                            this.secondBtn = undefined;
-                            this.reposition();
+                        if (!isBlazor() || !this.isServerRendered) {
+                            if (this.firstBtn && this.secondBtn) {
+                                this.sliderContainer.removeChild(this.firstBtn);
+                                this.sliderContainer.removeChild(this.secondBtn);
+                                this.sliderContainer.classList.remove(classNames.sliderButtonClass);
+                                this.firstBtn = undefined;
+                                this.secondBtn = undefined;
+                                this.reposition();
+                            }
+                        }
+                    }
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
                         }
                     }
                     break;
                 case 'enabled':
                     this.setEnabled();
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
                     break;
                 case 'readonly':
                     this.setReadOnly();
+                    if (isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
                     break;
                 case 'customValues':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.setValue();
                     this.reposition();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
                 case 'colorRange':
+                    if (isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
                     this.reposition();
+                    if (isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
                     break;
             }
         }
@@ -3063,7 +3289,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setMinMaxValue(): void {
         this.setValue();
-        this.refreshTooltip(this.tooltipTarget);
+        if (!isBlazor()) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
         if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
             if (this.ul) {
                 detach(this.ul);
@@ -3095,8 +3323,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    public setTooltip(): void {
-        this.changeSliderType(this.type);
+    public setTooltip(args?: string): void {
+        this.changeSliderType(this.type, args);
     }
     private setBarColor(): void {
         let trackPosition: number;

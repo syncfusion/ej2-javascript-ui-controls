@@ -269,6 +269,7 @@ export class ConnectorEditing extends ToolBase {
                 }
             }
         } else {
+            this.commandHandler.enableServerDataBinding(false);
             let index: number = this.findIndex(connector as Connector, point);
             if (connector.segments && connector.segments[index] && connector.segments[index].type === 'Straight') {
                 let segment: StraightSegment = connector.segments[index] as StraightSegment;
@@ -280,6 +281,7 @@ export class ConnectorEditing extends ToolBase {
                 connector.segments.splice(index, 0, newseg);
                 updateSeg = true;
             }
+            this.commandHandler.enableServerDataBinding(true);
         }
         if (updateSeg) {
             this.commandHandler.updateEndPoint(connector as Connector, oldValues);

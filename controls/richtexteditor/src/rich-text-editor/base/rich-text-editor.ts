@@ -9,10 +9,10 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs} from './interface';
+import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';
 import { BeforeQuickToolbarOpenArgs, ChangeEventArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
-import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs } from './interface';
+import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType, ToolbarType } from './enum';
@@ -187,6 +187,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * itemConfigs: Modify the default toolbar item configuration like icon class.
      * 
      * > By default, The toolbar is rendered with scrollable in mobile devices and does not support the toolbar type.
+     * 
+     * {% codeBlock src='rich-text-editor/toolbar-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: true,
@@ -210,6 +213,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * image - Specifies the items to be rendered in quick toolbar based on image element such as 'Replace',
      * 'Align', 'Caption', 'Remove', 'InsertLink', 'Display', 'AltText', 'Dimension'.
      * * text	 - Specifies the items to be rendered in quick toolbar based on text element such as 'Cut', 'Copy', 'Paste'.
+     * 
+     * {% codeBlock src='rich-text-editor/quick-toolbar-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: true,
@@ -229,6 +235,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * deniedTags	 -  Specifies the tags to restrict when pasting in RTE.
      * * keepFormat	 -   Set boolean value to keep or remove the from when pasting.
      * * plainText	 -   Set boolean value to paste as plain text or not.
+     * 
+     * {% codeBlock src='rich-text-editor/paste-cleanup-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  prompt: false,
@@ -255,6 +264,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * resources - we can add both styles and scripts to the iframe.
      *    1. styles[] - An array of CSS style files to inject inside the iframe to display content
      *    2. scripts[] - An array of JS script files to inject inside the iframe
+     * 
+     * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: false,
@@ -275,6 +287,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
      * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
      * * path - Specifies the path of the location to store the images and refer it to display the images.
+     * 
+     * {% codeBlock src='rich-text-editor/insert-image-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  allowedTypes: ['.jpeg', '.jpg', '.png'],
@@ -296,6 +311,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * minWidth - Sets the default minWidth of the table when it is inserted in the RichTextEditor.
      * * maxWidth - Sets the default maxWidth of the table when it is inserted in the RichTextEditor.
      * * resize - To enable resize the table.
+     * 
+     * {% codeBlock src='rich-text-editor/table-settings/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  width: '100%',
@@ -320,6 +338,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * enable -  set boolean value to enable or disable the inline edit mode.
      * * onSelection - If its set to true, upon selecting the text, the toolbar is opened in inline. 
      * If its set to false, upon clicking to the target element, the toolbar is opened.
+     * 
+     * {% codeBlock src='rich-text-editor/inline-mode/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  enable: false,
@@ -337,6 +358,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Enables or disables the persisting component's state between page reloads. 
      * If enabled, the value of RichTextEditor is persisted
+     * 
+     * {% codeBlock src='rich-text-editor/enable-persistence/index.md' %}{% endcodeBlock %}
+     * 
      * @default false.
      */
     @Property(false)
@@ -344,6 +368,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Enables or disables the resizing option in the editor. 
      * If enabled, the RichTextEditor can be resized by dragging the resize icon in the bottom right corner.
+     * 
+     * {% codeBlock src='rich-text-editor/enable-resize/index.md' %}{% endcodeBlock %}
+     * 
      * @default false.
      */
     @Property(false)
@@ -370,6 +397,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public readonly: boolean;
     /**
      * Specifies a value that indicates whether the component is enabled or not.
+     * 
+     * {% codeBlock src='rich-text-editor/enabled/index.md' %}{% endcodeBlock %}
+     * 
      * @default true.
      */
     @Property(true)
@@ -408,12 +438,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**     
      * Specifies the value displayed in the RichTextEditor's content area and it should be string. 
      * The content of RichTextEditor can be loaded with dynamic data such as database, AJAX content, and more.
+     * 
+     * {% codeBlock src='rich-text-editor/value/index.md' %}{% endcodeBlock %}
+     * 
      * @default null 
      */
     @Property(null)
     public value: string;
     /**     
      * Specifies the count of undo history which is stored in undoRedoManager. 
+     * 
+     * {% codeBlock src='rich-text-editor/undo-redo-steps/index.md' %}{% endcodeBlock %}
+     * 
      * @default 30 
      */
     @Property(30)
@@ -439,18 +475,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**     
      * Customizes the key actions in RichTextEditor.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * 
+     * {% codeBlock src='rich-text-editor/keyconfig/index.md' %}{% endcodeBlock %}
+     * 
      * @default null 
      */
     @Property(null)
     public keyConfig: { [key: string]: string };
     /**     
      * Sets Boolean value to enable or disable the display of the character counter. 
+     * 
+     * {% codeBlock src='rich-text-editor/show-char-count/index.md' %}{% endcodeBlock %}
+     * 
      * @default false 
      */
     @Property(false)
     public showCharCount: boolean;
     /**     
      * Allows the tab key action in the RichTextEditor content. 
+     * 
+     * {% codeBlock src='rich-text-editor/enable-tab-key/index.md' %}{% endcodeBlock %}
+     * 
      * @default false 
      */
     @Property(false)
@@ -458,18 +503,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**     
      * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks, otherwise
      * the given URL will automatically convert to absolute path URL by prefixing `https://` for hyperlinks.
+     * 
+     * {% codeBlock src='rich-text-editor/enable-autourl/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
     public enableAutoUrl: boolean;
     /**     
      * Specifies the maximum number of characters allowed in the RichTextEditor component.
+     * 
+     * {% codeBlock src='rich-text-editor/max-length/index.md' %}{% endcodeBlock %}
+     * 
      * @default -1
      */
     @Property(-1)
     public maxLength: number;
     /**
      * Predefine the collection of paragraph styles along with quote and code style that populate in format dropdown from the toolbar.
+     * 
+     * {% codeBlock src='rich-text-editor/format/index.md' %}{% endcodeBlock %}
+     * 
      * @default
      * {
      *  default: 'Paragraph',
@@ -491,6 +545,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public format: FormatModel;
     /**     
      * Predefine the font families that populate in font family dropdown list from the toolbar.
+     * 
+     * {% codeBlock src='rich-text-editor/font-family/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  default: 'Segoe UI',
@@ -513,6 +570,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public fontFamily: FontFamilyModel;
     /**     
      * Predefine the font sizes that populate in font size dropdown list from the toolbar.
+     * 
+     * {% codeBlock src='rich-text-editor/font-size/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  default: '10',
@@ -532,6 +592,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public fontSize: FontSizeModel;
     /**     
      * Predefine the color palette that can be rendered for font color toolbar command .
+     * 
+     * {% codeBlock src='rich-text-editor/font-color/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  columns: 10,
@@ -550,6 +613,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public fontColor: FontColorModel;
     /**     
      * Predefine the color palette that can be rendered for background color (text highlighted color) toolbar command.
+     * 
+     * {% codeBlock src='rich-text-editor/background-color/index.md' %}{% endcodeBlock %}
+     * 
      * @default 
      * {
      *  columns: 5,
@@ -566,6 +632,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Accepts the template design and assigns it as RichTextEditor’s content.
      * The built-in template engine which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals
+     * 
+     * {% codeBlock src='rich-text-editor/value-template/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     @Property(null)
@@ -574,6 +643,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specifies the saveInterval in milliseconds for autosave the value.
      * The change event will be triggered if the content was changed from the last saved interval.
+     * 
+     * {% codeBlock src='rich-text-editor/save-interval/index.md' %}{% endcodeBlock %}
+     * 
      * @default 10000
      */
     @Property(10000)
@@ -764,6 +836,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public resizeStop: EmitType<ResizeArgs>;
     /**     
      * Customize keyCode to change the key value. 
+     * 
+     * {% codeBlock src='rich-text-editor/formatter/index.md' %}{% endcodeBlock %}
+     * 
      * @default null 
      * @blazorType object
      */
@@ -1008,7 +1083,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public executeCommand(
         commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
-        IImageCommandsArgs | ITableCommandsArgs): void {
+            IImageCommandsArgs | ITableCommandsArgs,
+        option?: ExecuteCommandOption): void {
         value = this.htmlPurifier(commandName, value);
         if (this.editorMode === 'HTML') {
             let range: Range = this.getRange();
@@ -1022,6 +1098,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         let tool: IExecutionGroup = executeGroup[commandName];
+        if (option && option.undo) {
+            if (option.undo && this.formatter.getUndoRedoStack().length === 0) {
+                this.formatter.saveData();
+            }
+        }
         this.formatter.editorManager.execCommand(
             tool.command,
             tool.subCommand ? tool.subCommand : (value ? value : tool.value),
@@ -1030,12 +1111,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             (value ? value : tool.value),
             (value ? value : tool.value)
         );
+        if (option && option.undo) {
+            this.formatter.saveData();
+            this.formatter.enableUndo(this);
+        }
         this.setPlaceHolder();
     }
 
     private htmlPurifier(
         command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
-        IImageCommandsArgs | ITableCommandsArgs): string {
+            IImageCommandsArgs | ITableCommandsArgs): string {
         if (this.editorMode === 'HTML') {
             switch (command) {
                 case 'insertHTML':
@@ -1388,8 +1473,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.valueContainer.removeAttribute('name');
                 detach(this.element);
                 if (this.originalElement.innerHTML.trim() !== '') {
-                    this.valueContainer.value = this.originalElement.innerHTML.trim();
-                    if (!isBlazor()) { this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true); }
+                    if (!isBlazor()) {
+                        this.valueContainer.value = this.originalElement.innerHTML.trim();
+                        this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
+                    }
                 } else {
                     this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
                 }
@@ -1885,7 +1972,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private isBlazor(): boolean {
-        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
+        return (!isBlazor() ? false : true);
     }
 
     private setValue(): void {

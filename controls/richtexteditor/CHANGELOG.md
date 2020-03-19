@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 17.4.55 (2020-03-10)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#266660` - The script errors thrown while destroying the multiple Rich Text Editor with the showCharCount property has been resolved.
-
 ## 17.4.51 (2020-02-25)
 
 ### RichTextEditor

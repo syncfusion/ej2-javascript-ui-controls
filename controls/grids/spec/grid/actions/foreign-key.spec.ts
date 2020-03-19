@@ -1,7 +1,7 @@
 import { getValue } from '@syncfusion/ej2-base';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { Grid } from '../../../src/grid/base/grid';
-import { fdata, employeeSelectData, fCustomerData, data } from '../base/datasource.spec';
+import { fdata, employeeSelectData, fCustomerData, data, customerData } from '../base/datasource.spec';
 import { DataManager, Predicate, Query, Deferred } from '@syncfusion/ej2-data';
 import { Column } from '../../../src/grid/models/column';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
@@ -18,7 +18,7 @@ import { AggregateColumnModel } from '../../../src/grid/models/aggregate-model';
 import { getColumnByForeignKeyValue, refreshForeignData } from '../../../src/grid/base/util';
 import { getForeignData } from '../../../src/grid/base/util';
 import { CustomSummaryType } from '../../../src/grid/base/type';
-import { IRow } from '../../../src/grid/base/interface';
+import { IRow, ColumnDataStateChangeEventArgs } from '../../../src/grid/base/interface';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
@@ -410,4 +410,69 @@ describe('Foreign Key =>', () => {
         destroy(gridObj);
         gridObj = null;
     });
+
+    describe('Custom Data Source =>', () => {
+        let gridObj: Grid;
+        let fKeyDataStateChange: (s?: ColumnDataStateChangeEventArgs) => void;
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: fdata,
+                allowSorting: true,
+                allowGrouping: true,
+                allowPaging: true,
+                allowFiltering: true,
+                filterSettings: {type: "CheckBox"},
+                pageSettings: {pageSize: 6},
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 100, isPrimaryKey: true },
+                    { field: 'CustomerID', foreignKeyField: 'CustomerID', foreignKeyValue: 'ContactName', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', width: 120, format: 'C2' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ]
+            };
+            gridObj = createGrid(options, done);
+        });
+    //Local Custom Data Service
+        it('setting custom data to column', (done: Function) => {
+                (gridObj.columns[1] as Column).dataSource = {result: customerData, count:customerData.length} as any,
+                gridObj.setForeignKeyData();
+                done();
+        });
+        it('Initial Page rendering ', (done: Function) => {
+            fKeyDataStateChange = ( s: ColumnDataStateChangeEventArgs ): void => {
+                expect(s.action.requestType).toBe('paging');
+                (gridObj.columns[1] as Column).dataSource = {result: customerData, count:customerData.length} as any,
+                gridObj.setForeignKeyData();
+                gridObj.columnDataStateChange = null;
+                done();
+            }
+            gridObj.columnDataStateChange = fKeyDataStateChange;
+            gridObj.goToPage(3);
+        });
+        it('Sorting in Custom Data Service =>', (done: Function) => {
+            fKeyDataStateChange = ( s: ColumnDataStateChangeEventArgs ): void => {
+                expect(s.action.requestType).toBe('sorting');
+                expect((s.action as any).columnName).toBe('CustomerID');
+                (gridObj.columns[1] as Column).dataSource = {result: customerData, count:customerData.length} as any,
+                gridObj.setForeignKeyData(); 
+                gridObj.columnDataStateChange = null; 
+                done();
+            }
+            gridObj.columnDataStateChange = fKeyDataStateChange;
+            gridObj.sortColumn('CustomerID', 'Ascending', false);
+        });
+        it('Filtering in Custom Data Service =>', (done: Function) => {
+            fKeyDataStateChange = ( s: ColumnDataStateChangeEventArgs ): void => {
+                expect(s.action.requestType).toBe('filtering');
+                gridObj.columnDataStateChange = null;
+                done();
+            }
+            gridObj.columnDataStateChange = fKeyDataStateChange;
+            gridObj.filterModule.filterByColumn('CustomerID', 'equal', 'Berlin', 'or', false);
+        });
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = fKeyDataStateChange = null;
+        });
+     });
 });

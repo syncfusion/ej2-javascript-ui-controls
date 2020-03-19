@@ -2,7 +2,7 @@ import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-ba
 import { BorderModel, FontModel, PeriodsModel } from './base-model';
 import { EmptyPointMode} from '../../chart/utils/enum';
 import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';
-import { Alignment, TextOverflow, TooltipPosition } from '../utils/enum';
+import { Alignment, TextOverflow } from '../utils/enum';
 import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
 import {  Theme } from '../model/theme';
 
@@ -474,17 +474,19 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public fadeOutDuration: number;
 
     /**
+     * To wrap the tooltip long text based on available space.
+     * This is only application for chart tooltip.
+     * @default false
+     */
+
+    @Property(false)
+    public enableTextWrap: boolean;
+
+    /**
      * Options to customize tooltip borders.
      */
     @Complex<BorderModel>({ color: '#cccccc', width: 0.5 }, Border)
     public border: BorderModel;
-
-    /**
-     * Option to customize tooltip position. Applicable only chart.
-     * @default None
-     */
-    @Property('None')
-    public position: TooltipPosition;
 
 }
 

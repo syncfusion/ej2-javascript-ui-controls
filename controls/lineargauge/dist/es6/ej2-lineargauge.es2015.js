@@ -1343,8 +1343,9 @@ class AxisLayoutPanel {
                 colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
                 range.interior = range.color ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {
-                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 : position === 'Outside' ?
-                        -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
+                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
+                        (position === 'Outside' || position === 'Auto') ?
+                            -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
                     pointY = (valueToCoefficient(end, axis, orientation, visibleRange) * line.height) + line.y;
                     height = (valueToCoefficient(start, axis, orientation, visibleRange) * line.height) + line.y;
                     height -= pointY;
@@ -1361,7 +1362,7 @@ class AxisLayoutPanel {
                 else {
                     pointX = (valueToCoefficient(end, axis, orientation, visibleRange) * line.width) + line.x;
                     pointY = axis.lineBounds.y + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
-                        position === 'Outside' ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
+                        (position === 'Outside' || position === 'Auto') ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
                     width = (valueToCoefficient(start, axis, orientation, visibleRange) * line.width) + line.x;
                     width = pointX - width;
                     startVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + startWidth) : position === 'Cross' ?
@@ -2951,7 +2952,6 @@ let LinearGauge = class LinearGauge extends Component {
             this.mouseX = args.x;
             this.mouseY = args.y;
             let dragArgs;
-            let currentPointerDrag = false;
             let dragBlazorArgs;
             if (args.target && !args.cancel) {
                 if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
@@ -2959,9 +2959,8 @@ let LinearGauge = class LinearGauge extends Component {
                         current = this.moveOnPointer(args.target);
                         if (!(isNullOrUndefined(current)) && current.pointer) {
                             this.element.style.cursor = current.style;
-                            currentPointerDrag = current.pointer;
                         }
-                        if (this.activePointer && currentPointerDrag) {
+                        if (this.activePointer) {
                             this.isDrag = true;
                             let dragPointInd = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
                             let dragAxisInd = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
@@ -3128,9 +3127,7 @@ let LinearGauge = class LinearGauge extends Component {
                 this.activeAxis = null;
                 this.activePointer = null;
                 this.isDrag = false;
-                if (!isNullOrUndefined(this.mouseElement)) {
-                    this.triggerDragEvent(this.mouseElement);
-                }
+                this.triggerDragEvent(e.target);
             }
         }
         if (!isNullOrUndefined(this.mouseElement)) {

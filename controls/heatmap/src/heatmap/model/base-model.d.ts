@@ -377,3 +377,10 @@ export interface BubbleTooltipDataModel {
 export interface LegendColorCollectionModel {
 
 }
+
+/**
+ * Interface for a class MultipleRow
+ */
+export interface MultipleRowModel {
+
+}

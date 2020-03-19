@@ -389,6 +389,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public isCanvas: boolean;
 
     /**
+     * To check tooltip wrap for chart.
+     * @default false.
+     * @private.
+     */
+
+    @Property(false)
+    public isTextWrap: boolean;
+
+    /**
      * To place tooltip in a particular position.
      * @default null.
      * @private.
@@ -441,6 +450,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     private themeStyle: ITooltipThemeStyle;
     private isFirst: boolean;
+    private isWrap: boolean;
+    private leftSpace: number;
+    private rightSpace: number;
+    private wrappedText: string;
 
 
     /**
@@ -591,8 +604,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (this.header !== '') {
-            let headerSize: number = measureText(this.header, this.textStyle).height + (this.marginY * 2) +
-                (isBottom ? this.arrowPadding : 0); //header padding;
+            let headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, this.textStyle).height +
+                (this.marginY * 2) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : 0); //header padding;
             let xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
             let direction: string = 'M ' + xLength + ' ' + headerSize +
                 'L ' + (rect.width + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0) - (this.marginX * 2)) +
@@ -668,21 +681,29 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.formattedText = this.formattedText.concat(this.content);
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private renderText(isRender: boolean): void {
         let height: number = 0; let width: number = 0; // Padding for text;
-        let subWidth: number = 0; let size: Size; let lines: string[];
-        let key: string = 'properties';
+        let subWidth: number = 0; let lines: string[];
+        let key: string = 'properties'; let size: number;
         let font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key];
         let groupElement: Element = getElement(this.element.id + '_group');
-        let tspanElement: HTMLElement;
+        let tspanElement: HTMLElement; let textCollection: string[];
         let tspanStyle: string = ''; let line: string; let tspanOption: Object;
         this.findFormattedText();
+        let isHeader: boolean;
+        this.leftSpace = this.areaBounds.x + this.location.x;
+        this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
         let headerContent: string = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
+        let isBoldTag: boolean = this.header.indexOf('<b>') > -1 && this.header.indexOf('</b>') > -1;
+        let headerWidth: number = measureText(this.formattedText[0], font).width + (2 * this.marginX) + this.arrowPadding;
+        let isLeftSpace: boolean = (this.location.x - headerWidth) < this.location.x;
+        let isRightSpace: boolean = (this.areaBounds.x + this.areaBounds.width) < (this.location.x + headerWidth); let header: string;
         let headerSpace: number = (headerContent !== '') ? this.marginY : 0;
         let isRow: boolean = true; let isColumn: boolean = true; this.markerPoint = [];
         let markerSize: number = (this.shapes.length > 0) ? 10 : 0;
         let markerPadding: number = (this.shapes.length > 0) ? 5 : 0;
-        let spaceWidth: number = 4;
+        let spaceWidth: number = 4; let subStringLength: number;
         let fontSize : string = '13px'; let fontWeight: string = 'Normal';  let labelColor: string = this.themeStyle.tooltipLightLabel;
         let dy: number = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
         if (!isRender || this.isCanvas) {
@@ -696,14 +717,26 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             'start', ''
         );
         let parentElement: Element = textElement(options, font, null, groupElement);
+        let withoutHeader: boolean = this.formattedText.length === 1 && this.formattedText[0].indexOf(' : <b>') > -1;
+        isHeader = this.header !== '';
+        size = isHeader && isBoldTag ? 16 : 13;
         for (let k: number = 0, pointsLength: number = this.formattedText.length; k < pointsLength; k++) {
-            let textCollection: string[] = this.formattedText[k].replace(/<(b|strong)>/g, '<b>')
+            textCollection = this.formattedText[k].replace(/<(b|strong)>/g, '<b>')
                 .replace(/<\/(b|strong)>/g, '</b>')
                 .split(/<br.*?>/g);
+            if (k === 0 && !withoutHeader && this.isTextWrap &&
+                (this.leftSpace < headerWidth || isLeftSpace) &&
+                (this.rightSpace < headerWidth || isRightSpace)
+            ) {
+                subStringLength = Math.round(this.leftSpace > this.rightSpace ? (this.leftSpace / size) : (this.rightSpace / size));
+                header = headerContent !== '' ? headerContent : this.formattedText[k];
+                textCollection = header.match(new RegExp('.{1,' + subStringLength + '}', 'g'));
+                this.wrappedText = isBoldTag ? '<b>' + textCollection.join('<br>') + '</b>' : textCollection.join('<br>');
+                this.isWrap = textCollection.length > 1;
+            }
             if (textCollection [0] === '' ) {
                     continue;
             }
-            size = measureText(this.formattedText[k], font);
             if ((k !== 0) || (headerContent === '')) {
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
@@ -713,8 +746,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 subWidth = 0;
                 isColumn = true;
                 height += dy;
-                for (let k: number = 0, len: number = lines.length; k < len; k++) {
-                    line = lines[k];
+                for (let j: number = 0, len: number = lines.length; j < len; j++) {
+                    line = lines[j];
                     if (!/\S/.test(line) && line !== '') {
                         line = ' ';  //to trim multiple white spaces to single white space
                     }
@@ -726,8 +759,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                             headerSpace = null;
                         } else {
                             if (isRow && isColumn) {
-                                tspanOption = { x: (headerContent === '') ? ((this.marginX * 2) + (markerSize + markerPadding))
-                                                                          : (this.marginX * 2) };
+                                tspanOption = {
+                                    x: (headerContent === '') ? ((this.marginX * 2) + (markerSize + markerPadding))
+                                        : (this.marginX * 2) + (this.isWrap ? (markerSize + markerPadding) : 0)
+                                };
                             } else {
                                 tspanOption = {};
                             }
@@ -735,7 +770,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         isColumn = false;
                         tspanElement = <HTMLElement>this.renderer.createTSpan(tspanOption, '');
                         parentElement.appendChild(tspanElement);
-                        if (line.indexOf('<b>') > -1) {
+                        if (line.indexOf('<b>') > -1 || ((isBoldTag && j === 0 && k === 0) && (isHeader || this.isWrap))) {
                             fontWeight = 'bold'; labelColor = this.themeStyle.tooltipBoldLabel;
                             tspanStyle = 'font-weight:' + fontWeight; font.fontWeight = fontWeight;
                             (tspanElement).setAttribute('fill', this.textStyle.color || labelColor);
@@ -744,7 +779,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                             font.fontWeight = fontWeight;
                             (tspanElement).setAttribute('fill', this.textStyle.color || labelColor);
                         }
-                        if (line.indexOf('</b>') > -1 ) {
+                        if (line.indexOf('</b>') > -1 || ((isBoldTag && j === len - 1 && k === 0) && (isHeader || this.isWrap))) {
                             fontWeight = 'Normal'; labelColor = this.themeStyle.tooltipLightLabel;
                         }
                         (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, '');
@@ -762,7 +797,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.elementSize = new Size(width + (width > 0 ? (2 * this.marginX) : 0), height);
         this.elementSize.width += (markerSize + markerPadding); // marker size + marker Spacing
         let element: HTMLElement = <HTMLElement>(parentElement.childNodes[0]);
-        if (headerContent !== '' && element) {
+        if (headerContent !== '' && element && !this.isWrap) {
             font.fontWeight = 'bold';
             let width: number = (this.elementSize.width + (2 * this.padding)) / 2 - measureText(headerContent, font).width / 2;
             element.setAttribute('x', width.toString());
@@ -851,6 +886,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (position === 'Bottom') {
                 location.y = symbolLocation.y + clipY + markerHeight;
             }
+            if (bounds.x + bounds.width < location.x + width) {
+                location.x = (bounds.width > width) ? ((bounds.x + bounds.width) - width + 6) : bounds.x;
+                arrowLocation.x = tipLocation.x = (bounds.width > width) ? (bounds.x + symbolLocation.x - location.x) : symbolLocation.x;
+            } else if (bounds.x > location.x) {
+                location.x = bounds.x;
+                arrowLocation.x = tipLocation.x = symbolLocation.x;
+            }
         } else {
             location = new TooltipLocation(
                 location.x + clipX + markerHeight,
@@ -859,6 +901,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             arrowLocation.y = tipLocation.y = height / 2;
             if (position === 'Left') {
                 location.x = symbolLocation.x + clipX - markerHeight - (width + this.arrowPadding);
+            }
+            if (bounds.y + bounds.height < location.y + height) {
+                location.y = (bounds.height > height) ? ((bounds.y + bounds.height) - height + 6) : bounds.y;
+                arrowLocation.y = tipLocation.y = (bounds.height > height) ? (bounds.y + symbolLocation.y - location.y) : symbolLocation.y;
+            } else if (bounds.y > location.y) {
+                location.y = bounds.y;
+                arrowLocation.y = tipLocation.y = symbolLocation.y;
             }
         }
         return new Rect(location.x, location.y, width, height);

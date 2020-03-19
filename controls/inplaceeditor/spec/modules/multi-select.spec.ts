@@ -939,6 +939,7 @@ describe('MultiSelect module', () => {
             destroy(editorObj);
         });
         it('Inline - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'MultiSelect',
                 mode: 'Inline',
@@ -947,16 +948,19 @@ describe('MultiSelect module', () => {
                     dataSource: dataSource
                 },
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });
         it('Popup - Focus testing', (done: Function) => {
+            let count: number = 0;
             editorObj = renderEditor({
                 type: 'MultiSelect',
                 mode: 'Popup',
@@ -965,12 +969,14 @@ describe('MultiSelect module', () => {
                     dataSource: dataSource
                 },
                 beginEdit: function(e: BeginEditEventArgs) {
+                    count = count + 1;
                     e.cancelFocus = true
                 }
             });
             (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                expect(count).toEqual(1);
                 done();
             }, 400);
         });

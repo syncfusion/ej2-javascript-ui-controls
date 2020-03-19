@@ -386,6 +386,19 @@ function getPointer(targetId, gauge) {
         pointerIndex: +tempString[tempString.length - 1]
     };
 }
+/**
+ * Function to get current point for circular gauge using element id.
+ * @returns IVisibleRange
+ * @private
+ */
+function getRange(targetId, gauge) {
+    var tempString;
+    tempString = targetId.replace(gauge.element.id, '').split('_Axis_')[1];
+    return {
+        axisIndex: +tempString[0],
+        rangeIndex: +tempString[tempString.length - 1]
+    };
+}
 function getElementSize(template, gauge, parent) {
     var elementSize;
     var element;
@@ -1119,6 +1132,9 @@ var Tick = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property(false)
     ], Tick.prototype, "useRangeColor", void 0);
+    __decorate$2([
+        Property('0')
+    ], Tick.prototype, "dashArray", void 0);
     return Tick;
 }(ChildProperty));
 /**
@@ -1239,6 +1255,9 @@ var Pointer = /** @__PURE__ @class */ (function (_super) {
         Complex({}, Cap)
     ], Pointer.prototype, "cap", void 0);
     __decorate$2([
+        Complex({}, Font)
+    ], Pointer.prototype, "textStyle", void 0);
+    __decorate$2([
         Complex({}, NeedleTail)
     ], Pointer.prototype, "needleTail", void 0);
     __decorate$2([
@@ -1257,6 +1276,9 @@ var Pointer = /** @__PURE__ @class */ (function (_super) {
         Property(5)
     ], Pointer.prototype, "markerHeight", void 0);
     __decorate$2([
+        Property('')
+    ], Pointer.prototype, "text", void 0);
+    __decorate$2([
         Property(null)
     ], Pointer.prototype, "description", void 0);
     __decorate$2([
@@ -1265,6 +1287,12 @@ var Pointer = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property(0)
     ], Pointer.prototype, "offset", void 0);
+    __decorate$2([
+        Property(null)
+    ], Pointer.prototype, "needleStartWidth", void 0);
+    __decorate$2([
+        Property(null)
+    ], Pointer.prototype, "needleEndWidth", void 0);
     return Pointer;
 }(ChildProperty));
 /**
@@ -1378,6 +1406,18 @@ var dragEnd = 'dragEnd';
 var resized = 'resized';
 /** @private */
 var beforePrint = 'beforePrint';
+/** @private */
+var pointerStart = 'pointerStart';
+/** @private */
+var pointerMove = 'pointerMove';
+/** @private */
+var pointerEnd = 'pointerEnd';
+/** @private */
+var rangeStart = 'rangeStart';
+/** @private */
+var rangeMove = 'rangeMove';
+/** @private */
+var rangeEnd = 'rangeEnd';
 
 /**
  * Annotation Module handles the Annotation of the axis.
@@ -1408,13 +1448,8 @@ var Annotations = /** @__PURE__ @class */ (function () {
                 _this.createTemplate(element, annotationIndex, index);
             }
         });
-        if (parentElement && element.childElementCount) {
+        if (parentElement && element.childElementCount && !this.gauge.isBlazor) {
             parentElement.appendChild(element);
-            if (this.gauge.isBlazor) {
-                for (var i = 0; i < this.gauge.axes[index].annotations.length; i++) {
-                    updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
-                }
-            }
         }
     };
     /**
@@ -1458,6 +1493,14 @@ var Annotations = /** @__PURE__ @class */ (function () {
                 }
                 _this.updateLocation(childElement, axis, annotation);
                 element.appendChild(childElement);
+                var parentElement = document.getElementById(_this.elementId + '_Secondary_Element');
+                if (_this.gauge.isBlazor && annotationIndex === (_this.gauge.axes[axisIndex].annotations.length - 1) &&
+                    element && parentElement) {
+                    parentElement.appendChild(element);
+                    for (var i = 0; i < _this.gauge.axes[axisIndex].annotations.length; i++) {
+                        updateBlazorTemplate(_this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + i, 'ContentTemplate', _this.gauge.axes[axisIndex].annotations[i]);
+                    }
+                }
             }
         });
     };
@@ -1489,15 +1532,6 @@ var Annotations = /** @__PURE__ @class */ (function () {
     return Annotations;
 }());
 
-var __rest = (undefined && undefined.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
-    return t;
-};
 /**
  * Tooltip Module handles the tooltip of the circular gauge
  */
@@ -1520,6 +1554,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
     /* tslint:disable:no-string-literal */
     /* tslint:disable:max-func-body-length */
     GaugeTooltip.prototype.renderTooltip = function (e) {
+        var _this = this;
         this.gaugeId = this.gauge.element.getAttribute('id');
         var pageX;
         var pageY;
@@ -1543,14 +1578,14 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             if (this.pointerEle !== null) {
                 samePointerEle = (this.pointerEle === target);
             }
-            var svgRect = this.gauge.svgObject.getBoundingClientRect();
+            var svgRect_1 = this.gauge.svgObject.getBoundingClientRect();
             var elementRect = this.gauge.element.getBoundingClientRect();
-            var axisRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
-            var rect = new Rect(Math.abs(elementRect.left - svgRect.left), Math.abs(elementRect.top - svgRect.top), svgRect.width, svgRect.height);
+            var axisRect_1 = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            var rect_1 = new Rect(Math.abs(elementRect.left - svgRect_1.left), Math.abs(elementRect.top - svgRect_1.top), svgRect_1.width, svgRect_1.height);
             var currentPointer = getPointer(target.id, this.gauge);
             this.currentAxis = this.gauge.axes[currentPointer.axisIndex];
             this.currentPointer = (this.currentAxis.pointers)[currentPointer.pointerIndex];
-            var angle = getAngleFromValue(this.currentPointer.currentValue, this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min, this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise') % 360;
+            var angle_1 = getAngleFromValue(this.currentPointer.currentValue, this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min, this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise') % 360;
             var tooltipFormat = this.gauge.tooltip.format || this.currentAxis.labelStyle.format;
             var customLabelFormat = tooltipFormat && tooltipFormat.match('{value}') !== null;
             var format = this.gauge.intl.getNumberFormat({
@@ -1561,61 +1596,64 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 return null;
             }
             var roundValue = this.roundedValue(this.currentPointer.currentValue);
-            var pointerContent = customLabelFormat ?
+            var pointerContent_1 = customLabelFormat ?
                 tooltipFormat.replace(new RegExp('{value}', 'g'), format(roundValue)) :
                 format(roundValue);
-            location = getLocationFromAngle(angle, this.currentAxis.currentRadius, this.gauge.midPoint);
-            location.x = (this.tooltip.template && ((angle >= 150 && angle <= 250) || (angle >= 330 && angle <= 360) ||
-                (angle >= 0 && angle <= 45))) ? (location.x + 10) : location.x;
+            location = getLocationFromAngle(angle_1, this.currentAxis.currentRadius, this.gauge.midPoint);
+            location.x = (this.tooltip.template && ((angle_1 >= 150 && angle_1 <= 250) || (angle_1 >= 330 && angle_1 <= 360) ||
+                (angle_1 >= 0 && angle_1 <= 45))) ? (location.x + 10) : location.x;
             var tooltipArgs = {
-                name: tooltipRender, cancel: false, content: pointerContent, location: location, axis: this.currentAxis,
-                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge, appendInBodyTag: false
+                name: tooltipRender, cancel: false, content: pointerContent_1, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge, appendInBodyTag: false, type: 'Pointer'
             };
             if (this.gauge.isBlazor) {
-                var name_1 = tooltipArgs.name, cancel = tooltipArgs.cancel, content = tooltipArgs.content, location_1 = tooltipArgs.location, tooltip = tooltipArgs.tooltip, event_1 = tooltipArgs.event, appendInBodyTag = tooltipArgs.appendInBodyTag;
-                tooltipArgs = { name: name_1, cancel: cancel, content: content, location: location_1, tooltip: tooltip, event: event_1, appendInBodyTag: appendInBodyTag };
+                var name_1 = tooltipArgs.name, cancel = tooltipArgs.cancel, content = tooltipArgs.content, location_1 = tooltipArgs.location, tooltip = tooltipArgs.tooltip, event_1 = tooltipArgs.event, appendInBodyTag = tooltipArgs.appendInBodyTag, type = tooltipArgs.type;
+                tooltipArgs = { name: name_1, cancel: cancel, content: content, location: location_1, tooltip: tooltip, event: event_1, appendInBodyTag: appendInBodyTag, type: type };
             }
-            this.gauge.trigger(tooltipRender, tooltipArgs);
-            var template = tooltipArgs.tooltip.template;
-            if (template !== null && template.length === 1) {
-                template = template[template[0]];
-            }
-            if (!this.tooltip.showAtMousePosition) {
-                if (template) {
-                    var elementSize = getElementSize(template, this.gauge, this.tooltipEle);
-                    this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
-                        this.findPosition(rect, angle, pointerContent, tooltipArgs.location) : rect;
+            var pointerTooltip = function (tooltipArgs) {
+                var template = tooltipArgs.tooltip.template;
+                if (template !== null && template.length === 1) {
+                    template = template[template[0]];
+                }
+                if (!tooltipArgs.tooltip.showAtMousePosition) {
+                    if (template) {
+                        var elementSize = getElementSize(template, _this.gauge, _this.tooltipEle);
+                        _this.tooltipRect = Math.abs(axisRect_1.left - svgRect_1.left) > elementSize.width ?
+                            _this.findPosition(rect_1, angle_1, pointerContent_1, tooltipArgs.location) : rect_1;
+                    }
+                    else {
+                        _this.findPosition(rect_1, angle_1, pointerContent_1, tooltipArgs.location);
+                    }
                 }
                 else {
-                    this.findPosition(rect, angle, pointerContent, tooltipArgs.location);
+                    tooltipArgs.location = getMousePosition(pageX, pageY, _this.gauge.svgObject);
+                    _this.tooltipRect = rect_1;
                 }
-            }
-            else {
-                tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
-                this.tooltipRect = rect;
-            }
-            if (!tooltipArgs.cancel && !samePointerEle) {
-                tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
-                tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
-                tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
-                this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, tooltipArgs, template, this.arrowInverted, this.tooltipRect, this.gauge, tooltipArgs.tooltip.fill, tooltipArgs.tooltip.textStyle, tooltipArgs.tooltip.border);
-                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(this.tooltipEle);
-                if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
-                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                if (!tooltipArgs.cancel && !samePointerEle) {
+                    tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || _this.gauge.themeStyle.tooltipFontColor;
+                    tooltipArgs.tooltip.textStyle.fontFamily = _this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                    tooltipArgs.tooltip.textStyle.opacity = _this.gauge.themeStyle.tooltipTextOpacity ||
+                        tooltipArgs.tooltip.textStyle.opacity;
+                    _this.svgTooltip = _this.svgTooltipCreate(_this.svgTooltip, tooltipArgs, template, _this.arrowInverted, _this.tooltipRect, _this.gauge, tooltipArgs.tooltip.fill, tooltipArgs.tooltip.textStyle, tooltipArgs.tooltip.border);
+                    _this.svgTooltip.opacity = _this.gauge.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
+                    _this.svgTooltip.appendTo(_this.tooltipEle);
+                    if (template && Math.abs(pageY - _this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                        _this.tooltipEle.style.top = (parseFloat(_this.tooltipEle.style.top) + 20) + 'px';
+                    }
                 }
-            }
+            };
+            this.gauge.trigger(tooltipRender, tooltipArgs, pointerTooltip);
         }
         else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
             (target.id.indexOf(this.gaugeId) >= 0)) {
-            var rangeSvgRect = this.gauge.svgObject.getBoundingClientRect();
+            var rangeSvgRect_1 = this.gauge.svgObject.getBoundingClientRect();
             var rangeElementRect = this.gauge.element.getBoundingClientRect();
-            var rangeAxisRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
-            var rect = new Rect(Math.abs(rangeElementRect.left - rangeSvgRect.left), Math.abs(rangeElementRect.top - rangeSvgRect.top), rangeSvgRect.width, rangeSvgRect.height);
+            var rangeAxisRect_1 = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            var rect_2 = new Rect(Math.abs(rangeElementRect.left - rangeSvgRect_1.left), Math.abs(rangeElementRect.top - rangeSvgRect_1.top), rangeSvgRect_1.width, rangeSvgRect_1.height);
             var currentRange = getPointer(target.id, this.gauge);
             this.currentAxis = this.gauge.axes[currentRange.axisIndex];
             this.currentRange = (this.currentAxis.ranges)[currentRange.pointerIndex];
-            var rangeAngle = getAngleFromValue((this.currentRange.end - Math.abs((this.currentRange.end - this.currentRange.start) / 2)), this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min, this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise') % 360;
+            var rangeAngle_1 = getAngleFromValue((this.currentRange.end - Math.abs((this.currentRange.end - this.currentRange.start) / 2)), this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min, this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise') % 360;
             var rangeTooltipFormat = this.gauge.tooltip.rangeSettings.format || this.currentAxis.labelStyle.format;
             var customLabelFormat = rangeTooltipFormat && (rangeTooltipFormat.match('{end}') !== null ||
                 rangeTooltipFormat.match('{start}') !== null);
@@ -1625,67 +1663,69 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             this.tooltipElement();
             var roundStartValue = this.roundedValue(this.currentRange.start);
             var roundEndValue = this.roundedValue(this.currentRange.end);
-            var startData = (this.currentRange.start).toString();
-            var endData = (this.currentRange.end).toString();
-            var rangeContent = customLabelFormat ?
-                rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
+            var startData_1 = (this.currentRange.start).toString();
+            var endData_1 = (this.currentRange.end).toString();
+            var rangeContent_1 = customLabelFormat ?
+                rangeTooltipFormat.replace(/{start}/g, startData_1).replace(/{end}/g, endData_1) :
                 'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
-            location = getLocationFromAngle(rangeAngle, this.currentRange.currentRadius, this.gauge.midPoint);
-            location.x = (this.tooltip.rangeSettings.template && ((rangeAngle >= 150 && rangeAngle <= 250) ||
-                (rangeAngle >= 330 && rangeAngle <= 360) ||
-                (rangeAngle >= 0 && rangeAngle <= 45))) ? (location.x + 10) : location.x;
+            location = getLocationFromAngle(rangeAngle_1, this.currentRange.currentRadius, this.gauge.midPoint);
+            location.x = (this.tooltip.rangeSettings.template && ((rangeAngle_1 >= 150 && rangeAngle_1 <= 250) ||
+                (rangeAngle_1 >= 330 && rangeAngle_1 <= 360) ||
+                (rangeAngle_1 >= 0 && rangeAngle_1 <= 45))) ? (location.x + 10) : location.x;
             var rangeTooltipArgs = {
-                name: tooltipRender, cancel: false, content: rangeContent, location: location, axis: this.currentAxis,
-                tooltip: this.tooltip, range: this.currentRange, event: e, gauge: this.gauge, appendInBodyTag: false
+                name: tooltipRender, cancel: false, content: rangeContent_1, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, range: this.currentRange, event: e, gauge: this.gauge, appendInBodyTag: false, type: 'Range'
             };
             if (this.gauge.isBlazor) {
-                var gauge = rangeTooltipArgs.gauge, blazorEventArgs = __rest(rangeTooltipArgs, ["gauge"]);
-                rangeTooltipArgs = blazorEventArgs;
+                var name_2 = rangeTooltipArgs.name, cancel = rangeTooltipArgs.cancel, content = rangeTooltipArgs.content, location_2 = rangeTooltipArgs.location, tooltip = rangeTooltipArgs.tooltip, event_2 = rangeTooltipArgs.event, appendInBodyTag = rangeTooltipArgs.appendInBodyTag, type = rangeTooltipArgs.type;
+                rangeTooltipArgs = { name: name_2, cancel: cancel, content: content, location: location_2, tooltip: tooltip, event: event_2, appendInBodyTag: appendInBodyTag, type: type };
             }
-            this.gauge.trigger(tooltipRender, rangeTooltipArgs);
-            var rangeTemplate = rangeTooltipArgs.tooltip.rangeSettings.template;
-            if (rangeTemplate !== null && rangeTemplate.length === 1) {
-                rangeTemplate = rangeTemplate[rangeTemplate[0]];
-            }
-            if (rangeTemplate) {
-                rangeTemplate = rangeTemplate.replace(/[$]{start}/g, startData);
-                rangeTemplate = rangeTemplate.replace(/[$]{end}/g, endData);
-            }
-            if (!this.tooltip.rangeSettings.showAtMousePosition) {
+            var rangeTooltip = function (rangeTooltipArgs) {
+                var rangeTemplate = rangeTooltipArgs.tooltip.rangeSettings.template;
+                if (rangeTemplate !== null && rangeTemplate.length === 1) {
+                    rangeTemplate = rangeTemplate[rangeTemplate[0]];
+                }
                 if (rangeTemplate) {
-                    var elementSize = getElementSize(rangeTemplate, this.gauge, this.tooltipEle);
-                    this.tooltipRect = Math.abs(rangeAxisRect.left - rangeSvgRect.left) > elementSize.width ?
-                        this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location) : rect;
+                    rangeTemplate = rangeTemplate.replace(/[$]{start}/g, startData_1);
+                    rangeTemplate = rangeTemplate.replace(/[$]{end}/g, endData_1);
+                }
+                if (!_this.tooltip.rangeSettings.showAtMousePosition) {
+                    if (rangeTemplate) {
+                        var elementSize = getElementSize(rangeTemplate, _this.gauge, _this.tooltipEle);
+                        _this.tooltipRect = Math.abs(rangeAxisRect_1.left - rangeSvgRect_1.left) > elementSize.width ?
+                            _this.findPosition(rect_2, rangeAngle_1, rangeContent_1, rangeTooltipArgs.location) : rect_2;
+                    }
+                    else {
+                        _this.findPosition(rect_2, rangeAngle_1, rangeContent_1, rangeTooltipArgs.location);
+                    }
                 }
                 else {
-                    this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location);
+                    rangeTooltipArgs.location = getMousePosition(pageX, pageY, _this.gauge.svgObject);
+                    _this.tooltipRect = rect_2;
                 }
-            }
-            else {
-                rangeTooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
-                this.tooltipRect = rect;
-            }
-            if (!rangeTooltipArgs.cancel) {
-                rangeTooltipArgs.tooltip.rangeSettings.textStyle.color = rangeTooltipArgs.tooltip.rangeSettings.textStyle.color ||
-                    this.gauge.themeStyle.tooltipFontColor;
-                rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
-                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily;
-                rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
-                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity;
-                this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted, this.tooltipRect, this.gauge, rangeTooltipArgs.tooltip.rangeSettings.fill, rangeTooltipArgs.tooltip.rangeSettings.textStyle, rangeTooltipArgs.tooltip.rangeSettings.border);
-                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(this.tooltipEle);
-                if (rangeTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
-                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                if (!rangeTooltipArgs.cancel) {
+                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.color = rangeTooltipArgs.tooltip.rangeSettings.textStyle.color ||
+                        _this.gauge.themeStyle.tooltipFontColor;
+                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily = _this.gauge.themeStyle.fontFamily ||
+                        rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily;
+                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity = _this.gauge.themeStyle.tooltipTextOpacity ||
+                        rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity;
+                    _this.svgTooltip = _this.svgTooltipCreate(_this.svgTooltip, rangeTooltipArgs, rangeTemplate, _this.arrowInverted, _this.tooltipRect, _this.gauge, rangeTooltipArgs.tooltip.rangeSettings.fill, rangeTooltipArgs.tooltip.rangeSettings.textStyle, rangeTooltipArgs.tooltip.rangeSettings.border);
+                    _this.svgTooltip.opacity = _this.gauge.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
+                    _this.svgTooltip.appendTo(_this.tooltipEle);
+                    if (rangeTemplate && Math.abs(pageY - _this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                        _this.tooltipEle.style.top = (parseFloat(_this.tooltipEle.style.top) + 20) + 'px';
+                    }
                 }
-            }
+            };
+            this.gauge.trigger(tooltipRender, rangeTooltipArgs, rangeTooltip);
         }
         else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
             (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
             var annotationSvgRect = this.gauge.svgObject.getBoundingClientRect();
             var annotationElementRect = this.gauge.element.getBoundingClientRect();
             var annotationAxisRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
-            var rect = new Rect(Math.abs(annotationElementRect.left - annotationSvgRect.left), Math.abs(annotationElementRect.top - annotationSvgRect.top), annotationSvgRect.width, annotationSvgRect.height);
+            var rect_3 = new Rect(Math.abs(annotationElementRect.left - annotationSvgRect.left), Math.abs(annotationElementRect.top - annotationSvgRect.top), annotationSvgRect.width, annotationSvgRect.height);
             var currentAnnotation = getPointer(this.annotationTargetElement.id, this.gauge);
             this.currentAxis = this.gauge.axes[currentAnnotation.axisIndex];
             this.currentAnnotation = (this.currentAxis.annotations)[currentAnnotation.pointerIndex];
@@ -1700,37 +1740,40 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 (location.x + 10) : location.x;
             var annotationTooltipArgs = {
                 name: tooltipRender, cancel: false, content: annotationContent, location: location, axis: this.currentAxis,
-                tooltip: this.tooltip, annotation: this.currentAnnotation, event: e, gauge: this.gauge, appendInBodyTag: false
+                tooltip: this.tooltip, annotation: this.currentAnnotation, event: e, gauge: this.gauge, appendInBodyTag: false,
+                type: 'Annotation'
             };
             if (this.gauge.isBlazor) {
-                var gauge = annotationTooltipArgs.gauge, blazorEventArgs = __rest(annotationTooltipArgs, ["gauge"]);
-                annotationTooltipArgs = blazorEventArgs;
+                var name_3 = annotationTooltipArgs.name, cancel = annotationTooltipArgs.cancel, content = annotationTooltipArgs.content, location_3 = annotationTooltipArgs.location, tooltip = annotationTooltipArgs.tooltip, event_3 = annotationTooltipArgs.event, appendInBodyTag = annotationTooltipArgs.appendInBodyTag, type = annotationTooltipArgs.type;
+                annotationTooltipArgs = { name: name_3, cancel: cancel, content: content, location: location_3, tooltip: tooltip, event: event_3, appendInBodyTag: appendInBodyTag, type: type };
             }
-            this.gauge.trigger(tooltipRender, annotationTooltipArgs);
-            var annotationTemplate = annotationTooltipArgs.tooltip.annotationSettings.template;
-            if (annotationTemplate !== null && annotationTemplate.length === 1) {
-                annotationTemplate = annotationTemplate[annotationTemplate[0]];
-            }
-            var elementSizeAn = this.annotationTargetElement.getBoundingClientRect();
-            this.tooltipPosition = 'RightTop';
-            this.arrowInverted = true;
-            annotationTooltipArgs.location.x = annotationTooltipArgs.location.x + (elementSizeAn.width / 2);
-            this.tooltipRect = new Rect(rect.x, rect.y, rect.width, rect.height);
-            if (!annotationTooltipArgs.cancel && (this.gauge.tooltip.annotationSettings.format !== null ||
-                this.gauge.tooltip.annotationSettings.template !== null)) {
-                annotationTooltipArgs.tooltip.annotationSettings.textStyle.color = annotationTooltipArgs.tooltip.textStyle.color ||
-                    this.gauge.themeStyle.tooltipFontColor;
-                annotationTooltipArgs.tooltip.annotationSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
-                    annotationTooltipArgs.tooltip.textStyle.fontFamily;
-                annotationTooltipArgs.tooltip.annotationSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
-                    annotationTooltipArgs.tooltip.textStyle.opacity;
-                this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, annotationTooltipArgs, annotationTemplate, this.arrowInverted, this.tooltipRect, this.gauge, annotationTooltipArgs.tooltip.annotationSettings.fill, annotationTooltipArgs.tooltip.annotationSettings.textStyle, annotationTooltipArgs.tooltip.annotationSettings.border);
-                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(this.tooltipEle);
-                if (annotationTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
-                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+            var annotationTooltip = function (annotationTooltipArgs) {
+                var annotationTemplate = annotationTooltipArgs.tooltip.annotationSettings.template;
+                if (annotationTemplate !== null && annotationTemplate.length === 1) {
+                    annotationTemplate = annotationTemplate[annotationTemplate[0]];
                 }
-            }
+                var elementSizeAn = _this.annotationTargetElement.getBoundingClientRect();
+                _this.tooltipPosition = 'RightTop';
+                _this.arrowInverted = true;
+                annotationTooltipArgs.location.x = annotationTooltipArgs.location.x + (elementSizeAn.width / 2);
+                _this.tooltipRect = new Rect(rect_3.x, rect_3.y, rect_3.width, rect_3.height);
+                if (!annotationTooltipArgs.cancel && (_this.gauge.tooltip.annotationSettings.format !== null ||
+                    _this.gauge.tooltip.annotationSettings.template !== null)) {
+                    annotationTooltipArgs.tooltip.annotationSettings.textStyle.color = annotationTooltipArgs.tooltip.textStyle.color ||
+                        _this.gauge.themeStyle.tooltipFontColor;
+                    annotationTooltipArgs.tooltip.annotationSettings.textStyle.fontFamily = _this.gauge.themeStyle.fontFamily ||
+                        annotationTooltipArgs.tooltip.textStyle.fontFamily;
+                    annotationTooltipArgs.tooltip.annotationSettings.textStyle.opacity = _this.gauge.themeStyle.tooltipTextOpacity ||
+                        annotationTooltipArgs.tooltip.textStyle.opacity;
+                    _this.svgTooltip = _this.svgTooltipCreate(_this.svgTooltip, annotationTooltipArgs, annotationTemplate, _this.arrowInverted, _this.tooltipRect, _this.gauge, annotationTooltipArgs.tooltip.annotationSettings.fill, annotationTooltipArgs.tooltip.annotationSettings.textStyle, annotationTooltipArgs.tooltip.annotationSettings.border);
+                    _this.svgTooltip.opacity = _this.gauge.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
+                    _this.svgTooltip.appendTo(_this.tooltipEle);
+                    if (annotationTemplate && Math.abs(pageY - _this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                        _this.tooltipEle.style.top = (parseFloat(_this.tooltipEle.style.top) + 20) + 'px';
+                    }
+                }
+            };
+            this.gauge.trigger(tooltipRender, annotationTooltipArgs, annotationTooltip);
         }
         else {
             this.removeTooltip();
@@ -2134,7 +2177,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function () {
         if (minorLineStyle.width && minorLineStyle.height && minorInterval) {
             for (var i = axis.visibleRange.min, max = axis.visibleRange.max; i <= max; i += minorInterval) {
                 if (this.majorValues.indexOf(+i.toFixed(3)) < 0) {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, color) : color, null, '0', this.calculateTicks(i, minorLineStyle, axis), '', 'pointer-events:none;'), minorTickElements, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, color) : color, null, minorLineStyle.dashArray, this.calculateTicks(i, minorLineStyle, axis), '', 'pointer-events:none;'), minorTickElements, gauge);
                 }
             }
             element.appendChild(minorTickElements);
@@ -2156,7 +2199,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function () {
         if (majorLineStyle.width && majorLineStyle.height && axis.visibleRange.interval) {
             for (var i = axis.visibleRange.min, max = axis.visibleRange.max, interval = axis.visibleRange.interval; i <= max; i += interval) {
                 this.majorValues.push(+i.toFixed(3));
-                appendPath(new PathOption(gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, color) : color, null, '0', this.calculateTicks(i, majorLineStyle, axis), '', 'pointer-events:none;'), majorTickElements, gauge);
+                appendPath(new PathOption(gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, color) : color, null, majorLineStyle.dashArray, this.calculateTicks(i, majorLineStyle, axis), '', 'pointer-events:none;'), majorTickElements, gauge);
             }
             element.appendChild(majorTickElements);
         }
@@ -2185,15 +2228,17 @@ var AxisRenderer = /** @__PURE__ @class */ (function () {
      */
     AxisRenderer.prototype.drawAxisRange = function (axis, index, element, gauge) {
         var _this = this;
-        var rangeElement = gauge.renderer.createGroup({
-            id: gauge.element.id + '_Axis_Ranges_' + index
-        });
+        var startValue;
+        var endValue;
+        var rangeElement;
+        var ele;
+        ele = (document.getElementById(gauge.element.id + '_Axis_Ranges_ ' + index));
+        rangeElement = (ele) ? document.getElementById(gauge.element.id + '_Axis_Ranges_ ' + index) :
+            gauge.renderer.createGroup({ id: gauge.element.id + '_Axis_Ranges_' + index });
         var location = this.gauge.midPoint;
         var startAngle;
         var endAngle;
         var isClockWise = axis.direction === 'ClockWise';
-        var startValue;
-        var endValue;
         var min = axis.visibleRange.min;
         var max = axis.visibleRange.max;
         var startWidth;
@@ -2203,6 +2248,8 @@ var AxisRenderer = /** @__PURE__ @class */ (function () {
         var oldStart;
         var oldEnd;
         axis.ranges.map(function (range, rangeIndex) {
+            rangeIndex = rangeIndex;
+            range.pathElement = [];
             if (!isNullOrUndefined(range.offset) && range.offset.length > 0) {
                 range.currentDistanceFromScale = stringToNumber(range.offset, axis.currentRadius);
             }
@@ -2247,10 +2294,11 @@ var AxisRenderer = /** @__PURE__ @class */ (function () {
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
                     radius) / (range.currentRadius)) * 180) / Math.PI;
                 if (range.roundedCornerRadius) {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', ''), rangeElement, gauge);
+                    range.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', ''), rangeElement, gauge));
                 }
                 else {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth, range, axis), '', ''), rangeElement, gauge);
+                    range.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' +
+                        rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth, range, axis), '', ''), rangeElement, gauge));
                 }
             }
         });
@@ -2347,18 +2395,31 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
      * @return {number}
      */
     PointerRenderer.prototype.pointerRadiusForPosition = function (axis, pointer) {
-        var pointerRadius;
-        var rangeBarOffset = pointer.type === 'RangeBar' ? pointer.pointerWidth : 0;
-        var markerOffset = pointer.type === 'Marker' ? ((pointer.markerShape === 'InvertedTriangle' ||
-            pointer.markerShape === 'Triangle') ? (pointer.position === 'Cross' ? pointer.markerWidth / 2 : 0) :
-            pointer.markerWidth / 2) : 0;
-        pointerRadius = pointer.position === 'Inside' ?
-            (axis.currentRadius - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
-            pointer.position === 'Outside' ?
-                (axis.currentRadius + rangeBarOffset + axis.lineStyle.width / 2 + markerOffset + pointer.currentDistanceFromScale) :
-                (axis.currentRadius + rangeBarOffset / 2 - pointer.currentDistanceFromScale -
-                    ((pointer.markerShape === 'InvertedTriangle' || pointer.markerShape === 'Triangle') ? markerOffset : 0));
-        return pointerRadius;
+        if (pointer.markerShape === 'Text') {
+            var pointerRadius = void 0;
+            var pointerSize = parseInt(pointer.textStyle.size, 10);
+            var markerOffset = pointer.position === 'Cross' ? pointerSize / 5 : 0;
+            pointerRadius = pointer.position === 'Inside' ?
+                (axis.currentRadius - pointerSize / 1.2 - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
+                pointer.position === 'Outside' ?
+                    (axis.currentRadius + axis.lineStyle.width / 2 + pointerSize / 4 + markerOffset + pointer.currentDistanceFromScale) :
+                    (axis.currentRadius - pointerSize / 6 - markerOffset - pointer.currentDistanceFromScale);
+            return pointerRadius;
+        }
+        else {
+            var pointerRadius = void 0;
+            var rangeBarOffset = pointer.type === 'RangeBar' ? pointer.pointerWidth : 0;
+            var markerOffset = pointer.type === 'Marker' ? ((pointer.markerShape === 'InvertedTriangle' ||
+                pointer.markerShape === 'Triangle') ? (pointer.position === 'Cross' ? pointer.markerWidth / 2 : 0) :
+                pointer.markerWidth / 2) : 0;
+            pointerRadius = pointer.position === 'Inside' ?
+                (axis.currentRadius - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
+                pointer.position === 'Outside' ?
+                    (axis.currentRadius + rangeBarOffset + axis.lineStyle.width / 2 + markerOffset + pointer.currentDistanceFromScale) :
+                    (axis.currentRadius + rangeBarOffset / 2 - pointer.currentDistanceFromScale -
+                        ((pointer.markerShape === 'InvertedTriangle' || pointer.markerShape === 'Triangle') ? markerOffset : 0));
+            return pointerRadius;
+        }
     };
     /**
      * Method to render the needle pointer of the ciruclar gauge.
@@ -2369,14 +2430,22 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
         var pointerRadius;
         var location;
         var direction;
+        var needleStartWidth = pointer.needleStartWidth;
+        var needleEndWidth = pointer.needleEndWidth;
         var mid = gauge.midPoint;
         var width = pointer.pointerWidth / 2;
         var rectDirection;
         // To render the needle
         location = getLocationFromAngle(0, pointer.currentRadius, mid);
         var color = pointer.color || this.gauge.themeStyle.needleColor;
-        direction = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + mid.y +
-            ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
+        if ((needleStartWidth === 0) && (needleEndWidth === 0) && width) {
+            direction = 'M ' + mid.x + ' ' + (mid.y) + ' L ' + (location.x) + ' ' + mid.y +
+                ' L ' + (mid.x) + ' ' + (mid.y) + ' Z';
+        }
+        else {
+            direction = 'M ' + mid.x + ' ' + (mid.y - width - needleEndWidth) + ' L ' + (location.x) + ' ' + mid.y +
+                ' L ' + location.x + ' ' + (mid.y + needleStartWidth) + ' L ' + mid.x + ' ' + (mid.y + width + needleEndWidth) + ' Z';
+        }
         pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, color, pointer.border.width, pointer.border.color, null, '0', direction), parentElement, gauge));
         pointerRadius = stringToNumber(pointer.needleTail.length, pointer.currentRadius);
         // To render the rect element for touch
@@ -2461,6 +2530,10 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
      */
     PointerRenderer.prototype.drawMarkerPointer = function (axis, axisIndex, index, parentElement, gauge) {
         var pointer = axis.pointers[index];
+        var min = axis.visibleRange.min;
+        var max = axis.visibleRange.max;
+        var angle;
+        angle = Math.round(getAngleFromValue(pointer.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
         var shapeBasedOnPosition = pointer.markerShape;
         if (isNullOrUndefined(pointer.radius) && !isNullOrUndefined(pointer.position) && (pointer.markerShape === 'InvertedTriangle' ||
             pointer.markerShape === 'Triangle')) {
@@ -2468,8 +2541,15 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
                 'InvertedTriangle' : (pointer.position === 'Inside' &&
                 pointer.markerShape === 'InvertedTriangle' ? 'Triangle' : pointer.markerShape));
         }
-        var location = getLocationFromAngle(0, pointer.currentRadius, gauge.midPoint);
-        pointer.pathElement.push(appendPath(calculateShapes(location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
+        var location = getLocationFromAngle((pointer.markerShape === 'Text') ? angle : 0, pointer.currentRadius, gauge.midPoint);
+        if (pointer.markerShape === 'Text') {
+            var textOption = new TextOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, location.x, location.y, 'middle', pointer.text, 'rotate(' + (angle + 90) + ',' +
+                (location.x) + ',' + location.y + ')', 'auto');
+            textElement(textOption, pointer.textStyle, pointer.textStyle.color, parentElement, 'pointer-events : auto; ');
+        }
+        else {
+            pointer.pathElement.push(appendPath(calculateShapes(location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
+        }
     };
     /**
      * Method to render the range bar pointer of the ciruclar gauge.
@@ -2587,7 +2667,7 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
     return PointerRenderer;
 }());
 
-var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
+var __rest = (undefined && undefined.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
@@ -2619,6 +2699,7 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
      * @return {void}
      * @private
      */
+    /* tslint:disable:max-func-body-length */
     AxisLayoutPanel.prototype.calculateAxesRadius = function () {
         var _this = this;
         var totalRadius;
@@ -2843,15 +2924,21 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 value: roundValue
             };
             if (this_2.gauge.isBlazor) {
-                var axis_1 = argsData.axis, blazorArgsData = __rest$1(argsData, ["axis"]);
+                var axis_1 = argsData.axis, blazorArgsData = __rest(argsData, ["axis"]);
                 argsData = blazorArgsData;
             }
             var axisLabelRenderSuccess = function (argsData) {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
                     if (i === max && _this.gauge.isBlazor && document.getElementById(_this.gauge.element.id + '_AxesCollection')) {
-                        _this.getMaxLabelWidth(_this.gauge, axis);
-                        _this.axisRenderer.drawAxisLabels(axis, _this.gauge.axes.length - 1, (document.getElementById(_this.gauge.element.id + '_Axis_Group_' + (_this.gauge.axes.length - 1))), _this.gauge);
+                        var currentLast = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
+                            : null;
+                        if (currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
+                            _this.getMaxLabelWidth(_this.gauge, axis);
+                            axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
+                            axis.farSize = axis.farSize + axis.maxLabelSize.height;
+                            _this.axisRenderer.drawAxisLabels(axis, _this.gauge.axes.length - 1, (document.getElementById(_this.gauge.element.id + '_Axis_Group_' + (_this.gauge.axes.length - 1))), _this.gauge);
+                        }
                     }
                 }
             };
@@ -2864,7 +2951,7 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
         }
         var lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         var maxVal = axis.visibleRange.max;
-        if (lastLabel !== maxVal && axis.showLastLabel === true) {
+        if (!isNullOrUndefined(lastLabel) && lastLabel !== maxVal && axis.showLastLabel === true) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
                 text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(maxVal)) :
@@ -2872,12 +2959,18 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 value: maxVal
             };
             if (this.gauge.isBlazor) {
-                var axis_2 = argsData.axis, blazorArgsData = __rest$1(argsData, ["axis"]);
+                var axis_2 = argsData.axis, blazorArgsData = __rest(argsData, ["axis"]);
                 argsData = blazorArgsData;
             }
             var axisLabelRenderSuccess = function (argsData) {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal));
+                    if (_this.gauge.isBlazor && document.getElementById(_this.gauge.element.id + '_AxesCollection')) {
+                        _this.getMaxLabelWidth(_this.gauge, axis);
+                        axis.farSize = axis.farSize + axis.maxLabelSize.height;
+                        axis.nearSize = axis.nearSize + axis.maxLabelSize.height;
+                        _this.axisRenderer.drawAxisLabels(axis, _this.gauge.axes.length - 1, (document.getElementById(_this.gauge.element.id + '_Axis_Group_' + (_this.gauge.axes.length - 1))), _this.gauge);
+                    }
                 }
             };
             axisLabelRenderSuccess.bind(this);
@@ -4016,28 +4109,60 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
             var dragBlazorArgs;
             var tooltip = _this.tooltipModule;
             if (!args.cancel) {
+                if ((_this.enablePointerDrag || _this.enableRangeDrag) && _this.svgObject.getAttribute('cursor') !== 'grabbing') {
+                    if ((args.target.id.indexOf('_Pointer_') !== -1 && _this.enablePointerDrag) || (_this.enableRangeDrag && args.target.id.indexOf('_Range_') !== -1)) {
+                        _this.svgObject.setAttribute('cursor', 'pointer');
+                    }
+                    else {
+                        _this.svgObject.setAttribute('cursor', 'auto');
+                    }
+                }
                 if (_this.enablePointerDrag && _this.activePointer) {
                     _this.isDrag = true;
                     var dragPointInd = parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10);
-                    var dragAxisInd = parseInt(_this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+                    var dragAxisInd = parseInt(_this.activePointer.pathElement[0].id.split('_Axis_')[1], 10);
                     dragArgs = {
                         axis: _this.activeAxis,
                         pointer: _this.activePointer,
                         previousValue: _this.activePointer.currentValue,
                         name: dragMove,
+                        type: pointerMove,
                         currentValue: null,
                         axisIndex: dragAxisInd,
-                        pointerIndex: dragPointInd
+                        pointerIndex: dragPointInd,
                     };
                     dragBlazorArgs = {
                         previousValue: _this.activePointer.currentValue,
                         name: dragMove,
+                        type: pointerMove,
                         currentValue: null,
                         pointerIndex: dragPointInd,
-                        axisIndex: dragAxisInd
+                        axisIndex: dragAxisInd,
                     };
-                    _this.pointerDrag(new GaugeLocation(args.x, args.y));
+                    _this.pointerDrag(new GaugeLocation(args.x, args.y), dragAxisInd, dragPointInd);
                     dragArgs.currentValue = dragBlazorArgs.currentValue = _this.activePointer.currentValue;
+                    _this.trigger(dragMove, _this.isBlazor ? dragBlazorArgs : dragArgs);
+                    _this.activeRange = null;
+                }
+                else if (_this.enableRangeDrag && _this.activeRange) {
+                    _this.isDrag = true;
+                    var dragAxisInd = parseInt(_this.activeRange.pathElement[0].id.split('_Axis_')[1], 10);
+                    var dragRangeInd = parseInt(_this.activeRange.pathElement[0].id.slice(-1), 10);
+                    dragArgs = {
+                        axis: _this.activeAxis,
+                        name: dragMove,
+                        type: rangeMove,
+                        range: _this.activeRange,
+                        axisIndex: dragAxisInd,
+                        rangeIndex: dragRangeInd,
+                    };
+                    dragBlazorArgs = {
+                        name: dragMove,
+                        type: rangeMove,
+                        axisIndex: dragAxisInd,
+                        rangeIndex: dragRangeInd,
+                    };
+                    _this.rangeDrag(new GaugeLocation(args.x, args.y), dragAxisInd, dragRangeInd);
                     _this.trigger(dragMove, _this.isBlazor ? dragBlazorArgs : dragArgs);
                 }
             }
@@ -4059,6 +4184,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         this.setMouseXY(e);
         this.activeAxis = null;
         this.activePointer = null;
+        this.activeRange = null;
         this.svgObject.setAttribute('cursor', 'auto');
         var args = this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
         this.trigger(gaugeMouseLeave, args);
@@ -4081,13 +4207,40 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
      * Handles the pointer draf while mouse move on gauge.
      * @private
      */
-    CircularGauge.prototype.pointerDrag = function (location) {
+    CircularGauge.prototype.pointerDrag = function (location, axisIndex, pointerIndex) {
         var axis = this.activeAxis;
         var range = axis.visibleRange;
         var value = getValueFromAngle(getAngleFromLocation(this.midPoint, location), range.max, range.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
         if (value >= range.min && value <= range.max) {
+            this.axes[axisIndex].pointers[pointerIndex].value = value;
             this.activePointer.currentValue = value;
             this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, this.activePointer, value);
+        }
+    };
+    /**
+     * Handles the range draf while mouse move on gauge.
+     * @private
+     */
+    CircularGauge.prototype.rangeDrag = function (location, axisIndex, rangeIndex) {
+        if (this.activeAxis) {
+            var axis = this.activeAxis;
+            var range = axis.visibleRange;
+            var value = void 0;
+            value = getValueFromAngle(getAngleFromLocation(this.midPoint, location), range.max, range.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
+            if (value >= range.min && value <= range.max) {
+                {
+                    var previousValue1 = this.activeRange.currentValue;
+                    this.activeRange.currentValue = value;
+                    var avg = void 0;
+                    var add = (this.activeRange.end - this.activeRange.start);
+                    var div = add / 2;
+                    avg = parseFloat(this.activeRange.start.toString()) + div;
+                    this.startValue = (value < avg) ? value : ((previousValue1 < avg) ? previousValue1 : this.activeRange.start);
+                    this.endValue = (value < avg) ? ((previousValue1 > avg) ? previousValue1 : this.activeRange.end) : value;
+                    this.axes[axisIndex].ranges[rangeIndex].start = this.startValue;
+                    this.axes[axisIndex].ranges[rangeIndex].end = this.endValue;
+                }
+            }
         }
     };
     /**
@@ -4099,10 +4252,12 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.setMouseXY(e);
         var currentPointer;
+        var currentRange;
         var args = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
         this.trigger('gaugeMouseDown', args, function (observedArgs) {
-            if (!args.cancel && args.target.id.indexOf('_Pointer_') >= 0 &&
-                args.target.id.indexOf(_this.element.id + '_Axis_') >= 0) {
+            if (!args.cancel &&
+                args.target.id.indexOf(_this.element.id + '_Axis_') >= 0 &&
+                args.target.id.indexOf('_Pointer_') >= 0) {
                 currentPointer = getPointer(args.target.id, _this);
                 _this.activeAxis = _this.axes[currentPointer.axisIndex];
                 _this.activePointer = _this.activeAxis.pointers[currentPointer.pointerIndex];
@@ -4110,21 +4265,53 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                     _this.activePointer.pathElement = [e.target];
                 }
                 var pointInd = parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10);
-                var axisInd = parseInt(_this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+                var axisInd = parseInt(_this.activePointer.pathElement[0].id.split('_Axis_')[1], 10);
                 _this.trigger(dragStart, _this.isBlazor ? {
                     name: dragStart,
+                    type: pointerStart,
                     currentValue: _this.activePointer.currentValue,
                     pointerIndex: pointInd,
-                    axisIndex: axisInd
+                    axisIndex: axisInd,
                 } : {
                     axis: _this.activeAxis,
                     name: dragStart,
+                    type: pointerStart,
                     pointer: _this.activePointer,
                     currentValue: _this.activePointer.currentValue,
                     pointerIndex: pointInd,
-                    axisIndex: axisInd
+                    axisIndex: axisInd,
                 });
-                _this.svgObject.setAttribute('cursor', 'pointer');
+                if (_this.enablePointerDrag) {
+                    _this.svgObject.setAttribute('cursor', 'grabbing');
+                }
+            }
+            else if (!args.cancel &&
+                args.target.id.indexOf(_this.element.id + '_Axis_') >= 0 &&
+                args.target.id.indexOf('_Range_') >= 0) {
+                currentRange = getRange(args.target.id, _this);
+                _this.activeAxis = _this.axes[currentRange.axisIndex];
+                _this.activeRange = _this.activeAxis.ranges[currentRange.rangeIndex];
+                if (isNullOrUndefined(_this.activeRange.pathElement)) {
+                    _this.activeRange.pathElement = [e.target];
+                }
+                var rangeInd = parseInt(_this.activeRange.pathElement[0].id.slice(-1), 0);
+                var axisInd = parseInt(_this.activeRange.pathElement[0].id.split('_Axis_')[1], 10);
+                _this.trigger(dragStart, _this.isBlazor ? {
+                    name: dragStart,
+                    type: rangeStart,
+                    axisIndex: axisInd,
+                    rangeIndex: rangeInd,
+                } : {
+                    axis: _this.activeAxis,
+                    name: dragStart,
+                    type: rangeStart,
+                    range: _this.activeRange,
+                    axisIndex: axisInd,
+                    rangeIndex: rangeInd,
+                });
+                if (_this.enableRangeDrag) {
+                    _this.svgObject.setAttribute('cursor', 'grabbing');
+                }
             }
         });
         return false;
@@ -4143,16 +4330,19 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         var tooltip = this.tooltipModule;
         this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
-        if (this.activeAxis && this.activePointer) {
+        if (this.activeAxis && this.activePointer && this.enablePointerDrag) {
+            this.svgObject.setAttribute('cursor', 'auto');
             var pointerInd = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-            var axisInd = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+            var axisInd = parseInt(this.activePointer.pathElement[0].id.split('_Axis_')[1], 10);
             this.trigger(dragEnd, this.isBlazor ? {
                 name: dragEnd,
+                type: pointerEnd,
                 currentValue: this.activePointer.currentValue,
                 pointerIndex: pointerInd,
                 axisIndex: axisInd
             } : {
                 name: dragEnd,
+                type: pointerEnd,
                 axis: this.activeAxis,
                 pointer: this.activePointer,
                 currentValue: this.activePointer.currentValue,
@@ -4161,6 +4351,27 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
             });
             this.activeAxis = null;
             this.activePointer = null;
+            this.isDrag = false;
+        }
+        else if (this.activeAxis && this.activeRange && this.enableRangeDrag) {
+            this.svgObject.setAttribute('cursor', 'auto');
+            var rangeInd = parseInt(this.activeRange.pathElement[0].id.slice(-1), 10);
+            var axisInd = parseInt(this.activeRange.pathElement[0].id.split('_Axis_')[1], 10);
+            this.trigger(dragEnd, this.isBlazor ? {
+                name: dragEnd,
+                type: rangeEnd,
+                rangeIndex: rangeInd,
+                axisIndex: axisInd
+            } : {
+                name: dragEnd,
+                type: rangeEnd,
+                axis: this.activeAxis,
+                range: this.activeRange,
+                axisIndex: axisInd,
+                rangeIndex: rangeInd
+            });
+            this.activeAxis = null;
+            this.activeRange = null;
             this.isDrag = false;
         }
         this.svgObject.setAttribute('cursor', 'auto');
@@ -4201,7 +4412,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        if (this.element.classList.contains('e-circulargauge')) {
+        else if (this.element.classList.contains('e-circulargauge')) {
             this.resizeTo = window.setTimeout(function () {
                 _this.createSvg();
                 _this.calculateBounds();
@@ -4668,6 +4879,9 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], CircularGauge.prototype, "enablePointerDrag", void 0);
     __decorate([
+        Property(false)
+    ], CircularGauge.prototype, "enableRangeDrag", void 0);
+    __decorate([
         Property(null)
     ], CircularGauge.prototype, "centerX", void 0);
     __decorate([
@@ -4756,5 +4970,5 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
  * Circular Gauge component exported.
  */
 
-export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, RangeTooltip, AnnotationTooltip, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getElementSize, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, textTrim, showTooltip, TextOption, VisibleLabels, Location, LegendSettings, Legend, Index, LegendOptions };
+export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, RangeTooltip, AnnotationTooltip, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getRange, getElementSize, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, textTrim, showTooltip, TextOption, VisibleLabels, Location, LegendSettings, Legend, Index, LegendOptions };
 //# sourceMappingURL=ej2-circulargauge.es5.js.map

@@ -88,7 +88,8 @@ export class EditTooltip {
                 this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement as HTMLElement);
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
                     this.toolTipObj.offsetX = -this.taskbarEdit.taskBarEditRecord.ganttProperties.width;
-                } else if (this.taskbarEdit.taskBarEditAction === 'RightResizing') {
+                } else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
+                 this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
                     this.toolTipObj.offsetX = 0;
                 } else if (this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
                     this.toolTipObj.offsetX = -(this.taskbarEdit.taskBarEditRecord.ganttProperties.width -
@@ -130,6 +131,7 @@ export class EditTooltip {
                         this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
                     break;
                 case 'RightResizing':
+                case 'ParentResizing':
                     tooltipString = this.parent.localeObj.getConstant('endDate') + ' : ';
                     tooltipString += instance.formatDate(
                         editRecord.endDate, { format: this.parent.dateFormat });
@@ -139,6 +141,7 @@ export class EditTooltip {
                 case 'ChildDrag':
                 case 'ParentDrag':
                 case 'MilestoneDrag':
+                case 'ManualParentDrag':
                     if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.startDate)) {
                         tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
                         tooltipString += instance.formatDate(

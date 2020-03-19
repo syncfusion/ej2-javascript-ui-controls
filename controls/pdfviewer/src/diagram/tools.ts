@@ -1476,9 +1476,9 @@ export class PolygonDrawingTool extends ToolBase {
                             }
 
                         }
+                        let annotationObject: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
                         // tslint:disable-next-line
-                        this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
-
+                        this.commandHandler.annotation.addAction((this as any).pageIndex, null, annotationObject, 'Addition', '', annotationObject as any, annotationObject);
                         this.drawingObject = null;
                     }
                 }

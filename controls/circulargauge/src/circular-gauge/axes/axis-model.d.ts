@@ -243,6 +243,13 @@ export interface TickModel {
 
     useRangeColor?: boolean;
 
+    /**
+     * Sets or gets the dash array for the ticks
+     * @default '0'
+     */
+
+    dashArray?: string;
+
 }
 
 /**
@@ -437,6 +444,12 @@ export interface PointerModel {
     cap?: CapModel;
 
     /**
+     * Options for customizing the font
+     */
+
+    textStyle?: FontModel;
+
+    /**
      * Options for customizing the back needle.
      */
 
@@ -468,6 +481,7 @@ export interface PointerModel {
      * * diamond - Renders a diamond.
      * * invertedTriangle - Renders a invertedTriangle.
      * * image - Renders a image.
+     * * Text - Renders a Text.
      * @default Circle
      */
 
@@ -479,6 +493,12 @@ export interface PointerModel {
      */
 
     markerHeight?: number;
+
+    /**
+     * text of the pointer.
+     * @default ''
+     */
+    text?: string;
 
     /**
      * Information about pointer for assistive technology.
@@ -499,6 +519,20 @@ export interface PointerModel {
      */
 
     offset?: number | string;
+
+    /**
+     * Sets or gets the start width of the needle pointer
+     * @default null
+     */
+
+    needleStartWidth?: number;
+
+    /**
+     * Sets or gets the end width of the needle pointer
+     * @default null
+     */
+
+    needleEndWidth?: number;
 
 }
 

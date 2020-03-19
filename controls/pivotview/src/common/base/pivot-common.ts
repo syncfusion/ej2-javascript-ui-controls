@@ -1,6 +1,6 @@
 import { Internationalization, L10n } from '@syncfusion/ej2-base';
 import { IDataOptions, PivotEngine } from '../../base/engine';
-import { CommonArgs } from './interface';
+import { CommonArgs, TreeDataInfo } from './interface';
 import { Mode } from '../base/enum';
 import { CommonKeyboardInteraction } from '../actions/keyboard';
 import { EventBase } from '../actions/event-base';
@@ -45,7 +45,7 @@ export class PivotCommon {
     /** @hidden */
     public savedTreeFilterPos: { [key: number]: string } = {};
     /** @hidden */
-    public currentTreeItemsPos: { [key: string]: number } = {};
+    public currentTreeItemsPos: { [key: string]: TreeDataInfo } = {};
     /** @hidden */
     public searchTreeItems: { [key: string]: Object }[] = [];
     /** @hidden */

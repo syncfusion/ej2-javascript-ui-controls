@@ -1,29 +1,27 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
-import { initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndexByName, getSheetIndex } from './sheet';
-import { Sheet } from './sheet';
+import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex } from './sheet';
 import { Event, ModuleDeclaration, merge, L10n } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
-import { DefineNameModel, HyperlinkModel } from '../common/class-model';
 import { getWorkbookRequiredModules } from '../common/module';
-import { getData, clearRange } from './index';
-import { SheetModel } from './sheet-model';
-import { CellModel } from './cell-model';
-import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale } from '../common/index';
+import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';
+import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';
+import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';
 import * as events from '../common/event';
-import { CellStyleModel } from '../common/index';
-import { setCellFormat, sheetCreated } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';
-import { SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';
-import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/interface';
-import { getCell, skipDefaultValue, setCell } from './cell';
-import { DataBind, setRow } from '../index';
+import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
+import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel } from '../common/index';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SetCellFormatArgs } from '../common/interface';
+import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs } from '../common/index';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/index';
+import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
+import { DataBind, setRow, setColumn } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
-import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink } from '../actions/index';
+import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';
+import { WorkbookDataValidation } from '../actions/index';
 import { ServiceLocator } from '../services/index';
 import { setLinkModel } from '../common/event';
-import { beginAction } from '../../spreadsheet/common/event';
+import { beginAction, completeAction } from '../../spreadsheet/common/event';
+import { WorkbookFindAndReplace } from '../actions/find-and-replace';
 
 /**
  * Represents the Workbook.
@@ -54,7 +52,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * ```
      * @default []
      */
-    @Collection([], Sheet)
+    @Property([])
     public sheets: SheetModel[];
 
     /**
@@ -89,6 +87,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property('100%')
     public height: string | number;
+    /**
+     * It allows to enable/disable find & replace with its functionalities.
+     * @default true
+     */
+    @Property(true)
+    public allowFindAndReplace: boolean;
 
     /**
      * Defines the width of the Spreadsheet. It accepts width as pixels, number, and percentage.
@@ -183,6 +187,27 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public allowHyperlink: boolean;
+
+    /**
+     * It allows you to insert rows, columns and sheets in to the spreadsheet.
+     * @default true
+     */
+    @Property(true)
+    public allowInsert: boolean;
+
+    /**
+     * It allows you to delete rows, columns and sheets from spreadsheet.
+     * @default true
+     */
+    @Property(true)
+    public allowDelete: boolean;
+
+    /**
+     * It allows you to apply validation to the spreadsheet cells. 
+     * @default true
+     */
+    @Property(true)
+    public allowDataValidation: boolean;
 
     /**
      * Specifies the cell style options.
@@ -320,6 +345,23 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public beforeCellFormat: EmitType<BeforeCellFormatArgs>;
 
+    /**
+     * Triggered every time a request is made to access cell information.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *      queryCellInfo: (args: CellInfoEventArgs) => {
+     *      }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    @Event()
+    public queryCellInfo: EmitType<CellInfoEventArgs>;
+
     /** @hidden */
     public commonCellStyle: CellStyleModel;
 
@@ -344,7 +386,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         super(options);
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
-            WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
+            WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace,
+            WorkbookDataValidation, WorkbookProtectSheet);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -436,17 +479,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * Used to create new sheet.
      * @hidden
      */
-    public createSheet(index?: number): void {
-        let sheet: SheetModel
-            = new Sheet(this, 'sheets', { id: getMaxSheetId(this.sheets), name: 'Sheet' + getSheetNameCount(this) }, true);
-        if (index > -1) {
-            this.sheets.splice(index, 0, sheet);
-        } else {
-            this.sheets.push(sheet);
-        }
-        this.setProperties({ 'sheet': this.sheets }, true);
-        this.notify(sheetCreated, { sheetIndex: index | 0 });
-        this.notify(events.workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index });
+    public createSheet(index: number = this.sheets.length, sheets: SheetModel[] = [{}]): void {
+        this.sheets.splice(index, 0, ...sheets);
+        initSheet(this, sheets);
+        this.notify(sheetCreated, { sheetIndex: index, sheets: sheets });
+        this.notify(events.workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index, sheetCount: index + sheets.length });
     }
 
     /**
@@ -478,6 +515,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 case 'cellStyle':
                     merge(this.commonCellStyle, skipDefaultValue(newProp.cellStyle));
                     break;
+                case 'sheets':
+                    initSheet(this);
+                    break;
             }
         }
     }
@@ -493,24 +533,107 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Used to hide/show the rows in spreadsheet.
      * @param {number} startRow - Specifies the start row index.
-     * @param {number} endRow - Specifies the end row index.
-     * @param {boolean} hide - To hide/show the rows in specified range.
-     * @hidden
+     * @param {number} endRow? - Specifies the end row index.
+     * @param {boolean} hide? - To hide/show the rows in specified range.
+     * @returns void
      */
-    public showHideRow(hide: boolean, startRow: number, endRow: number = startRow): void {
+    public hideRow(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
         let sheet: SheetModel = this.getActiveSheet();
-        for (let i: number = startRow; i < endRow; i++) {
+        for (let i: number = startIndex; i <= endIndex; i++) {
             setRow(sheet, i, { hidden: hide });
         }
-        this.setProperties({ 'sheets': this.sheets }, true);
+    }
+
+    /**
+     * Used to hide/show the columns in spreadsheet.
+     * @param {number} startIndex - Specifies the start column index.
+     * @param {number} endIndex? - Specifies the end column index.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the columns.
+     * @returns void
+     */
+    public hideColumn(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
+        let sheet: SheetModel = this.getActiveSheet();
+        for (let i: number = startIndex; i <= endIndex; i++) {
+            setColumn(sheet, i, { hidden: hide });
+        }
+    }
+
+    /**
+     * Sets the border to specified range of cells.
+     * @param {CellStyleModel} style? - Specifies the style property which contains border value.
+     * @param {string} range? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @param {BorderType} type? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
+     * @returns void
+     */
+    public setBorder(style: CellStyleModel, range?: string, type?: BorderType): void {
+        this.notify(setCellFormat, <SetCellFormatArgs>{ style: style, borderType: type, range:
+            range || this.getActiveSheet().selectedRange });
+    }
+
+    /**
+     * Used to insert rows in to the spreadsheet.
+     * @param {number | RowModel[]} startRow? - Specifies the start row index / row model which needs to be inserted.
+     * @param {number} endRow? - Specifies the end row index.
+     * @returns void
+     */
+    public insertRow(startRow?: number | RowModel[], endRow?: number): void {
+        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getActiveSheet(), start: startRow, end: endRow, modelType: 'Row' });
+    }
+
+    /**
+     * Used to insert columns in to the spreadsheet.
+     * @param {number | ColumnModel[]} startColumn? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endColumn? - Specifies the end column index.
+     * @returns void
+     */
+    public insertColumn(startColumn?: number | ColumnModel[], endColumn?: number): void {
+        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getActiveSheet(), start: startColumn, end: endColumn,
+            modelType: 'Column' });
+    }
+
+    /**
+     * Used to insert sheets in to the spreadsheet.
+     * @param {number | SheetModel[]} startSheet? - Specifies the start column index / column model which needs to be inserted.
+     * @param {number} endSheet? - Specifies the end column index.
+     * @returns void
+     */
+    public insertSheet(startSheet?: number | SheetModel[], endSheet?: number): void {
+        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this, start: startSheet, end: endSheet, modelType: 'Sheet' });
+    }
+
+    /**
+     * Used to delete rows, columns and sheets from the spreadsheet.
+     * @param {number | RowModel[]} startIndex? - Specifies the start sheet / row / column index.
+     * @param {number} endIndex? - Specifies the end sheet / row / column index.
+     * @param {ModelType} model? - Specifies the delete model type. By default, the model is considered as `Sheet`. The possible values are,
+     * - Row: To delete rows.
+     * - Column: To delete columns.
+     * - Sheet: To delete sheets.
+     * @returns void
+     */
+    public delete(startIndex?: number, endIndex?: number, model?: ModelType): void {
+        this.notify(deleteModel, <InsertDeleteModelArgs>{ model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start:
+            startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet' });
+    }
+
+    /**
+     * Used to compute the specified expression/formula.
+     * @param {string} formula - Specifies the formula(=SUM(A1:A3)) or expression(2+3).
+     * @returns string | number
+     */
+    public computeExpression(formula: string): string | number {
+        let args: { action: string, formula: string, calcValue?: string | number } = {
+            action: 'computeExpression', formula: formula
+        };
+        this.notify(events.workbookFormulaOperation, args);
+        return args.calcValue;
     }
 
     private initEmptySheet(): void {
-        let len: number = this.sheets.length;
-        if (len) {
-            initSheet(this);
-        } else {
+        if (!this.sheets.length) {
             this.createSheet();
+        } else {
+            initSheet(this);
         }
     }
 
@@ -527,12 +650,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         let sheet: SheetModel = this.getActiveSheet();
         if (rowIdx > sheet.usedRange.rowIndex) {
             sheet.usedRange.rowIndex = rowIdx;
-            this.setProperties({ 'sheets': this.sheets }, true);
             this.notify(updateUsedRange, { index: rowIdx, update: 'row' });
         }
         if (colIdx > sheet.usedRange.colIndex) {
             sheet.usedRange.colIndex = colIdx;
-            this.setProperties({ 'sheets': this.sheets }, true);
             this.notify(updateUsedRange, { index: colIdx, update: 'col' });
         }
     }
@@ -651,6 +772,36 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         let args: object = { hyperlink: hyperlink, cell: cellAddress };
         this.notify(setLinkModel, args);
     }
+    /**
+     * To find the specified cell value.
+     * @param args - options for find.
+     */
+    public findHandler(args: FindOptions): void {
+        if (args.findOpt === 'next') {
+            this.notify(events.findNext, args);
+        } else if (args.findOpt === 'prev') {
+            this.notify(events.findPrevious, args);
+        }
+    }
+    /**
+     * To replace the specified cell or entire match value.
+     * @param args - options for replace.
+     */
+    public replaceHandler(args: FindOptions): void {
+        if (args.replaceBy === 'replace') {
+            this.notify(events.replaceHandler, args);
+        } else {
+            this.notify(events.replaceAllHandler, args);
+        }
+    }
+
+    /**
+     * Protect the active sheet based on the protect sheetings.
+     * @param protectSettings - Specifies the protect settings of the sheet.
+     */
+    public protectSheet(protectSettings?: ProtectSettingsModel): void {
+      this.notify(events.protectsheetHandler, protectSettings);
+    }
 
     /**
      * Sorts the range of cells in the active Spreadsheet.
@@ -670,6 +821,39 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return sortArgs.promise as Promise<SortEventArgs>;
     }
 
+    public addDataValidation( rules: ValidationModel, range?: string): void {
+        range = range ? range : this.getActiveSheet().selectedRange;
+        let eventArgs: CellValidationEventArgs = {
+            range: range, type: rules.type, operator: rules.operator, value1: rules.value1,
+            value2: rules.value2, ignoreBlank: rules.ignoreBlank, inCellDropDown: rules.inCellDropDown, cancel: false
+        };
+        this.notify(beginAction, { eventArgs: eventArgs, action: 'validation' });
+        if (!eventArgs.cancel) {
+        range = eventArgs.range;
+        rules.type = eventArgs.type;
+        rules.operator = eventArgs.operator;
+        rules.value1 = eventArgs.value1;
+        rules.value2 = eventArgs.value2;
+        rules.ignoreBlank = eventArgs.ignoreBlank;
+        rules.inCellDropDown = eventArgs.inCellDropDown;
+        this.notify(events.setValidation, { rules: rules, range: range});
+        delete eventArgs.cancel;
+        this.notify(completeAction, { eventArgs: eventArgs, action: 'validation' });
+        }
+    }
+
+    public removeDataValidation( range?: string): void {
+        this.notify(events.removeValidation, { range: range});
+    }
+
+    public addInvalidHighlight( range: string): void {
+        this.notify( events.addHighlight, { range: range });
+    }
+
+    public removeInvalidHighlight( range: string): void {
+        this.notify( events.removeHighlight, { range: range });
+    }
+
     /**
      * To update a cell properties.
      * @param {CellModel} cell - Cell properties.
@@ -684,9 +868,19 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 events.workbookEditOperation,
                 {
                     action: 'updateCellValue', address: range, value: cell.value,
-                    sheetIndex: sheetIdx
+                    sheetIndex: sheetIdx + 1
                 });
         }
+    }
+
+    /**
+     * This method is used to wrap/unwrap the text content of the cell.
+     * @param address - Address of the cell to be wrapped.
+     * @param wrap - Set `false` if the text content of the cell to be unwrapped.
+     * @returns void
+     */
+    public wrap(address: string, wrap: boolean = true): void {
+        wrapText(address, wrap, this);
     }
 
     /**
@@ -782,5 +976,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         } else if (!cell.value && cell.hyperlink) {
             return typeof cell.hyperlink === 'string' ? cell.hyperlink : cell.hyperlink.address;
         } else { return cell.value ? cell.value.toString() : ''; }
+    }
+
+    /**
+     * @hidden
+     */
+    public getAddressInfo(address: string): { sheetIndex: number, indices: number[] } {
+        return getAddressInfo(this, address);
     }
 }

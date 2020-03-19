@@ -77,7 +77,8 @@ export class ColumnBase {
         let stackingGroup: string[] = [];
         let vSeries: RectPosition = { rectCount: 0, position: null };
         for (let i : number = 0; i < seriesCollection.length; i++) {
-            let value: Series = seriesCollection[i];
+        let value: Series = seriesCollection[i];
+            // tslint:disable-next-line:align
             if (value.type.indexOf('Stacking') !== -1) {
                 if (value.stackingGroup) {
                     if (stackingGroup[value.stackingGroup] === undefined) {
@@ -97,11 +98,12 @@ export class ColumnBase {
             } else {
                 value.position = vSeries.rectCount++;
             }
-        }
-        for (let i : number = 0; i < seriesCollection.length; i++) {
-        let value: Series = seriesCollection[i];
-        value.rectCount = vSeries.rectCount;
-       }
+         }
+         // tslint:disable-next-line:align
+         for (let i : number = 0; i < seriesCollection.length; i++) {
+            let value: Series = seriesCollection[i];
+            value.rectCount = vSeries.rectCount;
+           }
     }
 
     /**

@@ -1,5 +1,4 @@
 import { extend } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
 import { EventFieldsMapping } from '../base/interface';
 import { getDateFromRecurrenceDateString, getRecurrenceStringFromDate } from '../../recurrence-editor/date-generator';
 import { Schedule } from '../base/schedule';
@@ -137,8 +136,7 @@ export class ICalendarExport {
     }
 
     private filterEvents(data: object[], field: string, value: number): { [key: string]: Object }[] {
-        let queryManager: Query = new Query().where(field, 'equal', value);
-        return new DataManager({ json: data }).executeLocal(queryManager) as { [key: string]: Object }[];
+        return data.filter((e: { [key: string]: Object }) => e[field] === value) as { [key: string]: Object }[];
     }
 
     /**

@@ -54,7 +54,7 @@ export interface BaseAttibutes {
     /**
      * Specifies the name of the class
      */
-    className?: string;
+    class?: string;
     /**
      * Specifies the transformation value 
      */

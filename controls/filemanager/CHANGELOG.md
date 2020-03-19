@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-## 17.4.55 (2020-03-10)
+## 18.1.36-beta (2020-03-19)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#266091` - Now, the date modified column in the details view is globalized based on the locale value.
+- `#266713` - The script error thrown while performing the GetImage operation in NodeJS File System Provider has been fixed.
+
+#### New Features
+
+- Added the File Provider support for IBM Cloud Object Storage.
+- `#262023` - Added the upload customization support for ASP.NET Core Azure File Provider.
+- `#151515` - Added the upload customization support for SQL Server File Provider.
+
+## 17.4.51 (2020-02-25)
 
 ### File Manager
 

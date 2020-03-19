@@ -1,5 +1,4 @@
 import { closest, isNullOrUndefined, removeClass, remove, extend } from '@syncfusion/ej2-base';
-import { Query, DataManager } from '@syncfusion/ej2-data';
 import { ContextMenu, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, CellClickEventArgs } from '../../src/schedule/index';
 import { defaultData } from '../../spec/schedule/base/datasource.spec';
@@ -130,8 +129,8 @@ function onMenuItemSelect(args: MenuEventArgs): void {
         case 'EditOccurrence':
         case 'EditSeries':
             if (selectedMenuItem === 'EditSeries') {
-                eventObj = <{ [key: string]: Object }>new DataManager(scheduleObj.eventsData).executeLocal(new Query().
-                    where(scheduleObj.eventFields.id, 'equal', eventObj[scheduleObj.eventFields.recurrenceID] as string | number))[0];
+                eventObj = scheduleObj.eventsData.filter((data: { [key: string]: Object }) =>
+                    data[scheduleObj.eventFields.id] === eventObj[scheduleObj.eventFields.recurrenceID])[0] as { [key: string]: Object };
             }
             scheduleObj.openEditor(eventObj, selectedMenuItem);
             break;

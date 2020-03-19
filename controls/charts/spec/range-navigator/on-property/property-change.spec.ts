@@ -1,8 +1,8 @@
-import { RangeNavigator, AreaSeries, DateTime, IChangedEventArgs } from '../../../src/range-navigator/index';
+import { RangeNavigator, AreaSeries, DateTime, IChangedEventArgs, RangeTooltip } from '../../../src/range-navigator/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-RangeNavigator.Inject(AreaSeries, DateTime);
+RangeNavigator.Inject(AreaSeries, DateTime, RangeTooltip);
 
 /**
  * Spec for range navigator
@@ -143,11 +143,18 @@ describe('Range navigator', () => {
                 expect(args.start).not.toEqual(null);
             };
         });
-        it('check with datasource change', function () {
+        it('check with datasource change', () => {
             range.series[0].dataSource = newdata;
             range.changed = (args: IChangedEventArgs ) => {
                 expect(args.start).not.toEqual(null);
             };
+            range.dataBind();
+        });
+        it('Checking with direct data', () => {
+            range.dataSource = data;
+            range.xName = 'x';
+            range.yName = 'y';
+            range.tooltip = { displayMode: 'Always'};
             range.dataBind();
         });
     });

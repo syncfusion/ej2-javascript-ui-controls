@@ -472,4 +472,27 @@ describe('SVG Tooltip', () => {
        tooltip.theme = 'Bootstrap4';
        tooltip.refresh();
     });
+    it('Tooltip header text wrap', () => {
+        tooltip.loaded = (args: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');
+            expect(svgObject).not.toBe(null);
+            let groupElement: Element = document.getElementById('tooltipcontainer_group');
+            expect(groupElement.childElementCount).toBe(5);
+            let textElement: Element = document.getElementById('tooltipcontainer_text');
+            expect(textElement.childElementCount).toBe(3);
+
+        };
+        tooltip.header = 'aaaaaaaaa aaaaaaaaa aaaaaa aaaaaa aaaa aaaaaa aaaaaaaa';
+        tooltip.location = { x: 490, y: 100 };
+        tooltip.content = ['test'];
+        tooltip.tooltipRender = null;
+        tooltip.template = null;
+        tooltip.animationComplete = null;
+        tooltip.enableAnimation = false;
+        tooltip.shared = false;
+        tooltip.offset = 0;
+        tooltip.isTextWrap = true;
+        tooltip.theme = 'Material';
+        tooltip.refresh();
+    });
 });

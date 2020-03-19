@@ -11,7 +11,6 @@ import { IFieldOptions } from '../../base/engine';
 /** @hidden */
 export class AxisFieldRenderer {
     public parent: PivotFieldList;
-    private pivotButton: PivotButton;
 
     /** Constructor for render module */
     constructor(parent: PivotFieldList) {
@@ -23,7 +22,11 @@ export class AxisFieldRenderer {
      * @private
      */
     public render(): void {
-        this.pivotButton = new PivotButton(this.parent);
+        /* tslint:disable */
+        let pivotButtonModule: PivotButton =
+            ((!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) ?
+                new PivotButton(this.parent) : this.parent.pivotButtonModule);
+        /* tslint:enable */
         this.createPivotButtons();
     }
     private createPivotButtons(): void {

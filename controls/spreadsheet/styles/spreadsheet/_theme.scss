@@ -1,6 +1,21 @@
 @include export-module('spreadsheet-theme') {
   /*! spreadsheet theme */
   #{&}.e-spreadsheet {
+    & .e-findtool-dlg {
+      border-bottom-color: $find-popup-border-color;
+      border-color: $find-popup-border-color;
+      border-left-color: $find-popup-border-color;
+      border-right-color: $find-popup-border-color;
+      border-top-color: $find-popup-border-top-color;
+      box-shadow: none;
+    }
+
+    & .e-find-dlg {
+      & .e-header {
+        font-weight: 500;
+      }
+    }
+
     & .e-sheet-tab-panel {
       background: $sheet-tab-panel-bg-color;
 
@@ -278,6 +293,22 @@
         & .e-select-all-cell.e-prev-highlight-right {
           border-right-color: $hdr-selection-border-color;
         }
+
+        & .e-column-header .e-header-cell.e-hide-start.e-prev-highlight,
+        & .e-column-header .e-header-cell.e-hide-start.e-highlight {
+          border-right-color: transparent;
+
+          &::after {
+            border-right-color: $hdr-selection-border-color;
+          }
+        }
+
+        & .e-column-header .e-header-cell.e-hide-end.e-highlight,
+        & .e-column-header .e-header-cell.e-highlight + th.e-header-cell.e-hide-end {
+          &::before {
+            border-left-color: $hdr-selection-border-color;
+          }
+        }
       }
 
       &.e-rtl  {
@@ -385,13 +416,23 @@
       border-color: $spreadsheet-border-color;
     }
 
-    .e-menu-wrapper.e-mobile.e-file-menu {
-      background-color: inherit;
-      border-color: transparent;
+    .e-menu-wrapper {
+      &.e-mobile.e-file-menu {
+        background-color: inherit;
+        border-color: transparent;
 
-      @if $skin-name == 'bootstrap4' {
-        & ul {
-          background-color: inherit;
+        @if $skin-name == 'bootstrap4' {
+          & ul {
+            background-color: inherit;
+          }
+        }
+      }
+
+      & .e-border-style {
+        & .e-menu-item {
+          &::after {
+            border-bottom-color: $cmenu-color;
+          }
         }
       }
     }
@@ -421,6 +462,17 @@
     .e-rowresize-handler {
       border-color: $selection-border-color;
     }
+
+    & .e-validation-list {
+      background: $cell-background;
+    }
+
+    & .e-datavalidation-dlg {
+
+      & .e-dlg-error {
+        color: $dlg-error-color;
+      }
+    }
   }
 
   & .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {
@@ -434,6 +486,12 @@
 
     &.e-align-ddb ul .e-item:not(.e-selected) .e-menu-icon {
       color: $tbar-default-icon-color;
+    }
+
+    @if $skin-name == 'fabric' {
+      &.e-borders-ddb .e-menu-wrapper {
+        background-color: transparent;
+      }
     }
   }
 

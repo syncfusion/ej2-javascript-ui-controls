@@ -275,7 +275,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
         else {
             for (let key in obj2) {
                 if (this.isFunction(obj2[key]) || diff[key] !== undefined) {
-                    if (diff[key].type && diff[key].type !== this.valueUpdated) {
+                    if (diff[key].type && ((diff[key].type !== this.valueUpdated) && (diff[key].type !== this.valueDeleted))) {
                         delete diff[key];
                     }
                     continue;
@@ -330,7 +330,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
                 }
             }
             else {
-                if (key != 'type') {
+                if ((key != 'type') || (key == 'type' && (obj[key] !== this.valueUpdated && obj[key] !== this.valueUnchanged && obj[key] !== this.valueDeleted && obj[key] !== this.valueCreated))) {
                     if (this.isFunction(obj[key])) {
                         continue;
                     }

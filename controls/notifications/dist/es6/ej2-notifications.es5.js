@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -33,6 +33,7 @@ var ACTIOBUTTONS = 'e-toast-actions';
 var CLOSEBTN = 'e-toast-close-icon';
 var RTL = 'e-rtl';
 var TOAST_REF_ELEMENT = 'e-toast-ref-element';
+var TOAST_BLAZOR_HIDDEN = 'e-blazor-toast-hidden';
 /**
  * An object that is used to configure the Toast X Y positions.
  */
@@ -120,7 +121,6 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     function Toast(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.toastCollection = [];
-        _this.isDestroy = false;
         return _this;
     }
     /**
@@ -140,12 +140,14 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
      * Removes the component from the DOM and detaches all its related event handlers, attributes and classes.
      */
     Toast.prototype.destroy = function () {
-        if ((isBlazor && this.isServerRendered)) {
-            this.isDestroy = true;
-        }
         this.hide('All');
         this.element.classList.remove(CONTAINER);
         setStyleAttribute(this.element, { 'position': '', 'z-index': '' });
+        if (!isNullOrUndefined(this.refElement) && !isNullOrUndefined(this.refElement.parentElement)) {
+            this.refElement.parentElement.insertBefore(this.element, this.refElement);
+            detach(this.refElement);
+            this.refElement = undefined;
+        }
         _super.prototype.destroy.call(this);
     };
     /**
@@ -161,7 +163,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.target)) {
             this.target = document.body;
         }
-        if (this.enableRtl) {
+        if (this.enableRtl && !this.isBlazorServer()) {
             this.element.classList.add(RTL);
         }
     };
@@ -178,11 +180,18 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
         }
         this.renderComplete();
+        if (!isNullOrUndefined(this.element.parentElement)) {
+            var parentEle = this.element.parentElement;
+            this.refElement = this.createElement('div', { className: TOAST_REF_ELEMENT });
+            parentEle.insertBefore(this.refElement, this.element);
+        }
+        this.initRenderClass = this.element.className;
     };
     /**
      * To show Toast element on a document with the relative position.
      * @param  {ToastModel} toastObj? - To show Toast element on screen.
      * @returns void
+     * @deprecated
      */
     Toast.prototype.show = function (toastObj) {
         var collectionObj;
@@ -205,11 +214,11 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
                 target.style.position = 'relative';
             }
             this.setPositioning(this.position);
-            if (isBlazor && this.isServerRendered) {
-                this.refElement = this.createElement('div', { className: TOAST_REF_ELEMENT });
-                this.toastContainer.parentElement.insertBefore(this.refElement, this.toastContainer);
-            }
             target.appendChild(this.toastContainer);
+        }
+        if (this.isBlazorServer() && this.element.classList.contains('e-control')) {
+            this.isToastModel(toastObj);
+            return;
         }
         this.toastEle = this.createElement('div', { className: ROOT, id: getUniqueID('toast') });
         this.setWidthHeight();
@@ -223,6 +232,17 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             extend(collectionObj, { element: [this.toastEle] }, true);
             this.toastCollection.push(collectionObj);
         }
+    };
+    Toast.prototype.isToastModel = function (toastObj) {
+        this.toastContainer = this.element;
+        this.setPositioning(this.position);
+        var proxy = this;
+        if (!isNullOrUndefined(proxy.element.lastElementChild)) {
+            this.toastEle = proxy.element.lastElementChild;
+            this.setProgress();
+        }
+        this.setAria();
+        this.appendToTarget(toastObj);
     };
     Toast.prototype.swipeHandler = function (e) {
         var toastEle = closest(e.originalEvent.target, '.' + ROOT + ':not(.' + CONTAINER + ')');
@@ -304,25 +324,12 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             for (var i = 0; i < this.toastContainer.childElementCount; i++) {
                 this.destroyToast(this.toastContainer.children[i]);
             }
-            var target = typeof (this.target) === 'string' ? document.querySelector(this.target) : document.body;
-            if (!isNullOrUndefined(target) && this.isDestroy && !isNullOrUndefined(this.refElement)) {
-                this.refElement.parentElement.insertBefore(this.toastContainer, this.refElement);
-                detach(this.refElement);
-                this.refElement = undefined;
-            }
             return;
         }
         if (isNullOrUndefined(element)) {
-            element = (this.newestOnTop ? this.checkBlazorTemp(this.toastContainer.lastElementChild) :
-                this.toastContainer.firstElementChild);
+            element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
         }
         this.destroyToast(element);
-    };
-    Toast.prototype.checkBlazorTemp = function (element) {
-        while (element.classList.contains('blazor-template')) {
-            element = element.previousElementSibling;
-        }
-        return element;
     };
     Toast.prototype.fetchEle = function (ele, value, prob) {
         value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;
@@ -330,8 +337,6 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         var tempVar;
         var tmpArray;
         var templateProps;
-        var templateValue;
-        var blazorContain = Object.keys(window);
         if (ele.classList.contains(TITLE)) {
             templateProps = this.element.id + 'title';
         }
@@ -360,16 +365,14 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         }
         catch (e) {
             templateFn = compile(value);
-            templateValue = value;
+            
         }
         if (!isNullOrUndefined(templateFn)) {
-            if (!isBlazor()) {
+            if (!this.isBlazorServer()) {
                 tmpArray = templateFn({}, this, prob, null, true);
             }
             else {
-                var isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
-                    !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
-                    this.isStringTemplate : true;
+                var isString = true;
                 tmpArray = templateFn({}, this, prob, templateProps, isString);
             }
         }
@@ -380,25 +383,11 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
                 }
                 ele.appendChild(el);
             });
-            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
-                this.blazorTemplate(templateProps);
-            }
         }
         else if (ele.childElementCount === 0) {
             ele.innerHTML = value;
         }
         return ele;
-    };
-    Toast.prototype.blazorTemplate = function (templateProps) {
-        if (templateProps === this.element.id + 'title') {
-            updateBlazorTemplate(templateProps, 'Title', this, false);
-        }
-        else if (templateProps === this.element.id + 'content') {
-            updateBlazorTemplate(templateProps, 'Content', this, false);
-        }
-        else {
-            updateBlazorTemplate(templateProps, 'Template', this, false);
-        }
     };
     Toast.prototype.clearProgress = function (intervalId) {
         if (!isNullOrUndefined(this.intervalId[intervalId])) {
@@ -412,6 +401,10 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     };
     Toast.prototype.clearContainerPos = function () {
         var _this = this;
+        if (this.isBlazorServer()) {
+            this.toastContainer = null;
+            return;
+        }
         if (this.customPosition) {
             setStyleAttribute(this.toastContainer, { 'left': '', 'top': '' });
             this.toastContainer = null;
@@ -448,6 +441,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         document.body.appendChild(this.toastTemplate);
         this.toastTemplate = null;
     };
+    Toast.prototype.isBlazorServer = function () {
+        return (isBlazor() && this.isServerRendered);
+    };
     Toast.prototype.destroyToast = function (toastEle) {
         var _this = this;
         var toastObj;
@@ -457,7 +453,12 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
                 this.toastCollection.splice(i, 1);
             }
         }
-        var toastClose = isBlazor() ? {
+        var hideAnimate = this.animation.hide;
+        var animate = {
+            duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
+        };
+        var intervalId = parseInt(toastEle.id.split('toast_')[1], 10);
+        var toastClose = this.isBlazorServer() ? {
             options: toastObj,
             toastContainer: this.toastContainer
         } : {
@@ -465,35 +466,20 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             toastContainer: this.toastContainer,
             toastObj: this,
         };
-        if (!isNullOrUndefined(this.isDestroy) && this.isDestroy) {
-            if (!toastEle.querySelector('.blazor-inner-template')) {
+        if (!isNullOrUndefined(this.progressObj[intervalId]) && !isNullOrUndefined(toastEle.querySelector('.' + PROGRESS))) {
+            this.progressObj[intervalId].progressEle.style.width = '0%';
+        }
+        animate.end = function () {
+            _this.clearProgress(intervalId);
+            if (!_this.isBlazorServer() || isNullOrUndefined(toastObj)) {
                 detach(toastEle);
             }
-            if (this.toastContainer.childElementCount === 0) {
-                this.clearContainerPos();
+            _this.trigger('close', toastClose);
+            if (_this.toastContainer.childElementCount === 0) {
+                _this.clearContainerPos();
             }
-        }
-        else {
-            var hideAnimate = this.animation.hide;
-            var animate = {
-                duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
-            };
-            var intervalId_1 = parseInt(toastEle.id.split('toast_')[1], 10);
-            if (!isNullOrUndefined(this.progressObj[intervalId_1]) && !isNullOrUndefined(toastEle.querySelector('.' + PROGRESS))) {
-                this.progressObj[intervalId_1].progressEle.style.width = '0%';
-            }
-            animate.end = function () {
-                _this.clearProgress(intervalId_1);
-                if (!toastEle.querySelector('.blazor-inner-template')) {
-                    detach(toastEle);
-                }
-                _this.trigger('close', toastClose);
-                if (_this.toastContainer.childElementCount === 0) {
-                    _this.clearContainerPos();
-                }
-            };
-            new Animation({}).animate(toastEle, animate);
-        }
+        };
+        new Animation({}).animate(toastEle, animate);
     };
     Toast.prototype.personalizeToast = function () {
         this.setIcon();
@@ -505,9 +491,12 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         attributes(this.toastEle, { 'role': 'alert' });
     };
     Toast.prototype.setPositioning = function (pos) {
+        if (this.isBlazorServer()) {
+            return;
+        }
         if (!isNaN(parseFloat(pos.X)) || !isNaN(parseFloat(pos.Y))) {
-            setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
             this.customPosition = true;
+            setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
         }
         else {
             this.toastContainer.classList.add(ROOT + '-' + pos.Y.toString().toLowerCase() + '-' + pos.X.toString().toLowerCase());
@@ -649,9 +638,29 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             this.appendMessageContainer(actionBtnContainer);
         }
     };
+    /* istanbul ignore next */
+    Toast.prototype.wireClientSideEvent = function (toastObj) {
+        var _this = this;
+        if (this.isBlazorServer()) {
+            this.toastEle = this.element.lastElementChild;
+            EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
+            EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
+            var count_1 = 0;
+            [].slice.call(this.buttons).forEach(function (actionBtn) {
+                if (isNullOrUndefined(actionBtn.model)) {
+                    return;
+                }
+                var btnDom = _this.toastEle.querySelectorAll('.e-toast-actions button')[count_1];
+                if (!isNullOrUndefined(actionBtn.click) && typeof (actionBtn.click) === 'function') {
+                    EventHandler.add(btnDom, 'click', actionBtn.click);
+                }
+                count_1++;
+            });
+        }
+    };
     Toast.prototype.appendToTarget = function (toastObj) {
         var _this = this;
-        var toastBeforeOpen = isBlazor() ? {
+        var toastBeforeOpen = this.isBlazorServer() ? {
             options: toastObj,
             element: this.toastEle,
             cancel: false
@@ -663,28 +672,39 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         };
         this.trigger('beforeOpen', toastBeforeOpen, function (toastBeforeOpenArgs) {
             if (!toastBeforeOpenArgs.cancel) {
-                _this.toastEle.style.display = 'none';
+                if (!_this.isBlazorServer()) {
+                    _this.toastEle.style.display = 'none';
+                }
                 if (_this.newestOnTop && _this.toastContainer.childElementCount !== 0) {
                     _this.toastContainer.insertBefore(_this.toastEle, _this.toastContainer.children[0]);
                 }
-                else {
+                else if (!_this.isBlazorServer()) {
                     _this.toastContainer.appendChild(_this.toastEle);
                 }
+                removeClass([_this.toastEle], TOAST_BLAZOR_HIDDEN);
                 EventHandler.add(_this.toastEle, 'click', _this.clickHandler, _this);
                 EventHandler.add(_this.toastEle, 'keydown', _this.keyDownHandler, _this);
                 _this.toastContainer.style.zIndex = getZindexPartial(_this.toastContainer) + '';
                 _this.displayToast(_this.toastEle, toastObj);
             }
+            else if (_this.isBlazorServer()) {
+                var intervalId = parseInt(_this.toastEle.id.split('toast_')[1], 10);
+                _this.clearProgress(intervalId);
+                detach(_this.toastEle);
+                if (_this.toastContainer.childElementCount === 0) {
+                    _this.clearContainerPos();
+                }
+            }
         });
     };
     Toast.prototype.clickHandler = function (e) {
         var _this = this;
-        if (!isBlazor()) {
+        if (!this.isBlazorServer()) {
             e.stopPropagation();
         }
         var target = e.target;
         var toastEle = closest(target, '.' + ROOT);
-        var clickArgs = isBlazor() ? {
+        var clickArgs = this.isBlazorServer() ? {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e
         } : {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this
@@ -710,7 +730,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         var animate = {
             duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
         };
-        var toastOpen = isBlazor() ? {
+        var toastOpen = this.isBlazorServer() ? {
             options: toastObj,
             element: this.toastEle
         } : {

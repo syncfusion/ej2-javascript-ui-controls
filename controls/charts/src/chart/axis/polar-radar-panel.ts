@@ -19,9 +19,9 @@ export class PolarRadarPanel extends LineBase {
     private initialClipRect: Rect;
     private htmlObject: HTMLElement;
     private element: Element;
-    private centerX: number;
-    private centerY: number;
-    private startAngle: number;
+    public centerX: number;
+    public centerY: number;
+    public startAngle: number;
     /** @private */
     public visibleAxisLabelRect: Rect[] = [];
     /** @private */

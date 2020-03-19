@@ -1,4 +1,4 @@
-import { TextExport, DocumentHelper } from '../../../src/index';
+import { TextExport, DocumentHelper, SelectionCharacterFormat } from '../../../src/index';
 import { createElement, } from '@syncfusion/ej2-base';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
@@ -98,6 +98,25 @@ describe('New Document - Create and Apply Style', () => {
         expect(editor.selection.characterFormat.italic).toBe(false);
         expect(editor.selection.characterFormat.underline).toBe('None');
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
+    });
+    it('Remove inline style', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('Adfff');
+        editor.selection.handleShiftHomeKey();
+        editor.selection.toggleBold();
+        editor.selection.toggleItalic();
+        editor.selection.characterFormat.fontSize = 24;
+        editor.selection.characterFormat.fontFamily = 'Arial';
+        editor.selection.toggleStrikethrough();
+        editor.selection.toggleUnderline();
+        let inline: SelectionCharacterFormat = editor.selection.characterFormat;
+        editor.editorModule.applyStyle('Heading 1', true);
+        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
+        expect(editor.selection.characterFormat.fontSize).toBe(16);
+        expect(editor.selection.characterFormat.bold).toBe(false);
+        expect(editor.selection.characterFormat.italic).toBe(false);
+        expect(editor.selection.characterFormat.strikethrough).toBe("None");
+        expect(editor.selection.characterFormat.underline).toBe("None");
     });
 });
 

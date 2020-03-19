@@ -57,6 +57,9 @@ document.getElementById('btn_touch').onclick = (e : Event) => {
 document.getElementById('btn_mouse').onclick = (e : Event) => {
     (<HTMLElement>document.getElementsByClassName('e-bigger')[0]).classList.remove('e-bigger');
 };
+document.getElementById('btn_high').onclick = (e : Event) => {
+    document.getElementsByTagName('link')[0].href = './theme-files/highcontrast.css';
+};
 document.getElementById('btn_boot').onclick = (e : Event) => {
     document.getElementsByTagName('link')[0].href = './theme-files/bootstrap.css';
 };

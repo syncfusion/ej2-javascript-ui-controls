@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData, employeeData } from '../base/datasource.spec';
+import { sampleData, projectData, stackedData, employeeData } from '../base/datasource.spec';
 import { ResizeArgs, ColumnDragEventArgs, getObject, Column } from '@syncfusion/ej2-grids';
 import { EmitType } from '@syncfusion/ej2-base';
 import { Reorder } from '../../src/treegrid/actions/reorder';
@@ -233,5 +233,78 @@ describe('Reorder Columns by using method', () => {
       expect(columns[2].field).toBe('Address');
   });
 });
+describe('Stacked data Reorder', () => {
+  let TreeGridObj: TreeGrid;
+   let headers: any;
+   let columns: Column[];
+  let actionComplete: () => void;
+   beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource:  stackedData,
+      
+        allowReordering:true,
+        childMapping: 'subtasks',
+         treeColumnIndex: 3,
+       
+        
+         columns: [
+         
+            {
+                headerText: 'Order Details', textAlign: 'Center', columns: [
+                    { field: 'orderID', headerText: 'Order ID', textAlign: 'Right', width: 90 },
+                    { field: 'orderName', headerText: 'Order Name', textAlign: 'Left', width: 170 },
+                    { field: 'orderDate', headerText: 'Order Date', textAlign: 'Right', width: 120, format: 'yMd'},
+               ]
+            },
+            {
+                headerText: 'Shipment Details', textAlign: 'Center', columns: [
+                    { field: 'shipMentCategory', headerText: 'Shipment Category', textAlign: 'Left', width: 150 },
+                    { field: 'shippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 120, format: 'yMd' },
+                    { field: 'units', headerText: 'Units', textAlign: 'Left', width: 85 },
+                ]
+           },
+           {
+                headerText: 'Price Details', textAlign: 'Center', columns: [
+                    { field: 'unitPrice', headerText: 'Price per unit', format: 'c2', type: 'number', width: 110, textAlign: 'Right' },
+                   { field: 'price', headerText: 'Total Price', width: 110, format: 'c', type: 'number', textAlign: 'Right' }
+                ]
+            }
+        ],
+ 
+ 
+ 
+       },done);
+    });
+ 
+    it('Reorder Testing', () => {
+      actionComplete = (): void => {
+      columns = TreeGridObj.grid.getColumns() as Column[];
+      headers = TreeGridObj.getHeaderContent().querySelectorAll('.e-headercell');
+     
+      expect(headers[0].querySelector('.e-headercelldiv')).toBe('Order Details');
+      expect(headers[1].querySelector('.e-headercelldiv')).toBe('Shipment Details');
+      expect(headers[2].querySelector('.e-headercelldiv')).toBe('Price Details');
+      expect(columns[2].field).toBe('orderDate');
+      expect(columns[3].field).toBe('shipMentCategory');
+      expect(columns[4].field).toBe('shippedDate');
+      expect(columns[5].field).toBe('units');
+      expect(columns[6].field).toBe('unitPrice');
+      expect(columns[7].field).toBe('price');
+      expect(TreeGridObj.getRows()[0].getElementsByClassName('e-rowcell')[3].querySelector(".e-icons"));
+     
+        };
+   TreeGridObj.actionComplete = actionComplete;
+   TreeGridObj.reorderColumns( "orderName","orderID");
+   debugger;
+    
+      TreeGridObj.reorderModule.destroy();
+     
+  });
+    afterAll(() => {  
+     destroy(TreeGridObj);
+   });
+ 
+  });
 });
 

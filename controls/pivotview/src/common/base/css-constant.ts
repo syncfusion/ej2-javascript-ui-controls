@@ -79,6 +79,8 @@ export const DRAG_CLONE_CLASS: string = 'e-button-drag-clone';
 /** @hidden */
 export const SORT_CLASS: string = 'e-sort';
 /** @hidden */
+export const MEMBER_SORT_CLASS: string = 'e-member-sort';
+/** @hidden */
 export const SORT_DESCEND_CLASS: string = 'e-descend';
 /** @hidden */
 export const FILTER_COMMON_CLASS: string = 'e-btn-filter';
@@ -90,6 +92,8 @@ export const FILTERED_CLASS: string = 'e-pv-filtered';
 export const REMOVE_CLASS: string = 'e-remove';
 /** @hidden */
 export const DRAG_CLASS: string = 'e-drag';
+/** @hidden */
+export const DRAG_DISABLE_CLASS: string = 'e-disable-drag';
 /** @hidden */
 export const DROP_INDICATOR_CLASS: string = 'e-drop-indicator';
 /** @hidden */
@@ -236,6 +240,14 @@ export const VALUE_OPTIONS_CLASS: string = 'e-value-options';
 export const LEVEL_OPTIONS_CLASS: string = 'e-level-options';
 /** @hidden */
 export const FILTER_OPERATOR_CLASS: string = 'e-filter-operator';
+/** @hidden */
+export const FILTER_SORT_CLASS: string = 'e-filter-sort';
+/** @hidden */
+export const SORT_ASCEND_ICON_CLASS: string = 'e-sort-ascend-icon';
+/** @hidden */
+export const SORT_DESCEND_ICON_CLASS: string = 'e-sort-descend-icon';
+/** @hidden */
+export const SORT_SELECTED_CLASS: string = 'e-active';
 
 /** @hidden */
 export const COLLAPSE: string = 'e-collapse';
@@ -284,6 +296,8 @@ export const EDITOR_SEARCH_WRAPPER_CLASS: string = 'e-editor-search-wrapper';
 /** @hidden */
 export const EDITOR_SEARCH_CLASS: string = 'e-editor-search';
 /** @hidden */
+export const EDITOR_SEARCH__INPUT_CLASS: string = 'e-editor-search-input';
+/** @hidden */
 export const SELECT_ALL_WRAPPER_CLASS: string = 'e-select-all-wrapper';
 /** @hidden */
 export const SELECT_ALL_CLASS: string = 'e-select-all';
@@ -304,7 +318,9 @@ export const CALC_FORMAT_INPUT: string = 'e-custom-format-input';
 /** @hidden */
 export const CALCINPUTDIV: string = 'e-pivot-calc-input-div';
 /** @hidden */
-export const CALC_CUSTOM_FORMAT_INPUTDIV: string = 'e-olap-calc-custom-format-div';
+export const CALC_CUSTOM_FORMAT_INPUTDIV: string = 'e-pivot-calc-custom-format-div';
+/** @hidden */
+export const OLAP_CALC_CUSTOM_FORMAT_INPUTDIV: string = 'e-olap-calc-custom-format-div';
 /** @hidden */
 export const CALC_HIERARCHY_LIST_DIV: string = 'e-olap-calc-hierarchy-list-div';
 /** @hidden */
@@ -624,6 +640,12 @@ export const FORMATTING_MENU: string = 'e-pivot-format-menu';
 /** @hidden */
 export const NUMBER_FORMATTING_MENU: string = 'e-pivot-number-format-menu';
 /** @hidden */
+export const EMPTY_FORMAT: string = 'e-pivot-conditional-empty-format';
+/** @hidden */
 export const CONDITIONAL_FORMATTING_MENU: string = 'e-pivot-conditional-format-menu';
 /** @hidden */
-export const EMPTY_FORMAT: string = 'e-pivot-conditional-empty-format';
+export const PIVOTCHART_INNER: string = 'e-pivotchart-inner';
+/** @hidden */
+export const PIVOTCHART_TYPE_DIALOG: string = 'e-pivotchart-type-dialog';
+/** @hidden */
+export const FORMAT_FONT_COLOR_PICKER: string = 'e-format-font-color-picker';

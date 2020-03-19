@@ -1,5 +1,6 @@
-import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu, ItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, isBlazor } from '@syncfusion/ej2-base';
+import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
+import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs } from '../base/interface';
@@ -9,6 +10,8 @@ import * as cls from '../../common/base/css-constant';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { ToolbarItems, ChartSeriesType } from '../base/enum';
 import { Deferred } from '@syncfusion/ej2-data';
+import { CheckBox } from '@syncfusion/ej2-buttons';
+import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Module for Toolbar
@@ -32,6 +35,7 @@ export class Toolbar {
     private grandTotalMenu: Menu;
     private formattingMenu: Menu;
     private dropArgs: ChangeEventArgs;
+    private chartTypesDialog: Dialog;
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -79,8 +83,9 @@ export class Toolbar {
         this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
         this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
         if (this.parent.chart) {
-            this.parent.chart.width = this.parent.grid ? this.parent.getGridWidthAsNumber().toString() :
-                this.parent.getWidthAsNumber().toString();
+            this.parent.chart.setProperties(
+                { width: this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString() },
+                true);
         }
         if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
             this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
@@ -89,20 +94,19 @@ export class Toolbar {
     }
 
     private fetchReports(): FetchReportArgs {
-        /* tslint:disable */
+        /* tslint:disable:no-any */
         let reports: any = { reportName: [] };
-        /* tslint:enable */
         let tool: Toolbar = this;
         if (isBlazor()) {
             reports = this.fetchReportsArgs();
-            /* tslint:disable */
             reports.then((e: any) => {
-                /* tslint:enable */
                 tool.reportList.dataSource = e.reportName;
                 return e;
             });
+        } else {
+            /* tslint:enable:no-any */
+            this.parent.trigger(events.fetchReport, reports);
         }
-        this.parent.trigger(events.fetchReport, reports);
         return reports;
     }
 
@@ -167,13 +171,14 @@ export class Toolbar {
                     });
                     break;
                 case 'Chart':
+                    let validTypes: boolean = (this.parent.displayOption.view === 'Table');
                     items.push({
                         template: '<ul id="' + this.parent.element.id + 'chart_menu"></ul>',
-                        id: this.parent.element.id + 'chartmenu'
+                        id: this.parent.element.id + 'chartmenu', cssClass: validTypes ? cls.MENU_DISABLE : ''
                     });
                     break;
                 case 'MDX':
-                    if (this.parent.dataType == "olap") {
+                    if (this.parent.dataType === 'olap') {
                         items.push({
                             prefixIcon: cls.GRID_MDX + ' ' + cls.ICON, id: this.parent.element.id + 'mdxQuery',
                             click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('mdxQuery')
@@ -227,7 +232,7 @@ export class Toolbar {
                     break;
             }
         }
-        if (this.parent.showFieldList && toolbar.indexOf("FieldList") === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display === 'none') {
+        if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display === 'none') {
             (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display = 'block';
         }
         let toolbarArgs: ToolbarArgs = { customToolbar: items };
@@ -511,6 +516,9 @@ export class Toolbar {
         this.reportList.text = '';
         this.reportList.refresh();
         this.parent.trigger(events.newReport);
+        if (isBlazor()) {
+            this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
+        }
         this.parent.isModified = false;
     }
 
@@ -544,14 +552,14 @@ export class Toolbar {
             buttons: [
                 {
                     buttonModel: {
-                        content: this.parent.localeObj.getConstant('ok'), isPrimary: true,
+                        content: this.parent.localeObj.getConstant('yes'), isPrimary: true,
                         cssClass: cls.OK_BUTTON_CLASS
                     },
                     click: this.okButtonClick.bind(this)
                 },
                 {
                     buttonModel: {
-                        content: this.parent.localeObj.getConstant('cancel'),
+                        content: this.parent.localeObj.getConstant('no'),
                         cssClass: cls.CANCEL_BUTTON_CLASS
                     },
                     click: this.cancelButtonClick.bind(this)
@@ -601,46 +609,57 @@ export class Toolbar {
         }
         this.confirmPopUp.hide();
     }
-    /* tslint:disable */
-    private create(): void {
-        let toDisable: boolean = this.parent.displayOption.view === 'Table';
-        if (this.parent.element.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+    /**
+     * @hidden
+     */
+    public createChartMenu(): void {
+        if (document.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+            let menuItems: MenuItemModel[] = [];
+            let types: ChartSeriesType[] = this.getValidChartType();
+            for (let i: number = 0; (i < types.length && i < 7); i++) {
+                let type: ChartSeriesType = types[i];
+                menuItems.push({
+                    text: this.parent.localeObj.getConstant(type.toLowerCase()),
+                    id: this.parent.element.id + '_' + type,
+                });
+            }
+            if (menuItems.length === 7) {
+                menuItems.splice(6);
+                menuItems.push({
+                    text: this.parent.localeObj.getConstant('MoreOption'),
+                    id: this.parent.element.id + '_' + 'ChartMoreOption',
+                });
+            }
+            let toDisable: boolean = (menuItems.length <= 0 || this.parent.displayOption.view === 'Table');
+            menuItems.push({
+                separator: true
+            });
+            menuItems.push({
+                text: this.parent.localeObj.getConstant('multipleAxes'),
+                id: this.parent.element.id + '_' + 'multipleAxes'
+            });
             let menu: MenuItemModel[] = [{
                 iconCss: cls.TOOLBAR_CHART + ' ' + cls.ICON,
-                items: toDisable ? [] : [
-                    {
-                        text: this.parent.localeObj.getConstant('column'),
-                        id: this.parent.element.id + '_' + 'Column',
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('bar'),
-                        id: this.parent.element.id + '_' + 'Bar'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('line'),
-                        id: this.parent.element.id + '_' + 'Line'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('area'),
-                        id: this.parent.element.id + '_' + 'Area'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('scatter'),
-                        id: this.parent.element.id + '_' + 'Scatter'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('polar'),
-                        id: this.parent.element.id + '_' + 'Polar'
-                    }
-                ]
+                items: toDisable ? [] : menuItems,
             }];
+            if (this.chartMenu && !this.chartMenu.isDestroyed) {
+                this.chartMenu.destroy();
+            }
             this.chartMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    select: this.menuItemClick.bind(this)
+                    select: this.menuItemClick.bind(this),
+                    beforeOpen: this.whitespaceRemove.bind(this),
+                    beforeItemRender: this.multipleAxesCheckbox.bind(this)
                 });
             this.chartMenu.isStringTemplate = true;
             this.chartMenu.appendTo('#' + this.parent.element.id + 'chart_menu');
+        }
+    }
+    /* tslint:disable:max-func-body-length */
+    private create(): void {
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+            this.createChartMenu();
         }
         if (this.parent.element.querySelector('#' + this.parent.element.id + 'export_menu')) {
             let menu: MenuItemModel[] = [{
@@ -759,12 +778,12 @@ export class Toolbar {
                 iconCss: cls.FORMATTING_MENU + ' ' + cls.ICON,
                 items: [
                     {
-                        text: this.parent.localeObj.getConstant('numberFormat'),
+                        text: this.parent.localeObj.getConstant('numberFormatMenu'),
                         iconCss: cls.NUMBER_FORMATTING_MENU + ' ' + cls.ICON,
                         id: this.parent.element.id + 'numberFormattingMenu'
                     },
                     {
-                        text: this.parent.localeObj.getConstant('conditionalFormating'),
+                        text: this.parent.localeObj.getConstant('conditionalFormatingMenu'),
                         iconCss: cls.CONDITIONAL_FORMATTING_MENU + ' ' + cls.ICON,
                         id: this.parent.element.id + 'conditionalFormattingMenu'
                     }
@@ -800,19 +819,48 @@ export class Toolbar {
             this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
         }
     }
-
-    private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
-        if (this.parent.currentView == "Table") {
-            args.element.querySelector('#' + this.parent.element.id + 'png').remove();
-            args.element.querySelector('#' + this.parent.element.id + 'jpeg').remove();
-            args.element.querySelector('#' + this.parent.element.id + 'svg').remove();
+    private whitespaceRemove(args: BeforeOpenCloseMenuEventArgs): void {
+        args.element.style.padding = '0px';
+        let separator: HTMLElement = args.element.querySelector('.e-separator');
+        if (separator) {
+            separator.style.margin = '0px';
         }
-        else {
-            args.element.querySelector('#' + this.parent.element.id + 'excel').remove();
-            args.element.querySelector('#' + this.parent.element.id + 'csv').remove();
+    }
+    private multipleAxesCheckbox(args: MenuEventArgs): void {
+        if (this.parent.element.id + '_' + 'multipleAxes' === args.element.id) {
+            let inputCheckbox: HTMLElement = createElement('input', {
+                id: this.parent.element.id + '_' + 'checkBox'
+            });
+            inputCheckbox.style.display = 'none';
+            this.parent.element.appendChild(inputCheckbox);
+            let checkbox: CheckBox = new CheckBox({
+                label: this.parent.localeObj.getConstant('multipleAxes'),
+                checked: this.parent.chartSettings.enableMultiAxis,
+                enableRtl: this.parent.enableRtl
+            });
+            args.element.innerText = '';
+            checkbox.appendTo('#' + this.parent.element.id + '_' + 'checkBox');
+            let checkboxObj: HTMLElement = this.parent.element.querySelector('.e-checkbox-wrapper');
+            args.element.appendChild(checkboxObj);
         }
     }
 
+    private getAllChartItems(): string[] {
+        return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
+            'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto',
+            'Polar', 'Radar'];
+    }
+    private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
+        let items: HTMLElement[] = [].slice.call(args.element.querySelectorAll('li'));
+        if (this.parent.currentView === 'Table') {
+            addClass(items.slice(3), cls.MENU_HIDE);
+            removeClass(items.slice(1, 3), cls.MENU_HIDE);
+        } else {
+            addClass(items.slice(1, 3), cls.MENU_HIDE);
+            removeClass(items.slice(3), cls.MENU_HIDE);
+        }
+    }
+    /* tslint:disable:max-line-length */
     private updateSubtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
         if (!args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
@@ -836,7 +884,6 @@ export class Toolbar {
             args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
-
     private updateGrandtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
         if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
@@ -860,53 +907,63 @@ export class Toolbar {
             args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
-
+    /* tslint:enable:max-line-length */
     private updateReportList(): void {
         let reports: FetchReportArgs;
         if (isBlazor()) {
+            /* tslint:disable */
+            let _this: any = this;
+            /* tslint:enable */
+            reports = { reportName: [] };
+            this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
+                _this.reportList.dataSource = observedArgs.reportName;
+                if (_this.currentReport === '' && _this.reportList.dataSource.length > 0) {
+                    _this.reportList.value = _this.reportList.dataSource[_this.reportList.dataSource.length - 1];
+                    _this.reportList.text = _this.reportList.dataSource[_this.reportList.dataSource.length - 1];
+                    _this.currentReport = _this.reportList.dataSource[_this.reportList.dataSource.length - 1];
+                } else {
+                    _this.reportList.value = _this.currentReport;
+                    _this.reportList.text = _this.currentReport;
+                }
+                _this.reportList.refresh();
+            });
+        } else {
             reports = this.fetchReports();
-            if (reports.reportName === undefined) {
-                reports.reportName = this.reportList.dataSource as string[];
+            this.reportList.dataSource = reports.reportName;
+            if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
+                this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+                this.reportList.text = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+                this.currentReport = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+            } else {
+                this.reportList.value = this.currentReport;
+                this.reportList.text = this.currentReport;
             }
-        } else {
-            reports = this.fetchReports();
+            this.reportList.refresh();
         }
-        this.reportList.dataSource = reports.reportName;
-        if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
-            this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-            this.reportList.text = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-            this.currentReport = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-        } else {
-            this.reportList.value = this.currentReport;
-            this.reportList.text = this.currentReport;
-        }
-        this.reportList.refresh();
     }
-
+    /* tslint:disable:max-func-body-length */
     private menuItemClick(args: ClickEventArgs): void {
-        let exportArgs: BeforeExportEventArgs = {
-            pdfExportProperties: undefined,
-            isMultipleExport: undefined,
-            pdfDoc: undefined,
-            isBlob: undefined,
-            excelExportProperties: undefined,
-            workbook: undefined,
-            type: undefined,
-            fileName: undefined,
-            orientation: undefined,
-            width: undefined,
-            height: undefined,
-        };
+        let exportArgs: BeforeExportEventArgs = {};
+        let type: string;
+        if (this.getAllChartItems().indexOf(args.item.id.split(this.parent.element.id + '_')[1]) > -1 ||
+            (args.item.id.split(this.parent.element.id + '_')[1] === 'ChartMoreOption') ||
+            (args.item.id.split(this.parent.element.id + '_')[1] === 'multipleAxes')) {
+            type = args.item.id.split(this.parent.element.id + '_')[1];
+        }
+        /* tslint:disable:max-line-length */
         switch (args.item.id) {
             case (this.parent.element.id + 'grid'):
                 if (this.parent.grid && this.parent.chart) {
                     this.parent.grid.element.style.display = '';
                     this.parent.chart.element.style.display = 'none';
+                    if (this.parent.chartSettings.enableMultiAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
+                        (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = 'none';
+                    }
                     this.parent.currentView = 'Table';
                     this.parent.setProperties({ displayOption: { primary: 'Table' } }, true);
-                    if (this.parent.showGroupingBar) {
-                        (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "";
-                        (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "none";
+                    if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
+                        (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = '';
+                        (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
                     }
                     this.parent.layoutRefresh();
                 }
@@ -914,112 +971,128 @@ export class Toolbar {
                     (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
                 }
                 break;
-            case (this.parent.element.id + '_' + 'Column'):
-            case (this.parent.element.id + '_' + 'Bar'):
-            case (this.parent.element.id + '_' + 'Line'):
-            case (this.parent.element.id + '_' + 'Area'):
-            case (this.parent.element.id + '_' + 'Scatter'):
-            case (this.parent.element.id + '_' + 'Polar'):
-                if (args.item && args.item.text) {
-                    this.parent.chartSettings.chartSeries.type = args.item.id.split('_')[args.item.id.split('_').length - 1] as ChartSeriesType;
-                    if (this.parent.grid && this.parent.chart) {
-                        this.parent.grid.element.style.display = 'none';
-                        this.parent.chart.element.style.display = '';
-                        this.parent.currentView = 'Chart';
-                        this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
-                        this.parent.chart.element.style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
-                        this.parent.chart.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
-                        if (this.parent.showGroupingBar) {
-                            (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "none";
-                            (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "";
-                        }
-                    }
-                }
-                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
-                    (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
-                }
-                break;
             case (this.parent.element.id + 'pdf'):
-                if (this.parent.currentView == "Table") {
-                    if (this.parent.pdfExportModule) {
-                        this.parent.pdfExportModule.exportToPDF();
-                    } else {
-                        this.parent.trigger(events.beforeExport, exportArgs);
-                        this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
-                    }
-                }
-                else {
+                if (this.parent.currentView === 'Table') {
+                    exportArgs = {
+                        pdfExportProperties: { fileName: 'Export.pdf' },
+                        pdfDoc: undefined,
+                        isBlob: false,
+                        isMultipleExport: false
+                    };
                     this.parent.trigger(events.beforeExport, exportArgs);
-                    this.parent.chartExport(exportArgs.type ? exportArgs.type : 'PDF', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
+                    this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
+                } else {
+                    exportArgs = {
+                        width: undefined,
+                        height: undefined,
+                        orientation: PdfPageOrientation.Landscape,
+                        type: 'PDF',
+                        fileName: 'result',
+                    };
+                    this.parent.trigger(events.beforeExport, exportArgs);
+                    this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
                 }
                 break;
             case (this.parent.element.id + 'excel'):
-                if (this.parent.excelExportModule) {
-                    this.parent.excelExportModule.exportToExcel('Excel');
-                } else {
-                    this.parent.trigger(events.beforeExport, exportArgs);
-                    this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
-                }
+                exportArgs = {
+                    excelExportProperties: { fileName: 'Export.xlsx' },
+                    isBlob: false,
+                    isMultipleExport: false,
+                    workbook: undefined
+                };
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
                 break;
             case (this.parent.element.id + 'csv'):
-                if (this.parent.excelExportModule) {
-                    this.parent.excelExportModule.exportToExcel('csv');
-                } else {
-                    this.parent.trigger(events.beforeExport, exportArgs);
-                    this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
-                }
+                exportArgs = {
+                    excelExportProperties: { fileName: 'Export.csv' },
+                    isBlob: false,
+                    isMultipleExport: false,
+                    workbook: undefined
+                };
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
                 break;
             case (this.parent.element.id + 'png'):
+                exportArgs = {
+                    type: 'PNG',
+                    width: undefined,
+                    height: undefined,
+                    fileName: 'result',
+                    orientation: PdfPageOrientation.Landscape,
+                };
                 this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type ? exportArgs.type : 'PNG', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
                 break;
             case (this.parent.element.id + 'jpeg'):
+                exportArgs = {
+                    type: 'JPEG',
+                    fileName: 'result',
+                    orientation: PdfPageOrientation.Landscape,
+                    width: undefined,
+                    height: undefined,
+                };
                 this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type ? exportArgs.type : 'JPEG', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
                 break;
             case (this.parent.element.id + 'svg'):
+                exportArgs = {
+                    width: undefined,
+                    height: undefined,
+                    type: 'SVG',
+                    fileName: 'result',
+                    orientation: PdfPageOrientation.Landscape,
+                };
                 this.parent.trigger(events.beforeExport, exportArgs);
-                this.parent.chartExport(exportArgs.type ? exportArgs.type : 'SVG', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
+                this.parent.chartExport(exportArgs.type, exportArgs.fileName, exportArgs.orientation, exportArgs.width, exportArgs.height);
                 break;
             case (this.parent.element.id + 'notsubtotal'):
-                this.parent.dataSourceSettings.showSubTotals = false;
-                this.parent.dataSourceSettings.showColumnSubTotals = false;
-                this.parent.dataSourceSettings.showRowSubTotals = false;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showSubTotals: false, showColumnSubTotals: false, showRowSubTotals: false } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'subtotalrow'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = false;
-                this.parent.dataSourceSettings.showRowSubTotals = true;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: false, showRowSubTotals: true } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'subtotalcolumn'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = true;
-                this.parent.dataSourceSettings.showRowSubTotals = false;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: false } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'subtotal'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = true;
-                this.parent.dataSourceSettings.showRowSubTotals = true;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: true } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'notgrandtotal'):
-                this.parent.dataSourceSettings.showGrandTotals = false;
-                this.parent.dataSourceSettings.showColumnGrandTotals = false;
-                this.parent.dataSourceSettings.showRowGrandTotals = false;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showGrandTotals: false, showColumnGrandTotals: false, showRowGrandTotals: false } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'grandtotalrow'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = false;
-                this.parent.dataSourceSettings.showRowGrandTotals = true;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: false, showRowGrandTotals: true } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'grandtotalcolumn'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = true;
-                this.parent.dataSourceSettings.showRowGrandTotals = false;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: false } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'grandtotal'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = true;
-                this.parent.dataSourceSettings.showRowGrandTotals = true;
+                this.parent.setProperties(
+                    { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: true } },
+                    true);
+                this.parent.refreshData();
                 break;
             case (this.parent.element.id + 'numberFormattingMenu'):
                 if (this.parent.numberFormattingModule) {
@@ -1031,9 +1104,24 @@ export class Toolbar {
                     this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
                 }
                 break;
+            case (this.parent.element.id + '_' + type):
+                if (args.item && args.item.text) {
+                    if (type === 'ChartMoreOption') {
+                        this.createChartTypeDialog();
+                    } else if (type === 'multipleAxes') {
+                        this.parent.chartSettings.enableMultiAxis = !this.parent.chartSettings.enableMultiAxis;
+                        this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
+                    } else if (this.getAllChartItems().indexOf(type) > -1) {
+                        this.updateChartType(type as ChartSeriesType, false);
+                    }
+                }
+                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
+                    (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
+                }
+                break;
         }
+        /* tslint:enable:max-line-length */
     }
-
     /**
      * @hidden
      */
@@ -1042,6 +1130,119 @@ export class Toolbar {
         this.parent.on(events.initToolbar, this.createToolbar, this);
     }
 
+    private getValidChartType(): ChartSeriesType[] {
+        let menuItems: ChartSeriesType[] = [];
+        for (let i: number = 0; (i <= this.parent.chartTypes.length); i++) {
+            let type: ChartSeriesType = this.parent.chartTypes[i];
+            if ((this.getAllChartItems().indexOf(type) > -1) && (menuItems.indexOf(type) < 0)) {
+                menuItems.push(type);
+            }
+        }
+        return menuItems;
+    }
+    private createChartTypeDialog(): void {
+        let chartDialog: HTMLElement = this.parent.element.appendChild(createElement('div', {
+            id: this.parent.element.id + '_ChartTypeDialog',
+            className: cls.PIVOTCHART_TYPE_DIALOG
+        }));
+        this.chartTypesDialog = new Dialog({
+            animationSettings: { effect: 'Fade' },
+            allowDragging: true,
+            header: this.parent.localeObj.getConstant('chartTypeSettings'),
+            content: this.getDialogContent(),
+            isModal: true,
+            beforeOpen: this.beforeOpen.bind(this),
+            visible: true,
+            showCloseIcon: true,
+            enableRtl: this.parent.enableRtl,
+            width: 'auto',
+            height: 'auto',
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    click: () => { this.chartTypeDialogUpdate(); },
+                    buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true },
+                },
+                {
+                    click: () => { this.removeDialog(); },
+                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                }
+            ],
+            closeOnEscape: true,
+            target: this.parent.element,
+            close: this.removeDialog.bind(this)
+        });
+        this.chartTypesDialog.isStringTemplate = true;
+        this.chartTypesDialog.appendTo(chartDialog);
+    }
+    private removeDialog(): void {
+        if (this.chartTypesDialog && !this.chartTypesDialog.isDestroyed) { this.chartTypesDialog.destroy(); }
+        if (document.getElementById(this.parent.element.id + '_ChartTypeDialog')) {
+            remove(document.getElementById(this.parent.element.id + '_ChartTypeDialog'));
+        }
+    }
+    private chartTypeDialogUpdate(): void {
+        /* tslint:disable-next-line:max-line-length */
+        let chartType: ChartSeriesType = (getInstance('#' + this.parent.element.id + '_ChartTypeOption', DropDownList) as DropDownList).value as ChartSeriesType;
+        let checked: boolean = (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).checked;
+        this.updateChartType(chartType, false);
+        this.parent.chartSettings.enableMultiAxis = checked;
+        this.chartTypesDialog.close();
+    }
+    private updateChartType(type: ChartSeriesType, isMultiAxis: boolean): void {
+        if (this.getAllChartItems().indexOf(type) > -1) {
+            if (this.parent.grid && this.parent.chart) {
+                this.parent.currentView = 'Chart';
+                this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
+                /* tslint:disable:max-line-length */
+                this.parent.chart.element.style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
+                this.parent.chart.setProperties({ width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()) }, true);
+                if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
+                    this.parent.chartModule.updateView();
+                } else {
+                    this.parent.chartSettings.chartSeries.type = type;
+                }
+            }
+        }
+    }
+    private getDialogContent(): HTMLElement {
+        let mainWrapper: HTMLElement = createElement('div', { className: 'e-chart-type-div-content' });
+        let optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-wrapper' });
+        let optionTextDiv: HTMLElement = createElement('div', {
+            className: 'e-chart-type-option-text', innerHTML: this.parent.localeObj.getConstant('ChartType')
+        });
+        let dropOptionDiv: HTMLElement = createElement('div', { id: this.parent.element.id + '_ChartTypeOption' });
+        optionWrapperDiv.appendChild(optionTextDiv);
+        optionWrapperDiv.appendChild(dropOptionDiv);
+        let chartTypeDatasource: { [key: string]: Object }[] = [];
+        let chartType: ChartSeriesType[] = this.getValidChartType();
+        for (let i: number = 0; i < chartType.length; i++) {
+            chartTypeDatasource.push({ value: chartType[i], text: this.parent.localeObj.getConstant(chartType[i].toLowerCase()) });
+        }
+        let optionWrapper: DropDownList = new DropDownList({
+            dataSource: chartTypeDatasource, enableRtl: this.parent.enableRtl,
+            fields: { value: 'value', text: 'text' },
+            value: this.parent.chartSettings.chartSeries.type ? this.parent.chartSettings.chartSeries.type : this.getValidChartType()[0],
+            width: '100%',
+        });
+        optionWrapper.isStringTemplate = true;
+        optionWrapper.appendTo(dropOptionDiv);
+        mainWrapper.appendChild(optionWrapperDiv);
+        let checkboxWrap: HTMLInputElement = createElement('input', {
+            id: this.parent.element.id + '_DialogMultipleAxis',
+            attrs: { 'type': 'checkbox' }
+        }) as HTMLInputElement;
+        mainWrapper.appendChild(checkboxWrap);
+        return mainWrapper;
+    }
+    private beforeOpen(): void {
+        let checkbox: CheckBox = new CheckBox({
+            label: this.parent.localeObj.getConstant('multipleAxes'),
+            checked: this.parent.chartSettings.enableMultiAxis ? this.parent.chartSettings.enableMultiAxis : false,
+            enableRtl: this.parent.enableRtl,
+        });
+        checkbox.appendTo(this.chartTypesDialog.element.querySelector('#' + this.parent.element.id + '_DialogMultipleAxis') as HTMLElement);
+    }
     /**
      * To refresh the toolbar 
      * @return {void}
@@ -1078,6 +1279,9 @@ export class Toolbar {
         if (this.chartMenu && !this.chartMenu.isDestroyed) {
             this.chartMenu.destroy();
         }
+        if (this.chartTypesDialog && !this.chartTypesDialog.isDestroyed) {
+            this.chartTypesDialog.destroy();
+        }
         if (this.exportMenu && !this.exportMenu.isDestroyed) {
             this.exportMenu.destroy();
         }
@@ -1095,6 +1299,9 @@ export class Toolbar {
         }
         if (this.toolbar && !this.toolbar.isDestroyed) {
             this.toolbar.destroy();
+        }
+        if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar')) {
+            remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
         }
     }
 }

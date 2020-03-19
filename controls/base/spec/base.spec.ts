@@ -310,7 +310,7 @@ describe('Library', (): void => {
         let bulkChanges: any = null;
         beforeAll(() => {
             enableBlazorMode();
-            window['ejsInterop'] = {
+            window['sfBlazor'] = {
                 updateModel: (comp: any) => {
                     bulkChanges = comp.bulkChanges;
                     return true;
@@ -351,7 +351,7 @@ describe('Library', (): void => {
         });
         afterAll(() => {
             disableBlazorMode();
-            delete window['ejsInterop'];
+            delete window['sfBlazor'];
         });
     });
 });

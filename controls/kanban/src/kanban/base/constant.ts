@@ -17,7 +17,7 @@ export const cardDoubleClick: string = 'cardDoubleClick';
 /** @hidden */
 export const cardRendered: string = 'cardRendered';
 /** @hidden */
-export const columnRendered: string = 'columnRendered';
+export const queryCellInfo: string = 'queryCellInfo';
 /** @hidden */
 export const dataBinding: string = 'dataBinding';
 /** @hidden */
@@ -30,6 +30,10 @@ export const drag: string = 'drag';
 export const dragStop: string = 'dragStop';
 /** @hidden */
 export const documentClick: string = 'document-click';
+/** @hidden */
+export const dialogOpen: string = 'dialogOpen';
+/** @hidden */
+export const dialogClose: string = 'dialogClose';
 
 // Constants for internal events
 

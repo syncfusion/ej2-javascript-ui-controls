@@ -1,6 +1,6 @@
 import { browser, element, Key, WebElement , ElementArrayFinder, By } from "@syncfusion/ej2-base/e2e/index";
 import { ElementFinder } from "protractor/built/element";
-let themes: String[] = ["Fabric", "Bootstrap"];
+let themes: String[] = ["Fabric", "Bootstrap","Highcontrast"];
 let EC = browser.ExpectedConditions;
 
 function accordionInteraction(theme: String) {
@@ -41,23 +41,23 @@ function accordionFocusInteraction(theme: String) {
     browser.actions().mouseDown(navEle.get(0)).perform();
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_item_focus_1stItem' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_item_focus_1stItem' + theme);
     navEle.get(0).sendKeys(Key.ENTER);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_1stitem_active_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_1stitem_active_' + theme);
     navEle.get(0).sendKeys(Key.TAB);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_item_focus_2ndItem_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_item_focus_2ndItem_' + theme);
     navEle.get(1).sendKeys(Key.ENTER);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_2ndItem_active_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_2ndItem_active_' + theme);
     navEle.get(2).sendKeys(Key.ENTER);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_3rdItem_active_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_3rdItem_active_' + theme);
     navEle.get(2).sendKeys(Key.ENTER);
 }
 
@@ -66,15 +66,15 @@ function accordionHoverActiveInteraction(theme: String) {
     browser.actions().mouseMove(navEle.get(0)).perform();
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_item_hover_1stItem_' + theme);   
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_item_hover_1stItem_' + theme);   
     browser.actions().mouseMove(navEle.get(1)).perform();
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_item_hover_2ndItem_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_item_hover_2ndItem_' + theme);
     browser.actions().mouseMove(navEle.get(2)).perform();
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('ej2Accordion')), 'default_accordion_item_hover_active_3rdItem_' + theme);  
+    browser.compareScreen(element(By.id('Accordion')), 'default_accordion_item_hover_active_3rdItem_' + theme);  
 }
 
 function nestedAccordionFocusInteraction(theme: String) {
@@ -83,19 +83,19 @@ function nestedAccordionFocusInteraction(theme: String) {
     navEle.get(1).sendKeys(Key.ENTER);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('element')), 'nested_accordion_2ndItem_active_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'nested_accordion_2ndItem_active_' + theme);
     navEle.get(1).sendKeys(Key.TAB);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('element')), 'nested_accordion_item_focus_2ndItem_1stchild_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'nested_accordion_item_focus_2ndItem_1stchild_' + theme);
     navEle.get(2).sendKeys(Key.TAB);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('element')), 'nested_accordion_item_focus_2ndItem_2ndchild_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'nested_accordion_item_focus_2ndItem_2ndchild_' + theme);
     navEle.get(3).sendKeys(Key.ENTER);
     if (browser.browserName !== 'MicrosoftEdge') { load_delay(300, 'sleep') }
     else { load_delay(400, 'sleep') }
-    browser.compareScreen(element(By.id('element')), 'nested_accordion_2ndItem_2ndchild_active_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'nested_accordion_2ndItem_2ndchild_active_' + theme);
     if (browser.browserName !== 'chrome')
     {
     navEle.get(1).sendKeys(Key.ENTER);
@@ -114,11 +114,11 @@ function nestedAccordionHoverActiveInteraction(theme: String) {
     }
     browser.actions().mouseMove(navEle.get(1)).perform();
     load_delay(400, 'sleep')
-    browser.compareScreen(element(By.id('element')), 'nested_accordion_item_hover_1stItem_first_child_' + theme);   
+    browser.compareScreen(element(By.id('Accordion')), 'nested_accordion_item_hover_1stItem_first_child_' + theme);   
     element(By.tagName('body')).click();
     browser.actions().mouseMove(navEle.get(2)).perform();
     load_delay(400, 'sleep')
-    browser.compareScreen(element(By.id('element')), 'nested_accordion_item_hover_1stItem_second_child_' + theme);
+    browser.compareScreen(element(By.id('Accordion')), 'nested_accordion_item_hover_1stItem_second_child_' + theme);
 }
 
 describe('Default-Accordion Theme Wise UI Testing', function () {
@@ -128,7 +128,7 @@ describe('Default-Accordion Theme Wise UI Testing', function () {
         if (browser.browserName === 'MicrosoftEdge') {
             load_delay(200, 'sleep') }
             accordionInteraction('Material');
-        browser.load('/demos/Accordion/nested-material.html');
+        browser.load('/demos/Accordion/nested.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         if (browser.browserName === 'MicrosoftEdge') {
             load_delay(200, 'sleep') }
@@ -139,16 +139,17 @@ describe('Default-Accordion Theme Wise UI Testing', function () {
         let theme: String = themes[i];
         browser.load('/demos/Accordion/default.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
-            let fileName: string = '../../../styles/'+ theme.toLowerCase() +'.css';
+            let fileName: string = '../../../demos/Accordion/theme-files/'+ theme.toLowerCase() +'.css';
             let path: string = "((document.getElementsByTagName('head')[0]).querySelector('link')).setAttribute('href','"+ fileName+"')";
             browser.executeScript(path);
+            load_delay(1000, 'sleep');
             accordionInteraction(theme);
-        browser.load('/demos/Accordion/nested-material.html');
+        browser.load('/demos/Accordion/nested.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
-            fileName = '../../../styles/'+ theme.toLowerCase() +'.css';
+            fileName = '../../../demos/Accordion/theme-files/'+ theme.toLowerCase() +'.css';
             path = "((document.getElementsByTagName('head')[0]).querySelector('link')).setAttribute('href','"+ fileName+"')";
             browser.executeScript(path);
-            load_delay(600, 'sleep')
+            load_delay(1000, 'sleep');
             nestedAccordionInteraction(theme);
     },1200000);
     }
@@ -160,14 +161,14 @@ describe('Default-Accordion Theme Wise UI Testing', function () {
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_0').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'accordion_first_and_second_content_template');
+        browser.compareScreen(element(By.id('Accordion')), 'accordion_first_and_second_content_template');
     },1200000);
     it('Expand second and third content template', function () {
         browser.load('/demos/Accordion/content-template.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_4').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'accordion_second_and_third_content_template');
+        browser.compareScreen(element(By.id('Accordion')), 'accordion_second_and_third_content_template');
     },1200000);
 });
 
@@ -176,13 +177,13 @@ describe('Accordion API sample to perform Add, delete and select item', function
         browser.load('/demos/Accordion/Api.html');
         load_delay(4000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_Add').click();")
-        browser.compareScreen(element(By.id('ej2Accordion')), 'accordion_api_add_item');
+        browser.compareScreen(element(By.id('Accordion')), 'accordion_api_add_item');
     },1200000);
     it('Removes the selected item from the API sample', function () {
         browser.load('/demos/Accordion/Api.html');
         load_delay(4000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_Remove').click();")
-        browser.compareScreen(element(By.id('ej2Accordion')), 'accordion_api_remove_item');
+        browser.compareScreen(element(By.id('Accordion')), 'accordion_api_remove_item');
     },1200000);
 });
 
@@ -192,7 +193,7 @@ describe('Accordion API sample to perform expand all item', function () {
         load_delay(4000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_expd-all').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'accordion_api_expand_all');
+        browser.compareScreen(element(By.id('Accordion')), 'accordion_api_expand_all');
     },1200000);
 });
 
@@ -201,13 +202,13 @@ describe('Accordion API sample to perform enable and disable the item', function
         browser.load('/demos/Accordion/Api.html');
         load_delay(4000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_dspl-frst').click();")
-        browser.compareScreen(element(By.id('ej2Accordion')), 'accordion_api_disable_first_item');   
+        browser.compareScreen(element(By.id('Accordion')), 'accordion_api_disable_first_item');   
     },1200000);
     it('Hide first item from API sample', function () {
         browser.load('/demos/Accordion/Api.html');
         load_delay(4000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_hide-frst').click();")
-        browser.compareScreen(element(By.id('ej2Accordion')), 'accordion_api_hide_first_item');
+        browser.compareScreen(element(By.id('Accordion')), 'accordion_api_hide_first_item');
     },1200000);
 });
 
@@ -217,14 +218,14 @@ describe('Accordion sample with template rendering', function () {
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_0').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'template_01');
+        browser.compareScreen(element(By.id('Accordion')), 'template_01');
     },1200000);
     it('Render first and second template', function () {
         browser.load('/demos/Accordion/template.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_3').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'template_02');
+        browser.compareScreen(element(By.id('Accordion')), 'template_02');
     },1200000);
 });
 
@@ -233,8 +234,8 @@ describe('Accordion sample with ajax content', function () {
         browser.load('/demos/Accordion/Ajax-content.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_4').click();")
-        load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'third_ajax_content');
+        load_delay(3000, 'sleep')
+        browser.compareScreen(element(By.id('Accordion')), 'third_ajax_content');
     },1200000);
 });
 
@@ -244,20 +245,20 @@ describe('Accordion sample with custom theme', function () {
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_0').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'first_custom_theme_content');
+        browser.compareScreen(element(By.id('Accordion')), 'first_custom_theme_content');
     },1200000);
     it('render second custom theme content', function () {
         browser.load('/demos/Accordion/custom_theme.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_2').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'second_custom_theme_content');
+        browser.compareScreen(element(By.id('Accordion')), 'second_custom_theme_content');
     },1200000);
     it('render third custom theme content', function () {
         browser.load('/demos/Accordion/custom_theme.html');
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'third_custom_theme_content');
+        browser.compareScreen(element(By.id('Accordion')), 'third_custom_theme_content');
     },1200000);
 });
 
@@ -267,7 +268,7 @@ describe('Accordion icons sample', function () {
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_0').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'icons_content_material');
+        browser.compareScreen(element(By.id('Accordion')), 'icons_content_material');
     },1200000);
     it('icons content in fabric', function () {
         browser.load('/demos/Accordion/icons.html');
@@ -276,7 +277,7 @@ describe('Accordion icons sample', function () {
         load_delay(1000, 'sleep')
         browser.executeScript("document.getElementById('acrdn_item_2').click();")
         load_delay(1000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'icons_content_fabric');
+        browser.compareScreen(element(By.id('Accordion')), 'icons_content_fabric');
     },1200000);
     it('icons content in bootstrap', function () {
         browser.load('/demos/Accordion/icons.html');
@@ -285,7 +286,7 @@ describe('Accordion icons sample', function () {
         load_delay(1000, 'sleep')
         browser.executeScript("document.getElementById('acrdn_item_4').click();")
         load_delay(1000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'icons_content_bootstrap');
+        browser.compareScreen(element(By.id('Accordion')), 'icons_content_bootstrap');
     },1200000);
 });
 
@@ -295,7 +296,7 @@ describe('Accordion rtl sample', function () {
         load_delay(2000, 'presence',element(By.css('.e-accordion.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('acrdn_item_0').click();")
         load_delay(2000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'rtl_content_material');
+        browser.compareScreen(element(By.id('Accordion')), 'rtl_content_material');
     },1200000);
     it('rtl content in fabric', function () {
         browser.load('/demos/Accordion/rtl.html');
@@ -304,7 +305,7 @@ describe('Accordion rtl sample', function () {
         load_delay(1000, 'sleep')
         browser.executeScript("document.getElementById('acrdn_item_2').click();")
         load_delay(1000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'rtl_content_fabric');
+        browser.compareScreen(element(By.id('Accordion')), 'rtl_content_fabric');
     },1200000);
     it('rtl content in bootstrap', function () {
         browser.load('/demos/Accordion/rtl.html');
@@ -313,6 +314,6 @@ describe('Accordion rtl sample', function () {
         load_delay(1000, 'sleep')
         browser.executeScript("document.getElementById('acrdn_item_4').click();")
         load_delay(1000, 'sleep')
-        browser.compareScreen(element(By.id('ej2Accordion')), 'rtl_content_bootstrap');
+        browser.compareScreen(element(By.id('Accordion')), 'rtl_content_bootstrap');
     },1200000);
 });

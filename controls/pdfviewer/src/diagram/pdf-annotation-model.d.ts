@@ -435,6 +435,12 @@ export interface PdfAnnotationBaseModel {
     annotationSettings?: object;
 
     /**
+     * specifies the previous font size  of the annotation.
+     * @default '16'
+     */
+    previousFontSize?: number;
+
+    /**
      * Represents the text style of annotation
      * @default ''
      */

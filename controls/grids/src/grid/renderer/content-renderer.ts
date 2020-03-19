@@ -1,9 +1,10 @@
-import { Droppable, DropEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { Droppable, DropEventArgs, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
+import { VirtualInfo } from '../base/interface';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -31,6 +32,10 @@ export class ContentRender implements IRenderer {
     private rowElements: Element[];
     private freezeRowElements: Element[] = [];
     private index: number;
+    /** @hidden */
+    public prevInfo: VirtualInfo;
+    /** @hidden */
+    public currentInfo: VirtualInfo = {};
     public colgroup: Element;
     private isLoaded: boolean = true;
     private tbody: HTMLElement;
@@ -145,7 +150,8 @@ export class ContentRender implements IRenderer {
         let contentDiv: Element = this.getPanel();
         let virtualTable: Element = contentDiv.querySelector('.e-virtualtable');
         let virtualTrack: Element = contentDiv.querySelector('.e-virtualtrack');
-        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)) {
+        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)
+            && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered))) {
             remove(virtualTable);
             remove(virtualTrack);
         }
@@ -209,7 +215,7 @@ export class ContentRender implements IRenderer {
         let tr: Element; let hdrTbody: HTMLElement; let frzCols: number = gObj.getFrozenColumns();
         let trElement: Element;
         let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll
+        let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling
             && (args as InfiniteScrollArgs).requestType === 'infiniteScroll';
         if (!isInfiniteScroll) {
             this.rowElements = [];
@@ -229,6 +235,11 @@ export class ContentRender implements IRenderer {
         let isServerRendered: string = 'isServerRendered';
         if (isBlazor() && this.parent[isServerRendered]) {
             modelData = this.generator.generateRows(dataSource, args);
+            if (this.parent.enableVirtualization) {
+                this.prevInfo = this.prevInfo ? this.prevInfo : args.virtualInfo;
+                this.prevInfo = args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
+                                this.currentInfo.page !== args.virtualInfo.page ? this.currentInfo : args.virtualInfo;
+            }
             this.rows = modelData;
             this.freezeRows = modelData;
             this.rowElements = <Element[]>[].slice.call(this.getTable().querySelectorAll('tr.e-row[data-uid]'));
@@ -247,7 +258,9 @@ export class ContentRender implements IRenderer {
             let arg: object = extend({ rows: this.rows }, args);
             if (this.getTable().querySelector('.e-emptyrow')) {
                 remove(this.getTable().querySelector('.e-emptyrow'));
+                remove(this.getTable().querySelectorAll('.e-table > tbody')[1]);
             }
+            this.parent.notify('contentcolgroup', {});
             this.rafCallback(arg)();
             if (frzCols) {
                 cont.style.overflowY = 'hidden';
@@ -257,10 +270,42 @@ export class ContentRender implements IRenderer {
                 this.parent.notify(events.contentReady, { rows: this.movableRows, args: extend({}, arg, { isFrozen: false }) });
             }
             if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
-            || (!this.parent.isPersistSelection)) {
+            || (!this.parent.isPersistSelection && !this.parent.enableVirtualization)) {
                 if (this.parent.editSettings.mode === 'Normal') {
                     let rowIndex: string = 'editRowIndex';
                     this.parent.selectRow(args[rowIndex]);
+                }
+            }
+            if (this.parent.enableVirtualization && !this.parent.getHeaderContent().querySelectorAll('.e-check').length) {
+                let removeClassByUid: string[] = this.parent.getRows().filter((x: Element) => x.getAttribute('aria-selected'))
+                                                            .map((y: Element) => y.getAttribute('data-uid'));
+                let addClassByUid: string[] = this.parent.getRows().filter((x: Element) => x.getAttribute('aria-selected') === null)
+                                                            .map((y: Element) => y.getAttribute('data-uid'));
+                for (let i: number = 0; i < removeClassByUid.length; i++) {
+                    if (!isNullOrUndefined(this.parent.getRowObjectFromUID(removeClassByUid[i])) &&
+                        !this.parent.getRowObjectFromUID(removeClassByUid[i]).isSelected) {
+                        this.parent.getRowElementByUID(removeClassByUid[i]).removeAttribute('aria-selected');
+                        if (!isNullOrUndefined(this.parent.getRowElementByUID(removeClassByUid[i]).querySelector('.e-check'))) {
+                            removeClass([this.parent.getRowElementByUID(removeClassByUid[i]).querySelector('.e-check')], ['e-check']);
+                        }
+                        for (let j: number = 0; j < this.parent.getRowElementByUID(removeClassByUid[i]).children.length; j++) {
+                            this.parent.getRowElementByUID(removeClassByUid[i])
+                                                           .children[j].classList.remove('e-selectionbackground', 'e-active');
+                        }
+                    }
+                }
+                for (let i: number = 0; i < addClassByUid.length; i++) {
+                    if (!isNullOrUndefined(this.parent.getRowObjectFromUID(addClassByUid[i]))
+                        && this.parent.getRowObjectFromUID(addClassByUid[i]).isSelected) {
+                        this.parent.getRowElementByUID(addClassByUid[i]).setAttribute('aria-selected', 'true');
+                        if (!isNullOrUndefined(this.parent.getRowElementByUID(addClassByUid[i]).querySelector('.e-frame'))) {
+                            addClass([this.parent.getRowElementByUID(addClassByUid[i]).querySelector('.e-frame')], ['e-check']);
+                        }
+                        for (let j: number = 0; j < this.parent.getRowElementByUID(addClassByUid[i]).children.length; j++) {
+                            this.parent.getRowElementByUID(addClassByUid[i])
+                                                           .children[j].classList.add('e-selectionbackground', 'e-active');
+                        }
+                    }
                 }
             }
             return;
@@ -482,7 +527,7 @@ export class ContentRender implements IRenderer {
                             args.renderMovableContent = false;
                         }
                     } else {
-                        if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.infiniteScrollSettings.enableScroll) {
+                        if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
                             this.parent.notify(events.removeInfiniteRows, { args: args });
                             this.parent.notify(events.appendInfiniteContent, {
                                 tbody: this.tbody, frag: frag, args: args, rows: this.rows,

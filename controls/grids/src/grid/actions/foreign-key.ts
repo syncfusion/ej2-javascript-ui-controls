@@ -1,6 +1,6 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { DataManager, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
-import { IGrid } from '../base/interface';
+import { IGrid, ColumnDataStateChangeEventArgs, NotifyArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { Column } from '../models/column';
 import { PredicateModel, SearchSettingsModel } from '../base/grid-model';
@@ -8,6 +8,7 @@ import { ReturnType } from '../base/type';
 import { initForeignKeyColumn, getForeignKeyData, generateQuery } from '../base/constant';
 import { getDatePredicate } from '../base/util';
 import { Data } from './data';
+import * as events from '../base/constant';
 
 /**
  * `ForeignKey` module is used to handle foreign key column's actions.
@@ -32,13 +33,38 @@ export class ForeignKey extends Data {
     private initForeignKeyColumns(columns: Column[]): void {
         for (let i: number = 0; i < columns.length; i++) {
             columns[i].dataSource = (columns[i].dataSource instanceof DataManager ? <DataManager>columns[i].dataSource :
-                (isNullOrUndefined(columns[i].dataSource) ? new DataManager() : new DataManager(columns[i].dataSource)));
+                (isNullOrUndefined(columns[i].dataSource) ? new DataManager() : 'result' in columns[i].dataSource ? columns[i].dataSource :
+                new DataManager(columns[i].dataSource as Object[])));
         }
+    }
+
+    private eventfPromise(
+        args: { requestType?: string, foreignKeyData?: string[], data?: Object, action: NotifyArgs },
+        query?: Query, key?: string, column?: Column): Deferred {
+        let state: ColumnDataStateChangeEventArgs = this.getStateEventArgument(query) as ColumnDataStateChangeEventArgs;
+        let def: Deferred = new Deferred();
+        let deff: Deferred = new Deferred();
+        state.action = args.action;
+        let dataModule: Data = this.parent.getDataModule();
+        if (!isNullOrUndefined(args.action) && args.action.requestType && dataModule.foreignKeyDataState.isDataChanged !== false) {
+            dataModule.setForeignKeyDataState({
+                isPending: true, resolver: deff.resolve
+            });
+            deff.promise.then(() => {
+                def.resolve(column.dataSource);
+            });
+            state.setColumnData = this.parent.setForeignKeyData.bind(this.parent);
+            this.parent.trigger(events.columnDataStateChange, state);
+        } else {
+            dataModule.setForeignKeyDataState({});
+            def.resolve(key);
+        }
+        return def;
     }
 
     private getForeignKeyData(args: {
         data: Promise<Object>, result: ReturnType, promise: Deferred, isComplex?: boolean,
-        column?: Column
+        column?: Column, action: NotifyArgs
     }): void {
         let foreignColumns: Column[] = args.column ? [args.column] : this.parent.getForeignKeyColumns();
         let allPromise: Promise<Object>[] = [];
@@ -48,7 +74,10 @@ export class ForeignKey extends Data {
                 <Query>this.genarateQuery(foreignColumns[i], <{ records?: Object[] }>args.result.result, false, true);
             query.params = this.parent.query.params;
             let dataSource: DataManager = <DataManager>foreignColumns[i].dataSource;
-            if (!dataSource.ready || dataSource.dataSource.offline) {
+            if (dataSource && 'result' in dataSource) {
+                let def: Deferred = this.eventfPromise(args, query, dataSource, foreignColumns[i]);
+                promise = def.promise;
+            } else if (!dataSource.ready || dataSource.dataSource.offline) {
                 promise = dataSource.executeQuery(query);
             } else {
                 promise = dataSource.ready.then(() => {
@@ -60,6 +89,15 @@ export class ForeignKey extends Data {
         <Promise<Object>>Promise.all(allPromise).then((responses: ReturnType[]) => {
             for (let i: number = 0; i < responses.length; i++) {
                 foreignColumns[i].columnData = responses[i].result;
+                if (foreignColumns[i].editType === 'dropdownedit' && 'result' in foreignColumns[i].dataSource) {
+                    foreignColumns[i].edit.params = extend(foreignColumns[i].edit.params, {
+                        dataSource: responses[i].result,
+                        query: new Query(), fields: {
+                            value: foreignColumns[i].foreignKeyField || foreignColumns[i].field,
+                            text: foreignColumns[i].foreignKeyValue
+                        }
+                    });
+                }
             }
             args.promise.resolve(args.result);
         }).catch((e: Object) => {

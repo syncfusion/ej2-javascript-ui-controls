@@ -49,14 +49,14 @@ export class WorkbookSort {
         let isSingleCell: boolean = false;
 
         eventArgs.promise = deferred.promise;
-        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+        if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             deferred.reject(this.parent.serviceLocator.getService<L10n>(workbookLocale).getConstant('SortOutOfRangeError'));
             return;
         }
 
         let containsHeader: boolean = sortOptions.containsHeader;
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
-            range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex - 1; range[3] = sheet.usedRange.colIndex;
+            range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
             isSingleCell = true;
             containsHeader = isNullOrUndefined(sortOptions.containsHeader) ? true : sortOptions.containsHeader;
         }

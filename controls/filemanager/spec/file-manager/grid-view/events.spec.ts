@@ -5,7 +5,7 @@ import { FileManager } from '../../../src/file-manager/base/file-manager';
 import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
-import { BeforeSendEventArgs, FileLoadEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs, MenuOpenEventArgs, MenuClickEventArgs, ToolbarClickEventArgs, PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
+import { BeforeSendEventArgs, FileLoadEventArgs, FileSelectionEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs, MenuOpenEventArgs, MenuClickEventArgs, ToolbarClickEventArgs, PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, multiCopySuccess1, doubleClickRead2, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, getMultipleDetails, singleSelectionDetails, doubleClickRead, noExtension, noExtensionRename, noExtensionSuccess } from '../data';
 
@@ -108,7 +108,62 @@ describe('FileManager control Grid view', () => {
                 }, 500);
             }, 500);
         });
+        it('for fileSelection', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                fileSelection: () => {
+                    i++;
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let obj = (feObj.detailsviewModule.gridObj as any);
+                var rows = obj.getRows();
+                (rows[0].querySelector('.e-rowcell') as HTMLElement).click();
+                expect(i).toEqual(1);
+                mouseEventArgs.shiftKey = true;
+                (rows[2].querySelector('.e-rowcell') as HTMLElement).click();
+                expect(i).toEqual(3);
+                done();
+            }, 500);
+        });
+        it('for fileSelection with cancel', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                fileSelection: (args: FileSelectionEventArgs) => { i++; args.cancel = true },
 
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let obj = (feObj.detailsviewModule.gridObj as any);
+                var rows = obj.getRows();
+                (rows[0].querySelector('.e-rowcell') as HTMLElement).click();
+                expect(i).toEqual(1);
+                expect(rows[0].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                expect(rows[0].classList.contains('e-active')).toBe(false);
+                done();
+            }, 500);
+        });
         it('for menuOpen', (done) => {
             let i: number = 0;
             feObj = new FileManager({

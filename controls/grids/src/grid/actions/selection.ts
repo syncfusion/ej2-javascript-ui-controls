@@ -18,6 +18,7 @@ import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { FocusStrategy } from '../services/focus-strategy';
 import { iterateExtend } from '../base/util';
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 
 
 /**
@@ -53,6 +54,7 @@ export class Selection implements IAction {
      * @hidden
      */
     public prevRowIndex: number;
+    public checkBoxState: boolean = false;
     private selectionSettings: SelectionSettings;
     private prevCIdxs: IIndex;
     private prevECIdxs: IIndex;
@@ -247,7 +249,7 @@ export class Selection implements IAction {
         let selectData: Object;
         let isRemoved: boolean = false;
         if (gObj.enableVirtualization && index > -1) {
-            if (selectedRow) {
+            if (selectedRow && gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid'))) {
                 selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
             } else {
                 let prevSelectedData: Object[] = this.parent.getSelectedRecords();
@@ -334,6 +336,11 @@ export class Selection implements IAction {
             };
             args = this.addMovableArgs(args, selectedMovableRow);
             this.onActionComplete(args, events.rowSelected);
+        }
+        if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
+            let interopAdaptor: string = 'interopAdaptor';
+            let invokeMethodAsync: string = 'invokeMethodAsync';
+            this.parent[interopAdaptor][invokeMethodAsync]('MaintainSelection', true, 'normal', [index]);
         }
         this.isInteracted = false;
         this.updateRowProps(index);
@@ -693,6 +700,9 @@ export class Selection implements IAction {
                 // tslint:disable-next-line:align
                 this.updatePersistCollection(element[j], false);
                 this.updateCheckBoxes(element[j]);
+                }
+                if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
+                    this.getRenderer().setSelection(null, false, true);
                 }
                 for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
                     let movableRow: Element = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
@@ -1783,7 +1793,7 @@ export class Selection implements IAction {
     }
 
     private clearSelAfterRefresh(e: { requestType: string }): void {
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'infiniteScroll';
+        let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfiniteScroll) {
             this.clearSelection();
         }
@@ -2131,9 +2141,15 @@ export class Selection implements IAction {
         if (checkState && this.getCurrentBatchRecordChanges().length) {
             this.parent.checkAllRows = 'Check';
             this.updatePersistSelectedData(checkState);
+            if (isBlazor() && this.parent.enableVirtualization &&
+                !isNullOrUndefined((<VirtualContentRenderer>this.parent.contentModule).currentInfo.endIndex)) {
+                this.selectRowsByRange((<VirtualContentRenderer>this.parent.contentModule).currentInfo.startIndex,
+                                       (<VirtualContentRenderer>this.parent.contentModule).currentInfo.endIndex);
+            } else {
             this.selectRowsByRange(
                 cRenderer.getVirtualRowIndex(0),
                 cRenderer.getVirtualRowIndex(this.getCurrentBatchRecordChanges().length - 1));
+            }
         } else {
             this.parent.checkAllRows = 'Uncheck';
             this.updatePersistSelectedData(checkState);
@@ -2156,6 +2172,22 @@ export class Selection implements IAction {
                 data[this.primaryKey] in this.selectedRowState);
         }
         this.checkSelectAllAction(!state);
+        if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
+            let interopAdaptor: string = 'interopAdaptor';
+            let invokeMethodAsync: string = 'invokeMethodAsync';
+            this.parent[interopAdaptor][invokeMethodAsync]('MaintainSelection', !state, 'checkbox', null);
+            this.checkBoxState = !state;
+            if (!state) {
+                let values: string = 'values'; let vgenerator: string = 'vgenerator';
+                let rowCache: Row<Column> = this.parent.contentModule[vgenerator].rowCache;
+                Object[values](rowCache).forEach((x: Row<Column>) => x.isSelected = true);
+                for (let i: number = 0; i < Object.keys(rowCache).length; i++) {
+                    if (this.parent.selectionModule.selectedRowIndexes.indexOf(Number(Object.keys(rowCache)[i])) === -1) {
+                        this.parent.selectionModule.selectedRowIndexes.push(Number(Object.keys(rowCache)[i]));
+                    }
+                }
+            }
+        }
         this.target = null;
         if (this.getCurrentBatchRecordChanges().length > 0) {
             this.setCheckAllState();
@@ -2225,8 +2257,9 @@ export class Selection implements IAction {
     }
 
     private updateSelectedRowIndex(index?: number): void {
-        if (this.parent.isCheckBoxSelection && (this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll)
-            && !this.parent.getDataModule().isRemote()) {
+        if (this.parent.isCheckBoxSelection && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
+            && !this.parent.getDataModule().isRemote()
+            && !(isBlazor() && this.parent.isServerRendered)) {
             if (this.parent.checkAllRows === 'Check') {
                 this.selectedRowIndexes = [];
                 let dataLength: number = this.getData().length;
@@ -2246,23 +2279,35 @@ export class Selection implements IAction {
 
     private setCheckAllState(index?: number, isInteraction?: boolean): void {
         if (this.parent.isCheckBoxSelection || this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+            let checkToSelectAll: boolean;
+            let isServerRenderedVirtualization: boolean =  isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization;
+            if (isServerRenderedVirtualization) {
+                let values: string = 'values'; let vgenerator: string = 'vgenerator';
+                checkToSelectAll = !Object[values](this.parent.contentModule[vgenerator].rowCache).
+                                    filter((x: Row<Column>) => x.isSelected === undefined || x.isSelected === false).length &&
+                                    Object[values](this.parent.contentModule[vgenerator].rowCache).
+                                    filter((x: Row<Column>) => x.isSelected).length === this.selectedRowIndexes.length;
+            }
             let checkedLen: number = Object.keys(this.selectedRowState).length;
-            if (!this.parent.isPersistSelection) {
+            if (!this.parent.isPersistSelection && !(isServerRenderedVirtualization)) {
                 checkedLen = this.selectedRowIndexes.length;
                 this.totalRecordsCount = this.getCurrentBatchRecordChanges().length;
             }
             if (this.getCheckAllBox()) {
                 let spanEle: HTMLElement = this.getCheckAllBox().nextElementSibling as HTMLElement;
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
-                if (checkedLen === this.totalRecordsCount && this.totalRecordsCount
-                    || ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll)
-                        && !this.parent.allowPaging && !this.parent.getDataModule().isRemote() && checkedLen === this.getData().length)) {
+                if (checkToSelectAll || checkedLen === this.totalRecordsCount && this.totalRecordsCount
+                    || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
+                        && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()
+                        && !(isBlazor() && this.parent.isServerRendered)
+                        && checkedLen === this.getData().length)) {
                     addClass([spanEle], ['e-check']);
                     if (isInteraction) {
                         this.getRenderer().setSelection(null, true, true);
                     }
                     this.parent.checkAllRows = 'Check';
-                } else if (checkedLen === 0 || this.getCurrentBatchRecordChanges().length === 0) {
+                } else if (isServerRenderedVirtualization && !this.selectedRowIndexes.length ||
+                           checkedLen === 0 && !isServerRenderedVirtualization || this.getCurrentBatchRecordChanges().length === 0) {
                     addClass([spanEle], ['e-uncheck']);
                     if (isInteraction) {
                         this.getRenderer().setSelection(null, false, true);
@@ -2277,7 +2322,7 @@ export class Selection implements IAction {
                     addClass([spanEle], ['e-stop']);
                     this.parent.checkAllRows = 'Intermediate';
                 }
-                if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll)
+                if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                     && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()) {
                     this.updateSelectedRowIndex(index);
                 }
@@ -2347,6 +2392,7 @@ export class Selection implements IAction {
                 if (!this.mUPTarget || !this.mUPTarget.isEqualNode(target)) {
                     this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute('aria-colindex'), 10));
                 }
+                this.parent.hoverFrozenRows(e);
                 if (this.parent.isCheckBoxSelection) {
                     this.moveIntoUncheckCollection(closest(target, '.e-row') as HTMLElement);
                     this.setCheckAllState();
@@ -2417,6 +2463,12 @@ export class Selection implements IAction {
             this.drawBorders();
         } else {
             this.addRowsToSelection([rowIndex]);
+            if (isBlazor() && this.parent.enableVirtualization && this.parent.isServerRendered) {
+                let rowIndexes: number[] =  this.parent.getSelectedRowIndexes();
+                let interopAdaptor: string = 'interopAdaptor';
+                let invokeMethodAsync: string = 'invokeMethodAsync';
+                this.parent[interopAdaptor][invokeMethodAsync]('MaintainSelection', true , 'normal', rowIndexes);
+            }
             this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
             this.hideBorders();
         }
@@ -2725,7 +2777,7 @@ export class Selection implements IAction {
     }
 
     public dataReady(e: { requestType: string }): void {
-        let isInfinitecroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'infiniteScroll';
+        let isInfinitecroll: boolean = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = true;
             this.clearSelection();

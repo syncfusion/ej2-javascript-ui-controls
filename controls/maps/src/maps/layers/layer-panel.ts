@@ -1,10 +1,10 @@
 import { isNullOrUndefined, extend, createElement, Ajax } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
-import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption } from '../utils/helper';
-import { getElementByID, maintainSelection } from '../utils/helper';
+import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption, removeElement } from '../utils/helper';
+import { getElementByID, maintainSelection, getValueFromObject } from '../utils/helper';
 import { MapLocation, RectOption, getTranslate, convertTileLatLongToPoint, checkShapeDataFields, CircleOption } from '../utils/helper';
-import { getZoomTranslate } from '../utils/helper';
+import { getZoomTranslate, fixInitialScaleForTile } from '../utils/helper';
 import { LayerSettings, ShapeSettings, Tile, BubbleSettings } from '../model/base';
 import { LayerSettingsModel, ShapeSettingsModel, ToggleLegendSettingsModel } from '../model/base-model';
 import { BingMap } from './bing-map';
@@ -24,15 +24,16 @@ export class LayerPanel {
     public tiles: Tile[];
     private clipRectElement: Element;
     private layerGroup: Element;
-    private tileTranslatePoint: MapLocation = new MapLocation(0, 0);
     private urlTemplate: string;
     private isMapCoordinates: boolean = true;
-    private exactBounds: Object;
     private tileSvgObject: Element;
     private ajaxModule: Ajax;
-    private ajaxProcessCount: number = 0;
     private ajaxResponse: LayerSettings[];
     private bing: BingMap;
+    private animateToZoomX : number;
+    private animateToZoomY : number;
+    public horizontalPan: boolean = false;
+    public horizontalPanXCount: number = 0;
     constructor(map: Maps) {
         this.mapObject = map;
         this.ajaxModule = new Ajax();
@@ -41,10 +42,8 @@ export class LayerPanel {
 
     /* tslint:disable:no-string-literal */
     public measureLayerPanel(): void {
-        let imageSize: number = 30;
         let layerCollection: LayerSettings[] = <LayerSettings[]>this.mapObject.layersCollection;
         let areaRect: Rect = this.mapObject.mapAreaRect;
-        let padding: number = 10;
         let secondaryEle: HTMLElement = <HTMLElement>getElementByID(this.mapObject.element.id + '_Secondary_Element');
         if (this.mapObject.isTileMap && secondaryEle) {
             this.tileSvgObject = this.mapObject.renderer.createSvg({
@@ -86,7 +85,6 @@ export class LayerPanel {
         this.mapObject.baseMapBounds = null;
         this.mapObject.baseMapRectBounds = null;
         this.mapObject.baseSize = null;
-        let layerCount: number = layerCollection.length - 1;
         Array.prototype.forEach.call(layerCollection, (layer: LayerSettings, index: number) => {
             this.currentLayer = <LayerSettings>layer;
             this.processLayers(layer, index);
@@ -96,6 +94,7 @@ export class LayerPanel {
      * Tile rendering
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
         panel.currentFactor = panel.calculateFactor(layer);
         if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
@@ -119,9 +118,19 @@ export class LayerPanel {
                 centerTileMap = new Point(panel.mapObject.markerCenterLongitude, panel.mapObject.markerCenterLatitude);
             }
         }
-        let zoomFactorValue : number = panel.mapObject.zoomSettings.shouldZoomInitially &&
-        panel.mapObject.zoomSettings.zoomFactor === 1 ? isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
-         panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
+        if (!panel.mapObject.zoomSettings.shouldZoomInitially && panel.mapObject.centerPosition.longitude
+            && panel.mapObject.centerPosition.latitude && !panel.mapObject.zoomPersistence && panel.mapObject.defaultState) {
+            center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
+        } else if (panel.mapObject.zoomSettings.shouldZoomInitially
+            && panel.mapObject.markerZoomedState && !panel.mapObject.zoomPersistence
+            && !isNullOrUndefined(panel.mapObject.markerZoomCenterPoint)) {
+            center = new Point(panel.mapObject.markerZoomCenterPoint.longitude, panel.mapObject.markerZoomCenterPoint.latitude);
+        } else {
+            center = { x: null, y: null };
+        }
+        let zoomFactorValue: number = panel.mapObject.zoomSettings.shouldZoomInitially ?
+            isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
+            panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
         zoomFactorValue = (panel.mapObject.enablePersistence) ? ((isNullOrUndefined(panel.mapObject.mapScaleValue))
         ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
          panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
@@ -132,7 +141,8 @@ export class LayerPanel {
         }  else if (this.mapObject.isReset && panel.mapObject.tileZoomLevel === 1 && !panel.mapObject.zoomSettings.shouldZoomInitially) {
             panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
         } else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
-            panel.mapObject.tileZoomLevel = !panel.mapObject.zoomSettings.shouldZoomInitially
+            panel.mapObject.tileZoomLevel = panel.mapObject.defaultState ?
+                panel.mapObject.tileZoomLevel : !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
                 panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
                     panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
@@ -143,6 +153,10 @@ export class LayerPanel {
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
         }
+        if ( zoomFactorValue <= 1 && !isNullOrUndefined(panel.mapObject.height) && !panel.mapObject.zoomSettings.shouldZoomInitially
+        && (panel.mapObject.tileZoomLevel === panel.mapObject.tileZoomScale) && this.mapObject.initialCheck ) {
+            fixInitialScaleForTile(this.mapObject);
+        }
         if (!isNullOrUndefined(panel.mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(panel.mapObject.centerLongOfGivenLocation) &&
             panel.mapObject.zoomNotApplied) {
             centerTileMap.y = panel.mapObject.centerLatOfGivenLocation;
@@ -152,7 +166,17 @@ export class LayerPanel {
         panel.mapObject.tileTranslatePoint = panel.panTileMap(
             panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, centerTileMap
         );
-        panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
+        if (this.mapObject.zoomSettings.resetToInitial && this.mapObject.initialCheck && !isNullOrUndefined(panel.mapObject.height)
+        && this.mapObject.availableSize.height > 512) {
+        this.mapObject.applyZoomReset = true;
+        this.mapObject.initialZoomLevel = Math.floor(this.mapObject.availableSize.height / 512) + 1;
+        let padding : number = this.mapObject.layers[this.mapObject.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
+            20 : 0;
+        let totalSize : number = Math.pow(2, this.mapObject.initialZoomLevel) * 256;
+        this.mapObject.initialTileTranslate.x = (this.mapObject.availableSize.width / 2) - (totalSize / 2);
+        this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
+        }
+        panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, null, bing);
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(
                 panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex)
@@ -216,6 +240,7 @@ export class LayerPanel {
                             }
                             proxy.mapObject['bingMap'] = bing;
                             proxy.renderTileLayer(proxy, layer, layerIndex, bing);
+                            this.mapObject.arrangeTemplate();
                         };
                         ajax.send();
                     }
@@ -234,17 +259,6 @@ export class LayerPanel {
                             );
                         } else if (isNullOrUndefined(this.mapObject.baseMapBounds) && !isCustomPath(featureData)) {
                             this.calculateRectBounds(featureData);
-                            // if (isNullOrUndefined(this.mapObject.baseSize)) {
-                            //     let minSize: Point = convertGeoToPoint(
-                            //         this.mapObject.baseMapBounds.latitude.min,
-                            //         this.mapObject.baseMapBounds.longitude.min, this.calculateFactor(layer), layer, this.mapObject
-                            //     );
-                            //     let maxSize: Point = convertGeoToPoint(
-                            //         this.mapObject.baseMapBounds.latitude.max,
-                            //         this.mapObject.baseMapBounds.longitude.max, this.calculateFactor(layer), layer, this.mapObject
-                            //     );
-                            //     this.mapObject.baseSize = new Size(Math.abs(minSize.x - maxSize.x), Math.abs(minSize.y - maxSize.y));
-                            // }
                         }
                         this.calculatePathCollection(layerIndex, featureData);
                     }
@@ -255,6 +269,7 @@ export class LayerPanel {
             this.mapObject.svgObject.appendChild(this.layerGroup);
         } else if (this.tileSvgObject) {
             this.tileSvgObject.appendChild(this.layerGroup);
+            this.mapObject.baseMapBounds = null;
         }
     }
 
@@ -262,7 +277,10 @@ export class LayerPanel {
     private bubbleCalculation(bubbleSettings: BubbleSettingsModel, range: { min: number, max: number }): void {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
             for (let i: number = 0; i < bubbleSettings.dataSource.length; i++) {
-                let bubbledata: number = parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
+                let bubbledata: number = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
+                                          Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
+                                          parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
+                                          parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
                 if (i !== 0) {
                     if (bubbledata > range.max) {
                         range.max = bubbledata;
@@ -320,13 +338,17 @@ export class LayerPanel {
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(
                         <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
-                        this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath
+                        this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
                     );
                     if (k !== null && shapeSettings.colorMapping.length === 0) {
-                        fill = this.currentLayer.dataSource[k][shapeSettings.colorValuePath];
+                        fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
+                                (getValueFromObject(this.currentLayer.dataSource[k], shapeSettings.colorValuePath)) :
+                                this.currentLayer.dataSource[k][shapeSettings.colorValuePath]);
                     } else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
                         (<Object[]>this.currentLayer.dataSource).length === 0 && shapeSettings.colorMapping.length === 0) {
-                        fill = currentShapeData['property'][shapeSettings.colorValuePath];
+                            fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
+                                   (getValueFromObject(currentShapeData['property'], shapeSettings.colorValuePath)) :
+                                   currentShapeData['property'][shapeSettings.colorValuePath]);
                     }
                 }
                 let shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
@@ -351,10 +373,18 @@ export class LayerPanel {
                     let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
                     ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
                     drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
-                    eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
-                    eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color : eventArgs.border.color;
-                    eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
-                    this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                    if (!eventArgs.cancel) {
+                        eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
+                        eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color
+                            : eventArgs.border.color;
+                        eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
+                        this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                    } else {
+                        eventArgs.fill = fill;
+                        eventArgs.border.color = shapeSettings.border.color;
+                        eventArgs.border.width = shapeSettings.border.width;
+                        this.mapObject.layers[layerIndex].shapeSettings.border = shapeSettings.border;
+                    }
                     if (this.groupElements.length < 1) {
                         groupElement = this.mapObject.renderer.createGroup({
                             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
@@ -572,7 +602,7 @@ export class LayerPanel {
         if (layer.shapeSettings.colorMapping.length === 0 && isNullOrUndefined(layer.dataSource)) {
             return color;
         }
-        let index: number = checkShapeDataFields(<Object[]>layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath);
+        let index: number = checkShapeDataFields(<Object[]>layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath, layer);
         let colorMapping: ColorMapping = new ColorMapping(this.mapObject);
         if (isNullOrUndefined(layer.dataSource[index])) {
             return color;
@@ -683,6 +713,7 @@ export class LayerPanel {
 
     public translateLayerElements(layerElement: Element, index: number): void {
         let childNode: HTMLElement;
+        this.mapObject.translateType = 'layer';
         if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
             let duration: number = this.currentLayer.animationDuration;
             let animate: boolean = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
@@ -794,20 +825,35 @@ export class LayerPanel {
             }
         });
     }
-    public generateTiles(zoomLevel: number, tileTranslatePoint: Point, bing?: BingMap): void {
+    public generateTiles(zoomLevel: number, tileTranslatePoint: Point, zoomType?: string, bing?: BingMap, position?: Point): void {
         let userLang: string = this.mapObject.locale;
         let size: Size = this.mapObject.availableSize;
         this.tiles = [];
         let xcount: number;
         let ycount: number;
         xcount = ycount = Math.pow(2, zoomLevel);
-        let width: number = size.width / 2;
-        let height: number = size.height / 2;
+        let xLeft: number = 0; let xRight: number = 0;
+        if ((tileTranslatePoint.x + (xcount * 256)) < size.width) {
+            xLeft = tileTranslatePoint.x > 0 ? Math.ceil(tileTranslatePoint.x / 256) : 0;
+            xRight = ((tileTranslatePoint.x + xcount * 256) < size.width) ?
+                Math.ceil((size.width - (tileTranslatePoint.x + xcount * 256)) / 256) : 0;
+        }
+        xcount += xLeft + xRight;
+        if (zoomType === 'Pan') {
+            if (this.horizontalPanXCount !== xcount) {
+                xcount = this.horizontalPanXCount;
+                this.horizontalPan = false;
+                return null;
+            }
+        } else {
+            this.horizontalPanXCount = xcount;
+            this.horizontalPan = true;
+        }
         let baseLayer: LayerSettingsModel = this.mapObject.layers[this.mapObject.baseLayerIndex];
         this.urlTemplate = baseLayer.urlTemplate;
         let endY: number = Math.min(ycount, ((-tileTranslatePoint.y + size.height) / 256) + 1);
-        let endX: number = Math.min(xcount, ((-tileTranslatePoint.x + size.width) / 256) + 1);
-        let startX: number = (-(tileTranslatePoint.x + 256) / 256);
+        let endX: number = Math.min(xcount, ((-tileTranslatePoint.x + size.width + (xRight * 256)) / 256) + 1);
+        let startX: number = (-((tileTranslatePoint.x + (xLeft * 256)) + 256) / 256);
         let startY: number = (-(tileTranslatePoint.y + 256) / 256);
         bing = bing || this.bing || this.mapObject['bingMap'];
         for (let i: number = Math.round(startX); i < Math.round(endX); i++) {
@@ -815,8 +861,12 @@ export class LayerPanel {
                 let x: number = 256 * i + tileTranslatePoint.x;
                 let y: number = 256 * j + tileTranslatePoint.y;
                 if (x > -256 && x <= size.width && y > -256 && y < size.height) {
-                    if (i >= 0 && j >= 0) {
-                        let tile: Tile = new Tile(i, j);
+                    if (j >= 0) {
+                        let tileI: number = i;
+                        if (i < 0) {
+                            tileI = (tileI % ycount) + ycount;
+                        }
+                        let tile: Tile = new Tile(tileI % ycount, j);
                         tile.left = x;
                         tile.top = y;
                         if (baseLayer.layerType === 'Bing') {
@@ -829,6 +879,15 @@ export class LayerPanel {
                         this.tiles.push(tile);
                     }
                 }
+            }
+        }
+        if (!isNullOrUndefined(zoomType)) {
+            if (zoomType.indexOf('wheel') > 1) {
+                this.animateToZoomX = (this.mapObject.availableSize.width / 2) - position.x - 10;
+                this.animateToZoomY = -position.y;
+            } else {
+                this.animateToZoomX = -10;
+                this.animateToZoomY = -(this.mapObject.availableSize.height / 2 + 11.5) + 10;
             }
         }
         let proxTiles: Tile[] = extend([], this.tiles, [], true) as Tile[];
@@ -849,29 +908,102 @@ export class LayerPanel {
                 }
             }
         }
-        this.arrangeTiles();
+        this.arrangeTiles(zoomType, this.animateToZoomX, this.animateToZoomY);
     }
 
-    public arrangeTiles(): void {
+    public arrangeTiles(type: string, x: number, y: number): void {
+        let element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
+        let element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
+        let timeOut: number;
+        if (!isNullOrUndefined(type) && type !== 'Pan' && type !== 'Reset' && type.indexOf('ZoomOut') === -1) {
+            this.tileAnimation(type, x, y);
+            timeOut = 250;
+        } else {
+            timeOut = 0;
+        }
         if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
             this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
         } else {
-            let htmlString: string = this.templateCompiler(this.tiles);
-            if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
-                document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
+            setTimeout(() => {
+                if (element) {
+                    element.style.zIndex = '1';
+                }
+                if (element1) {
+                    element1.style.zIndex = '0';
+                }
+                let animateElement: HTMLElement;
+                if (!document.getElementById('animated_tiles') && element) {
+                    animateElement = createElement('div', { id: 'animated_tiles' });
+                    element.appendChild(animateElement);
+                } else {
+                    if (type !== 'Pan' && element1 && element) {
+                        element1.appendChild(element.children[0]);
+                        animateElement = createElement('div', { id: 'animated_tiles' });
+                        element.appendChild(animateElement);
+                    } else {
+                        animateElement = element ? element.children[0] as HTMLElement : null;
+                    }
+                }
+                let id: number = 0;
+                for (let tile of this.tiles) {
+                    let imgElement: HTMLElement = createElement('img');
+                    imgElement.setAttribute('src', tile.src);
+                    let child: HTMLElement;
+                    if (document.getElementById('tile_' + id) && type === 'Pan') {
+                        removeElement('tile_' + id);
+                    }
+                    child = createElement('div', { id: 'tile_' + id });
+                    child.style.position = 'absolute';
+                    child.style.left = tile.left + 'px';
+                    child.style.top = tile.top + 'px';
+                    child.style.height = tile.height + 'px';
+                    child.style.width = tile.width + 'px';
+                    child.appendChild(imgElement);
+                    if (animateElement) {
+                        animateElement.appendChild(child);
+                    }
+                    id++;
+                }
+            // tslint:disable-next-line:align
+            }, timeOut);
+        }
+    }
+
+    /**
+     * Animation for tile layers and hide the group element until the tile layer rendering 
+     */
+    private tileAnimation(zoomType: string, translateX: number, translateY: number): void {
+        let element: HTMLElement =  document.getElementById(this.mapObject.element.id + '_tile_parent');
+        let element1: HTMLElement = document.getElementById('animated_tiles');
+        let ele: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
+        let scaleValue: string = '2';
+        if (zoomType.indexOf('ZoomOut') === 0) {
+            ele.style.zIndex = '1';
+            element.style.zIndex = '0';
+            // element1 = ele.children[ele.childElementCount - 1] as HTMLElement;
+            while (ele.childElementCount >= 1) {
+                ele.removeChild(ele.children[0]);
             }
+            translateX = 0;
+            translateY = 128 - 23;
+            scaleValue = '0.5';
+        } else if (zoomType === 'Reset') {
+            ele.style.zIndex = '1';
+            element.style.zIndex = '0';
+            while (!(ele.childElementCount === 1) && !(ele.childElementCount === 0)) {
+                ele.removeChild(ele.children[1]);
+            }
+            element1 = ele.children[0] as HTMLElement;
+            translateX = 0;
+            translateY = 0;
+            scaleValue = '1';
+        }
+        if (!isNullOrUndefined(element1)) {
+            element1.style.transition = '250ms';
+            element1.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scaleValue + ')';
         }
     }
-    private templateCompiler(tiles: Tile[]): string {
-        let tileElment: string = '';
-        let id: number = 0;
-        for (let tile of tiles) {
-                tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
-                    'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
-                id++;
-        }
-        return tileElment;
-    }
+
     /* tslint:disable:no-string-literal */
     /**
      * Static map rendering
@@ -925,7 +1057,17 @@ export class LayerPanel {
             = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
             + eleHeight + 'px"><img src="' + staticMapString + '"></div>';
     }
+
+    /**
+     * To find the tile translate point
+     * @param factorX 
+     * @param factorY 
+     * @param centerPosition 
+     */
     private panTileMap(factorX: number, factorY: number, centerPosition: MapLocation): Point {
+        if (this.mapObject.tileZoomLevel <= this.mapObject.tileZoomScale && this.mapObject.initialCheck) {
+            this.mapObject.tileZoomLevel = this.mapObject.tileZoomScale;
+        }
         let level: number = this.mapObject.tileZoomLevel;
         let padding: number = this.mapObject.layers[this.mapObject.layers.length - 1].layerType !== 'GoogleStaticMap' ?
             20 : 0;
@@ -939,6 +1081,22 @@ export class LayerPanel {
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
+        if ((isNullOrUndefined(this.mapObject.tileTranslatePoint) || (this.mapObject.tileTranslatePoint.y === 0 &&
+            this.mapObject.tileTranslatePoint.x === 0)) || (isNullOrUndefined(this.mapObject.previousTileWidth) ||
+            isNullOrUndefined(this.mapObject.previousTileHeight))) {
+            this.mapObject.previousTileWidth = factorX;
+            this.mapObject.previousTileHeight = factorY;
+        }
+        if (!isNullOrUndefined(this.mapObject.tileTranslatePoint)  && (isNullOrUndefined(centerPosition.x)) &&
+            (this.mapObject.zoomSettings.zoomFactor === 1 ||
+                this.mapObject.zoomSettings.zoomFactor !== level || !this.mapObject.defaultState)) {
+            if ((factorX !== this.mapObject.previousTileWidth || factorY !== this.mapObject.previousTileHeight) ) {
+                let xdiff: number = x - ((this.mapObject.previousTileWidth / 2) - (totalSize / 2));
+                let ydiff: number = y - ((this.mapObject.previousTileHeight / 2) - (totalSize / 2) + padding);
+                this.mapObject.tileTranslatePoint.x = this.mapObject.tileTranslatePoint.x + xdiff;
+                this.mapObject.tileTranslatePoint.y = this.mapObject.tileTranslatePoint.y + ydiff;
+            }
+        }
         if (!isNullOrUndefined(this.mapObject.tileTranslatePoint) && !this.mapObject.zoomNotApplied) {
             if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x
                 && !this.mapObject.centerPositionChanged) {
@@ -953,7 +1111,8 @@ export class LayerPanel {
             (x - (0.01 * this.mapObject.scale)) / this.mapObject.scale,
             (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale
         );
+        this.mapObject.previousTileWidth = factorX;
+        this.mapObject.previousTileHeight = factorY;
         return new Point(x, y);
     }
-
 }

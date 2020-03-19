@@ -87,8 +87,8 @@ export class Column {
     /**    
      * Defines the type of component for editable.
      * @default 'stringedit'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.EditType
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Grids.EditType.DefaultEdit
+     * @blazorType Syncfusion.Blazor.Grids.EditType
+     * @blazorDefaultValue Syncfusion.Blazor.Grids.EditType.DefaultEdit
      */
     public editType: string;
 
@@ -176,7 +176,7 @@ export class Column {
      * Defines the data type of the column.    
      * @default null
      * @blazorDefaultValueIgnore
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnType
+     * @blazorType Syncfusion.Blazor.Grids.ColumnType
      */
 
     public type: string;
@@ -391,7 +391,7 @@ export interface ColumnModel {
    * @default Syncfusion.EJ2.Grids.TextAlign.Left
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.TextAlign
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
+   * @blazorType Syncfusion.Blazor.Grids.TextAlign
    */
 
   textAlign?: TextAlign;
@@ -411,7 +411,7 @@ export interface ColumnModel {
    * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.ClipMode
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode
+   * @blazorType Syncfusion.Blazor.Grids.ClipMode
    */
   clipMode?: ClipMode;
 
@@ -422,7 +422,7 @@ export interface ColumnModel {
    * @blazorDefaultValueIgnore
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.TextAlign
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
+   * @blazorType Syncfusion.Blazor.Grids.TextAlign
    */
   headerTextAlign?: TextAlign;
 
@@ -436,7 +436,7 @@ export interface ColumnModel {
   /**    
    * Defines the data type of the column.    
    * @default null
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnType
+   * @blazorType Syncfusion.Blazor.Grids.ColumnType
    * @blazorDefaultValueIgnore
    */
 
@@ -641,8 +641,8 @@ export interface ColumnModel {
     /**    
      * Defines the type of component for editing.
      * @default 'stringedit'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.EditType
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Grids.EditType.DefaultEdit
+     * @blazorType Syncfusion.Blazor.Grids.EditType
+     * @blazorDefaultValue Syncfusion.Blazor.Grids.EditType.DefaultEdit
      */
     editType?: string;
     /**    

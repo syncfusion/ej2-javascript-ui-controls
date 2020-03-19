@@ -75,8 +75,41 @@ describe('Heatmap Control', () => {
             heatmap.xAxis.isInversed = true;
             heatmap.refresh();
             expect(heatmap.dataMax[1]).toBe(5);
+            heatmap.cellSettings.tileType = 'Bubble';
+            heatmap.cellSettings.bubbleType = 'SizeAndColor';
+            heatmap.refresh();
+            expect(heatmap.dataMax[1]).toBe(5);
+            heatmap.cellSettings.tileType = 'Rect';
+            heatmap.cellSettings.bubbleType = 'Color';
             heatmap.paletteSettings.colorGradientMode = 'Table';
             heatmap.xAxis.isInversed = false;
+            heatmap.refresh();
+        });
+        it('Check the MultipleRow label intersect action for x-axis', function () {
+            heatmap.xAxis.labelIntersectAction = "MultipleRows";
+            heatmap.height = '250px';
+            heatmap.width = '300px';
+            heatmap.xAxis = {
+                    labels:["test","test1test1test1test1","test2","test3test3test3","test4"]
+                }
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_Label1');
+            expect(text.textContent == 'test1test1test1test1').toBe(true);
+            heatmap.xAxis.isInversed = true;
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_Label1');
+            expect(text.textContent == 'test1test1test1test1').toBe(true);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.refresh();
+            expect(text.textContent == 'test1test1test1test1').toBe(true);
+            heatmap.xAxis = {
+                labels:["test","test1","test2","test3","test4"]
+            }
+            heatmap.height = '';
+            heatmap.width = '';
+            heatmap.xAxis.labelIntersectAction = "Trim";
+            heatmap.xAxis.isInversed = false;
+            heatmap.xAxis.opposedPosition = false;
             heatmap.refresh();
         });
         it('Checking x-axis title', () => {
@@ -136,6 +169,27 @@ describe('Heatmap Control', () => {
                expect(text.textContent == 'YAxis').toBe(true);           
                expect((text.getAttribute('x') == '36' || text.getAttribute('x') == '35') && (text.getAttribute('y') == '42' || text.getAttribute('y') == '40')).toBe(true);
            });
+           it('Checking y-axis enableTrim support', () => {
+                heatmap.yAxis.enableTrim = true;
+                heatmap.yAxis.maxLabelLength = 15;
+                heatmap.refresh();
+                text = document.getElementById('container_YAxis_Label0');
+                expect(text.innerHTML === 't...').toBe(true);
+                heatmap.xAxis.enableTrim = true;
+                heatmap.yAxis.maxLabelLength = 15;
+                heatmap.xAxis.labelIntersectAction = 'None';
+                heatmap.refresh();
+                text = document.getElementById('container_XAxis_Label0');
+                expect(text.innerHTML === 'test').toBe(true);
+                heatmap.yAxis.opposedPosition = true;
+                heatmap.refresh();
+                heatmap.yAxis.enableTrim = false;
+                heatmap.xAxis.enableTrim = false;
+                heatmap.yAxis.opposedPosition = false;
+                heatmap.xAxis.labelIntersectAction = 'Trim';
+                heatmap.xAxis.valueType = 'Category';
+                heatmap.refresh();
+            });
            it('Checking opposed position for y-axis', () => {
                heatmap.yAxis.opposedPosition = true;
                heatmap.refresh();
@@ -373,7 +427,6 @@ describe('Heatmap Control', () => {
             text = document.getElementById('container_XAxis_Label0');
             expect((text.getAttribute('x') == '31.8' || text.getAttribute('x') == '32.2') && (text.getAttribute('y') == '78.1170482635498' || text.getAttribute('y') == '75.0620174407959')).toBe(true);
         });
-
         it('Check the Rotate45 label intersect action for x-axis', function () {
             heatmap.xAxis.labelIntersectAction = "Rotate45";
             heatmap.xAxis.isInversed = true;

@@ -52,6 +52,11 @@ require.config({
       location: 'node_modules/@syncfusion/ej2-dropdowns/dist',
       main: 'ej2-dropdowns.umd.min.js'
     },
+	{ 
+      name: '@syncfusion/ej2-navigations',
+      location: 'node_modules/@syncfusion/ej2-navigations/dist',
+      main: 'ej2-navigations.umd.min.js'
+    },
     { 
       name: '@syncfusion/ej2-inputs',
       location: 'node_modules/@syncfusion/ej2-inputs/dist',

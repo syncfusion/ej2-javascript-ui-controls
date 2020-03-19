@@ -24,6 +24,7 @@ export class Double {
     private isDrag: boolean;
     private interval: number;
     private paddingInterval: number;
+    private isColumn: number = 0;
 
     /**
      * Constructor for the dateTime module.
@@ -62,9 +63,19 @@ export class Double {
 
     public getActualRange(axis: Axis, size: Size): void {
         this.initializeDoubleRange(axis);
+        if ((!axis.startFromZero) && (this.isColumn > 0)) {
+            axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
+            axis.actualRange.max = axis.doubleRange.end + axis.actualRange.interval;
+            if ((axis.doubleRange.start - axis.actualRange.interval < 0 && axis.doubleRange.start > 0)) {
+                axis.actualRange.min = 0;
+            } else {
+                axis.actualRange.min = axis.doubleRange.start - axis.actualRange.interval;
+            }
+        } else {
         axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
         axis.actualRange.min = axis.doubleRange.start;
         axis.actualRange.max = axis.doubleRange.end;
+        }
     }
     /**
      * Range for the axis.
@@ -143,6 +154,7 @@ export class Double {
                 }
                 // For yRange
                 if (axis.orientation === 'Vertical') {
+                    this.isColumn += (series.type === 'Column' || series.type === 'Bar' || series.drawType === 'Column') ? 1 : 0;
                     if (this.chart.requireInvertedAxis) {
                         this.findMinMax(<number>series.xMin - this.paddingInterval, <number>series.xMax + this.paddingInterval);
                     } else {

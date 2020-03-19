@@ -10,7 +10,7 @@ export interface SelectionSettingsModel {
      * @default Syncfusion.EJ2.Grids.SelectionMode.Row
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionMode
+     * @blazorType Syncfusion.Blazor.Grids.SelectionMode
      */
     mode?: SelectionMode;
 
@@ -22,7 +22,7 @@ export interface SelectionSettingsModel {
      * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectionMode
+     * @blazorType Syncfusion.Blazor.Grids.CellSelectionMode
      */
     cellSelectionMode?: CellSelectionMode;
 
@@ -33,7 +33,7 @@ export interface SelectionSettingsModel {
      * @default Syncfusion.EJ2.Grids.SelectionType.Single
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionType
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionType
+     * @blazorType Syncfusion.Blazor.Grids.SelectionType
      */
     type?: SelectionType;
 
@@ -52,7 +52,7 @@ export interface SelectionSettingsModel {
      * @default Syncfusion.EJ2.Grids.CheckboxSelectionType.Default
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CheckboxSelectionType
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CheckboxSelectionType
+     * @blazorType Syncfusion.Blazor.Grids.CheckboxSelectionType
      */
     checkboxMode?: CheckboxSelectionType;
 

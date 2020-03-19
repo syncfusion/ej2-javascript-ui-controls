@@ -8,6 +8,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Sets the `width` of the Schedule component, accepting both string and number values.
+     * {% codeBlock src='schedule/width/index.md' %}{% endcodeBlock %}
      * The string value can be either pixel or percentage format.
      * When set to `auto`, the Schedule width gets auto-adjusted and display its content related to the viewable screen size.
      * @default 'auto'
@@ -16,6 +17,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Sets the `height` of the Schedule component, accepting both string and number values.
+     * {% codeBlock src='schedule/height/index.md' %}{% endcodeBlock %}
      * The string type includes either pixel or percentage values.
      * When `height` is set with specific pixel value, then the Schedule will be rendered to that specified space.
      * In case, if `auto` value is set, then the height of the Schedule gets auto-adjusted within the given container.
@@ -25,14 +27,16 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * When set to `false`, hides the header bar of the Schedule from UI. By default,
-     *  the header bar holds the date and view navigation options, to which the user can add their own custom items onto it.
+     * the header bar holds the date and view navigation options, to which the user can add their own custom items onto it.
+     * {% codeBlock src='schedule/showHeaderBar/index.md' %}{% endcodeBlock %}
      * @default true
      */
     showHeaderBar?: boolean;
 
     /**
      * When set to `false`, hides the current time indicator from the Schedule. Otherwise,
-     *  it visually depicts the live current system time appropriately on the user interface.
+     * it visually depicts the live current system time appropriately on the user interface.
+     * {% codeBlock src='schedule/showTimeIndicator/index.md' %}{% endcodeBlock %}
      * @default true
      */
     showTimeIndicator?: boolean;
@@ -50,18 +54,20 @@ export interface ScheduleModel extends ComponentModel{
      * * TimelineWeek
      * * TimelineWorkWeek
      * * TimelineMonth
+     * {% codeBlock src='schedule/currentView/index.md' %}{% endcodeBlock %}
      * @default 'Week'
      */
     currentView?: View;
 
     /**
      * This property holds the views collection and its configurations. It accepts either the array of view names or the array of view
-     *  objects that holds different configurations for each views. By default,
-     *  Schedule displays all the views namely `Day`, `Week`, `Work Week`, `Month` and `Agenda`.
+     * objects that holds different configurations for each views. By default,
+     * Schedule displays all the views namely `Day`, `Week`, `Work Week`, `Month` and `Agenda`.
      * Example for array of views:
      * {% codeBlock src="schedule/view-api/index.ts" %}{% endcodeBlock %}
      * Example for array of view objects:
      * {% codeBlock src="schedule/view-api/array.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/views/index.md' %}{% endcodeBlock %}
      * @default '['Day', 'Week', 'WorkWeek', 'Month', 'Agenda']'
      * @blazorType List<ScheduleView>
      */
@@ -70,6 +76,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * To mark the active (current) date on the Schedule, `selectedDate` property can be defined.
      *  Usually, it defaults to the current System date.
+     * {% codeBlock src='schedule/selectedDate/index.md' %}{% endcodeBlock %}
      * @default 'new Date()'
      * @aspDefaultValue DateTime.Now
      * @blazorDefaultValue DateTime.Now
@@ -96,7 +103,8 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * By default, Schedule follows the date-format as per the default culture assigned to it.
-     *  It is also possible to manually set specific date format by using the `dateFormat` property. 
+     * It is also possible to manually set specific date format by using the `dateFormat` property. 
+     * {% codeBlock src='schedule/dateFormat/index.md' %}{% endcodeBlock %}
      * The format of the date range label in the header bar depends on the `dateFormat` value or else based on the 
      * locale assigned to the Schedule. 
      * @default null
@@ -106,6 +114,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      *  It allows the Scheduler to display in other calendar modes. 
      * By default, Scheduler is displayed in `Gregorian` calendar mode. 
+     * {% codeBlock src='schedule/calendarMode/index.md' %}{% endcodeBlock %}
      * To change the mode, you can set either `Gregorian` or `Islamic` as a value to this `calendarMode` property. 
      * @default 'Gregorian'
      */
@@ -113,7 +122,8 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * When set to `false`, it hides the weekend days of a week from the Schedule. The days which are not defined in the working days
-     *  collection are usually treated as weekend days.
+     * collection are usually treated as weekend days.
+     * {% codeBlock src='schedule/showWeekend/index.md' %}{% endcodeBlock %}
      * Note: By default, this option is not applicable on `Work Week` view.
      * For example, if the working days are defined as [1, 2, 3, 4], then the remaining days of that week will be considered as
      *  the weekend days and will be hidden on all the views.
@@ -123,15 +133,17 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * This option allows the user to set the first day of a week on Schedule. It should be based on the locale set to it and each culture
-     *  defines its own first day of week values. If needed, the user can set it manually on his own by defining the value through
-     *  this property. It usually accepts the integer values, whereby 0 is always denoted as Sunday, 1 as Monday and so on.
+     * defines its own first day of week values. If needed, the user can set it manually on his own by defining the value through
+     * this property. It usually accepts the integer values, whereby 0 is always denoted as Sunday, 1 as Monday and so on.
+     * {% codeBlock src='schedule/firstDayOfWeek/index.md' %}{% endcodeBlock %}
      * @default 0
      */
     firstDayOfWeek?: number;
 
     /**
      * It is used to set the working days on Schedule. The only days that are defined in this collection will be rendered on the `workWeek`
-     *  view whereas on other views, it will display all the usual days and simply highlights the working days with different shade.
+     * view whereas on other views, it will display all the usual days and simply highlights the working days with different shade.
+     * {% codeBlock src='schedule/workDays/index.md' %}{% endcodeBlock %}
      * @default '[1, 2, 3, 4, 5]'
      * @aspType int[]
      * @blazorType int[]
@@ -140,28 +152,32 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * It is used to specify the starting hour, from which the Schedule starts to display. It accepts the time string in a short skeleton
-     *  format and also, hides the time beyond the specified start time.
+     * format and also, hides the time beyond the specified start time.
+     * {% codeBlock src='schedule/startHour/index.md' %}{% endcodeBlock %}
      * @default '00:00'
      */
     startHour?: string;
 
     /**
      * It is used to specify the end hour, at which the Schedule ends. It too accepts the time string in a short skeleton format.
+     * {% codeBlock src='schedule/endHour/index.md' %}{% endcodeBlock %}
      * @default '24:00'
      */
     endHour?: string;
 
     /**
      * When set to `true`, allows the resizing of appointments. It allows the rescheduling of appointments either by changing the
-     *  start or end time by dragging the event resize handlers.
+     * start or end time by dragging the event resize handlers.
+     * {% codeBlock src='schedule/allowResizing/index.md' %}{% endcodeBlock %}
      * @default true
      */
     allowResizing?: boolean;
 
     /**
      * The working hours should be highlighted on Schedule with different color shade and an additional option must be provided to
-     *  highlight it or not. This functionality is handled through `workHours` property and the start work hour should be 9 AM by default
-     *  and end work hour should point to 6 PM. The start and end working hours needs to be provided as Time value of short skeleton type.
+     * highlight it or not. This functionality is handled through `workHours` property and the start work hour should be 9 AM by default
+     * and end work hour should point to 6 PM. The start and end working hours needs to be provided as Time value of short skeleton type.
+     * {% codeBlock src='schedule/workHours/index.md' %}{% endcodeBlock %}
      * @default { highlight: true, start: '09:00', end: '18:00' }
      */
     workHours?: WorkHoursModel;
@@ -169,35 +185,38 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Allows to set different time duration on Schedule along with the customized grid count. It also has template option to
      *  customize the time slots with required time values in its own format.
-     * {% codeBlock src="schedule/timescale-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/timeScale/index.md' %}{% endcodeBlock %}
      * @default { enable: true, interval: 60, slotCount: 2, majorSlotTemplate: null, minorSlotTemplate: null }
      */
     timeScale?: TimeScaleModel;
 
     /**
      * When set to `true`, allows the keyboard interaction to take place on Schedule.
+     * {% codeBlock src='schedule/allowKeyboardInteraction/index.md' %}{% endcodeBlock %}
      * @default true
      */
     allowKeyboardInteraction?: boolean;
 
     /**
      * When set to `true`, allows the appointments to move over the time slots. When an appointment is dragged, both its start
-     *  and end time tends to change simultaneously allowing it to reschedule the appointment on some other time.
+     * and end time tends to change simultaneously allowing it to reschedule the appointment on some other time.
+     * {% codeBlock src='schedule/allowDragAndDrop/index.md' %}{% endcodeBlock %}
      * @default true
      */
     allowDragAndDrop?: boolean;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
-     *  the date header cells. The field that can be accessed via this template is `date`.
-     * {% codeBlock src="schedule/date-header-api/index.ts" %}{% endcodeBlock %}
+     * the date header cells. The field that can be accessed via this template is `date`.
+     * {% codeBlock src='schedule/dateHeaderTemplate/index.md' %}{% endcodeBlock %}
      * @default null
      */
     dateHeaderTemplate?: string;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
-     *  the month date cells. This template is only applicable for month view day cells.
+     * the month date cells. This template is only applicable for month view day cells.
+     * {% codeBlock src='schedule/cellHeaderTemplate/index.md' %}{% endcodeBlock %}
      * @default null
      */
     cellHeaderTemplate?: string;
@@ -209,14 +228,14 @@ export interface ScheduleModel extends ComponentModel{
      *  * date
      *  * groupIndex
      *  * type
-     * {% codeBlock src="schedule/cell-template-api/index.html" %}{% endcodeBlock %}
-     * {% codeBlock src="schedule/cell-template-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      * @default null
      */
     cellTemplate?: string;
 
     /**
      * When set to `true`, makes the Schedule to render in a read only mode. No CRUD actions will be allowed at this time.
+     * {% codeBlock src='schedule/readonly/index.md' %}{% endcodeBlock %}
      * @default false
      */
     readonly?: boolean;
@@ -224,6 +243,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * When set to `true`, displays a quick popup with cell or event details on single clicking over the cells or on events.
      *  By default, it is set to `true`.
+     * {% codeBlock src='schedule/showQuickInfo/index.md' %}{% endcodeBlock %}
      * @default true
      */
     showQuickInfo?: boolean;
@@ -245,6 +265,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * When set to `true`, displays the week number of the current view date range.
      *  By default, it is set to `false`.
+     * {% codeBlock src='schedule/showWeekNumber/index.md' %}{% endcodeBlock %}
      * @default false
      */
     showWeekNumber?: boolean;
@@ -252,6 +273,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * when set to `true`, allows the height of the work-cells to adjust automatically 
      * based on the number of appointments present in those time ranges. 
+     * {% codeBlock src='schedule/rowAutoHeight/index.md' %}{% endcodeBlock %}
      * @default false
      */
     rowAutoHeight?: boolean;
@@ -259,31 +281,31 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * The template option to render the customized editor window. The form elements defined within this template should be accompanied
      *  with `e-field` class, so as to fetch and process it from internally.
-     * {% codeBlock src="schedule/editor-api/index.html" %}{% endcodeBlock %}
-     * {% codeBlock src="schedule/editor-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/editorTemplate/index.md' %}{% endcodeBlock %}
      * @default null
      */
     editorTemplate?: string;
 
     /**
      * The template option to customize the quick window. The three sections of the quick popup whereas the header, content,
-     *  and footer can be easily customized with individual template option.
-     * {% codeBlock src="schedule/quick-info-template-api/index.html" %}{% endcodeBlock %}
-     * {% codeBlock src="schedule/quick-info-template-api/index.ts" %}{% endcodeBlock %}
+     * and footer can be easily customized with individual template option.
+     * {% codeBlock src='schedule/quickInfoTemplates/index.md' %}{% endcodeBlock %}
      * @default null
      */
     quickInfoTemplates?: QuickInfoTemplatesModel;
 
     /**
      * Sets the number of days to be displayed by default in Agenda View and in case of virtual scrolling,
-     *  the number of days will be fetched on each scroll-end based on this count.
+     * the number of days will be fetched on each scroll-end based on this count.
+     * {% codeBlock src='schedule/agendaDaysCount/index.md' %}{% endcodeBlock %}
      * @default 7
      */
     agendaDaysCount?: number;
 
     /**
      * The days which does not has even a single event to display will be hidden from the UI of Agenda View by default.
-     *  When this property is set to `false`, the empty dates will also be displayed on the Schedule.
+     * When this property is set to `false`, the empty dates will also be displayed on the Schedule.
+     * {% codeBlock src='schedule/hideEmptyAgendaDays/index.md' %}{% endcodeBlock %}
      * @default true
      */
     hideEmptyAgendaDays?: boolean;
@@ -291,23 +313,26 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * The recurrence validation will be done by default
      *  When this property is set to `false`, the recurrence validation will be skipped.
+     * {% codeBlock src='schedule/enableRecurrenceValidation/index.md' %}{% endcodeBlock %}
      * @default true
      */
     enableRecurrenceValidation?: boolean;
 
     /**
      * Schedule will be assigned with specific timezone, so as to display the events in it accordingly. By default,
-     *  Schedule dates are processed with System timezone, as no timezone will be assigned specifically to the Schedule at the initial time.
-     *  Whenever the Schedule is bound to remote data services, it is always recommended to set specific timezone to Schedule to make the
-     *  events on it to display on the same time irrespective of the system timezone. It usually accepts
-     *  the valid [IANA](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) timezone names.
+     * Schedule dates are processed with System timezone, as no timezone will be assigned specifically to the Schedule at the initial time.
+     * Whenever the Schedule is bound to remote data services, it is always recommended to set specific timezone to Schedule to make the
+     * events on it to display on the same time irrespective of the system timezone. It usually accepts
+     * the valid [IANA](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) timezone names.
+     * {% codeBlock src='schedule/timezone/index.md' %}{% endcodeBlock %}
      * @default null
      */
     timezone?: string;
 
     /**
      * Complete set of settings related to Schedule events to bind it to local or remote dataSource, map applicable database fields and
-     *  other validation to be carried out on the available fields.
+     * other validation to be carried out on the available fields.
+     * {% codeBlock src='schedule/eventSettings/index.md' %}{% endcodeBlock %}
      * @default null
      */
     eventSettings?: EventSettingsModel;
@@ -318,16 +343,15 @@ export interface ScheduleModel extends ComponentModel{
      * The following can be accessible via template.
      * * resource - All the resource fields.
      * * resourceData - object collection of current resource.
-     * {% codeBlock src="schedule/resource-header-api/index.html" %}{% endcodeBlock %}
-     * {% codeBlock src="schedule/resource-header-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      * @default null
      */
     resourceHeaderTemplate?: string;
 
     /**
      * Allows defining the group related settings of multiple resources. When this property is non-empty, it means
-     *  that the resources will be grouped on the schedule layout based on the provided resource names.
-     * {% codeBlock src="schedule/group-api/index.ts" %}{% endcodeBlock %}
+     * that the resources will be grouped on the schedule layout based on the provided resource names.
+     * {% codeBlock src='schedule/group/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     group?: GroupModel;
@@ -335,7 +359,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Allows defining the collection of resources to be displayed on the Schedule. The resource collection needs to be defined
      *  with unique resource names to identify it along with the respective dataSource and field mapping options.
-     * {% codeBlock src="schedule/resources-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/resources/index.md' %}{% endcodeBlock %}
      * @default []
      */
     resources?: ResourcesModel[];
@@ -343,22 +367,24 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Allows defining the collection of custom header rows to display the year, month, week, date and hour label as an individual row
      *  on the timeline view of the scheduler.
-     * {% codeBlock src="schedule/header-rows-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/headerRows/index.md' %}{% endcodeBlock %}
      * @default []
      */
     headerRows?: HeaderRowsModel[];
 
     /**
      * It is used to customize the Schedule which accepts custom CSS class names that defines specific user-defined styles and themes
-     *  to be applied on the Schedule element.
+     * to be applied on the Schedule element.
+     * {% codeBlock src='schedule/cssClass/index.md' %}{% endcodeBlock %}
      * @default null
      */
     cssClass?: string;
 
     /**
      * It enables the external drag and drop support for appointments on scheduler, to be able to move them out of the scheduler layout.
-     *  When the drag area is explicitly set with specific DOM element name,
-     *  the appointments can be dragged anywhere within the specified drag area location.
+     * When the drag area is explicitly set with specific DOM element name,
+     * the appointments can be dragged anywhere within the specified drag area location.
+     * {% codeBlock src='schedule/eventDragArea/index.md' %}{% endcodeBlock %}
      * @default null
      */
     eventDragArea?: string;

@@ -95,6 +95,7 @@ export interface ClickEventArgs extends BaseEventArgs {
     cancel?: boolean;
 }
 
+/** @deprecated */
 export interface BeforeCreateArgs extends BaseEventArgs {
     /** Enable or disable the popup collision. */
     enableCollision: boolean;
@@ -1232,6 +1233,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         } else if (this.isVertical) {
             let tbEleData: ClientRect = this.element.getBoundingClientRect();
             setStyle(popObj.element, { maxHeight: (tbEleData.top + this.element.offsetHeight) + 'px', bottom: 0, visibility: '' });
+        }
+        if (popObj) {
+            popObj.refreshPosition();
         }
     }
 

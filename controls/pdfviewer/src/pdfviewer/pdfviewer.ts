@@ -11,7 +11,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -2230,6 +2230,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property('Default')
     public zoomMode: ZoomMode;
+
+    /**
+     * Specifies the print mode in the PDF Viewer.
+     * @default Default
+     */
+    @Property('Default')
+    public printMode: PrintMode;
 
     /**
      * Enable or disables the get the document text collections.

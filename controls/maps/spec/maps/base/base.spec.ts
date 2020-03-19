@@ -363,19 +363,19 @@ describe('Maps Component Base Spec', () => {
         it('Maps checking checkShapeDataFields getShapeDataFields helper functions', (done: Function) => {
             let layer: LayerSettingsModel = maps.layers[0];
             let index: number = checkShapeDataFields(layer.dataSource as object[], layer.shapeData['features'][1]['properties'],
-                'name', 'name');
+                'name', 'name', layer);
             expect(index).toBe(0);
             index = checkShapeDataFields(layer.dataSource as object[], layer.shapeData['features'][37]['properties'],
-                'name', 'name');
+                'name', 'name', layer);
             expect(index).toBe(2);
             index = checkShapeDataFields(layer.dataSource as object[], layer.shapeData['features'][7]['properties'],
-                'name', 'name');
+                'name', 'name', layer);
             expect(index).toBe(1);
             index = checkShapeDataFields(layer.dataSource as object[], layer.shapeData['features'][69]['properties'],
-                'name', 'name');
+                'name', 'name', layer);
             expect(index).toBe(3);
             index = checkShapeDataFields(layer.dataSource as object[], layer.shapeData['features'][45]['properties'],
-                'name', 'name');
+                'name', 'name', layer);
             expect(index).toBe(null);
             let points: MapLocation[] = [
                 { x: 200, y: 10 }, { x: 250, y: 190 }, { x: 160, y: 210 }
@@ -785,6 +785,49 @@ describe('Maps Component Base Spec', () => {
         });
     });
 
+    describe('Maps testing spec with container size for OSM , Bing and Google Static Maps', () => {
+        let element: Element;
+        let maps: Maps;
+        let id: string = 'maps1-module';
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '0px';
+            document.body.appendChild(element);
+            maps = new Maps({
+                zoomSettings: {
+                    enable: true
+                },
+                layers: [
+                    {
+                        layerType: "OSM",
+                        dataSource: [
+                            { name: 'Angola' },
+                            { name: 'Australia' },
+                            { name: 'N. Cyprus' },
+                            { name: 'Haiti' },
+                        ],
+                        shapeDataPath: 'name',
+                        shapePropertyPath: 'name',
+                        markerSettings: [{
+                            visible: true,
+                        }],
+                    }
+                ],
+            }, '#' + id);
+        });
+        afterAll(() => {
+            maps.destroy();
+            removeElement(id);
+        });
+        it('Map container height and width ', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+            };
+            maps.width = '600px';
+            maps.height = '600px';
+            maps.refresh();
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

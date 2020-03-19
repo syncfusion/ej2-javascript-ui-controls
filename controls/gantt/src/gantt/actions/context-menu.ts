@@ -103,7 +103,7 @@ export class ContextMenu {
         }
         switch (this.item) {
             case 'TaskInformation':
-                this.parent.openEditDialog(Number(this.rowData.ganttProperties.taskId));
+                this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
                 break;
             case 'Above':
             case 'Below':
@@ -127,7 +127,7 @@ export class ContextMenu {
                 break;
             case 'Milestone':
             case 'ToMilestone':
-                this.parent.convertToMilestone(this.rowData.ganttProperties.taskId);
+                this.parent.convertToMilestone(this.rowData.ganttProperties.rowUniqueID);
                 break;
             case 'DeleteTask':
                 this.parent.editModule.deleteRecord(this.rowData);
@@ -160,6 +160,10 @@ export class ContextMenu {
                 break;
             case 'Dependency' + index:
                 this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
+                break;
+            case 'Auto':
+            case 'Manual':
+                this.parent.changeTaskMode(this.rowData);
                 break;
         }
         args.type = 'Content';
@@ -288,6 +292,21 @@ export class ContextMenu {
                         this.updateItemVisibility(item.text);
                     }
                     break;
+                case 'TaskMode':
+                    let subMenu: ContextMenuItemModel[] = [];
+                    if (this.parent.taskMode !== 'Custom') {
+                        this.updateItemVisibility(item.text);
+                    } else {
+                        if (this.rowData.ganttProperties.isAutoSchedule) {
+                            subMenu.push(
+                                this.createItemModel(cons.content, 'Manual', this.getLocale('manual')));
+                        } else {
+                            subMenu.push(
+                                this.createItemModel(cons.content, 'Auto', this.getLocale('auto')));
+                        }
+                        item.items = subMenu;
+                    }
+                    break;
             }
         }
     }
@@ -390,6 +409,12 @@ export class ContextMenu {
                 contentMenuItem.items = [];
                 contentMenuItem.items.push({});
                 break;
+            case 'TaskMode':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('changeScheduleMode'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
+                break;
         }
         if (contentMenuItem) {
             this.contentMenuItems.push(contentMenuItem);
@@ -407,7 +432,7 @@ export class ContextMenu {
         for (let predecessor of this.predecessors) {
             let ganttData: IGanttData = this.parent.getRecordByID(predecessor.from);
             let ganttProp: ITaskData = ganttData.ganttProperties;
-            let text: string = ganttProp.taskId + ' - ' + ganttProp.taskName;
+            let text: string = ganttProp.rowUniqueID + ' - ' + ganttProp.taskName;
             let id: string = 'Dependency' + increment++;
             itemModel = this.createItemModel(cons.content, id, text);
             items.push(itemModel);
@@ -438,7 +463,7 @@ export class ContextMenu {
         return ['AutoFitAll', 'AutoFit',
             'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
             'SortAscending', 'SortDescending', 'Add',
-            'DeleteDependency', 'Convert'
+            'DeleteDependency', 'Convert', 'TaskMode'
         ];
     }
     /**

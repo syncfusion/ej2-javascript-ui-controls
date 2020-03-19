@@ -89,7 +89,19 @@ export class Lists {
             }
         }
     }
+    private enterList(e: IHtmlKeyboardEvent): void {
+        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
+        startNode.textContent.charCodeAt(0) === 65279) {
+            startNode.textContent = '';
+        }
+    }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
+        if (e.event.which === 13) {
+            this.enterList(e);
+        }
         if (e.event.which === 32) {
             this.spaceList(e);
         }

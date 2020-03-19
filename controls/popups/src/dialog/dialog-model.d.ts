@@ -1,4 +1,4 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';import { updateBlazorTemplate, BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { createResize, removeResize, setMinHeight } from '../common/resize';
+import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';import { BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { createResize, removeResize, setMinHeight } from '../common/resize';
 import {ButtonType,DialogEffect,BeforeSanitizeHtmlArgs,BeforeOpenEventArgs,OpenEventArgs,BeforeCloseEventArgs,CloseEventArgs} from "./dialog";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -194,6 +194,8 @@ export interface DialogModel extends ComponentModel{
      * 
      * > More information on the draggable behavior can be found on this [documentation](../../dialog/getting-started/#draggable) section.
      * 
+     * {% codeBlock src='dialog/allowDragging/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     allowDragging?: boolean;
@@ -208,6 +210,9 @@ export interface DialogModel extends ComponentModel{
      * {% codeBlock src="dialog/buttons-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dialog/buttons-api/index.html" %}{% endcodeBlock %}
+     * 
+     * {% codeBlock src='dialog/buttons/index.md' %}{% endcodeBlock %}
+     * 
      * @default [{}]   
      */
     buttons?: ButtonPropsModel[];
@@ -228,6 +233,9 @@ export interface DialogModel extends ComponentModel{
      * {% codeBlock src="dialog/animation-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dialog/animation-api/index.html" %}{% endcodeBlock %}
+     * 
+     * {% codeBlock src='dialog/animationSettings/index.md' %}{% endcodeBlock %}
+     * 
      * @default { effect: 'Fade', duration: 400, delay:0 }
      */
     animationSettings?: AnimationSettingsModel;
@@ -237,6 +245,9 @@ export interface DialogModel extends ComponentModel{
      * The position can be represented with pre-configured positions or specific X and Y values.
      * * `X value`: left, center, right, or offset value.
      * * `Y value`: top, center, bottom, or offset value.
+     * 
+     * {% codeBlock src='dialog/position/index.md' %}{% endcodeBlock %}
+     * 
      * @default {X:'center', Y:'center'}
      */
     position?: PositionDataModel;

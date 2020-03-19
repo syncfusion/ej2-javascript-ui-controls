@@ -2142,8 +2142,8 @@ describe('Checkbox Filter module => ', () => {
             gridObj = checkBoxFilter = actionBegin = actionComplete = null;
         });
     });
-	
-	describe('EJ2-36047- Incorrect datetime filter predicates ', function () {
+
+    describe('EJ2-36047- Incorrect datetime filter predicates ', function () {
         let gridObj: Grid;
         let fData: Object[] = [
             { OrderID: 10248, OrderDate: new Date(2019, 8, 28, 18, 33, 36), Freight: 32.38 },

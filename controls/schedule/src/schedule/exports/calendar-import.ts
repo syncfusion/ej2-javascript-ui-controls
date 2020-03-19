@@ -1,5 +1,4 @@
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Schedule } from '../base/schedule';
 import { EventFieldsMapping } from '../base/interface';
 import { getRecurrenceStringFromDate } from '../../recurrence-editor/date-generator';
@@ -111,8 +110,8 @@ export class ICalendarImport {
                 parentObj = eventObj;
                 id = eventObj[fields.id] as string;
             }
-            let data: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(new DataManager({ json: app }).executeLocal
-                (new Query().where('UID', 'equal', (eventObj[uId] as number))));
+            let data: { [key: string]: Object }[] = app.filter((data: { [key: string]: Object }) =>
+                data.UID === eventObj[uId]) as { [key: string]: Object }[];
             if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
                 for (let i: number = 0; i < data.length; i++) {
                     if (data[i].hasOwnProperty(fields.recurrenceID)) {

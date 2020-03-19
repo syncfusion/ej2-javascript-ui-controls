@@ -802,6 +802,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         this.viewer = new WebLayoutViewer(this);
                     }
                     this.editor.layoutWholeDocument();
+                    this.fireViewChange();
                     break;
                 case 'locale':
                     this.localizeDialogs();

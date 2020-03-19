@@ -1,7 +1,9 @@
-import { CellModel, CellStyleModel, BeforeSortEventArgs } from './../../workbook/index';
-import { RefreshType } from './enum';
+import { CellModel, BeforeSortEventArgs, SheetModel, RowModel, ColumnModel, ModelType, CellInfoEventArgs } from './../../workbook/index';
+import { ValidationType, ValidationOperator } from './../../workbook/index';
+import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { BaseEventArgs } from '@syncfusion/ej2-base';
+import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+
 
 /**
  * Interface for renderer module
@@ -16,24 +18,32 @@ export interface IRenderer {
     getContentTable(): HTMLTableElement;
     getColHeaderTable(): HTMLTableElement;
     getRowHeaderTable(): HTMLTableElement;
-    renderTable(cells: Map<string, CellModel>, rowIdx: number, colIdx: number, lastIdx: number, top?: number, left?: number): void;
-    refreshRowContent(cells: Map<string, CellModel>, startIndex: number, lastIdx: number): void;
-    refreshColumnContent(cells: Map<string, CellModel>, rowIndex: number, colIndex: number, lastIdx: number): void;
-    updateRowContent(cells: Map<string, CellModel>, startIndex: number, lastIdx: number, direction: string): void;
-    updateColContent(cells: Map<string, CellModel>, rowIdx: number, colIdx: number, lastIdx: number, direction: string): void;
+    renderTable(args: SheetRenderArgs): void;
+    refreshRowContent(args: SheetRenderArgs): void;
+    refreshColumnContent(args: SheetRenderArgs): void;
+    updateRowContent(args: SheetRenderArgs): void;
+    updateColContent(args: SheetRenderArgs): void;
+    updateCol(sheet: SheetModel, idx: number, appendTo?: Node): Element;
     showHideHeaders(): void;
 }
 
+/** @hidden */
+export interface SheetRenderArgs {
+    cells: Map<string, CellModel>;
+    indexes: number[];
+    direction?: string;
+    skipUpdateOnFirst?: boolean;
+    top?: number;
+    left?: number;
+    initLoad?: boolean;
+}
+
 /**
- * CellRenderEventArgs
+ * CellRender EventArgs
  */
-export interface CellRenderEventArgs {
-    /** Defines the cell. */
-    cell: CellModel;
+export interface CellRenderEventArgs extends CellInfoEventArgs {
     /** Defines the cell element. */
     element: HTMLElement;
-    /** Defines the cell address. */
-    address: string;
 }
 
 export interface StyleType {
@@ -50,10 +60,14 @@ export interface IViewport {
     topIndex: number;
     bottomIndex: number;
     leftIndex: number;
+    rightIndex: number;
     height: number;
     width: number;
 }
-
+export interface ReplaceAllEventArgs  {
+    replace: string;
+    replaceFor: string;
+}
 /**
  * @hidden
  */
@@ -77,7 +91,7 @@ export interface IScrollArgs {
  */
 export interface IRowRenderer {
     render(index?: number, isRowHeader?: boolean, skipHidden?: boolean): Element;
-    refresh(index: number, hRow?: Element): Element;
+    refresh(index: number, pRow: Element, hRow?: Element, header?: boolean): Element;
 }
 
 /**
@@ -100,6 +114,7 @@ export interface RefreshArgs {
     top?: number;
     left?: number;
     refresh: RefreshType;
+    skipUpdateOnFirst?: boolean;
 }
 
 /**
@@ -123,9 +138,9 @@ export interface BeforeOpenEventArgs {
 }
 
 /**
- * MenuSelectArgs
+ * MenuSelectEventArgs
  */
-export interface MenuSelectArgs extends MenuEventArgs {
+export interface MenuSelectEventArgs extends MenuEventArgs {
     /** Defines the cancel option. */
     cancel: boolean;
 }
@@ -160,10 +175,6 @@ export interface SelectEventArgs extends BaseEventArgs {
 }
 
 /** @hidden */
-export interface CellStyleExtendedModel extends CellStyleModel {
-    properties: CellStyleModel;
-}
-/** @hidden */
 export interface CellRenderArgs {
     colIdx: number;
     rowIdx?: number;
@@ -172,7 +183,14 @@ export interface CellRenderArgs {
     lastCell?: boolean;
     row?: HTMLElement;
     hRow?: HTMLElement;
+    pRow?: HTMLElement;
+    pHRow?: HTMLElement;
     isHeightCheckNeeded?: boolean;
+    checkNextBorder?: string;
+    first?: string;
+    isRefresh?: boolean;
+    td?: HTMLElement;
+    manualUpdate?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -213,6 +231,8 @@ export interface CellSaveEventArgs {
     address: string;
     /** Defines the formula. */
     formula?: string;
+    /** Defines the formula. */
+    originalEvent?: MouseEvent & TouchEvent | KeyboardEventArgs;
 }
 
 /** @hidden */
@@ -224,23 +244,27 @@ export interface CollaborativeEditArgs {
 /** @hidden */
 export interface HideShowEventArgs {
     hide: boolean;
-    startRow: number;
-    endRow: number;
+    startIndex: number;
+    endIndex: number;
     autoFit?: boolean;
     hdrRow?: HTMLElement;
     row?: HTMLElement;
     insertIdx?: number;
     skipAppend?: boolean;
+    isCol?: boolean;
+    actionUpdate?: boolean;
 }
 
 /** @hidden */
-export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArgs, BeforePasteEventArgs {
+export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArgs, BeforePasteEventArgs, WrapEventArgs,
+    InsertDeleteEventArgs {
     requestType: string;
     beforeActionData: BeforeActionData;
     sheetIndex?: number;
     oldWidth?: string;
     oldHeight?: string;
     isCol?: boolean;
+    hide?: boolean;
     index?: number;
     width?: string;
     height?: string;
@@ -256,6 +280,7 @@ export interface PreviousCellDetails {
     format: string;
     value: string;
     formula: string;
+    wrap: boolean;
 }
 
 export interface BeforePasteEventArgs {
@@ -266,4 +291,57 @@ export interface BeforePasteEventArgs {
     requestType: string;
     type: string;
     BeforeActionData?: BeforeActionData;
+}
+
+export interface BeforeWrapEventArgs {
+    address: string;
+    wrap: boolean;
+    cancel: boolean;
+    //action: string;
+}
+
+export interface WrapEventArgs {
+    address: string;
+    wrap: boolean;
+    action: string;
+}
+export interface BeforeReplaceEventArgs  {
+    address: string;
+    compareVal: string;
+    cancel: boolean;
+}
+export interface ReplaceEventArgs  {
+    address: string;
+    compareVal: string;
+    action?: string;
+}
+/**
+ * Insert event options.
+ * @hidden
+ */
+export interface InsertDeleteEventArgs {
+    model?: RowModel[] | ColumnModel[] | CellModel[];
+    index?: number;
+    modelType?: ModelType;
+    isAction?: boolean;
+    startIndex?: number;
+    endIndex?: number;
+    deletedModel?: RowModel[] | ColumnModel[] | CellModel[];
+    deletedCellsModel?: RowModel[];
+    activeSheetTab?: number;
+    sheetCount?: number;
+}
+/**
+ * CellValidationEventArgs
+ * @hidden
+ */
+export interface CellValidationEventArgs {
+    range?: string;
+    type?: ValidationType;
+    operator?: ValidationOperator;
+    value1?: string;
+    value2?: string;
+    ignoreBlank?: boolean;
+    inCellDropDown?: boolean;
+    cancel: boolean;
 }

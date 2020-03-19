@@ -781,7 +781,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
                         trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
                     }
-                    if (isOpen && this.hamburgerMode && ulIndex) {
+                    let submenus: NodeListOf<Element> = liElem && liElem.querySelectorAll('.e-menu-item');
+                    if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
                     } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
                         this.closeMenu(this.navIdx[this.navIdx.length - 1], e);

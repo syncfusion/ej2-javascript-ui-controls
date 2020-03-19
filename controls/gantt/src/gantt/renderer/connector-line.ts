@@ -81,7 +81,7 @@ export class ConnectorLine {
             connectorObj.childIndex = childIndex;
             connectorObj.rowHeight = this.parent.rowHeight;
             connectorObj.type = predecessor.type;
-            connectorObj.connectorLineId = 'parent' + parentGanttRecord.taskId + 'child' + childGanttRecord.taskId;
+            connectorObj.connectorLineId = 'parent' + parentGanttRecord.rowUniqueID + 'child' + childGanttRecord.rowUniqueID;
             connectorObj.milestoneParent = parentGanttRecord.isMilestone ? true : false;
             connectorObj.milestoneChild = childGanttRecord.isMilestone ? true : false;
             if (isNullOrUndefined(isScheduledTask(parentGanttRecord)) || isNullOrUndefined(isScheduledTask(childGanttRecord))) {

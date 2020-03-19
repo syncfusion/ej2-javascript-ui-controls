@@ -1,7 +1,7 @@
 import { merge, isNullOrUndefined, extend, Property } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
-import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions } from '../base/interface';
+import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions, DataResult } from '../base/interface';
 import { TextAlign, ClipMode, Action, SortDirection, EditType, ColumnType, CommandButtonType } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
@@ -223,7 +223,7 @@ export class Column {
      * @default null 
      */
 
-    public dataSource: Object[] | DataManager;
+    public dataSource: Object[] | DataManager | DataResult;
 
     /**    
      * Defines the method which is used to achieve custom formatting from an external function. 
@@ -246,7 +246,8 @@ export class Column {
     /**
      * Defines the method used to apply custom header cell values from external function and display this on each header cell rendered.
      *      
-     * @default null    
+     * @default null  
+     * @deprecated  
      */
 
     public headerValueAccessor: HeaderValueAccessor | string;
@@ -834,7 +835,7 @@ export interface ColumnModel {
      * Defines the column data source  which will act as foreign data source.
      * @default null 
      */
-    dataSource?: Object[] | DataManager;
+    dataSource?: Object[] | DataManager | DataResult;
 
     /**    
      * Defines the method which is used to achieve custom formatting from an external function. 
@@ -904,7 +905,8 @@ export interface ColumnModel {
      * }); 
      * ```
      *  
-     * @default null    
+     * @default null
+     * @deprecated  
      */
     headerValueAccessor?: HeaderValueAccessor | string;
 

@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType, isBlazor } from '@syncfusion/ej2-base';import { EventHandler, remove, INotifyPropertyChanged, ModuleDeclaration, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Internationalization, resetBlazorTemplate } from '@syncfusion/ej2-base';import { SvgRenderer, Rect, Size, measureText, TextOption } from '@syncfusion/ej2-svg-base';import { Query } from '@syncfusion/ej2-data';import { OrientationType, TickPosition, LabelsPlacement, TextPosition, FeatureType, TargetType } from './utils/enum';import { AnimationModel, BorderModel } from '../common/model/base-model';import { Margin, Animation, Border } from '../common/model/base';import { MarginModel } from '../common/model/base-model';import { Data } from '../common/model/data';import { BulletChartAxis } from './renderer/bullet-axis';import { BulletChartTheme } from './utils/theme';import { ScaleGroup } from './renderer/scale-render';import { redrawElement, textElement, getElement, appendChildElement } from '../common/utils/helper';import { BulletTooltip } from './user-interaction/tooltip';import { RectOption, stringToNumber, ChartTheme, IPrintEventArgs } from '../chart/index';import {  ExportType, } from '../chart/index';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { AccumulationChart } from '../accumulation-chart/index';import { Chart } from '../chart/index';import { RangeNavigator } from '../range-navigator/index';import { getTitle, logBase } from '../common/utils/helper';import { BulletTooltipSettings, Range, BulletLabelStyle, BulletDataLabel } from './model/bullet-base';import { MajorTickLinesSettings, MinorTickLinesSettings } from './model/bullet-base';import { BulletTooltipSettingsModel, RangeModel } from './model/bullet-base-model';import { MajorTickLinesSettingsModel, MinorTickLinesSettingsModel } from './model/bullet-base-model';import { BulletLabelStyleModel, BulletDataLabelModel } from './model/bullet-base-model';import { resized } from '../common/model/constants';import { ExportUtils } from '../common/utils/export';import { IBulletResizeEventArgs, IBulletStyle, IBulletchartTooltipEventArgs, IBulletLoadedEventArgs } from './model/bullet-interface';import { IFeatureBarBounds, IBarRenderEventArgs } from './model/bullet-interface';import { getBulletThemeColor } from './utils/theme';
+import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType } from '@syncfusion/ej2-base';import { EventHandler, remove, INotifyPropertyChanged, ModuleDeclaration, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer, Rect, Size, measureText, TextOption } from '@syncfusion/ej2-svg-base';import { Query } from '@syncfusion/ej2-data';import { OrientationType, TickPosition, LabelsPlacement, TextPosition, FeatureType, TargetType } from './utils/enum';import { AnimationModel, BorderModel } from '../common/model/base-model';import { Margin, Animation, Border } from '../common/model/base';import { MarginModel } from '../common/model/base-model';import { Data } from '../common/model/data';import { BulletChartAxis } from './renderer/bullet-axis';import { BulletChartTheme } from './utils/theme';import { ScaleGroup } from './renderer/scale-render';import { redrawElement, textElement, getElement, appendChildElement } from '../common/utils/helper';import { BulletTooltip } from './user-interaction/tooltip';import { RectOption, stringToNumber, ChartTheme, IPrintEventArgs } from '../chart/index';import { ExportType } from '../chart/index';import { AccumulationChart } from '../accumulation-chart/index';import { Chart } from '../chart/index';import { RangeNavigator } from '../range-navigator/index';import { getTitle, logBase } from '../common/utils/helper';import { BulletTooltipSettings, Range, BulletLabelStyle, BulletDataLabel } from './model/bullet-base';import { MajorTickLinesSettings, MinorTickLinesSettings } from './model/bullet-base';import { BulletChartLegendSettings } from '../bullet-chart/model/bullet-base';import { BulletChartLegendSettingsModel } from '../bullet-chart/model/bullet-base-model';import {  IBulletMouseEventArgs, IBulletLegendRenderEventArgs } from '../bullet-chart/model/bullet-interface';import { BulletChartLegend } from '../bullet-chart/legend/legend';import { BulletTooltipSettingsModel, RangeModel } from './model/bullet-base-model';import { MajorTickLinesSettingsModel, MinorTickLinesSettingsModel } from './model/bullet-base-model';import { BulletLabelStyleModel, BulletDataLabelModel } from './model/bullet-base-model';import { resized, bulletChartMouseClick } from '../common/model/constants';import { IBulletResizeEventArgs, IBulletStyle, IBulletchartTooltipEventArgs, IBulletLoadedEventArgs } from './model/bullet-interface';import { IFeatureBarBounds } from './model/bullet-interface';import { getBulletThemeColor } from './utils/theme';import { ExportUtils } from '../common/utils/export';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -186,6 +186,11 @@ export interface BulletChartModel extends ComponentModel{
     dataLabel?: BulletDataLabelModel;
 
     /**
+     * Options for customizing the legend of the bullet chart.
+     */
+    legendSettings?: BulletChartLegendSettingsModel;
+
+    /**
      * default value for enableGroupSeparator
      * @default false
      */
@@ -291,15 +296,8 @@ export interface BulletChartModel extends ComponentModel{
     tooltipRender?: EmitType<IBulletchartTooltipEventArgs>;
 
     /**
-     * Triggers before the target and value bar is rendered.
-     * @event
-     */
-    barRender?: EmitType<IBarRenderEventArgs>;
-
-    /**
      * Triggers before bullet chart load.
      * @event
-     * @deprecated
      */
     load?: EmitType<IBulletLoadedEventArgs>;
 
@@ -309,6 +307,21 @@ export interface BulletChartModel extends ComponentModel{
      * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<IBulletLoadedEventArgs>;
+
+    /**
+     * Triggers on clicking the chart.
+     * @event
+     * @blazorProperty 'OnBulletChartMouseClick'
+     */
+
+    bulletChartMouseClick?: EmitType<IBulletMouseEventArgs>;
+
+    /**
+     * Triggers before the legend is rendered.
+     * @event
+     * @deprecated
+     */
+    legendRender?: EmitType<IBulletLegendRenderEventArgs>;
 
     /**
      * Triggers before the prints gets started.

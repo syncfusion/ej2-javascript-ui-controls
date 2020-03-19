@@ -1867,6 +1867,9 @@ describe('Connector Update in Layout Issue', () => {
         let id = diagram.connectors[0].id;
         let x = document.getElementById(id).getAttribute('x');
         let y = document.getElementById(id).getAttribute('y');
+        console.log("update in DOM");
+            console.log(x);
+            console.log(y);
         expect((x == '433.5' || x === '432.67') && y == '74.9').toBe(true);
         done();
     });

@@ -92,6 +92,18 @@
     .e-toolbar-formatting::before {
       content: '\e84e';
     }
+
+    .e-pivot-button .e-edit::before {
+      content: '\e78f';
+    }
+
+    .e-sort-ascend-icon::before {
+      content: '\e812';
+    }
+
+    .e-sort-descend-icon::before {
+      content: '\e811';
+    }
   }
 
   .e-pivotview-pdf-export::before {

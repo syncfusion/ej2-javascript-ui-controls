@@ -21,7 +21,8 @@ export let cssClass: ClassList = {
     disabled: 'e-disabled',
     image: 'e-list-img',
     iconWrapper: 'e-icon-wrapper',
-    anchorWrap: 'e-anchor-wrap'
+    anchorWrap: 'e-anchor-wrap',
+    navigable: 'e-navigable'
 };
 
 export interface ClassList {
@@ -43,6 +44,7 @@ export interface ClassList {
     image: string;
     iconWrapper: string;
     anchorWrap: string;
+    navigable: string;
 }
 
 
@@ -207,6 +209,7 @@ export namespace ListBase {
         }
         let child: HTMLElement[] = [];
         let li: HTMLElement;
+        let anchorElement: HTMLElement;
         if (dataSource && dataSource.length && !isNullOrUndefined(typeofData(dataSource).item) &&
             !typeofData(dataSource).item.hasOwnProperty(fields.id)) {
             id = generateId(); // generate id for drop-down-list option.
@@ -254,6 +257,7 @@ export namespace ListBase {
                         (curItem as { isHeader: Object } & { [key: string]: Object }).isHeader) ? true : false,
                     id,
                     i, options);
+                anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 if (curOpt.itemNavigable && checkboxElement.length) {
                     prepend(checkboxElement, li.firstElementChild);
                 }
@@ -261,6 +265,7 @@ export namespace ListBase {
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
+                anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 if (fieldData.hasOwnProperty(fields.tooltip)) {
                     li.setAttribute('title', <string>fieldData[fields.tooltip]);
                 }
@@ -277,13 +282,22 @@ export namespace ListBase {
                     && !curOpt.template) {
                     let attr: { [key: string]: string } = { src: <string>fieldData[fields.imageUrl] };
                     merge(attr, fieldData[fields.imageAttributes]);
-                    prepend([createElement('img', { className: cssClass.image, attrs: attr })], li.firstElementChild);
+                    let imageElemnt: HTMLElement = createElement('img', { className: cssClass.image, attrs: attr });
+                    if (anchorElement) {
+                        anchorElement.insertAdjacentElement('afterbegin', imageElemnt);
+                    } else {
+                        prepend([imageElemnt], li.firstElementChild);
+                    }
                 }
                 if (curOpt.showIcon && fieldData.hasOwnProperty(fields.iconCss) &&
                     !isNullOrUndefined(fieldData[fields.iconCss]) && !curOpt.template) {
-                    prepend(
-                        [createElement('div', { className: cssClass.icon + ' ' + <string>fieldData[fields.iconCss] })],
-                        li.firstElementChild);
+                    let iconElement: HTMLElement;
+                    iconElement = createElement('div', { className: cssClass.icon + ' ' + <string>fieldData[fields.iconCss] });
+                    if (anchorElement) {
+                        anchorElement.insertAdjacentElement('afterbegin', iconElement);
+                    } else {
+                        prepend([iconElement], li.firstElementChild);
+                    }
                 }
                 if (innerEle.length) {
                     prepend(innerEle, li.firstElementChild);
@@ -292,6 +306,9 @@ export namespace ListBase {
                     prepend(checkboxElement, li.firstElementChild);
                 }
                 processSubChild(createElement, fieldData, fields, dataSource, curOpt, li, ariaAttributes.level);
+            }
+            if (anchorElement) {
+                addClass([li], [cssClass.navigable]);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 let curData: { [key: string]: object | string } = {
@@ -558,7 +575,7 @@ export namespace ListBase {
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
-                li.setAttribute('data-value', value);
+                li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
@@ -675,9 +692,7 @@ export namespace ListBase {
         if (grpLI) {
             li.innerText = text;
         } else {
-            if (!isNullOrUndefined(value)) {
-                li.setAttribute('data-value', value);
-            }
+            li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
 
             li.setAttribute('role', 'option');
 
@@ -718,7 +733,8 @@ export namespace ListBase {
             disabled: 'e-disabled',
             image: `e-${moduleName}-img`,
             iconWrapper: 'e-icon-wrapper',
-            anchorWrap: 'e-anchor-wrap'
+            anchorWrap: 'e-anchor-wrap',
+            navigable: 'e-navigable',
         };
     }
 

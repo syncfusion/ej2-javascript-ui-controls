@@ -1,6 +1,6 @@
 import { CellStyleModel, HyperlinkModel } from './class-model';
-import { SaveType, SortOrder, FormatType } from './index';
-import { Sheet, RangeSettingModel, CellModel } from '../base/index';
+import { SaveType, SortOrder, FormatType, BorderType, ModelType } from './index';
+import { Sheet, RangeSettingModel, CellModel, SheetModel, WorkbookModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
 export interface SaveOptions {
@@ -21,6 +21,44 @@ export interface SaveCompleteEventArgs extends SaveOptions {
     status: string;
     message: string;
 }
+/**
+ * Specifies Before second Sheet create and click arguments.
+ */
+export interface FindOptions {
+    value: string;
+    isCSen: boolean;
+    isEMatch: boolean;
+    mode: string;
+    searchBy: string;
+    findOpt: string;
+    sheetIndex: number;
+    replaceValue?: string;
+    replaceBy?: string;
+    findCount?: string;
+}
+/**
+ * Specifies find next arguments.
+ */
+export interface FindNext {
+    rowIndex: number; colIndex: number; endRow: number; endColumn: number; startRow: number; usedRange?: UsedRangeModel; mode: string;
+    loopCount: number; count: number; args?: FindOptions; val: string; stringValue: string; sheetIndex: number; startColumn: number;
+    sheets: SheetModel[];
+}
+/**
+ * Specifies find previous arguments.
+ */
+export interface FindPrevious {
+    rowIndex: number; colIndex: number; endRow: number; endColumn: number; startRow: number;
+    loopCount: number; count: number; args: FindOptions; val: string; stringValue: string; sheetIndex: number; startColumn: number;
+    sheets: SheetModel[];
+}
+/**
+ * @hidden
+ */
+export interface ToolbarFind {
+    findOption?: string;
+    countArgs?: { countOpt: string, findCount: string };
+}
 
 /** @hidden */
 export interface CellFormatArgs {
@@ -28,12 +66,16 @@ export interface CellFormatArgs {
     rowIdx: number;
     colIdx: number;
     cell?: HTMLElement;
+    pCell?: HTMLElement;
     row?: HTMLElement;
     hRow?: HTMLElement;
+    pRow?: HTMLElement;
+    pHRow?: HTMLElement;
     lastCell?: boolean;
     isHeightCheckNeeded?: boolean;
     manualUpdate?: boolean;
     onActionUpdate?: boolean;
+    first?: string;
 }
 
 /** @hidden */
@@ -43,6 +85,7 @@ export interface SetCellFormatArgs {
     refreshRibbon?: boolean;
     onActionUpdate?: boolean;
     cancel?: boolean;
+    borderType?: BorderType;
 }
 
 /** @hidden */
@@ -50,8 +93,17 @@ export interface ExtendedRange extends RangeSettingModel {
     info?: RangeInfo;
 }
 
+/** @hidden */
+export interface CellStyleExtendedModel extends CellStyleModel {
+    properties?: CellStyleModel;
+    bottomPriority?: boolean;
+}
+
 interface RangeInfo {
     loadedRange?: number[][];
+    insertRowRange?: number[][];
+    insertColumnRange?: number[][];
+    deleteColumnRange?: number[][];
     count?: number;
     fldLen?: number;
 }
@@ -75,6 +127,7 @@ export interface AutoDetectInfo {
  */
 export interface ExtendedSheet extends Sheet {
     isLocalData?: boolean;
+    lastReqIdx?: number[];
 }
 
 /**
@@ -182,4 +235,34 @@ export interface FilterOptions {
  */
 export interface BeforeFilterEventArgs extends FilterEventArgs {
     cancel?: boolean;
+}
+
+/**
+ * Specifies the border options.
+ */
+export interface BorderOptions {
+    border: string;
+    type: BorderType;
+}
+
+/** @hidden */
+export interface InsertDeleteModelArgs {
+    model: SheetModel | WorkbookModel;
+    start?: number | RowModel[] | ColumnModel[] | SheetModel[];
+    end?: number;
+    isAction?: boolean;
+    modelType: ModelType;
+    columnCellsModel?: RowModel[];
+    activeSheetTab?: number;
+    checkCount?: number;
+}
+
+/**
+ * QueryCellInfo EventArgs
+ */
+export interface CellInfoEventArgs {
+    /** Defines the cell model. */
+    cell: CellModel;
+    /** Defines the cell address. */
+    address: string;
 }

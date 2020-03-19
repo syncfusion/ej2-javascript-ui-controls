@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 17.4.55 (2020-03-10)
-
-### ColorPicker
-
-#### Bug Fixes
-
-- Issue with bootstrap theme is fixed.
-
-## 17.4.51 (2020-02-25)
+## 18.1.36-beta (2020-03-19)
 
 ### Slider
 

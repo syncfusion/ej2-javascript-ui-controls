@@ -2,7 +2,7 @@
 
 # ej2-lineargauge
 
-The linear gauge control is used to visualize numerical values of an axis in linear manner. All the linear gauge elements are rendered using Scalable Vector Graphics (SVG).
+The linear gauge control is used to visualize the numerical values of an axis in linear manner. All the linear gauge elements are rendered using Scalable Vector Graphics (SVG).
 
 ![Linear Gauge](https://ej2.syncfusion.com/products/images/lineargauge/readme.gif)
 

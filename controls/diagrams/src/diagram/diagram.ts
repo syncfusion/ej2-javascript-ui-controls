@@ -92,7 +92,7 @@ import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands
 import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';
 import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs } from './utility/constraints-util';
 import { canPortInConnect, canPortOutConnect } from './utility/constraints-util';
-import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit } from './utility/constraints-util';
+import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit, canMultiSelect } from './utility/constraints-util';
 import { canDragSourceEnd, canDragTargetEnd, canDragSegmentThumb, enableReadOnly, canMove } from './utility/constraints-util';
 import { findAnnotation, arrangeChild, getInOutConnectPorts, removeChildNodes, canMeasureDecoratorPath } from './utility/diagram-util';
 import { randomId, cloneObject, extendObject, getFunction, getBounds } from './utility/base-util';
@@ -969,7 +969,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a symbol is dragged into diagram from symbol palette
      * @event
      * @blazorProperty 'DragEnter'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDragEnterEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDragEnterEventArgs
      */
     @Event()
     public dragEnter: EmitType<IDragEnterEventArgs>;
@@ -978,6 +978,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a symbol is dragged outside of the diagram.
      * @event
      * @blazorProperty 'DragLeave'
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDragLeaveEventArgs
      */
     @Event()
     public dragLeave: EmitType<IDragLeaveEventArgs>;
@@ -995,7 +996,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a node, connector or diagram is clicked
      * @event
      * @blazorProperty 'Clicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorClickEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorClickEventArgs
      */
     @Event()
     public click: EmitType<IClickEventArgs>;
@@ -1022,7 +1023,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a node, connector or diagram model is clicked twice
      * @event
      * @blazorProperty 'OnDoubleClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDoubleClickEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDoubleClickEventArgs
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
@@ -1093,7 +1094,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers once the node or connector property changed.
      * @event
      * @blazorProperty 'PropertyChanged'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorPropertyChangeEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorPropertyChangeEventArgs
      */
     @Event()
     public propertyChange: EmitType<IPropertyChangeEventArgs>;
@@ -1102,7 +1103,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers while dragging the elements in diagram
      * @event
      * @blazorProperty 'OnPositionChange'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDraggingEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDraggingEventArgs
      */
     @Event()
     public positionChange: EmitType<IDraggingEventArgs>;
@@ -1222,7 +1223,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggered when mouse enters a node/connector.
      * @event
      * @blazorProperty 'MouseEnter'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
      */
     @Event()
     public mouseEnter: EmitType<IMouseEventArgs>;
@@ -1231,7 +1232,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggered when mouse leaves node/connector.
      * @event
      * @blazorProperty 'MouseLeave'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
      */
     @Event()
     public mouseLeave: EmitType<IMouseEventArgs>;
@@ -1241,7 +1242,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @event
      * @blazorProperty 'MouseOver'
      * @deprecated
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
      */
     @Event()
     public mouseOver: EmitType<IMouseEventArgs>;
@@ -1250,7 +1251,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers before opening the context menu
      * @event
      * @blazorProperty 'OnContextMenuOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramBeforeMenuOpenEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.DiagramBeforeMenuOpenEventArgs
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1259,7 +1260,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers before rendering the context menu item
      * @event
      * @blazorProperty 'OnContextMenuItemRender'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.DiagramMenuEventArgs
      * @deprecated
      */
     @Event()
@@ -1269,7 +1270,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a context menu item is clicked
      * @event
      * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
+     * @blazorType Syncfusion.Blazor.Diagrams.DiagramMenuEventArgs
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1406,6 +1407,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public previousSelectedObject: (NodeModel | ConnectorModel)[];
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
+    private previousNodeCollection: NodeModel[] = [];
+    private previousConnectorCollection: ConnectorModel[] = [];
     private crudDeleteNodes: Object[] = [];
     private diagramid: number = 88123;
     /** @private */
@@ -1417,6 +1420,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         super(options, <HTMLElement | string>element);
         let child: NodeModel | ConnectorModel;
         let node: NodeModel | ConnectorModel;
+        let blazor: string = 'Blazor';
+        let canCloneObject: boolean = isBlazor() && window && window[blazor] && !this.dataSourceSettings.dataSource;
         this.ignoreCollectionWatch = true;
         for (let i: number = 0; options && options.nodes && i < options.nodes.length; i++) {
             child = options.nodes[i];
@@ -1436,6 +1441,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 setSwimLaneDefaults(child, node);
             }
             if (this.nodeDefaults) {
+                if (canCloneObject) {
+                    this.previousNodeCollection.push(cloneObject(node, undefined, undefined, true));
+                }
                 updateDefaultValues(node, child, this.nodeDefaults);
             }
             this.updateAnnotationText(node.annotations);
@@ -1444,6 +1452,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let i: number = 0; options && options.connectors && i < options.connectors.length; i++) {
                 child = options.connectors[i];
                 node = this.connectors[i];
+                if (canCloneObject) {
+                    this.previousConnectorCollection.push(cloneObject(node, undefined, undefined, true));
+                }
                 updateDefaultValues(node, child, this.connectorDefaults);
                 this.updateAnnotationText(node.annotations);
             }
@@ -1720,7 +1731,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (refereshColelction) {
                 this.initObjects(true);
                 this.refreshDiagramLayer();
-                if(refreshLayout){
+                if (refreshLayout) {
                     this.doLayout()
                 }
             }
@@ -1876,11 +1887,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let i: number = 0; i < this.changedConnectorCollection.length; i++) {
                 changedConnectors.push(this.commandHandler.deepDiffer.removeEmptyValues(this.changedConnectorCollection[i]));
             }
-            let ejsInterop: string = 'ejsInterop'; let blazor: string = 'Blazor';
+            let blazorInterop: string = 'sfBlazor'; let blazor: string = 'Blazor';
             let diagramObject: Object = { nodes: changedNodes, connectors: changedConnectors };
             if (window && window[blazor] && !this.dataSourceSettings.dataSource) {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this);
+                window[blazorInterop].updateBlazorProperties(obj, this);
             }
         }
         if (this.dataSourceSettings.crudAction.read) {
@@ -1908,12 +1919,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
                 this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-                let ejsInterop: string = 'ejsInterop';
+                let blazorInterop: string = 'sfBlazor';
                 let blazor: string = 'Blazor';
                 let diagramObject: Object = { nodes: [], connectors: changeConnectors };
                 if (window && window[blazor]) {
                     let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                    window[ejsInterop].updateBlazorProperties(obj, this);
+                    window[blazorInterop].updateBlazorProperties(obj, this);
                 }
             }
         }
@@ -3238,12 +3249,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
             }
             this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-            let ejsInterop: string = 'ejsInterop';
+            let blazorInterop: string = 'sfBlazor';
             let blazor: string = 'Blazor';
             let diagramObject: Object = { nodes: [], connectors: changeConnectors };
             if (window && window[blazor]) {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this);
+                window[blazorInterop].updateBlazorProperties(obj, this);
             }
         }
     }
@@ -3425,7 +3436,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public UpdateBlazorDiagramModelCollection(
         obj: Node | Connector, copiedObject?: (NodeModel | ConnectorModel)[], multiSelectDelete?: (NodeModel | ConnectorModel)[])
         : void {
-        let ejsInterop: string = 'ejsInterop';
+        let blazorInterop: string = 'sfBlazor';
         let updatedModel: object = cloneBlazorObject(obj);
         let blazor: string = 'Blazor';
         if (window && window[blazor] && (!this.isServerUpdate || multiSelectDelete)) {
@@ -3479,7 +3490,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     'connectorObj': JSON.stringify(connectorModelCollection)
                 }
             };
-            window[ejsInterop].updateBlazorProperties(dgmObj, this);
+            window[blazorInterop].updateBlazorProperties(dgmObj, this);
         }
     }
 
@@ -3487,7 +3498,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         obj: Node | Connector | ShapeAnnotation | PathAnnotation,
         objectType: string, removalIndex?: number, annotationNodeIndex?: number)
         : void {
-        let ejsInterop: string = 'ejsInterop';
+        let blazorInterop: string = 'sfBlazor';
         let updatedModel: object = cloneBlazorObject(obj);
         let blazor: string = 'Blazor';
         if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
@@ -3500,7 +3511,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     'annotationIndex': annotationNodeIndex, 'connectorObj': undefined
                 }
             };
-            window[ejsInterop].updateBlazorProperties(dgmObj, this);
+            window[blazorInterop].updateBlazorProperties(dgmObj, this);
 
         }
     }
@@ -3518,19 +3529,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 connectorCollection.push(cloneObject(this.connectors[i], undefined, undefined, true));
             }
         }
-        let ejsInterop: string = 'ejsInterop';
+        let blazorInterop: string = 'sfBlazor';
         let blazor: string = 'Blazor';
         if (window && window[blazor]) {
             let obj: object = {
                 'methodName': 'AddBlazorObjects',
                 'diagramobj': { 'nodeObj': JSON.stringify(nodesCollection), 'isConnector': false }
             };
-            window[ejsInterop].updateBlazorProperties(obj, this);
+            window[blazorInterop].updateBlazorProperties(obj, this);
             obj = {
                 'methodName': 'AddBlazorObjects',
                 'diagramobj': { 'nodeObj': JSON.stringify(connectorCollection), 'isConnector': true }
             };
-            window[ejsInterop].updateBlazorProperties(obj, this);
+            window[blazorInterop].updateBlazorProperties(obj, this);
         }
     }
     private removeNodeEdges(elementId: string, id: string, isOutEdges: boolean): void {
@@ -3675,16 +3686,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:enable */
 
     private updateBlazorCollectionChange(newObject: Node | Connector, isAdding: boolean): void {
-        let ejsInterop: string = 'ejsInterop';
-        if (window && window[ejsInterop]) {
+        let blazorInterop: string = 'sfBlazor';
+        if (window && window[blazorInterop]) {
             let newNode: object = {};
             let object: string = newObject instanceof Node ? 'nodes' : 'connectors';
             let index: string;
             index = (object === 'nodes') ? this.nodes.indexOf(newObject as Node).toString()
                 : this.connectors.indexOf(newObject as Connector).toString();
             newNode[index] = cloneObject(newObject);
-            if (window[ejsInterop].updateDiagramCollection) {
-                window[ejsInterop].updateDiagramCollection.call(this, object, newNode, {}, !isAdding, false);
+            if (window[blazorInterop].updateDiagramCollection) {
+                window[blazorInterop].updateDiagramCollection.call(this, object, newNode, {}, !isAdding, false);
             }
         }
     }
@@ -4192,7 +4203,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param id Defines annotation id to be edited in the node
      */
     public startTextEdit(node?: NodeModel | ConnectorModel, id?: string): void {
-        if (!canZoomPan(this) || canSingleSelect(this)) {
+        if ((!canZoomPan(this) && !canMultiSelect(this)) || canSingleSelect(this)) {
             this.textEditing = true; let transform: TransformFactor = this.scroller.transform;
             let scale: number = canZoomTextEdit(this) ? transform.scale : 1; let minWidth: number = 90;
             let text: string; let bounds: Size; let attributes: Object; let x: number; let y: number; let textWrapper: DiagramElement;
@@ -5121,7 +5132,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let hasLayers: boolean = this.layers.length > 1; let set: boolean = false;
         let connectors: Connector[] = [];
         let blazor: string = 'Blazor';
-        let canCloneObject: boolean = window && window[blazor] && this.diagramActions && !this.dataSourceSettings.dataSource;
+        let canCloneObject: boolean = window && window[blazor] && !this.dataSourceSettings.dataSource;
         let tempTabel: {} = {};
         let bpmnTable: {} = {};
         let tempNode: NodeModel[] = [];
@@ -5134,12 +5145,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let changeNodes: Object[] = [];
         let changeConnectors: Object[] = [];
         if (isBlazor() && canCloneObject) {
-            for (let obj of this.nodes) {
-                previousNodeObject.push(cloneObject(obj, undefined, undefined, true));
-            }
-            for (let obj of this.connectors) {
-                previousConnectorObject.push(cloneObject(obj, undefined, undefined, true));
-            }
+            previousNodeObject = this.previousNodeCollection;
+            previousConnectorObject = this.previousConnectorCollection;
         }
         for (let obj of this.nodes) {
             obj.id = obj.id || randomId();
@@ -5209,13 +5216,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.commandHandler.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
             this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
 
-            let  ejsInterop: string = 'ejsInterop';
+            let blazorInterop: string = 'sfBlazor';
             let diagramObject: Object = { nodes: changeNodes, connectors: changeConnectors };
             let obj: object = {
                 'methodName': 'UpdateBlazorProperties',
                 'diagramobj': diagramObject
             };
-            window[ejsInterop].updateBlazorProperties(obj, this);
+            window[blazorInterop].updateBlazorProperties(obj, this);
         }
     }
     private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
@@ -5527,6 +5534,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.initObjectExtend(obj as IElement, layer, independentObj);
             this.nameTable[(obj as Node).id] = obj;
             if (obj instanceof Node && obj.children) {
+                this.preventNodesUpdate = true; this.preventConnectorsUpdate = true;
                 if (!group && !obj.container) { this.updateGroupOffset(obj, true); }
                 this.groupTable[(obj as Node).id] = obj.children;
                 for (let i: number = 0; i < (obj as Node).children.length; i++) {
@@ -5536,9 +5544,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (!this.isLoading && obj.rotateAngle && !obj.container) {
                     this.commandHandler.rotateObjects(obj, [obj], obj.rotateAngle, { x: obj.offsetX, y: obj.offsetY }, false);
                 }
+                this.preventNodesUpdate = false; this.preventConnectorsUpdate = false;
             }
-            if(this['enterObject']===undefined){
-            this.updateQuad(obj as IElement);
+            if (this['enterObject'] === undefined) {
+                this.updateQuad(obj as IElement);
             }
         }
         if ((obj as Node | Connector).visible === false) {
@@ -6675,7 +6684,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let isProtectedOnChangeValue: boolean = this.isProtectedOnChange;
         if (isBlazor()) {
             this.isProtectedOnChange = true;
-            this.commandHandler.oldSelectedObjects  = cloneSelectedObjects(this, true);
+            this.commandHandler.oldSelectedObjects = cloneSelectedObjects(this, true);
         }
         let size: Size = new Size();
         let selectorModel: Selector = this.selectedItems as Selector;
@@ -7354,7 +7363,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public nodePropertyChange(actualObject: Node, oldObject: Node, node: Node, isLayout?: boolean, rotate?: boolean, propertyChange?: boolean): void {
         if (this.canEnableBlazorObject) {
-           let node = !this.diagramActions? cloneObject(actualObject):actualObject;
+            let node = !this.diagramActions ? cloneObject(actualObject) : actualObject;
             this.insertValue(node, true)
         }
         let existingBounds: Rect = actualObject.wrapper.outerBounds; let existingInnerBounds: Rect = actualObject.wrapper.bounds;
@@ -7595,14 +7604,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         for (let i: number = 0; i < objects.length; i++) {
                             let object: Object = objects[i];
                             if (object instanceof Connector) {
-                                    this.connectorPropertyChange(objects[i] as Connector, {} as Connector, {
-                                        sourceID: (object as Connector).sourceID,
-                                        targetID: (object as Connector).targetID,
-                                        sourcePortID: (object as Connector).sourcePortID,
-                                        targetPortID: (object as Connector).targetPortID,
-                                        sourcePoint: (object as Connector).sourcePoint,
-                                        targetPoint: (object as Connector).targetPoint
-                                    } as Connector);
+                                this.connectorPropertyChange(objects[i] as Connector, {} as Connector, {
+                                    sourceID: (object as Connector).sourceID,
+                                    targetID: (object as Connector).targetID,
+                                    sourcePortID: (object as Connector).sourcePortID,
+                                    targetPortID: (object as Connector).targetPortID,
+                                    sourcePoint: (object as Connector).sourcePoint,
+                                    targetPoint: (object as Connector).targetPoint
+                                } as Connector);
                             }
                         }
                     }

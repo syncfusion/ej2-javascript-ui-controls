@@ -1,4 +1,4 @@
-import { Component, Property, setStyleAttribute, ChildProperty, compile, isBlazor } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';import { SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
+import { Component, Property, setStyleAttribute, ChildProperty, compile, isBlazor } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';import { SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import {Orientation,BeforeSanitizeHtmlArgs,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -15,12 +15,18 @@ export interface PanePropertiesModel {
 
     /**
      * Specifies whether a pane is collapsible or not collapsible.
+     * 
+     * {% codeBlock src='splitter/collapsible/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     collapsible?: boolean;
 
     /**
      * Specifies whether a pane is collapsed or not collapsed at the initial rendering of splitter.
+     * 
+     * {% codeBlock src='splitter/collapsed/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     collapsed?: boolean;
@@ -82,6 +88,9 @@ export interface SplitterModel extends ComponentModel{
 
     /**
      * Configures the individual pane behaviors such as content, size, resizable, minimum, maximum validation, collapsible and collapsed.
+     * 
+     * {% codeBlock src='splitter/panesettings/index.md' %}{% endcodeBlock %}
+     * 
      * @default []
      */
     paneSettings?: PanePropertiesModel[];
@@ -90,6 +99,9 @@ export interface SplitterModel extends ComponentModel{
      * Specifies a value that indicates whether to align the split panes horizontally or vertically.
      *  * Set the orientation property as "Horizontal" to create a horizontal splitter that aligns the panes left-to-right.
      *  * Set the orientation property as "Vertical" to create a vertical splitter that aligns the panes top-to-bottom.
+     * 
+     * {% codeBlock src='splitter/orientation/index.md' %}{% endcodeBlock %}
+     * 
      * @default Horizontal
      */
     orientation?: Orientation;

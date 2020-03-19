@@ -786,7 +786,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             '<td><div class="' + INPUTWARAPPER + ' ' + WEEKPOSITION + '" >' +
             '<input type="text" tabindex="0" class="' + MONTHPOS + '"title="' + this.localeObj.getConstant('monthPosition') + '" />' +
             '</div></td>' +
-            '<td><div class="' + INPUTWARAPPER + '" >' +
+            '<td><div class="' + INPUTWARAPPER + '" style="min-width: 120px;">' +
             '<input type="text" tabindex="0" class="' + MONTHWEEK + '"title="' + this.localeObj.getConstant('monthWeek') + '" />' +
             '</div></td></tr></table>' +
             '</div></div>' +

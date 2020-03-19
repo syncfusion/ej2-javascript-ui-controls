@@ -101,7 +101,7 @@ export class TreeMapHighlight {
                     this.highLightId = targetId;
                 }
                 eventArgs = { cancel: false, name: itemHighlight, treemap: treemap, items: items, elements: highLightElements };
-                eventBlazorArgs = { cancel: false, name: itemHighlight, items: items, elements: highLightElements };
+                eventBlazorArgs = { cancel: false, name: itemHighlight, items: null, elements: highLightElements };
                 treemap.trigger(itemHighlight, treemap.isBlazor ? eventBlazorArgs : eventArgs);
             } else {
                 processHighlight = false;

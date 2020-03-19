@@ -1,8 +1,12 @@
-import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
+import {
+    createElement, removeClass, addClass, remove, isNullOrUndefined,
+    setStyleAttribute, closest, EventHandler
+} from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import {
-    TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance, NodeClickEventArgs, NodeExpandEventArgs
+    TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance, NodeClickEventArgs,
+    NodeExpandEventArgs, NodeSelectEventArgs
 } from '@syncfusion/ej2-navigations';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
@@ -14,6 +18,11 @@ import { ChangedEventArgs, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { ItemModel, DropDownButton, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
+import * as events from '../base/constant';
+import { MemberEditorOpenEventArgs } from '../base/interface';
+import { PivotView } from '../../pivotview';
+import { PivotFieldList } from '../../pivotfieldlist';
+import { Button } from '@syncfusion/ej2-buttons';
 
 /**
  * `FilterDialog` module to create filter dialog.
@@ -59,7 +68,7 @@ export class FilterDialog {
         let editorDialog: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_EditorTreeView',
             className: cls.MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
-            attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
+            attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption }
         });
         let filterCaption: string = this.parent.engineModule.fieldList[fieldName].caption;
         let headerTemplate: string = this.parent.localeObj.getConstant('filter') + ' ' +
@@ -72,8 +81,9 @@ export class FilterDialog {
             animationSettings: { effect: (this.allowExcelLikeFilter ? 'None' : 'Fade') },
             allowDragging: false,
             header: (this.allowExcelLikeFilter ? headerTemplate : filterCaption),
-            content: (this.allowExcelLikeFilter ? '' : this.createTreeView(treeData, fieldCaption, fieldName)),
-            isModal: this.parent.renderMode === 'Popup' ? true : this.parent.isAdaptive ? true : false,
+            // content: (this.allowExcelLikeFilter ? '' : this.createTreeView(treeData, fieldCaption, fieldName)),
+            content: '',
+            isModal: true,
             visible: true,
             showCloseIcon: this.allowExcelLikeFilter ? true : false,
             enableRtl: this.parent.enableRtl,
@@ -98,26 +108,46 @@ export class FilterDialog {
                     click: this.closeFilterDialog.bind(this),
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
                 }],
-            closeOnEscape: true,
+            closeOnEscape: this.parent.renderMode === 'Popup' ? false : true,
             target: target,
             close: this.removeFilterDialog.bind(this)
         });
         this.dialogPopUp.isStringTemplate = true;
         this.dialogPopUp.appendTo(editorDialog);
-        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
-        if (this.allowExcelLikeFilter) {
-            this.createTabMenu(treeData, fieldCaption, fieldName);
-            addClass([this.dialogPopUp.element], 'e-excel-filter');
-            this.updateCheckedState(fieldCaption);
-        } else {
-            this.updateCheckedState(fieldCaption);
-        }
-        setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
-        if (this.allowExcelLikeFilter) {
-            (this.dialogPopUp.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement).focus();
-        } else {
-            return;
-        }
+        let filterArgs: MemberEditorOpenEventArgs = {
+            cancel: false,
+            fieldName: fieldName,
+            fieldMembers: this.parent.dataSourceSettings.allowMemberFilter ? treeData : [],
+            filterSetting: this.filterObject
+        };
+        let control: PivotView | PivotFieldList =
+            this.parent.moduleName === 'pivotfieldlist' && (this.parent.control as PivotFieldList).isPopupView ?
+                (this.parent.control as PivotFieldList).pivotGridModule : this.parent.control;
+        control.trigger(events.memberEditorOpen, filterArgs, (observedArgs: MemberEditorOpenEventArgs) => {
+            if (!observedArgs.cancel) {
+                treeData = observedArgs.fieldMembers;
+                if (this.allowExcelLikeFilter) {
+                    this.createTabMenu(treeData, fieldCaption, fieldName);
+                    addClass([this.dialogPopUp.element], 'e-excel-filter');
+                    this.updateCheckedState(fieldCaption);
+                } else {
+                    this.dialogPopUp.content = this.createTreeView(treeData, fieldCaption, fieldName);
+                    this.updateCheckedState(fieldCaption);
+                }
+                setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+                if (this.allowExcelLikeFilter) {
+                    (this.dialogPopUp.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement).focus();
+                }
+                this.parent.control.pivotButtonModule.memberTreeView = this.parent.filterDialog.memberTreeView;
+                /* tslint:disable-next-line:max-line-length */
+                this.memberTreeView.nodeChecked = this.parent.control.pivotButtonModule.nodeStateModified.bind(this.parent.control.pivotButtonModule);
+                /* tslint:disable-next-line:max-line-length */
+                this.allMemberSelect.nodeChecked = this.parent.control.pivotButtonModule.nodeStateModified.bind(this.parent.control.pivotButtonModule);
+            } else {
+                this.dialogPopUp.close();
+                this.dialogPopUp = undefined;
+            }
+        });
     }
     /* tslint:disable */
     private createTreeView(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName?: string): HTMLElement {
@@ -134,7 +164,9 @@ export class FilterDialog {
             className: cls.EDITOR_SEARCH_WRAPPER_CLASS
         });
         let filterCaption: string = this.parent.engineModule.fieldList[fieldName].caption;
-        let editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+        let editorSearch: HTMLInputElement = createElement('input', {
+            attrs: { 'type': 'text', className: cls.EDITOR_SEARCH__INPUT_CLASS }
+        }) as HTMLInputElement;
         let nodeLimitText: string = this.parent.isDataOverflow ?
             ((this.parent.currentTreeItems.length - this.parent.control.maxNodeLimitInMemberEditor) +
                 this.parent.control.localeObj.getConstant('editorDataLimitMsg')) : '';
@@ -148,7 +180,7 @@ export class FilterDialog {
         labelWrapper.style.display = this.parent.isDataOverflow ? 'block' : 'none';
         labelWrapper.appendChild(this.parent.editorLabelElement);
         searchWrapper.appendChild(editorSearch);
-        searchWrapper.appendChild(levelWrapper);
+        this.createSortOptions(fieldName, searchWrapper, treeData);
         let selectAllWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_AllDiv', attrs: { 'tabindex': '-1' },
             className: cls.SELECT_ALL_WRAPPER_CLASS
@@ -163,9 +195,8 @@ export class FilterDialog {
         if (this.parent.dataType === 'olap' && this.parent.control.loadOnDemandInMemberEditor &&
             !(this.parent.engineModule as OlapEngine).fieldList[fieldName].isHierarchy &&
             !(this.parent.engineModule as OlapEngine).fieldList[fieldName].isNamedSets) {
+            searchWrapper.appendChild(levelWrapper);
             this.createLevelWrapper(levelWrapper, fieldName);
-        } else {
-            levelWrapper.style.display = 'none';
         }
         selectAllWrapper.appendChild(selectAllContainer);
         editorTreeWrapper.appendChild(searchWrapper);
@@ -199,14 +230,18 @@ export class FilterDialog {
         this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
         let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName };
-        let data: { [key: string]: Object }[] = [{ id: 'all', name: 'All', isSelected: true, htmlAttributes: nodeAttr }];
+        let data: { [key: string]: Object }[] = [{ id: 'all', name: this.parent.localeObj.getConstant('all'), isSelected: true, htmlAttributes: nodeAttr }];
         this.allMemberSelect = new TreeView({
             fields: { dataSource: data, id: 'id', text: 'name', isChecked: 'isSelected' },
             showCheckBox: true,
             expandOn: 'None',
             enableRtl: this.parent.enableRtl,
             nodeClicked: this.nodeCheck.bind(this, true),
-            keyPress: this.nodeCheck.bind(this, true)
+            keyPress: this.nodeCheck.bind(this, true),
+            nodeSelected: (args: NodeSelectEventArgs) => {
+                removeClass([args.node], 'e-active');
+                args.cancel = true;
+            }
         });
         this.allMemberSelect.isStringTemplate = true;
         this.allMemberSelect.appendTo(selectAllContainer);
@@ -220,12 +255,49 @@ export class FilterDialog {
             nodeClicked: this.nodeCheck.bind(this, false),
             keyPress: this.nodeCheck.bind(this, false),
             nodeExpanding: this.updateChildNodes.bind(this),
+            nodeSelected: (args: NodeSelectEventArgs) => {
+                removeClass([args.node], 'e-active');
+                args.cancel = true;
+            },
             expandOn: 'None'
         });
         this.memberTreeView.isStringTemplate = true;
         this.memberTreeView.appendTo(treeViewContainer);
         editorTreeWrapper.appendChild(labelWrapper);
         return editorTreeWrapper;
+    }
+    private createSortOptions(fieldName: string, target: HTMLElement, treeData: { [key: string]: Object }[]): void {
+        if (this.parent.dataType === 'pivot' && treeData && treeData.length > 0) {
+            let sortOrder: string = this.parent.engineModule.fieldList[fieldName].sort;
+            let sortWrapper: HTMLElement = createElement('div', {
+                className: cls.FILTER_SORT_CLASS + ' e-btn-group' + (this.parent.enableRtl ? ' ' + cls.RTL : ''),
+                id: this.parent.element.id + '_Member_Sort'
+            });
+            this.parent.element.appendChild(sortWrapper);
+            let sortAscendElement: HTMLElement = createElement('button', {
+                className: (sortOrder === 'Ascending' ? cls.SORT_SELECTED_CLASS + ' ' : '') + cls.MEMBER_SORT_CLASS,
+                id: this.parent.element.id + '_Sort_Ascend'
+            });
+            let sortDescendElement: HTMLElement = createElement('button', {
+                className: (sortOrder === 'Descending' ? cls.SORT_SELECTED_CLASS + ' ' : '') + cls.MEMBER_SORT_CLASS,
+                id: this.parent.element.id + '_Sort_Descend'
+            });
+            let sortBtnElement: Button = new Button({
+                iconCss: cls.ICON + ' ' + cls.SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl
+            });
+            sortBtnElement.appendTo(sortAscendElement);
+            sortBtnElement = new Button({
+                iconCss: cls.ICON + ' ' + cls.SORT_DESCEND_ICON_CLASS, enableRtl: this.parent.enableRtl
+            });
+            sortBtnElement.appendTo(sortDescendElement);
+            sortWrapper.appendChild(sortAscendElement);
+            sortWrapper.appendChild(sortDescendElement);
+            target.appendChild(sortWrapper);
+            this.unWireEvent(sortAscendElement, fieldName);
+            this.unWireEvent(sortDescendElement, fieldName);
+            this.wireEvent(sortAscendElement, fieldName);
+            this.wireEvent(sortDescendElement, fieldName);
+        }
     }
     private createLevelWrapper(levelWrapper: HTMLElement, fieldName: string): void {
         let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
@@ -317,13 +389,13 @@ export class FilterDialog {
             }
             popupInstance.updateCheckedState(fieldCaption);
         }, 500);
-
     }
     /* tslint:enable */
     /* tslint:disable:no-any */
     private nodeCheck(isAllMember: boolean, args: NodeClickEventArgs): void {
         let checkedNode: any = [args.node];
-        if ((args.event.target as HTMLElement).classList.contains('e-fullrow') || (args.event as any).key === 'Enter') {
+        let target: Element = args.event.target as Element;
+        if (target.classList.contains('e-fullrow') || (args.event as any).key === 'Enter') {
             let memberObj: TreeView = isAllMember ? this.allMemberSelect : this.memberTreeView;
             let getNodeDetails: any = memberObj.getNode(args.node);
             if (getNodeDetails.isChecked === 'true') {
@@ -332,6 +404,78 @@ export class FilterDialog {
                 memberObj.checkAll(checkedNode);
             }
         }
+    }
+    /* tslint:enable:no-any */
+    private applySorting(fieldName: string, args: Event): void {
+        let target: Element = closest(args.target as Element, '.' + cls.MEMBER_SORT_CLASS) as Element;
+        if (target) {
+            let sortElements: Element[] =
+                [].slice.call(closest(target, '.' + cls.FILTER_SORT_CLASS).querySelectorAll('.' + cls.MEMBER_SORT_CLASS));
+            if (target.querySelector('.' + cls.SORT_ASCEND_ICON_CLASS) && !target.classList.contains(cls.SORT_SELECTED_CLASS)) {
+                this.updateFilterMembers('Ascending', fieldName);
+                addClass([target], cls.SORT_SELECTED_CLASS);
+                removeClass([sortElements[1]], cls.SORT_SELECTED_CLASS);
+            } else if (target.querySelector('.' + cls.SORT_DESCEND_ICON_CLASS) && !target.classList.contains(cls.SORT_SELECTED_CLASS)) {
+                this.updateFilterMembers('Descending', fieldName);
+                addClass([target], cls.SORT_SELECTED_CLASS);
+                removeClass([sortElements[0]], cls.SORT_SELECTED_CLASS);
+            } else {
+                this.updateFilterMembers('None', fieldName);
+                removeClass(sortElements, cls.SORT_SELECTED_CLASS);
+            }
+        }
+    }
+
+    private updateFilterMembers(order: string, fieldName: string): void {
+        let members: { [key: string]: Object; }[] = order === 'None' ?
+            PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember as []) :
+            [...this.parent.currentTreeItems];
+        this.parent.currentTreeItems = [];
+        this.parent.searchTreeItems = [];
+        let treeData: { [key: string]: Object; }[] = [];
+        /* tslint:disable:typedef */
+        members = order === 'Ascending' ? (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
+            ((b.actualText > a.actualText) ? -1 : 0))) : order === 'Descending' ?
+                (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
+                    ((b.actualText < a.actualText) ? -1 : 0))) : members;
+        /* tslint:enable:typedef */
+        for (let i: number = 0, lnt: number = members.length; i < lnt; i++) {
+            if (order === 'None') {
+                let memberName: string = (this.parent.isDateField ? members[i].formattedText : members[i].actualText).toString();
+                let obj: { [key: string]: Object } = {
+                    id: members[i].actualText.toString(),
+                    actualText: members[i].actualText,
+                    name: memberName,
+                    isSelected: this.parent.currentTreeItemsPos[members[i].actualText as string].isSelected
+                };
+                this.parent.currentTreeItems.push(obj);
+                if (this.editorSearch.value !== '') {
+                    if ((obj.name as string).toLowerCase().indexOf(this.editorSearch.value.toLowerCase()) > -1) {
+                        this.parent.searchTreeItems.push(obj);
+                        treeData.push(obj);
+                    }
+                } else {
+                    this.parent.searchTreeItems.push(obj);
+                    treeData.push(obj);
+                }
+            } else {
+                this.parent.currentTreeItems.push(members[i]);
+                if (this.editorSearch.value !== '') {
+                    if ((members[i].name as string).toLowerCase().indexOf(this.editorSearch.value.toLowerCase()) > -1) {
+                        this.parent.searchTreeItems.push(members[i]);
+                        treeData.push(members[i]);
+                    }
+                } else {
+                    this.parent.searchTreeItems.push(members[i]);
+                    treeData.push(members[i]);
+                }
+            }
+            this.parent.currentTreeItemsPos[members[i].actualText as string].index = i;
+        }
+        let dataCount: number = (this.memberTreeView.fields.dataSource as []).length;
+        /* tslint:disable-next-line:max-line-length */
+        this.memberTreeView.fields = { dataSource: treeData.slice(0, dataCount), id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' };
+        this.memberTreeView.dataBind();
     }
     private updateChildNodes(args: NodeExpandEventArgs): void {
         if (this.parent.dataType === 'olap') {
@@ -386,7 +530,7 @@ export class FilterDialog {
             }
             this.parent.currentTreeItems.push(obj);
             this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[memberName] = memberCount;
+            this.parent.currentTreeItemsPos[memberName] = { index: memberCount, isSelected: obj.isSelected as boolean };
             memberCount++;
             childMemberCount++;
         }
@@ -585,7 +729,6 @@ export class FilterDialog {
         filterWrapperDiv2.appendChild(inputDiv1);
         filterWrapperDiv2.appendChild(betweenTextContentdiv);
         filterWrapperDiv2.appendChild(inputDiv2);
-        /* tslint:disable-next-line:max-line-length */
         this.createElements(filterObject, betweenOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions, dataSource, selectedValueIndex, selectedOption, type, levelDropOption, levelOptions, selectedLevelIndex);
         mainDiv.appendChild(textContentdiv);
         mainDiv.appendChild(filterWrapperDiv1);
@@ -603,7 +746,7 @@ export class FilterDialog {
                 fields: { value: 'value', text: 'text', iconCss: 'iconClass' },
                 index: levelIndex,
                 cssClass: cls.LEVEL_OPTIONS_CLASS, width: '100%',
-                change(args: ChangeEventArgs): void {
+                change: (args: ChangeEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     let fieldName: string = element.getAttribute('data-fieldName');
                     let type: string = element.getAttribute('data-type');
@@ -620,8 +763,6 @@ export class FilterDialog {
                         if (filterObj) {
                             if (type === 'value' && filterObj.measure && filterObj.measure !== '') {
                                 optionWrapper1.value = filterObj.measure ? filterObj.measure : vDataSource[0].value as string;
-                            } else {
-
                             }
                             if (filterObj.condition) {
                                 optionWrapper.value = filterObj.condition ? filterObj.condition : 'DoesNotEquals';
@@ -663,7 +804,7 @@ export class FilterDialog {
             dataSource: vDataSource, enableRtl: this.parent.enableRtl,
             fields: { value: 'value', text: 'text' }, index: valueIndex,
             cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
-            change(args: ChangeEventArgs): void {
+            change: (args: ChangeEventArgs) => {
                 let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                 if (!isNullOrUndefined(element)) {
                     popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
@@ -679,7 +820,7 @@ export class FilterDialog {
             dataSource: oDataSource, enableRtl: this.parent.enableRtl,
             fields: { value: 'value', text: 'text' }, value: option,
             cssClass: cls.FILTER_OPERATOR_CLASS, width: '100%',
-            change(args: ChangeEventArgs): void {
+            change: (args: ChangeEventArgs) => {
                 let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                 if (!isNullOrUndefined(element)) {
                     popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
@@ -926,7 +1067,8 @@ export class FilterDialog {
         }
     }
     private getFilterObject(fieldName: string): IFilter {
-        let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
+        /* tslint:disable-next-line:max-line-length */
+        let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, PivotUtil.cloneFilterSettings(this.parent.dataSourceSettings.filterSettings));
         if (filterObj && ((((['Label', 'Date', 'Number'] as FilterType[]).indexOf(filterObj.type) >= 0) &&
             this.parent.dataSourceSettings.allowLabelFilter) ||
             (filterObj.type === 'Value' && this.parent.dataSourceSettings.allowValueFilter) ||
@@ -935,6 +1077,12 @@ export class FilterDialog {
             return filterObj;
         }
         return undefined;
+    }
+    private wireEvent(element: HTMLElement, fieldName: string): void {
+        EventHandler.add(element, 'click', this.applySorting.bind(this, fieldName), this);
+    }
+    private unWireEvent(element: HTMLElement, fieldName: string): void {
+        EventHandler.remove(element, 'click', this.applySorting);
     }
     /**
      * To close filter dialog.

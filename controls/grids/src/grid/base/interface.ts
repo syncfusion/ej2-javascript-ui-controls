@@ -53,9 +53,6 @@ export interface IGrid extends Component<HTMLElement> {
     //public properties    
     currentViewData?: Object[];
     currentAction?: ActionArgs;
-
-    /** @hidden */
-    allowGroupReordering: boolean;
     /**
      * Specifies the columns for Grid.
      * @default []
@@ -113,6 +110,8 @@ export interface IGrid extends Component<HTMLElement> {
     enableVirtualization: boolean;
 
     enableColumnVirtualization: boolean;
+
+    enableInfiniteScrolling: boolean;
 
     /**
      * Specifies whether the sorting is enable or not.
@@ -459,6 +458,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     headerModule?: IRenderer;
 
+    contentModule?: IRenderer;
+
     isPreventScrollEvent?: boolean;
 
     hierarchyPrintMode?: HierarchyGridPrintMode;
@@ -472,6 +473,7 @@ export interface IGrid extends Component<HTMLElement> {
     expandedRows?: { [index: number]: IExpandedRow };
     registeredTemplate?: Object;
     lockcolPositionCount?: number;
+    isWheelScrolled?: boolean;
     isPrinting?: boolean;
     id?: string;
     isSelectedRowIndexUpdating?: boolean;
@@ -495,6 +497,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFooterContentTable?(): Element;
     getPager?(): Element;
     setGridPager?(value: Element): void;
+    hoverFrozenRows?(value: MouseEvent): void;
     getRowByIndex?(index: number): Element;
     getMovableRowByIndex?(index: number): Element;
     getFrozenRowByIndex?(index: number): Element;
@@ -605,9 +608,11 @@ export interface IGrid extends Component<HTMLElement> {
     getMediaColumns?(): void;
     isCollapseStateEnabled?(): boolean;
     mergePersistGridData?(setData?: Object): void;
+    setForeignKeyData?(args: DataResult): void;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
+    columnDataStateChange?: EmitType<ColumnDataStateChangeEventArgs>;
 }
 
 /** @hidden */
@@ -1399,7 +1404,9 @@ export interface ExcelExportProperties {
     header?: ExcelHeader;
     /** Defines the footer content for exported document */
     footer?: ExcelFooter;
-    /** Defines the columns which are to be customized for Export alone. */
+    /** Defines the columns which are to be customized for Export alone.
+     * @blazorType List<GridColumn>
+     */
     columns?: Column[];
     /** Indicates to export current page or all page */
     exportType?: ExportType;
@@ -1488,6 +1495,8 @@ export interface VirtualInfo {
     nextInfo?: { page?: number };
     sentinelInfo?: SentinelType;
     offsets?: Offsets;
+    startIndex?: number;
+    endIndex?: number;
 }
 /**
  * @hidden
@@ -1874,6 +1883,18 @@ export interface Sorts {
     /** Defines the direction of sorting */
     direction?: string;
 }
+
+export interface ColumnDataStateChangeEventArgs {
+    /** Defines the filter query  */
+    where?: PredicateModel[];
+    /** Defines the search query */
+    search?: PredicateModel[];
+    /** Defines the grid action details performed by paging, grouping, filtering, searching, sorting */
+    action?: PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs;
+    /** Defines the function to be called to refresh column dataSource */
+    setColumnData?: Function;
+}
+
 /** Custom data service event types */
 export interface DataStateChangeEventArgs {
     /** Defines the skip count in datasource record */
@@ -2091,7 +2112,9 @@ export interface PdfExportProperties {
     pageSize?: PdfPageSize;
     /** Defines the Pdf header. */
     header?: PdfHeader;
-    /** Defines the columns which are to be customized for Export alone. */
+    /** Defines the columns which are to be customized for Export alone.
+     * @blazorType List<GridColumn>
+     */
     columns?: Column[];
     /** Defines the Pdf footer. */
     footer?: PdfFooter;
@@ -2363,4 +2386,12 @@ export interface ActionArgs {
     toColumnUid?: string;
     fromColumnUid?: string[];
     isMultipleReorder?: boolean;
+    virtualStartIndex?: number;
+    virtualEndIndex?: number;
+    startColumnIndex?: number;
+    endColumnIndex?: number;
+    axis?: string;
+    translateX?: number;
+    rHeight?: number;
+    vTableWidth?: number;
 }

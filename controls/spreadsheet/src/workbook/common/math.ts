@@ -45,7 +45,7 @@ export function dateToInt(val: any, isTime?: boolean): number {
     let date: Date = isDateTime(val) ? val : new Date(val);
     let timeDiff: number = (date.getTime() - startDate.getTime());
     let diffDays: number = (timeDiff / (1000 * 3600 * 24)) + 1;
-    return isTime ? diffDays + 1 : parseInt(diffDays.toString(), 10) + 2;
+    return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 
 /**
@@ -85,6 +85,10 @@ export function toDate(text: Date | string | number, intl: Internationalization)
             dObj.dateObj = intl.parseDate(text as string, { format: availabelDateTimeFormat[key], skeleton: key });
             if (dObj.dateObj) {
                 dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+                if (dObj.type === 'time') {
+                    let time: string = dObj.dateObj.toLocaleTimeString();
+                    dObj.dateObj = new Date('01/01/1900 ' + time);
+                }
                 dObj.isCustom = true;
                 break;
             }
@@ -94,6 +98,8 @@ export function toDate(text: Date | string | number, intl: Internationalization)
         for (let key of Object.keys((defaultDateFormats as any).timeFormats)) {
             dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).timeFormats[key], skeleton: key });
             if (dObj.dateObj) {
+                let time: string = dObj.dateObj.toLocaleTimeString();
+                dObj.dateObj = new Date('01/01/1900 ' + time);
                 dObj.type = 'time';
                 dObj.isCustom = false;
                 break;

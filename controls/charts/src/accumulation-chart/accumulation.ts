@@ -39,7 +39,7 @@ import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';
 import { AccumulationAnnotationSettings } from './model/acc-base';
 import { AccumulationAnnotation } from './annotation/annotation';
 import { IPrintEventArgs } from '../chart/model/chart-interface';
-import { Alignment, ExportType } from '../common/utils/enum';
+import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
 import { getTitle } from '../common/utils/helper';
 import {Index} from '../common/model/base';
 import { IThemeStyle } from '../index';
@@ -225,6 +225,67 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public selectionMode: AccumulationSelectionMode;
 
     /**
+     * Specifies whether point has to get highlighted or not. Takes value either 'None 'or 'Point'
+     * @default None
+     */
+    @Property('None')
+    public highLightMode: AccumulationSelectionMode;
+
+    /**
+     * Specifies whether series or data point for accumulation chart has to be selected. They are,
+     * * none: sets none as selecting pattern to accumulation chart .
+     * * chessboard: sets chess board as selecting pattern accumulation chart .
+     * * dots: sets dots as  selecting pattern accumulation chart .
+     * * diagonalForward: sets diagonal forward as selecting pattern to accumulation chart .
+     * * crosshatch: sets crosshatch as selecting pattern to accumulation chart.
+     * * pacman: sets pacman selecting pattern to accumulation chart.
+     * * diagonalbackward: sets diagonal backward as selecting pattern to accumulation chart.
+     * * grid: sets grid as selecting pattern to accumulation chart.
+     * * turquoise: sets turquoise as selecting pattern to accumulation chart.
+     * * star: sets star as selecting pattern to accumulation chart.
+     * * triangle: sets triangle as selecting pattern to accumulation chart.
+     * * circle: sets circle as selecting pattern to accumulation chart.
+     * * tile: sets tile as selecting pattern to accumulation chart.
+     * * horizontaldash: sets horizontal dash as selecting pattern to accumulation chart.
+     * * verticaldash: sets vertical dash as selecting pattern to accumulation chart.
+     * * rectangle: sets rectangle as selecting pattern.
+     * * box: sets box as selecting pattern to accumulation chart.
+     * * verticalstripe: sets vertical stripe as  selecting pattern to accumulation chart.
+     * * horizontalstripe: sets horizontal stripe as selecting pattern to accumulation chart.
+     * * bubble: sets bubble as selecting pattern to accumulation chart.
+     * @default None
+     */
+    @Property('None')
+    public selectionPattern: SelectionPattern;
+
+    /**
+     * Specifies whether series or data point has to be selected. They are,
+     * * none: sets none as highlighting pattern to accumulation chart.
+     * * chessboard: sets chess board as highlighting pattern to accumulation chart.
+     * * dots: sets dots as highlighting pattern to accumulation chart.
+     * * diagonalForward: sets diagonal forward as highlighting pattern to accumulation chart.
+     * * crosshatch: sets crosshatch as highlighting pattern to accumulation chart.
+     * * pacman: sets pacman highlighting  pattern to accumulation chart.
+     * * diagonalbackward: sets diagonal backward as highlighting pattern to accumulation chart.
+     * * grid: sets grid as highlighting pattern to accumulation chart.
+     * * turquoise: sets turquoise as highlighting pattern to accumulation chart.
+     * * star: sets star as highlighting  pattern to accumulation chart.
+     * * triangle: sets triangle as highlighting pattern to accumulation chart.
+     * * circle: sets circle as highlighting  pattern to accumulation chart.
+     * * tile: sets tile as highlighting pattern to accumulation chart.
+     * * horizontaldash: sets horizontal dash as highlighting pattern to accumulation chart.
+     * * verticaldash: sets vertical dash as highlighting pattern to accumulation chart.
+     * * rectangle: sets rectangle as highlighting  pattern to accumulation chart.
+     * * box: sets box as highlighting pattern to accumulation chart.
+     * * verticalstripe: sets vertical stripe as highlighting  pattern to accumulation chart.
+     * * horizontalstripe: sets horizontal stripe as highlighting  pattern to accumulation chart.
+     * * bubble: sets bubble as highlighting  pattern to accumulation chart.
+     * @default None
+     */
+    @Property('None')
+    public highlightPattern: SelectionPattern;
+
+    /**
      * If set true, enables the border in pie and accumulation chart while mouse moving.
      * @default true
      */
@@ -340,7 +401,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before accumulation chart load.
      * @event
-     * @deprecated
      */
     @Event()
     public load: EmitType<IAccLoadedEventArgs>;
@@ -641,21 +701,28 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * To render the accumulation chart elements
      */
     protected render(): void {
+        let loadEventData: IAccLoadedEventArgs = {
+            chart: this.isBlazor ? {} as AccumulationChart : this,
+            accumulation: this.isBlazor ? {} as AccumulationChart : this,
+            theme: this.theme, name: load, cancel: false
+        };
+        this.trigger(load, loadEventData, () => {
 
-        this.trigger(load, { accumulation: this, chart: this });
+            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.setTheme();
 
-        this.setTheme();
+            this.accBaseModule = new AccumulationBase(this);
+            this.pieSeriesModule = new PieSeries(this);
 
-        this.accBaseModule = new AccumulationBase(this);
-        this.pieSeriesModule = new PieSeries(this);
+            this.calculateVisibleSeries();
 
-        this.calculateVisibleSeries();
+            this.processData();
 
-        this.processData();
+            this.renderComplete();
 
-        this.renderComplete();
+            this.allowServerDataBinding = true;
+        });
 
-        this.allowServerDataBinding = true;
     }
     /**
      * Method to unbind events for accumulation chart
@@ -782,14 +849,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public accumulationResize(e: Event): boolean {
         this.animateSeries = false;
         let args: IAccResizeEventArgs = {
-            accumulation: this.isBlazor ? {}  as AccumulationChart : this,
+            accumulation: this.isBlazor ? {} as AccumulationChart : this,
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
             ),
             name: resized,
             currentSize: new Size(0, 0),
-            chart: this.isBlazor ? {}  as AccumulationChart : this,
+            chart: this.isBlazor ? {} as AccumulationChart : this,
         };
 
         if (this.resizeTo) {
@@ -848,7 +915,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Method to set the annotation content dynamically for accumulation.
      */
-    public setAnnotationValue(annotationIndex: number, content: string) : void {
+    public setAnnotationValue(annotationIndex: number, content: string): void {
         let annotation: AccumulationAnnotationSettings = <AccumulationAnnotationSettings>this.annotations[annotationIndex];
         let element: HTMLElement;
         let parentNode: Element = getElement(this.element.id + '_Annotation_Collections');
@@ -897,6 +964,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.pieSeriesModule.findSeries(e);
         }
         this.notify(Browser.touchMoveEvent, e);
+
         return false;
     }
     public titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
@@ -1041,7 +1109,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * To find points from dataSource
      */
-    private processData(render : boolean = true): void {
+    private processData(render: boolean = true): void {
         this.seriesCounts = 0;
         for (let series of this.visibleSeries) {
             series.dataModule = new Data(series.dataSource || this.dataSource, series.query);
@@ -1108,7 +1176,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             return null;
         }
         this.accumulationLegendModule.getLegendOptions(this, <AccumulationSeries[]>this.visibleSeries);
-        this.accumulationLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize);
+        this.accumulationLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
     }
     /**
      * To render elements for accumulation chart
@@ -1174,10 +1242,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     public processExplode(): void {
         if (this.redraw) {
-            return null ;
+            return null;
         }
         if (!this.visibleSeries[0].explode) {
-                return null;
+            return null;
         }
         this.accBaseModule.invokeExplode();
     }
@@ -1208,7 +1276,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             ),
             this.redraw
         );
-        // to draw back ground image for accumulation chart
+        // to draw back ground image for accumulation chart        
         let backGroundImage: string = this.backgroundImage;
         if (backGroundImage) {
             let image: ImageOption = new ImageOption(
@@ -1358,6 +1426,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.unWireEvents();
             super.destroy();
             this.element.classList.remove('e-accumulationchart');
+            this.element.innerHTML = '';
         }
     }
     /**
@@ -1450,7 +1519,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: AccumulationChartModel, oldProp: AccumulationChartModel): void {
         let update: { refreshElements: boolean, refreshBounds: boolean } = {
-            refreshElements: false, refreshBounds: false  };
+            refreshElements: false, refreshBounds: false
+        };
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'theme':
@@ -1495,7 +1565,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                             series = newProp.series[i];
                             if (this.isBlazor && (series.startAngle || series.endAngle || series.explodeOffset || series.neckHeight ||
                                 series.neckWidth || series.radius || series.innerRadius || series.groupMode || series.emptyPointSettings)) {
-                                  blazorProp = true;
+                                blazorProp = true;
                             }
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName ||
                                 blazorProp)) {

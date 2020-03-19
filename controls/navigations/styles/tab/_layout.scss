@@ -1466,6 +1466,9 @@
 
         @media screen and (max-width: 480px) {
           min-height: $tab-big-height;
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+            height: $tab-big-height;
+          }
         }
 
         &:not(.e-tbar-pos) .e-toolbar-item:first-child,

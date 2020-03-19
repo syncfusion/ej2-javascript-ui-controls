@@ -8,9 +8,14 @@
 
 ## [Unreleased]
 
-## 17.4.55 (2020-03-10)
+## 18.1.36-beta (2020-03-19)
 
 ### Maps
+
+#### New Features
+
+- `#F149168` - Support is provided to parse and utilize the complex data source.
+- `#258888` - The map rendered from the providers such as Bing, OSM, and Google can now be exported in the supported formats.
 
 #### Bug Fixes
 
@@ -23,7 +28,7 @@
 
 #### Bug Fixes
 
-- `#244109` - Maps will now be center-aligned vertically while using the `zoomToCoordinates()` method.
+- `#244109` - Maps will now be aligned vertically at middle while using the `zoomToCoordinates()` method.
 - `#263976` - Data labels will now be rendered properly in the correct positions.
 - `#264153` - Data labels will now be rendered properly when zooming.
 
@@ -41,7 +46,7 @@
 
 #### Bug Fixes
 
-- `#263056`  - Now, Legend will be rendered properly when the OSM map is used along with a geometric sublayer.
+- `#263056` - Now, Legend will be rendered properly when the OSM map is used along with a geometric sublayers.
 
 ## 17.4.47 (2020-02-05)
 

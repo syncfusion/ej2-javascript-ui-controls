@@ -389,6 +389,18 @@ describe("Accordion Testing", () => {
             let innerItem: Element = ele.children[0];
             expect(innerItem.classList.contains('CustomClass')).toBe(true);
         });
+        it("AccordionItem  visible property  Testing", () => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            accordion = new Accordion({ items: [{ visible: false }] }, ele);
+            let innerItem: Element = ele.children[0];
+            expect(innerItem.classList.contains('e-hide')).toBe(true);
+        });
+        it("AccordionItem  disabled property  Testing", () => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            accordion = new Accordion({ items: [{ disabled: true }] }, ele);
+            let innerItem: Element = ele.children[0];
+            expect(innerItem.classList.contains('e-overlay')).toBe(true);
+        });
         it("AccordionItem multiple CssClass testing", () => {
             let ele: HTMLElement = document.getElementById("accordion");
             accordion = new Accordion({ items: [

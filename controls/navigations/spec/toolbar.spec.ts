@@ -5655,7 +5655,7 @@ describe('Toolbar Control', () => {
         });
         it('popup opened with content overflow testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
-            expect(toolbar.popObj.element.style.height === 'auto').toEqual(false);
+            expect(toolbar.popObj.element.style.height === 'auto').toEqual(true);
             expect(toolbar.popObj.element.style.maxHeight === '').toEqual(false);
         });
     });

@@ -29,7 +29,6 @@ export class WorkbookFormula {
         this.addEventListener();
         this.initCalculate();
         this.registerSheet();
-        this.initiateDefinedNames();
     }
 
     /**
@@ -161,7 +160,9 @@ export class WorkbookFormula {
             case 'addCustomFunction':
                 this.addCustomFunction(<string | Function>args.functionHandler, <string>args.functionName);
                 break;
-
+            case 'computeExpression':
+                args.calcValue = this.calculateInstance.computeExpression(<string>args.formula);
+                break;
         }
     }
     private referenceError(): string {
@@ -173,7 +174,6 @@ export class WorkbookFormula {
     private addCustomFunction(functionHandler: string | Function, functionName: string): void {
         this.calculateInstance.defineFunction(functionName, functionHandler);
     }
-
     private updateSheetInfo(): void {
         this.sheetInfo = [];
         this.parent.sheets.forEach((sheet: SheetModel, idx: number) => {
@@ -389,8 +389,11 @@ export class WorkbookFormula {
     }
 
     private autoCorrectFormula(formula: string): string {
-        if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
-            formula += ')';
+        if (!isNullOrUndefined(formula)) {
+            formula = formula.toString();
+            if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
+                formula += ')';
+            }
         }
         return formula;
     }
@@ -402,7 +405,7 @@ export class WorkbookFormula {
 
         while (i < len) {
             let definedname: DefineNameModel = definedNames[i];
-            this.addDefinedName(definedname);
+            this.addDefinedName(definedname, true);
             i++;
         }
     }
@@ -412,12 +415,18 @@ export class WorkbookFormula {
      * Used to add defined name to workbook.
      * @param {DefineNameModel} name - Define named range.
      */
-    private addDefinedName(definedName: DefineNameModel): boolean {
+    private addDefinedName(definedName: DefineNameModel, isValidate?: boolean): boolean {
         let isAdded: boolean = true;
         let sheetIdx: number;
         let name: string = definedName.name;
-        let refersTo: string = definedName.refersTo.indexOf('!') > 0 ? definedName.refersTo :
-            getSheetName(this.parent) + '!' + definedName.refersTo;
+        if (definedName.refersTo.indexOf('!') < 0) {
+            let sheetName: string = getSheetName(this.parent);
+            sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
+            definedName.refersTo = sheetName + '!' + ((definedName.refersTo.indexOf('=') < 0) ?
+                definedName.refersTo : definedName.refersTo.split('=')[1]);
+        }
+        let visibleRefersTo: string = definedName.refersTo;
+        let refersTo: string = this.parseSheetRef(definedName.refersTo);
         if (definedName.scope) {
             sheetIdx = getSheetIndex(this.parent, definedName.scope);
             if (sheetIdx > -1) {
@@ -428,14 +437,16 @@ export class WorkbookFormula {
         }
         if (!definedName.comment) { definedName.comment = ''; }
         //need to extend once internal sheet value changes done.
-        if (this.checkIsNameExist(definedName.name, definedName.scope)) {
+        if (!isValidate && this.checkIsNameExist(definedName.name, definedName.scope)) {
             isAdded = false;
         } else {
             this.calculateInstance.addNamedRange(name, refersTo[0] === '=' ? refersTo.substr(1) : refersTo);
             if (refersTo[0] !== '=') {
-                definedName.refersTo = '=' + refersTo;
+                definedName.refersTo = '=' + visibleRefersTo;
             }
-            this.parent.definedNames.push(definedName);
+            if (this.parent.definedNames.indexOf(definedName) < 0) {
+                this.parent.definedNames.push(definedName);
+            }
         }
         return isAdded;
     }

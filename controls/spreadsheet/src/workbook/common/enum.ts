@@ -24,18 +24,15 @@ export type TextDecoration = 'underline' | 'line-through' | 'underline line-thro
  */
 export type FontFamily = 'Arial' | 'Arial Black' | 'Axettac Demo' | 'Batang' | 'Book Antiqua' | 'Calibri' | 'Courier' | 'Courier New' |
     'Din Condensed' | 'Georgia' | 'Helvetica' | 'Helvetica New' | 'Roboto' | 'Tahoma' | 'Times New Roman' | 'Verdana';
-
 /**
  * Specifies the number format types in Spreadsheet.
  */
 export type NumberFormatType = 'General' | 'Number' | 'Currency' | 'Accounting' | 'ShortDate' | 'LongDate' | 'Time' | 'Percentage' |
     'Fraction' | 'Scientific' | 'Text';
-
 /**
  * Specifies the option for save file type from Spreadsheet. By default, Excel save will be occur.
  */
 export type SaveType = 'Xlsx' | 'Xls' | 'Csv';
-
 /** 
  * Defines the order of Sorting. They are
  * * Ascending
@@ -46,11 +43,14 @@ export type SortOrder =
     'Ascending' |
     /**  Defines SortDirection as Descending */
     'Descending';
-
 /**
  * Cell format type
  */
 export type FormatType = 'CellFormat' | 'NumberFormat';
+/**
+ * Border type
+ */
+export type BorderType = 'Vertical' | 'Horizontal' | 'Outer' | 'Inner';
 
 /**
  * Sheet visibility state
@@ -62,3 +62,19 @@ export type SheetState =
     'Hidden' |
     /** Defines the state of sheet as hidden. Once set, it cannot be unhidden. */
     'VeryHidden';
+
+/**
+ * Workbook model type
+ */
+export type ModelType = 'Sheet' | 'Row' | 'Column';
+
+/**
+ * validation type
+ */
+export type ValidationType = 'WholeNumber' | 'Decimal' | 'Date' | 'TextLength' | 'List' | 'Time';
+
+/**
+ * validation operator
+ */
+export type ValidationOperator = 'Between' | 'NotBetween' | 'EqualTo' | 'NotEqualTo' | 'LessThan' |
+ 'GreaterThan' | 'GreaterThanOrEqualTo' | 'LessThanOrEqualTo';

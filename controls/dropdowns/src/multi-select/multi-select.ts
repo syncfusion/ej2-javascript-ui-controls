@@ -461,7 +461,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.Blazor.Inputs.FloatLabelType
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -1475,20 +1475,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.placeholder) {
             size = size > this.inputElement.placeholder.length ? size : this.inputElement.placeholder.length;
         }
-        if (this.getInputValueWidth() > size) {
-            this.inputElement.size = this.getInputValueWidth();
+        if (this.inputElement.value.length > size) {
+            this.inputElement.size = this.inputElement.value.length;
         } else {
             this.inputElement.size = size;
         }
-    }
-    private getInputValueWidth(): number {
-        let font: string = window.getComputedStyle(this.inputElement).font;
-        let canvas: HTMLCanvasElement = document.createElement('canvas');
-        let context: CanvasRenderingContext2D = canvas.getContext('2d');
-        context.font = font;
-        let metrics: TextMetrics = context.measureText(this.inputElement.value);
-        let widthVal: number = metrics.width + 25;
-        return Math.ceil(widthVal);
     }
     private isPopupOpen(): boolean {
         return ((this.popupWrapper !== null) && (this.popupWrapper.parentElement !== null));
@@ -2009,7 +2000,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 } else {
                     let removeVal: number[] | string[] | boolean[] = this.value.slice(0);
                     removeVal.splice(index, 1);
-                    this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
+                    if (isBlazor() && this.isServerRendered) {
+                        let removedValues: number[] | string[] | boolean[] = ([].concat([], removeVal) as number[] | string[] | boolean[]);
+                        this.setProperties({ value: removedValues.length === 0 ? null : removedValues }, true);
+                    } else {
+                        this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
+                    }
                     if (element !== null) {
                         let hideElement: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', value);
                         element.setAttribute('aria-selected', 'false');
@@ -2025,7 +2021,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                         });
                         this.notify('updatelist', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', li: element, e: eve });
                         attributes(this.inputElement, { 'aria-activedescendant': element.id });
-                        if ((this.value.length !== this.mainData.length) && (this.mode === 'CheckBox' && this.showSelectAll)) {
+                        if ((this.value && this.value.length !== this.mainData.length)
+                            && (this.mode === 'CheckBox' && this.showSelectAll)) {
                             this.notify(
                                 'checkSelectAll',
                                 { module: 'CheckBoxSelection',
@@ -2069,7 +2066,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.selectAllEventEle = [];
                     }
                     if (isClearAll && (length === 1 || length === null)) { this.clearAllCallback(eve as MouseEvent, isClearAll); }
-                    if (isBlazor() && this.isServerRendered && (this.value && this.value.length === 0)) {
+                    if (isBlazor() && this.isServerRendered && (isNullOrUndefined(this.value) || this.value.length === 0)) {
                         this.updatedataValueItems(eve);
                     }
                 }
@@ -2121,7 +2118,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private updateChipStatus(): void {
-        if (this.value.length) {
+        if (this.value && this.value.length) {
             if (!isNullOrUndefined(this.chipCollectionWrapper)) {
                 (this.chipCollectionWrapper.style.display = '');
             }
@@ -2505,11 +2502,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'CheckBox') {
             this.refreshPlaceHolder();
             this.refreshInputHight();
-            if (this.changeOnBlur && isClearAll && (this.value && this.value.length === 0)) {
+            if (this.changeOnBlur && isClearAll && (isNullOrUndefined(this.value) || this.value.length === 0)) {
                 this.updateValueState(e, this.value, this.tempValues);
             }
         }
-        if (!this.changeOnBlur && isClearAll && (this.value && this.value.length === 0)) {
+        if (!this.changeOnBlur && isClearAll && (isNullOrUndefined(this.value) || this.value.length === 0)) {
             this.updateValueState(e, this.value, this.tempValues);
         }
         if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
@@ -2821,9 +2818,14 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.addValue(value, text, e);
         }
         if (isBlazor() && this.isServerRendered && this.value && this.list &&
-            this.value.length === this.list.querySelectorAll('li').length || this.value.length === this.maximumSelectionLength) {
+            this.value.length === this.list.querySelectorAll('li.e-list-item').length ||
+            this.value.length === this.maximumSelectionLength) {
             this.updatedataValueItems(e);
             this.checkPlaceholderSize();
+        }
+        if (isBlazor() && this.isServerRendered) {
+            this.checkPlaceholderSize();
+            this.makeTextBoxEmpty();
         }
     }
     protected removeListSelection(): void {
@@ -3658,7 +3660,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.initialTextUpdate();
                 newProp = this.value;
             }
-            if (this.value && this.value.length === 0) { this.tempValues = oldProp; }
+            if (isNullOrUndefined(this.value) || this.value.length === 0) { this.tempValues = oldProp; }
             this.initialValueUpdate();
             if (this.mode !== 'Box') { this.updateDelimView(); }
             this.refreshInputHight();

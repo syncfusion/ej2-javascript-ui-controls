@@ -8,6 +8,7 @@ import { LegendShape } from '../../chart/utils/enum';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { BorderModel, FontModel } from '../../common/model/base-model';
 import { AccumulationChart } from '../accumulation';
+import { AccumulationTheme } from './enum';
 /**
  * Accumulation Chart SeriesRender event arguments.
  */
@@ -102,6 +103,8 @@ export interface IAccLoadedEventArgs extends IChartEventArgs {
     accumulation: AccumulationChart;
     /** Defines the accumulation chart instance */
     chart: AccumulationChart;
+    /** Theme for the accumulation Chart */
+    theme?: AccumulationTheme;
 }
 export interface IAccLegendRenderEventArgs extends IChartEventArgs {
     /** Defines the current legend shape */

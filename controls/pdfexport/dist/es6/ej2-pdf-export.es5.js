@@ -26802,8 +26802,7 @@ var PdfGridLayouter = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.Grid.hasRowSpanSpan) {
             for (var i = 0; i < this.Grid.rows.count; i++) {
-                var height = this.Grid.rows.getRow(i).height;
-                if (!this.Grid.rows.getRow(i).isRowHeightSet) {
+                if (this.Grid.rows.getRow(i).height !== -1 && !this.Grid.rows.getRow(i).isRowHeightSet) {
                     this.Grid.rows.getRow(i).isRowHeightSet = true;
                 }
             }

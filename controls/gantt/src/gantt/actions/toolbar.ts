@@ -15,7 +15,7 @@ export class Toolbar {
     private id: string;
     public toolbar: NavToolbar;
     private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-        'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
+        'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
     public element: HTMLElement;
     private searchElement: HTMLInputElement;
     constructor(parent: Gantt) {
@@ -41,7 +41,7 @@ export class Toolbar {
                 this.parent.element.appendChild(this.element);
             }
             let preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
-                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
+                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
             for (let item of preItems) {
                 let itemStr: string = item.toLowerCase();
                 let localeName: string = item[0].toLowerCase() + item.slice(1);

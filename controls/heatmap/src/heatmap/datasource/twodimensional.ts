@@ -72,10 +72,9 @@ export class TwoDimensional {
                 this.heatMap.paletteSettings.colorGradientMode === 'Row') && this.heatMap.paletteSettings.type === 'Gradient') {
                 this.heatMap.dataMax[z] = minMaxVal[1];
                 this.heatMap.dataMin[z] = minMaxVal[0];
-            } else {
-                minVal = minMaxVal[0];
-                maxVal = minMaxVal[1];
             }
+            minVal = minMaxVal[0];
+            maxVal = minMaxVal[1];
             if (this.heatMap.xAxis.isInversed) {
                 this.completeDataSource[cloneDataIndex] = this.completeDataSource[cloneDataIndex].reverse();
             }
@@ -167,7 +166,7 @@ export class TwoDimensional {
     private getMinMaxValue(minVal: number, maxVal: number, tempVariable: number[]): number[] {
         let minMaxValue: number[] = [];
         if (this.heatMap.bubbleSizeWithColor) {
-            if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
+            if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
                 this.tempSizeArray = tempVariable;
             }
             minMaxValue.push(this.getMinValue(minVal, this.tempSizeArray));

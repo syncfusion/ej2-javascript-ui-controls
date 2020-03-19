@@ -63,7 +63,8 @@ export class GroupingBar implements IAction {
         return 'groupingbar';
     }
 
-    private renderLayout(): void {
+    /** @hidden */
+    public renderLayout(): void {
         this.groupingTable = createElement('div', { className: cls.GROUPING_BAR_CLASS });
         this.leftAxisPanel = createElement('div', { className: cls.LEFT_AXIS_PANEL_CLASS });
         this.rightAxisPanel = createElement('div', { className: cls.RIGHT_AXIS_PANEL_CLASS });
@@ -130,7 +131,7 @@ export class GroupingBar implements IAction {
         if (this.parent.element.querySelector('.' + cls.GRID_CLASS) || this.parent.element.querySelector('.' + cls.PIVOTCHART)) {
             if (this.parent.showGroupingBar) {
                 if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-                    /* tslint:disable:no-any */
+                    /* tslint:disable-next-line:no-any */
                     for (let element of this.parent.element.querySelectorAll('.' + cls.GROUPING_BAR_CLASS) as any) {
                         remove(element);
                     }
@@ -161,9 +162,11 @@ export class GroupingBar implements IAction {
                     this.filterPanel.removeAttribute('style');
                     let emptyRowCount: number;
                     if (this.parent.dataType === 'olap') {
-                        emptyRowCount = Object.keys(this.parent.olapEngineModule.headerContent).length;
+                        emptyRowCount = this.parent.olapEngineModule.headerContent ?
+                            Object.keys(this.parent.olapEngineModule.headerContent).length : 0;
                     } else {
-                        emptyRowCount = Object.keys(this.parent.engineModule.headerContent).length;
+                        emptyRowCount = this.parent.engineModule.headerContent ?
+                            Object.keys(this.parent.engineModule.headerContent).length : 0;
                     }
                     if (!isNullOrUndefined(emptyRowCount)) {
                         let emptyHeader: HTMLElement =
@@ -191,7 +194,7 @@ export class GroupingBar implements IAction {
                     let rightPanelHeight: number = (this.valuePanel.offsetHeight / 2);
                     if (rightPanelHeight > this.columnPanel.offsetHeight) {
                         setStyleAttribute(this.filterPanel, { height: formatUnit(rightPanelHeight) });
-                        setStyleAttribute(this.columnPanel, { height: formatUnit(rightPanelHeight + 1) });
+                        setStyleAttribute(this.columnPanel, { height: formatUnit(rightPanelHeight + 2) });
                     }
                     let topLeftHeight: number =
                         (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight;
@@ -336,7 +339,6 @@ export class GroupingBar implements IAction {
                 let colwidth: number = parseInt(buttonWidth, 10);
                 let gridColumn: Column[] = this.parent.grid.columns as Column[];
                 if (gridColumn && gridColumn.length > 0) {
-                    /* tslint:disable:align */
                     gridColumn[0].width = (gridColumn[0].width >= this.resColWidth ?
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth) :
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth));
@@ -358,9 +360,11 @@ export class GroupingBar implements IAction {
                         } else {
                             (gridColumn[cCnt] as Column).width = valueColWidth;
                             if ((gridColumn[cCnt] as Column).width !== 'auto') {
+                                /* tslint:disable:no-any */
                                 let levelName: string = gridColumn[cCnt].customAttributes ?
                                     (gridColumn[cCnt].customAttributes as any).cell.valueSort.levelName : '';
                                 gridColumn[cCnt].width = this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
+                                /* tslint:enable:no-any */
                             } else {
                                 (gridColumn[cCnt] as Column).minWidth = valueColWidth;
                             }
@@ -465,9 +469,10 @@ export class GroupingBar implements IAction {
         this.removeEventListener();
         if (this.parent.pivotButtonModule) {
             this.parent.pivotButtonModule.destroy();
-            if (this.touchObj && !this.touchObj.isDestroyed) { this.touchObj.destroy(); }
-        } else {
-            return;
+        }
+        if (this.touchObj && !this.touchObj.isDestroyed) { this.touchObj.destroy(); }
+        if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+            remove(this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS));
         }
     }
 }

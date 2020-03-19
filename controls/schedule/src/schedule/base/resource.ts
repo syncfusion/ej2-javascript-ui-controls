@@ -598,7 +598,7 @@ export class ResourceBase {
                 let data: Object[];
                 if (prevResourceData && this.parent.activeViewOptions.group.byGroupID) {
                     let id: string = (prevResourceData as { [key: string]: Object })[prevResource.idField] as string;
-                    data = new DataManager(resource.dataSource).executeLocal(new Query().where(resource.groupIDField, 'equal', id));
+                    data = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) => e[resource.groupIDField] === id);
                 } else {
                     data = resource.dataSource as Object[];
                 }
@@ -773,7 +773,7 @@ export class ResourceBase {
             return undefined;
         }
         let id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[colorFieldIndex];
-        let data: Object[] = this.filterData(resource.dataSource, resource.idField, 'equal', id);
+        let data: Object[] = this.filterData(resource.dataSource as Object[], resource.idField, id);
         if (data.length > 0) {
             return (data[0] as { [key: string]: Object })[resource.colorField] as string;
         }
@@ -785,15 +785,15 @@ export class ResourceBase {
         if (this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        let data: Object[] = this.filterData(resource.dataSource, resource.idField, 'equal', eventObj[resource.field] as string);
+        let data: Object[] = this.filterData(resource.dataSource as Object[], resource.idField, eventObj[resource.field] as string);
         if (data.length > 0) {
             return (data[0] as { [key: string]: Object })[resource.cssClassField] as string;
         }
         return undefined;
     }
 
-    private filterData(dataSource: Object[] | DataManager, field: string, operator: string, value: string): Object[] {
-        return new DataManager(dataSource).executeLocal(new Query().where(field, operator, value));
+    private filterData(dataSource: Object[], field: string, value: string): Object[] {
+        return dataSource.filter((data: { [key: string]: Object }) => data[field] === value);
     }
 
     private dataManagerFailure(e: { result: Object[] }): void {

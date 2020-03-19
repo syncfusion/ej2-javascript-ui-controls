@@ -937,7 +937,7 @@ describe('Drag module', () => {
             expect(key).toEqual('Testing');
             util.triggerMouseEvent(draggedElement, 'mousemove', 500, 100);
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
-            expect(draggedElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
+            expect(draggedElement.nextElementSibling.classList.contains('e-target-dropped-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
         });
 

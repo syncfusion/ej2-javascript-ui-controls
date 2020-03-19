@@ -3,7 +3,7 @@
  */
 import { Gantt } from '../../src/index';
 import { createElement, getValue } from '@syncfusion/ej2-base';
-import { resourceData } from '../base/data-source.spec';
+import { resourceData, scheduleModeData } from '../base/data-source.spec';
 import { destroyGantt, triggerMouseEvent, createGantt } from '../base/gantt-util.spec';
 
 describe('Gantt spec for tooltip', () => {
@@ -245,4 +245,42 @@ describe('Gantt spec for tooltip', () => {
             destroyGantt(ganttObj);
         });
     });
+    describe('Schedule mode', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: scheduleModeData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+       it('Manual parent taskbar tooltip', () => {
+            let marker: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-gantt-manualparenttaskbar') as HTMLElement;
+            triggerMouseEvent(marker, 'mouseover', 50);
+            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Parent Task 1</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 5 days</td></tr></tbody></table>');
+        }); 
+    })
 });

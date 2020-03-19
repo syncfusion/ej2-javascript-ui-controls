@@ -518,11 +518,11 @@ __decorate$1([
     Property(1000)
 ], TooltipSettings.prototype, "fadeOutDuration", void 0);
 __decorate$1([
+    Property(false)
+], TooltipSettings.prototype, "enableTextWrap", void 0);
+__decorate$1([
     Complex({ color: '#cccccc', width: 0.5 }, Border)
 ], TooltipSettings.prototype, "border", void 0);
-__decorate$1([
-    Property('None')
-], TooltipSettings.prototype, "position", void 0);
 /**
  * button settings in period selector
  */
@@ -608,6 +608,7 @@ class Double {
      * @private
      */
     constructor(chart) {
+        this.isColumn = 0;
         this.chart = chart;
     }
     /**
@@ -636,9 +637,21 @@ class Double {
      */
     getActualRange(axis, size) {
         this.initializeDoubleRange(axis);
-        axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
-        axis.actualRange.min = axis.doubleRange.start;
-        axis.actualRange.max = axis.doubleRange.end;
+        if ((!axis.startFromZero) && (this.isColumn > 0)) {
+            axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
+            axis.actualRange.max = axis.doubleRange.end + axis.actualRange.interval;
+            if ((axis.doubleRange.start - axis.actualRange.interval < 0 && axis.doubleRange.start > 0)) {
+                axis.actualRange.min = 0;
+            }
+            else {
+                axis.actualRange.min = axis.doubleRange.start - axis.actualRange.interval;
+            }
+        }
+        else {
+            axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
+            axis.actualRange.min = axis.doubleRange.start;
+            axis.actualRange.max = axis.doubleRange.end;
+        }
     }
     /**
      * Range for the axis.
@@ -709,6 +722,7 @@ class Double {
                 }
                 // For yRange
                 if (axis.orientation === 'Vertical') {
+                    this.isColumn += (series.type === 'Column' || series.type === 'Bar' || series.drawType === 'Column') ? 1 : 0;
                     if (this.chart.requireInvertedAxis) {
                         this.findMinMax(series.xMin - this.paddingInterval, series.xMax + this.paddingInterval);
                     }
@@ -947,8 +961,6 @@ const chartMouseUp = 'chartMouseUp';
 /** @private */
 const zoomComplete = 'zoomComplete';
 /** @private */
-const onZooming = 'onZooming';
-/** @private */
 const dragComplete = 'dragComplete';
 /** @private */
 const selectionComplete = 'selectionComplete';
@@ -983,7 +995,7 @@ const beforeExport = 'beforeExport';
 /** @private */
 const afterExport = 'afterExport';
 /** @private */
-const barRender = 'barRender';
+const bulletChartMouseClick = 'chartMouseClick';
 
 var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1887,6 +1899,9 @@ __decorate$2([
     Property(0)
 ], Axis.prototype, "startAngle", void 0);
 __decorate$2([
+    Property(true)
+], Axis.prototype, "startFromZero", void 0);
+__decorate$2([
     Property(null)
 ], Axis.prototype, "description", void 0);
 __decorate$2([
@@ -2658,19 +2673,22 @@ function templateAnimate(element, delay, duration, name, isRemove) {
     });
 }
 /** @private */
-function drawSymbol(location, shape, size, url, options, label, renderer, clipRect) {
+function drawSymbol(location, shape, size, url, options, label, renderer, clipRect, isChartControl, control) {
     let chartRenderer = renderer ? renderer : new SvgRenderer('');
-    let shapeOption = calculateShapes(location, size, shape, options, url);
+    let shapeOption = calculateShapes(location, size, shape, options, url, isChartControl, control);
     let drawElement = chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null);
     //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
 /** @private */
-function calculateShapes(location, size, shape, options, url) {
+// tslint:disable-next-line:max-func-body-length
+function calculateShapes(location, size, shape, options, url, isChart, control) {
     let dir;
     let functionName = 'Path';
-    let width = size.width;
-    let height = size.height;
+    let isBulletChart = isChart;
+    let width = (isBulletChart && shape === 'Circle') ? (size.width - 2) : size.width;
+    let height = (isBulletChart && shape === 'Circle') ? (size.height - 2) : size.height;
+    let sizeBullet = (isBulletChart) ? control.targetWidth : 0;
     let lx = location.x;
     let ly = location.y;
     let y = location.y + (-height / 2);
@@ -2687,6 +2705,12 @@ function calculateShapes(location, size, shape, options, url) {
                 (ly + (-height / 2));
             merge(options, { 'd': dir, stroke: options.fill });
             break;
+        case 'Multiply':
+            dir = 'M ' + (lx - sizeBullet) + ' ' + (ly - sizeBullet) + ' L ' +
+                (lx + sizeBullet) + ' ' + (ly + sizeBullet) + ' M ' +
+                (lx - sizeBullet) + ' ' + (ly + sizeBullet) + ' L ' + (lx + sizeBullet) + ' ' + (ly - sizeBullet);
+            merge(options, { 'd': dir, stroke: options.fill });
+            break;
         case 'HorizontalLine':
             dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
             merge(options, { 'd': dir });
@@ -2701,6 +2725,22 @@ function calculateShapes(location, size, shape, options, url) {
                 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
                 'L' + ' ' + x + ' ' + ly + ' z';
+            merge(options, { 'd': dir });
+            break;
+        case 'ActualRect':
+            dir = 'M' + ' ' + x + ' ' + (ly + (-height / 8)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (-height / 8)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet)) + ' ' + (ly + (height / 8)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (height / 8)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (-height / 8)) + ' z';
+            merge(options, { 'd': dir });
+            break;
+        case 'TargetRect':
+            dir = 'M' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (sizeBullet / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (x + (sizeBullet)) + ' ' + (ly + (-height / 2)) + ' z';
             merge(options, { 'd': dir });
             break;
         case 'Rectangle':
@@ -6146,6 +6186,12 @@ __decorate$4([
     Property(null)
 ], Series.prototype, "selectionStyle", void 0);
 __decorate$4([
+    Property(null)
+], Series.prototype, "unSelectedStyle", void 0);
+__decorate$4([
+    Property(null)
+], Series.prototype, "nonHighlightStyle", void 0);
+__decorate$4([
     Property(1)
 ], Series.prototype, "minRadius", void 0);
 __decorate$4([
@@ -6376,6 +6422,13 @@ class MarkerExplode extends ChartData {
         let seriesMarker = series.marker;
         let shape = marker.shape || seriesMarker.shape;
         let element = series.symbolElement || series.seriesElement;
+        let className;
+        if (this.chart.highlightModule && this.chart.highlightMode !== 'None') {
+            className = this.chart.highlightModule.generateStyle(series);
+        }
+        if (this.chart.selectionModule && this.chart.selectionMode !== 'None') {
+            className = this.chart.selectionModule.generateStyle(series);
+        }
         let symbolId = this.elementId + '_Series_' + series.index + '_Point_' + point.index + '_Trackball' +
             (index ? index : '');
         let size = new Size((marker.width || seriesMarker.width) + 5, (marker.height || seriesMarker.height) + 5);
@@ -6393,6 +6446,13 @@ class MarkerExplode extends ChartData {
             // incident: 252450 point click selection not working while maker explode
             //symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
+            let selectionId = element.id.indexOf('Symbol') !== -1 ? '_Symbol' : '';
+            let seletionElem = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
+                point.index + selectionId);
+            if (className !== '' && !isNullOrUndefined(className) && !isNullOrUndefined(seletionElem) &&
+                seletionElem.hasAttribute('class') && (className === seletionElem.getAttribute('class'))) {
+                symbol.classList.add(className);
+            }
             element.appendChild(symbol);
         }
     }
@@ -6701,38 +6761,42 @@ class BaseLegend {
         this.legend = chart.legendSettings;
         this.legendID = chart.element.id + '_chart_legend';
         this.isChartControl = (chart.getModuleName() === 'chart');
+        this.isBulletChartControl = (chart.getModuleName() === 'bulletChart');
+        this.bulletChart = this.chart;
     }
     /**
      * Calculate the bounds for the legends.
      * @return {void}
      * @private
      */
-    calculateLegendBounds(rect, availableSize) {
+    calculateLegendBounds(rect, availableSize, maxLabelSize) {
         let legend = this.legend;
         this.getPosition(legend.position, availableSize);
         this.legendBounds = new Rect(rect.x, rect.y, 0, 0);
+        let defaultValue = (this.isBulletChartControl) ? '40%' : '20%';
         this.isVertical = (this.position === 'Left' || this.position === 'Right');
         if (this.isVertical) {
             this.legendBounds.height = stringToNumber(legend.height, availableSize.height - (rect.y - this.chart.margin.top)) || rect.height;
-            this.legendBounds.width = stringToNumber(legend.width || '20%', availableSize.width);
+            this.legendBounds.width = stringToNumber(legend.width || defaultValue, availableSize.width);
         }
         else {
             this.legendBounds.width = stringToNumber(legend.width, availableSize.width) || rect.width;
-            this.legendBounds.height = stringToNumber(legend.height || '20%', availableSize.height);
+            this.legendBounds.height = stringToNumber(legend.height || defaultValue, availableSize.height);
         }
         this.library.getLegendBounds(availableSize, this.legendBounds, legend);
-        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize);
+        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize, maxLabelSize);
     }
     /**
      * To find legend position based on available size for chart and accumulation chart
      */
     getPosition(position, availableSize) {
-        if (this.isChartControl) {
+        let chart = this.chart;
+        let accumulation = this.chart;
+        if (this.isChartControl || this.isBulletChartControl) {
             this.position = (position !== 'Auto') ? position : 'Bottom';
         }
         else {
-            if (position === 'Auto' && this.chart.visibleSeries &&
-                (this.chart.visibleSeries[0].type === 'Funnel' || this.chart.visibleSeries[0].type === 'Pyramid')) {
+            if (position === 'Auto' && ((chart || accumulation).visibleSeries && (chart || accumulation).visibleSeries[0].type === 'Funnel' || (chart || accumulation).visibleSeries[0].type === 'Pyramid')) {
                 position = 'Top';
             }
             this.position = (position !== 'Auto') ? position :
@@ -6752,29 +6816,53 @@ class BaseLegend {
     /**
      * To find legend location based on position, alignment for chart and accumulation chart
      */
-    getLocation(position, alignment, legendBounds, rect, availableSize) {
+    getLocation(position, alignment, legendBounds, rect, availableSize, maxLabelSize) {
         let padding = this.legend.border.width;
+        let isBulletChart = this.isBulletChartControl;
+        let bulletChart = this.bulletChart;
+        let labelIns = bulletChart.labelPosition === 'Inside';
+        let ticklIns = bulletChart.tickPosition === 'Inside';
+        let isVertical = bulletChart.orientation === 'Vertical';
+        // tslint:disable-next-line:max-line-length
+        let categoryFieldValue = (isBulletChart && bulletChart.categoryField !== '') ? maxLabelSize.width + this.chart.border.width + padding * 3 : 0;
         let legendHeight = legendBounds.height + padding + this.legend.margin.top + this.legend.margin.bottom;
         let legendWidth = legendBounds.width + padding + this.legend.margin.left + this.legend.margin.right;
         let marginBottom = this.chart.margin.bottom;
         if (position === 'Bottom') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
+            // tslint:disable-next-line:max-line-length
             legendBounds.y = rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
+            legendBounds.y += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns
+                // tslint:disable-next-line:max-line-length
+                //tslint:disable-next-line:max-line-length
+                && !isVertical) ? bulletChart.majorTickLines.height + marginBottom + this.legend.border.width + padding * 2 :
+                (isVertical && bulletChart.categoryField !== '') ? maxLabelSize.height + padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
         }
         else if (position === 'Top') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
             legendBounds.y = rect.y + padding + this.legend.margin.top;
+            legendBounds.y -= (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
+                // // tslint:disable-next-line:max-line-length
+                !isVertical) ? bulletChart.majorTickLines.height + this.chart.margin.top : 0;
+            legendHeight -= (isBulletChart) ? -padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
         }
         else if (position === 'Right') {
             legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
+            legendWidth += (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
+                isVertical) ? (this.chart.margin.left + this.chart.margin.right + bulletChart.majorTickLines.height) : 0;
             subtractThickness(rect, new Thickness(0, legendWidth, 0, 0));
         }
         else if (position === 'Left') {
             legendBounds.x = legendBounds.x + this.legend.margin.left;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
+            legendWidth += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns &&
+                // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line:max-line-length
+                isVertical) ? (legendBounds.x - this.chart.margin.left + padding + bulletChart.majorTickLines.height) :
+                (bulletChart.orientation !== 'Vertical' && bulletChart.categoryField !== '') ? categoryFieldValue : 0;
             subtractThickness(rect, new Thickness(legendWidth, 0, 0, 0));
         }
         else {
@@ -6815,7 +6903,7 @@ class BaseLegend {
             start = new ChartLocation(legendBounds.x + padding + (legend.shapeWidth / 2), legendBounds.y + padding + this.maxItemHeight / 2);
             let textOptions = new TextOption('', start.x, start.y, 'start');
             //  initialization for totalPages legend click totalpage again calculate
-            this.totalPages = this.isChartControl ? this.totalPages : 0;
+            this.totalPages = this.totalPages = (this.isChartControl || this.isBulletChartControl) ? this.totalPages : 0;
             let textPadding = legend.shapePadding + padding + legend.shapeWidth;
             let count = 0;
             this.pageXCollections = [];
@@ -6823,8 +6911,11 @@ class BaseLegend {
             let previousLegend = this.legendCollections[firstLegend];
             for (let legendOption of this.legendCollections) {
                 if (this.chart.getModuleName() === 'accumulationchart') {
-                    legendOption.fill = this.chart.visibleSeries[0].points[legendOption.pointIndex].color;
+                    // tslint:disable-next-line:max-line-length
+                    legendOption.fill = (this.chart || this.chart).visibleSeries[0].points[legendOption.pointIndex].color;
                 }
+                this.accessbilityText = (this.isBulletChartControl) ? 'Legend of bullet chart' + '' + legendOption.text
+                    : 'Click to show or hide the ' + legendOption.text + ' series';
                 if (legendOption.render && legendOption.text !== '') {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', count)
@@ -6832,13 +6923,15 @@ class BaseLegend {
                     if (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute('tabindex', legend.tabIndex.toString());
                         legendSeriesGroup.setAttribute('aria-label', legend.description ||
-                            'Click to show or hide the ' + legendOption.text + ' series');
+                            this.accessbilityText);
                     }
                     this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, legendBounds, count, firstLegend);
                     this.renderSymbol(legendOption, legendSeriesGroup, count);
                     this.renderText(chart, legendOption, legendSeriesGroup, textOptions, count);
                     if (legendSeriesGroup) {
-                        legendSeriesGroup.setAttribute('style', 'cursor: ' + ((!legend.toggleVisibility && chart.selectionMode === 'None') ? 'auto' : 'pointer'));
+                        legendSeriesGroup.setAttribute('style', 'cursor: ' + ((!legend.toggleVisibility && (chart.selectionMode === 'None' ||
+                            chart.highlightMode === 'None' ||
+                            chart.selectionMode === 'None') || this.isBulletChartControl) ? 'auto' : 'pointer'));
                     }
                     if (legendTranslateGroup) {
                         legendTranslateGroup.appendChild(legendSeriesGroup);
@@ -6888,7 +6981,7 @@ class BaseLegend {
         let clippath = chart.renderer.createClipPath({ id: id + '_clipPath' });
         options.y += padding;
         options.id += '_clipPath_rect';
-        options.width = (!this.isChartControl && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
+        options.width = ((!this.isChartControl && chart.getModuleName() !== 'bulletChart') && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
         if (!isCanvas) {
             this.clipRect = chart.renderer.drawRectangle(options);
             clippath.appendChild(this.clipRect);
@@ -6907,12 +7000,14 @@ class BaseLegend {
      */
     renderSymbol(legendOption, group, i) {
         let borderColor;
+        let control = this.isBulletChartControl ? this.chart : null;
         let symbolColor = legendOption.visible ? legendOption.fill : '#D3D3D3';
         let shape = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
         let isStrokeWidth = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
             (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
-        let strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width : 1;
+        let strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width :
+            (this.isBulletChartControl && legendOption.shape === 'Multiply') ? 4 : 1;
         let isCustomBorder = this.chart.getModuleName() === 'chart' &&
             (legendOption.type === 'Scatter' || legendOption.type === 'Bubble');
         if (isCustomBorder && i < this.chart.visibleSeries.length) {
@@ -6924,12 +7019,21 @@ class BaseLegend {
         let regionPadding;
         let isCanvas = this.chart.enableCanvas;
         if (!isCanvas) {
-            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer));
+            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', 
+            // tslint:disable-next-line:max-line-length
+            // tslint:disable-next-line:align
+            symbolOption, this.accessbilityText, this.chart.renderer, null, this.isBulletChartControl, control));
         }
         else {
             regionPadding = -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber);
-            drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer, this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null);
-            this.legendRegions.push({ rect: new Rect(legendOption.location.x, legendOption.location.y, this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: i });
+            drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', 
+            // tslint:disable-next-line:align
+            symbolOption, this.accessbilityText, this.chart.renderer, this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null, this.isBulletChartControl, control);
+            this.legendRegions.push({
+                rect: new Rect(legendOption.location.x, legendOption.location.y, 
+                // tslint:disable-next-line:align
+                this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: i
+            });
         }
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||
             legendOption.type === 'Doughnut') {
@@ -6937,11 +7041,16 @@ class BaseLegend {
             shape = legendOption.type === 'Doughnut' ? 'Circle' : legendOption.markerShape;
             symbolOption.fill = legendOption.type === 'Doughnut' ? '#FFFFFF' : symbolOption.fill;
             if (!isCanvas) {
-                group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
+                // tslint:disable-next-line:max-line-length
+                group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), 
+                // tslint:disable-next-line:align
+                '', symbolOption, this.accessbilityText, null, null, this.isBulletChartControl, control));
             }
             else {
-                drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer, this.currentPageNumber ?
-                    new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+                drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), 
+                // tslint:disable-next-line:align
+                '', symbolOption, this.accessbilityText, this.chart.renderer, this.currentPageNumber ?
+                    new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null, this.isBulletChartControl, control);
             }
         }
     }
@@ -6960,7 +7069,7 @@ class BaseLegend {
         let element = textElement$1(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false, null, this.currentPageNumber && isCanvas ?
             new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
         if (element) {
-            element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
+            element.setAttribute('aria-label', legend.description || this.accessbilityText);
         }
         if (isCanvas) {
             let textSize = measureText(textOptions.text, legend.textStyle);
@@ -6983,7 +7092,7 @@ class BaseLegend {
         let grayColor = '#545454';
         let legend = chart.legendSettings; // to solve parameter lint error, legend declaration is here
         let padding = 8; // const padding for paging elements
-        if (this.isChartControl || !this.isVertical) {
+        if (this.isChartControl || this.isBulletChartControl || !this.isVertical) {
             this.totalPages = Math.ceil(this.totalPages / Math.max(1, this.rowCount - 1));
         }
         else {
@@ -7056,7 +7165,7 @@ class BaseLegend {
     translatePage(pagingText, page, pageNumber) {
         let size = (this.clipPathHeight) * page;
         let translate = 'translate(0,-' + size + ')';
-        if (!this.isChartControl && this.isVertical) {
+        if (!this.isChartControl && !this.bulletChart && this.isVertical) {
             let pageLength = page * this.maxColumns;
             size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
             size = size < 0 ? 0 : size; // to avoid small pixel variation
@@ -7611,6 +7720,8 @@ let Chart = class Chart extends Component {
         /** @private */
         this.isScrolling = false;
         /** @private */
+        this.visible = 0;
+        /** @private */
         this.chartAreaType = 'Cartesian';
         this.chartid = 57723;
         setValue('mergePersistData', this.mergePersistChartData, this);
@@ -7647,6 +7758,19 @@ let Chart = class Chart extends Component {
         this.initPrivateVariable();
         this.setCulture();
         this.wireEvents();
+        if (this.stockChart) {
+            if (this.stockChart.tooltip.header === null) {
+                this.tooltip.header = '<b>${point.x}</b>';
+            }
+            if (this.stockChart.tooltip.format === null) {
+                this.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
+                    ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
+                if (this.stockChart.series[0].volume !== '') {
+                    this.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
+                }
+            }
+            this.animateSeries = false;
+        }
     }
     initPrivateVariable() {
         this.animateSeries = true;
@@ -7672,7 +7796,21 @@ let Chart = class Chart extends Component {
      */
     render() {
         this.svgRenderer = new SvgRenderer(this.element.id);
-        this.trigger(load, { chart: this });
+        let loadEventData = { chart: this.isBlazor ? {} : this, theme: this.theme, name: load, cancel: false };
+        if (!this.stockChart) {
+            /**
+             * Load event for the chart will be triggered only chart componet, if this is stock chart, load event did not triggered.
+             */
+            this.trigger(load, loadEventData, () => {
+                this.cartesianChartRendering(loadEventData);
+            });
+        }
+        else {
+            this.cartesianChartRendering(loadEventData);
+        }
+    }
+    cartesianChartRendering(beforeRenderData) {
+        this.theme = this.isBlazor ? beforeRenderData.theme : this.theme;
         this.createChartSvg();
         this.setTheme();
         this.markerRender = new Marker(this);
@@ -7915,6 +8053,7 @@ let Chart = class Chart extends Component {
                 visibility = item.visible;
             }
             if (visibility) {
+                this.visible++;
                 findClipRect(item);
                 if (this.enableCanvas) {
                     // To render scatter and bubble series in canvas
@@ -7928,6 +8067,7 @@ let Chart = class Chart extends Component {
                 }
             }
         }
+        this.visible = 0;
         let options = {
             'id': this.element.id + '_ChartAreaClipRect_',
             'x': this.chartAxisLayoutPanel.seriesClipRect.x,
@@ -8031,6 +8171,9 @@ let Chart = class Chart extends Component {
             selectedDataIndexes = extend([], this.selectionModule.selectedDataIndexes, null, true);
             this.selectionModule.invokeSelection(this);
         }
+        if (this.highlightModule) {
+            this.highlightModule.invokeHighlight(this);
+        }
         if (selectedDataIndexes.length > 0) {
             this.selectionModule.selectedDataIndexes = selectedDataIndexes;
             this.selectionModule.redrawSelection(this, this.selectionMode);
@@ -8079,21 +8222,9 @@ let Chart = class Chart extends Component {
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
-            if (regSub.test(this.title)) {
-                this.title = getUnicodeText(this.title, regSub);
-            }
-            if (regSup.test(this.title)) {
-                this.title = getUnicodeText(this.title, regSup);
-            }
             this.titleCollection = getTitle(this.title, this.titleStyle, width);
             titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
-                if (regSub.test(this.subTitle)) {
-                    this.subTitle = getUnicodeText(this.subTitle, regSub);
-                }
-                if (regSup.test(this.subTitle)) {
-                    this.subTitle = getUnicodeText(this.subTitle, regSup);
-                }
                 let maxWidth = 0;
                 for (let titleText of this.titleCollection) {
                     titleWidth = measureText(titleText, this.titleStyle).width;
@@ -8108,7 +8239,7 @@ let Chart = class Chart extends Component {
         let height = this.availableSize.height - top - this.border.width - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
         if (this.legendModule) {
-            this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize);
+            this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
         }
         this.chartAxisLayoutPanel.measureAxis(this.initialClipRect);
     }
@@ -8525,7 +8656,7 @@ let Chart = class Chart extends Component {
     setStyle(element) {
         let zooming = this.zoomSettings;
         let disableScroll = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
-            this.selectionMode !== 'None' || this.crosshair.enable;
+            this.selectionMode !== 'None' || this.crosshair.enable || this.highlightMode !== 'None';
         element.style.touchAction = disableScroll ? 'none' : 'element';
         element.style.msTouchAction = disableScroll ? 'none' : 'element';
         element.style.msContentZooming = 'none';
@@ -8994,6 +9125,12 @@ let Chart = class Chart extends Component {
                 args: [this]
             });
         }
+        if (this.highlightMode !== 'None') {
+            modules.push({
+                member: 'Highlight',
+                args: [this]
+            });
+        }
         if (dataLabelEnable) {
             modules.push({
                 member: 'DataLabel',
@@ -9264,14 +9401,11 @@ let Chart = class Chart extends Component {
         }
     }
     /**
-     * Clear visible Axis labels
+     * To remove style element
      */
-    clearVisibleAxisLabels() {
-        let axes = [this.primaryXAxis, this.primaryYAxis];
-        axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
-        for (let i = 0, len = axes.length; i < len; i++) {
-            axes[i].labels = [];
-        }
+    removeStyles() {
+        removeElement$1(this.element.id + '_ej2_chart_selection');
+        removeElement$1(this.element.id + '_ej2_chart_highlight');
     }
     /**
      * Called internally if any of the property value changed.
@@ -9407,13 +9541,23 @@ let Chart = class Chart extends Component {
                     case 'selectedDataIndexes':
                     case 'selectionMode':
                         if (this.selectionModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
+                            this.selectionModule.currentMode = this.selectionMode;
+                            this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                             this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                         }
                         break;
                     case 'isMultiSelect':
                         if (this.selectionModule && !newProp.isMultiSelect && this.selectionModule.selectedDataIndexes.length > 1) {
+                            this.selectionModule.currentMode = this.selectionMode;
+                            this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                             this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                         }
+                        break;
+                    case 'highlightMode':
+                    case 'selectionPattern':
+                    case 'highlightPattern':
+                        this.removeStyles();
+                        renderer = true;
                         break;
                     case 'theme':
                         this.animateSeries = true;
@@ -9519,6 +9663,15 @@ __decorate([
     Property('None')
 ], Chart.prototype, "selectionMode", void 0);
 __decorate([
+    Property('None')
+], Chart.prototype, "highlightMode", void 0);
+__decorate([
+    Property('None')
+], Chart.prototype, "selectionPattern", void 0);
+__decorate([
+    Property('None')
+], Chart.prototype, "highlightPattern", void 0);
+__decorate([
     Property(false)
 ], Chart.prototype, "isMultiSelect", void 0);
 __decorate([
@@ -9568,13 +9721,13 @@ __decorate([
 ], Chart.prototype, "beforePrint", void 0);
 __decorate([
     Event()
+], Chart.prototype, "loaded", void 0);
+__decorate([
+    Event()
 ], Chart.prototype, "beforeExport", void 0);
 __decorate([
     Event()
 ], Chart.prototype, "afterExport", void 0);
-__decorate([
-    Event()
-], Chart.prototype, "loaded", void 0);
 __decorate([
     Event()
 ], Chart.prototype, "load", void 0);
@@ -9641,9 +9794,6 @@ __decorate([
 __decorate([
     Event()
 ], Chart.prototype, "zoomComplete", void 0);
-__decorate([
-    Event()
-], Chart.prototype, "onZooming", void 0);
 __decorate([
     Event()
 ], Chart.prototype, "scrollStart", void 0);
@@ -10517,7 +10667,7 @@ class StripLine {
      * @param startValue
      * @param segmentAxis
      */
-    measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart) {
+    measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis) {
         let actualStart;
         let actualEnd;
         let orientation = axis.orientation;
@@ -10529,16 +10679,13 @@ class StripLine {
             if (axis.valueType === 'DateTimeCategory') {
                 let start = stripline.start;
                 let end = stripline.end;
-                actualStart = (start != null && typeof start !== 'number') ?
-                    axis.labels.indexOf(this.dateToMilliSeconds(start, chart).toString()) : start;
-                actualEnd = (end != null && typeof end !== 'number') ?
-                    axis.labels.indexOf(this.dateToMilliSeconds(end, chart).toString()) : end;
+                actualStart = (start != null && typeof start !== 'number') ? axis.labels.indexOf((start).getTime().toString()) :
+                    start;
+                actualEnd = (end != null && typeof end !== 'number') ? axis.labels.indexOf((end).getTime().toString()) : end;
             }
             else {
-                actualStart = stripline.start === null ? null : this.isCoreDate(stripline.start) ?
-                    this.dateToMilliSeconds(stripline.start, chart) : +stripline.start;
-                actualEnd = stripline.end === null ? null : this.isCoreDate(stripline.start) ?
-                    this.dateToMilliSeconds(stripline.end, chart) : +stripline.end;
+                actualStart = stripline.start === null ? null : +stripline.start;
+                actualEnd = stripline.end === null ? null : +stripline.end;
             }
         }
         let rect = this.getFromTovalue(actualStart, actualEnd, stripline.size, stripline.startFromAxis, axis, stripline);
@@ -10548,8 +10695,7 @@ class StripLine {
         let y = (orientation === 'Horizontal') ? seriesClipRect.y : (axis.rect.y + axis.rect.height -
             ((stripline.sizeType === 'Pixel' ? rect.from : rect.to) * axis.rect.height));
         if (stripline.isSegmented && stripline.segmentStart != null && stripline.segmentEnd != null && stripline.sizeType !== 'Pixel') {
-            let segRect = this.getFromTovalue(this.isCoreDate(stripline.segmentStart) ? this.dateToMilliSeconds(stripline.segmentStart, chart) :
-                +stripline.segmentStart, this.isCoreDate(stripline.segmentEnd) ? this.dateToMilliSeconds(stripline.segmentEnd, chart) : +stripline.segmentEnd, null, null, segmentAxis, stripline);
+            let segRect = this.getFromTovalue(+stripline.segmentStart, +stripline.segmentEnd, null, null, segmentAxis, stripline);
             if (segmentAxis.orientation === 'Vertical') {
                 y = (segmentAxis.rect.y + segmentAxis.rect.height -
                     (segRect.to * segmentAxis.rect.height));
@@ -10634,11 +10780,6 @@ class StripLine {
         }
         return value;
     }
-    dateParse(value, chart) {
-        let dateParser = chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-        let dateFormatter = chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
-        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
-    }
     /**
      * To render strip lines based start and end.
      * @private
@@ -10674,9 +10815,8 @@ class StripLine {
                     }
                     if (stripline.isRepeat && stripline.repeatEvery != null && stripline.size !== null && stripline.sizeType !== 'Pixel') {
                         limit = (stripline.repeatUntil != null) ? ((axis.valueType === 'DateTime') ?
-                            this.dateToMilliSeconds(stripline.repeatUntil, chart) : +stripline.repeatUntil) : axis.actualRange.max;
-                        startValue = this.isCoreDate(stripline.start) ? this.dateToMilliSeconds(stripline.start, chart) :
-                            stripline.start;
+                            stripline.repeatUntil.getTime() : +stripline.repeatUntil) : axis.actualRange.max;
+                        startValue = stripline.start;
                         if ((stripline.startFromAxis && axis.valueType === 'DateTime' && stripline.sizeType === 'Auto') ||
                             (stripline.start < axis.visibleRange.min)) {
                             startValue = axis.visibleLabels[0].value === axis.visibleRange.min ? axis.visibleRange.min :
@@ -10691,7 +10831,7 @@ class StripLine {
                                 this.renderStripLineElement(axis, stripline, seriesClipRect, id, striplineGroup, chart, startValue, segmentAxis, count);
                             }
                             count++;
-                            startValue = this.getStartValue(axis, stripline, startValue, chart);
+                            startValue = this.getStartValue(axis, stripline, startValue);
                         }
                     }
                     else {
@@ -10702,22 +10842,6 @@ class StripLine {
             }
         }
         appendChildElement(chart.enableCanvas, chart.svgObject, striplineGroup, chart.redraw);
-    }
-    /**
-     * To convert the C# date to js date
-     * @param value
-     * @param axis
-     */
-    isCoreDate(value) {
-        return typeof value === 'string' ? true : false;
-    }
-    /**
-     * To get the total milli seconds
-     * @param value
-     * @param chart
-     */
-    dateToMilliSeconds(value, chart) {
-        return this.dateParse(value, chart).getTime();
     }
     /**
      * To draw the single line strip line
@@ -10796,11 +10920,9 @@ class StripLine {
      * @param stripline
      * @param startValue
      */
-    getStartValue(axis, stripline, startValue, chart) {
+    getStartValue(axis, stripline, startValue) {
         if (axis.valueType === 'DateTime') {
-            return (this.getToValue(null, startValue, 
-            // tslint:disable-next-line:max-line-length
-            this.isCoreDate(stripline.repeatEvery) ? this.dateToMilliSeconds(stripline.repeatEvery, chart) : +stripline.repeatEvery, axis, null, stripline));
+            return this.getToValue(null, startValue, +stripline.repeatEvery, axis, null, stripline);
         }
         else {
             return startValue + (+stripline.repeatEvery);
@@ -10839,7 +10961,7 @@ class StripLine {
      * @param count
      */
     renderStripLineElement(axis, stripline, seriesClipRect, id, striplineGroup, chart, startValue, segmentAxis, count) {
-        let rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart);
+        let rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis);
         if (stripline.sizeType === 'Pixel') {
             this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
         }
@@ -11237,6 +11359,7 @@ class ColumnBase {
         let vSeries = { rectCount: 0, position: null };
         for (let i = 0; i < seriesCollection.length; i++) {
             let value = seriesCollection[i];
+            // tslint:disable-next-line:align
             if (value.type.indexOf('Stacking') !== -1) {
                 if (value.stackingGroup) {
                     if (stackingGroup[value.stackingGroup] === undefined) {
@@ -11261,6 +11384,7 @@ class ColumnBase {
                 value.position = vSeries.rectCount++;
             }
         }
+        // tslint:disable-next-line:align
         for (let i = 0; i < seriesCollection.length; i++) {
             let value = seriesCollection[i];
             value.rectCount = vSeries.rectCount;
@@ -11777,6 +11901,13 @@ class AreaSeries extends MultiColoredSeries {
             }
         });
         if (isPolar && direction !== '') {
+            let endPoint = '';
+            let chart = this.chart;
+            endPoint += this.getAreaPathDirection(0, origin, series, isInverted, getCoordinate, null, 'L');
+            if (xAxis.isInversed || yAxis.isInversed) {
+                direction += (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, endPoint) :
+                    chart.radarSeriesModule.getRadarIsInversedPath(xAxis, endPoint));
+            }
             direction = direction.concat(direction + ' ' + 'Z');
         }
         this.appendLinePath(new PathOption(series.chart.element.id + '_Series_' + series.index, series.interior, borderWidth, borderColor, series.opacity, series.dashArray, ((series.points.length > 1 && direction !== '') ? (direction + this.getAreaPathDirection(series.points[series.points.length - 1].xValue, series.chart.chartAreaType === 'PolarRadar' ?
@@ -12721,6 +12852,21 @@ class PolarSeries extends PolarRadarPanel {
             }
         });
     }
+    // path calculation for isInversed polar area series
+    getPolarIsInversedPath(xAxis, endPoint) {
+        let vector;
+        let x1;
+        let y1;
+        let chart = this.chart;
+        let radius = chart.radius;
+        let direction = endPoint;
+        let circleRotate = xAxis.isInversed ? '1 1 ' : '1 0 ';
+        vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
+        x1 = this.centerX + radius * vector.x;
+        y1 = this.centerY + radius * vector.y;
+        return direction += 'L ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate +
+            x1 + ' ' + (this.centerY + radius) + ' A ' + radius + ' ' + radius + ' 0 ' + circleRotate + x1 + ' ' + y1 + ' ';
+    }
     /**
      * Get module name.
      */
@@ -12765,6 +12911,27 @@ class RadarSeries extends PolarSeries {
         else {
             this.columnDrawTypeRender(series, xAxis, yAxis);
         }
+    }
+    // path calculation for isInversed polar area series
+    getRadarIsInversedPath(xAxis, endPoint) {
+        let chart = this.chart;
+        let x1;
+        let y1;
+        let vector;
+        let radius = chart.radius;
+        let length = xAxis.visibleLabels.length;
+        let direction = endPoint;
+        vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
+        y1 = this.centerY + radius * vector.y;
+        x1 = this.centerX + radius * vector.x;
+        direction += ' L ' + x1 + ' ' + y1 + ' ';
+        for (let i = length - 1; i >= 0; i--) {
+            vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[i].value, xAxis), this.startAngle);
+            y1 = this.centerY + radius * vector.y;
+            x1 = this.centerX + radius * vector.x;
+            direction += 'L ' + x1 + ' ' + y1 + ' ';
+        }
+        return direction;
     }
     /**
      * Get module name.
@@ -13295,9 +13462,15 @@ class StackingAreaSeries extends LineBase {
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
             let connectPoints = this.getFirstLastVisiblePoint(series.points);
+            let chart = this.chart;
             point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             lineDirection += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+            if (this.chart.visible === 1 && (xAxis.isInversed || yAxis.isInversed)) {
+                this.chart.enableAnimation = false;
+                lineDirection = (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, lineDirection) :
+                    chart.radarSeriesModule.getRadarIsInversedPath(xAxis, lineDirection));
+            }
         }
         if (!isPolar || (isPolar && series.index !== this.getFirstSeriesIndex(series.chart.visibleSeries))) {
             for (let j = pointsLength - 1; j >= startPoint; j--) {
@@ -17014,58 +17187,23 @@ class BaseTooltip extends ChartData {
             }
         }
     }
-    createTooltip(chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null, customTemplate, tooltipPosition = 'None') {
+    createTooltip(chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null, customTemplate) {
         let series = this.currentPoints[0].series;
         let module = chart.tooltipModule || chart.accumulationTooltipModule;
-        let isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
-        let inverted = this.chart.requireInvertedAxis && series.isRectSeries;
-        let position = null;
-        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
-            let contentSize = measureText(this.text[0], chart.tooltip.textStyle);
-            let headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
-                new Size(0, 0);
-            // marker size + arrowpadding + 2 * padding + markerpadding
-            const markerSize = 10 + 12 + (2 * 10) + 5;
-            contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);
-            const heightPadding = 12 + (2 * 10) + (headerSize.height > 0 ? (2 * 10) : 0);
-            contentSize.height = contentSize.height + headerSize.height + heightPadding;
-            position = this.getCurrentPosition(isNegative, inverted);
-            position = this.getPositionBySize(contentSize, new Rect(0, 0, bounds.width, bounds.height), location, position);
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
-        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
-            position = tooltipPosition;
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: this.headerText,
-                content: this.text,
-                fill: chart.tooltip.fill,
-                border: chart.tooltip.border,
-                enableAnimation: chart.tooltip.enableAnimation,
-                location: location,
-                shared: chart.tooltip.shared,
-                shapes: shapes,
-                clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
-                areaBounds: bounds,
-                palette: this.findPalette(),
-                template: customTemplate || chart.tooltip.template,
-                data: templatePoint,
-                theme: chart.theme,
-                offset: offset,
-                textStyle: chart.tooltip.textStyle,
-                isNegative: isNegative,
-                inverted: inverted,
+                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
+                enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
+                shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
+                areaBounds: bounds, palette: this.findPalette(), template: customTemplate || chart.tooltip.template, data: templatePoint,
+                theme: chart.theme, offset: offset, textStyle: chart.tooltip.textStyle,
+                isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
+                inverted: this.chart.requireInvertedAxis && series.isRectSeries,
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
-                availableSize: chart.availableSize,
-                duration: this.chart.tooltip.duration,
-                isCanvas: this.chart.enableCanvas,
+                availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
+                isCanvas: this.chart.enableCanvas, isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
-                tooltipPlacement: position,
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -17089,84 +17227,12 @@ class BaseTooltip extends ChartData {
                 this.svgTooltip.data = templatePoint;
                 this.svgTooltip.template = chart.tooltip.template;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
-                this.svgTooltip.isNegative = isNegative;
-                this.svgTooltip.inverted = inverted;
+                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
                 this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
-                this.svgTooltip.tooltipPlacement = position;
                 this.svgTooltip.dataBind();
             }
         }
-    }
-    getPositionBySize(textSize, bounds, arrowLocation, position) {
-        let isTop = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let isBottom = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let isRight = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let isLeft = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let tooltipPos;
-        if (isTop || isBottom || isRight || isLeft) {
-            if (position === 'Top') {
-                tooltipPos = isTop ? 'Top' : (isBottom ? 'Bottom' : (isRight ? 'Right' : 'Left'));
-            }
-            else if (position === 'Bottom') {
-                tooltipPos = isBottom ? 'Bottom' : (isTop ? 'Top' : (isRight ? 'Right' : 'Left'));
-            }
-            else if (position === 'Right') {
-                tooltipPos = isRight ? 'Right' : (isLeft ? 'Left' : (isTop ? 'Top' : 'Bottom'));
-            }
-            else {
-                tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
-            }
-        }
-        else {
-            let size = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x), (arrowLocation.y - bounds.y),
-                ((bounds.y + bounds.height) - arrowLocation.y)];
-            let index = size.indexOf(Math.max.apply(this, size));
-            position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
-            return position;
-        }
-        return tooltipPos;
-    }
-    isTooltipFitPosition(position, bounds, location, size) {
-        let start = new ChartLocation(0, 0);
-        let end = new ChartLocation(0, 0);
-        switch (position) {
-            case 'Top':
-                start.x = location.x - (size.width / 2);
-                start.y = location.y - size.height;
-                end.x = location.x + (size.width / 2);
-                end.y = location.y;
-                break;
-            case 'Bottom':
-                start.x = location.x - (size.width / 2);
-                start.y = location.y;
-                end.x = location.x + (size.width / 2);
-                end.y = location.y + size.height;
-                break;
-            case 'Right':
-                start.x = location.x;
-                start.y = location.y - (size.height / 2);
-                end.x = location.x + size.width;
-                end.y = location.y + (size.height / 2);
-                break;
-            case 'Left':
-                start.x = location.x - size.width;
-                start.y = location.y - (size.height / 2);
-                end.x = location.x;
-                end.y = location.y + (size.height / 2);
-                break;
-        }
-        return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
-    }
-    getCurrentPosition(isNegative, inverted) {
-        let position;
-        if (inverted) {
-            position = isNegative ? 'Left' : 'Right';
-        }
-        else {
-            position = isNegative ? 'Bottom' : 'Top';
-        }
-        return position;
     }
     findPalette() {
         let colors = [];
@@ -17369,12 +17435,6 @@ class Tooltip$1 extends BaseTooltip {
             return '';
         }
         this.header = this.parseTemplate(data.point, data.series, this.header, data.series.xAxis, data.series.yAxis);
-        if (regSub.test(this.header)) {
-            this.header = getUnicodeText(this.header, regSub);
-        }
-        if (regSup.test(this.header)) {
-            this.header = getUnicodeText(this.header, regSup);
-        }
         if (this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
             return this.header;
         }
@@ -17438,7 +17498,7 @@ class Tooltip$1 extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
-                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point), this.chart.tooltip.template ? argsData.template : '', this.chart.tooltip.position);
+                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point), this.chart.tooltip.template ? argsData.template : '');
             }
             else {
                 this.removeHighlight(this.control);
@@ -17966,9 +18026,8 @@ class Toolkit {
         let argsData;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
-        let zoomingEventArgs;
-        let zoomedAxisCollection = [];
-        for (let axis of chart.axisCollections) {
+        for (let i = 0; i < chart.axisCollections.length; i++) {
+            let axis = chart.axisCollections[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -17983,23 +18042,7 @@ class Toolkit {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-            zoomedAxisCollection.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                this.setDefferedZoom(chart);
-            });
-            return false;
-        }
-        else {
-            return (this.setDefferedZoom(chart));
-        }
-    }
-    setDefferedZoom(chart) {
         chart.disableTrackTooltip = false;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
@@ -18059,7 +18102,8 @@ class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData;
-            for (let axis of axes) {
+            for (let i = 0; i < axes.length; i++) {
+                let axis = axes[i];
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18168,13 +18212,14 @@ class Zoom {
         let currentScale;
         let offset;
         this.isZoomed = true;
+        let translateX;
+        let translateY;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
         let argsData;
-        let zoomingEventArgs;
-        let zoomedAxisCollection = [];
-        for (let axis of axes) {
+        for (let i = 0; i < axes.length; i++) {
+            let axis = axes[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18193,24 +18238,7 @@ class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-            zoomedAxisCollection.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                this.performDefferedZoom(chart);
-            });
-        }
-        else {
-            this.performDefferedZoom(chart);
-        }
-    }
-    performDefferedZoom(chart) {
-        let translateX;
-        let translateY;
         if (this.zooming.enableDeferredZooming) {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
@@ -18276,9 +18304,8 @@ class Zoom {
         let mode = this.zooming.mode;
         let argsData;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
-        let onZoomingEventArg;
-        let zoomedAxisCollections = [];
-        for (let axis of axes) {
+        for (let j = 0; j < axes.length; j++) {
+            let axis = axes[j];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18302,22 +18329,9 @@ class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-            zoomedAxisCollections.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        onZoomingEventArg = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
-        if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArg, () => {
-                this.zoomingRect = new Rect(0, 0, 0, 0);
-                this.performZoomRedraw(chart);
-            });
-        }
-        else {
-            this.zoomingRect = new Rect(0, 0, 0, 0);
-            this.performZoomRedraw(chart);
-        }
+        this.zoomingRect = new Rect(0, 0, 0, 0);
+        this.performZoomRedraw(chart);
     }
     /**
      * Function that handles the Mouse wheel zooming.
@@ -18338,9 +18352,8 @@ class Zoom {
         this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let argsData;
-        let onZoomingEventArgs;
-        let zoomedAxisCollection = [];
-        for (let axis of axes) {
+        for (let index = 0; index < axes.length; index++) {
+            let axis = axes[index];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18365,18 +18378,8 @@ class Zoom {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
-            zoomedAxisCollection.push({
-                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                axisRange: axis.visibleRange
-            });
         }
-        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
-        }
-        else {
-            this.performZoomRedraw(chart);
-        }
+        this.performZoomRedraw(chart);
     }
     /**
      * Function that handles the Pinch zooming.
@@ -18447,8 +18450,6 @@ class Zoom {
         let argsData;
         let currentZF;
         let currentZP;
-        let onZoomingEventArgs;
-        let zoomedAxisCollection = [];
         for (let index = 0; index < chart.axisCollections.length; index++) {
             let axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -18484,15 +18485,7 @@ class Zoom {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
-                zoomedAxisCollection.push({
-                    zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
-                    axisRange: axis.visibleRange
-                });
             }
-        }
-        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
-        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArgs);
         }
     }
     // Series transformation style applied here.
@@ -18508,7 +18501,8 @@ class Zoom {
         let yAxisLoc;
         let element;
         if (transX !== null && transY !== null) {
-            for (let value of chart.visibleSeries) {
+            for (let i = 0; i < chart.visibleSeries.length; i++) {
+                let value = chart.visibleSeries[i];
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -18678,7 +18672,8 @@ class Zoom {
      */
     isAxisZoomed(axes) {
         let showToolkit = false;
-        for (let axis of axes) {
+        for (let k = 0; k < axes.length; k++) {
+            let axis = axes[k];
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
         }
         return showToolkit;
@@ -18881,15 +18876,334 @@ class BaseSelection {
     seriesStyles() {
         let seriesclass;
         let style = document.getElementById(this.styleId);
-        if (isNullOrUndefined(style)) {
+        let pattern = '{}';
+        let fill;
+        let opacity;
+        let selectionPattern = this.control.selectionPattern;
+        let highlightPattern = this.control.highlightPattern;
+        if (isNullOrUndefined(style) || selectionPattern !== 'None' || highlightPattern !== 'None') {
             style = document.createElement('style');
             style.setAttribute('id', this.styleId);
             for (let series of this.control.visibleSeries) {
-                seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index;
-                style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + ' { } ';
+                let visibleSeries = this.control.visibleSeries[series.index] ||
+                    this.control.visibleSeries[series.index];
+                if ((!isNullOrUndefined(selectionPattern) || !isNullOrUndefined(highlightPattern)) &&
+                    (selectionPattern !== 'None' || highlightPattern !== 'None')) {
+                    let patternName = this.styleId.indexOf('highlight') > 0 ? highlightPattern : selectionPattern;
+                    if (visibleSeries.type === 'Pie' || visibleSeries.type === 'Funnel' ||
+                        visibleSeries.type === 'Pyramid') {
+                        for (let i = 0; i < visibleSeries.points.length; i++) {
+                            opacity = visibleSeries.opacity;
+                            fill = this.pattern(this.control, (visibleSeries.points[i]).color, series.index, patternName, opacity);
+                            pattern = '{ fill:' + fill + '}';
+                        }
+                    }
+                    else if (visibleSeries.type) {
+                        opacity = visibleSeries.opacity;
+                        fill = this.pattern(this.control, visibleSeries.interior, series.index, patternName, opacity);
+                        pattern = '{ fill:' + fill + '}';
+                    }
+                }
+                seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
+                    this.styleId + '_series_' + series.index + '> *';
+                pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
+                style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
             }
             style.innerHTML += '.' + this.unselected + ' { opacity:' + (0.3) + ';} ';
             document.body.appendChild(style);
+        }
+    }
+    /**
+     * To create the pattern for series/points
+     */
+    // tslint:disable-next-line:max-func-body-length
+    pattern(chart, color, index, patternName, opacity) {
+        let backgroundColor = '#ffffff';
+        let svg;
+        svg = chart.svgObject;
+        let pattern;
+        let pathOptions = [];
+        let patternGroup = { 'id': patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };
+        let heightStr = 'height';
+        let widthStr = 'width';
+        const width = 10;
+        const height = 12;
+        const patternNum = 6;
+        switch (patternName) {
+            case 'Dots':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': 7, 'height': 7, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'cx': 3,
+                    'cy': 3,
+                    'r': 2,
+                    'stroke-width': 1,
+                    'fill': color,
+                    'name': 'circle'
+                };
+                break;
+            case 'Pacman':
+                patternGroup[heightStr] = '18.384';
+                patternGroup[widthStr] = '17.917';
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': 17.917, 'height': 18.384,
+                    'transform': 'translate(0,0)', 'fill': backgroundColor, 'opacity': opacity
+                };
+                // tslint:disable-next-line:max-line-length
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M9.081,9.194l5.806-3.08c-0.812-1.496-2.403-3.052-4.291-3.052H8.835C6.138,3.063,3,6.151,3,8.723v1.679   c0,2.572,3.138,5.661,5.835,5.661h1.761c2.085,0,3.835-1.76,4.535-3.514L9.081,9.194z', 'stroke-width': 1, 'stroke': color, 'fill': color
+                };
+                break;
+            case 'Chessboard':
+                patternGroup[heightStr] = patternGroup[widthStr] = width;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': width, 'height': width, 'fill': backgroundColor, 'opacity': opacity,
+                    'name': 'rect'
+                };
+                pathOptions[1] = { 'x': 0, 'y': 0, 'width': 5, 'height': 5, 'fill': color, 'opacity': opacity, 'name': 'rect' };
+                pathOptions[2] = { 'x': 5, 'y': 5, 'width': 5, 'height': 5, 'fill': color, 'opacity': opacity, 'name': 'rect' };
+                break;
+            case 'Crosshatch':
+                patternGroup[heightStr] = patternGroup[widthStr] = '8';
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': 8, 'height': 8, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'd': 'M0 0L8 8ZM8 0L0 8Z',
+                    'stroke-width': 1,
+                    'stroke': color,
+                    'name': 'path'
+                };
+                break;
+            case 'DiagonalForward':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'd': 'M 3 -3 L 9 3 M 6 6 L 0 0 M 3 9 L -3 3',
+                    'stroke-width': 2,
+                    'stroke': color,
+                    'name': 'path'
+                };
+                break;
+            case 'DiagonalBackward':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
+                };
+                pathOptions[1] = {
+                    'd': 'M 3 -3 L -3 3 M 0 6 L 6 0 M 9 3 L 3 9',
+                    'stroke-width': 2,
+                    'stroke': color,
+                    'name': 'path'
+                };
+                break;
+            case 'Grid':
+                patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path',
+                    'd': 'M1 3.5L11 3.5 M0 3.5L11 3.5 M0 7.5L11 7.5 M0 11.5L11 11.5 M5.5 0L5.5 12 M11.5 0L11.5 12Z',
+                    'stroke-width': 1,
+                    'stroke': color
+                };
+                break;
+            case 'Turquoise':
+                const turquoiseNum = 17;
+                const turstrokewidth = 1;
+                patternGroup[heightStr] = patternGroup[widthStr] = turquoiseNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': turquoiseNum, 'height': turquoiseNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0.5739999999999998,2.643a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[2] = {
+                    'name': 'path', 'd': 'M11.805,2.643a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[3] = {
+                    'name': 'path', 'd': 'M6.19,2.643a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[4] = {
+                    'name': 'path', 'd': 'M11.805,8.217a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[5] = {
+                    'name': 'path', 'd': 'M6.19,8.217a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[6] = {
+                    'name': 'path', 'd': 'M11.805,13.899a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                pathOptions[7] = {
+                    'name': 'path', 'd': 'M6.19,13.899a2.123,2.111 0 1,0 4.246,0a2.123,2.111 0 1,0 -4.246,0',
+                    'stroke-width': turstrokewidth, 'stroke-miterlimit': width, 'stroke': color, 'fill': color
+                };
+                break;
+            case 'Star':
+                const starNum = 21;
+                patternGroup[heightStr] = patternGroup[widthStr] = starNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': starNum, 'height': starNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path',
+                    // tslint:disable-next-line:max-line-length
+                    'd': 'M15.913,18.59L10.762 12.842 5.613 18.75 8.291 11.422 0.325 9.91 8.154 8.33 5.337 0.91 10.488 6.658 15.637 0.75 12.959 8.078 20.925 9.59 13.096 11.17 z',
+                    'stroke-width': 1,
+                    'stroke': color,
+                    'fill': color
+                };
+                break;
+            case 'Triangle':
+                patternGroup[heightStr] = patternGroup[widthStr] = width;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': width, 'height': width, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path',
+                    'd': 'M4.987,0L7.48 4.847 9.974 9.694 4.987 9.694 0 9.694 2.493 4.847 z',
+                    'stroke-width': 1,
+                    'stroke': color,
+                    'fill': color
+                };
+                break;
+            case 'Circle':
+                const circleNum = 9;
+                patternGroup[heightStr] = patternGroup[widthStr] = circleNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': circleNum, 'height': circleNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'circle',
+                    'cx': 5.125,
+                    'cy': 3.875,
+                    'r': 3.625,
+                    'stroke-width': 1,
+                    'fill': color
+                };
+                break;
+            case 'Tile':
+                const tileNum = 18;
+                const strokeWidth = 1;
+                patternGroup[heightStr] = patternGroup[widthStr] = tileNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': tileNum, 'height': tileNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = { 'name': 'path', 'd': 'M0,9L0 0 9 0 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                pathOptions[2] = { 'name': 'path', 'd': 'M9,9L9 0 18 0 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                pathOptions[3] = { 'name': 'path', 'd': 'M0,18L0 9 9 9 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                pathOptions[4] = { 'name': 'path', 'd': 'M9,18L9 9 18 9 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
+                break;
+            case 'HorizontalDash':
+                patternGroup[heightStr] = patternGroup[widthStr] = height;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': height, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0,1.5 L10 1.5 M0,5.5 L10 5.5 M0,9.5 L10 9.5 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'VerticalDash':
+                patternGroup[heightStr] = patternGroup[widthStr] = height;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': height, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M1.5,0 L1.5 10 M5.5,0 L5.5 10 M9.5,0 L9.5 10 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'Rectangle':
+                patternGroup[heightStr] = patternGroup[widthStr] = height;
+                pathOptions[0] = { 'name': 'rect', 'width': height, 'height': height, 'fill': backgroundColor, 'opacity': opacity };
+                pathOptions[1] = { 'name': 'rect', 'x': 1, 'y': 2, 'width': 4, 'height': 9, 'fill': color, 'opacity': opacity };
+                pathOptions[2] = { 'name': 'rect', 'x': 7, 'y': 2, 'width': 4, 'height': 9, 'fill': color, 'opacity': opacity };
+                break;
+            case 'Box':
+                patternGroup[heightStr] = patternGroup[widthStr] = width;
+                pathOptions[0] = { 'name': 'rect', 'width': 13, 'height': 13, 'fill': backgroundColor, 'opacity': opacity };
+                pathOptions[1] = {
+                    'name': 'rect', 'x': 1.5, 'y': 1.5, 'width': width, 'height': 9, 'fill': color,
+                    'opacity': opacity
+                };
+                break;
+            case 'HorizontalStripe':
+                patternGroup[heightStr] = height;
+                patternGroup[widthStr] = width;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': width, 'height': height,
+                    'transform': 'translate(0,0)', 'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0,0.5 L10 0.5 M0,4.5 L10 4.5 M0,8.5 L10 8.5 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'VerticalStripe':
+                patternGroup[heightStr] = width;
+                patternGroup[widthStr] = height;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': width, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = {
+                    'name': 'path', 'd': 'M0.5,0 L0.5 10 M4.5,0 L4.5 10 M8.5,0 L8.5 10 z', 'stroke-width': 1,
+                    'stroke': color, 'fill': color
+                };
+                break;
+            case 'Bubble':
+                const bubNum = 20;
+                patternGroup[heightStr] = patternGroup[widthStr] = bubNum;
+                pathOptions[0] = {
+                    'name': 'rect', 'x': 0, 'y': 0, 'width': bubNum, 'height': bubNum, 'transform': 'translate(0,0)',
+                    'fill': backgroundColor, 'opacity': opacity
+                };
+                pathOptions[1] = { 'name': 'circle', 'cx': 5.217, 'cy': 11.325, 'r': 3.429, 'stroke-width': 1, 'fill': '#D0A6D1' };
+                pathOptions[2] = { 'name': 'circle', 'cx': 13.328, 'cy': 6.24, 'r': 4.884, 'stroke-width': 1, 'fill': color };
+                pathOptions[3] = {
+                    'name': 'circle', 'cx': 13.277, 'cy': 14.66, 'r': 3.018, 'stroke-width': 1,
+                    'fill': '#D0A6D1'
+                };
+                break;
+        }
+        let svgRenderer = (chart.svgRenderer || chart.renderer);
+        pattern = svgRenderer.createPattern(patternGroup, 'pattern');
+        this.loadPattern(chart, pathOptions, pattern, svgRenderer);
+        svg.appendChild(pattern);
+        return 'url(#' + patternName + '_' + 'Selection' + '_' + index + ')';
+    }
+    /**
+     * To load the pattern into svg
+     */
+    loadPattern(chart, options, pattern, svgRenderer) {
+        let i;
+        for (i = 0; i < options.length; i++) {
+            let path = svgRenderer.createPattern(options[i], options[i].name);
+            pattern.appendChild(path);
         }
     }
     /**
@@ -19043,21 +19357,36 @@ class Selection extends BaseSelection {
         this.initPrivateVariables(chart);
         this.series = extend({}, chart.visibleSeries, null, true);
         this.seriesStyles();
+        this.currentMode = chart.selectionMode;
         if (!(chart.selectionMode.indexOf('Drag') > -1)) {
             this.selectDataIndex(chart, this.concatIndexes(chart.selectedDataIndexes, this.selectedDataIndexes));
         }
     }
     generateStyle(series) {
         if (series) {
+            if (this.styleId.indexOf('selection') > 1 && this.chart.selectionMode !== 'None') {
+                this.unselected = series.unSelectedStyle || this.unselected;
+            }
+            if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightMode !== 'None') {
+                this.unselected = series.nonHighlightStyle || this.unselected;
+            }
             return (series.selectionStyle || this.styleId + '_series_' + series.index);
         }
         return 'undefined';
     }
+    /**
+     *  Method to get the selected data index
+     * @private.
+     */
     selectDataIndex(chart, indexes) {
         for (let index of indexes) {
             this.performSelection(index, chart, this.getElementByIndex(chart, index)[0]);
         }
     }
+    /**
+     *  Method to get the selected index element
+     * @private.
+     */
     getElementByIndex(chart, index, suffix = '') {
         let elementId = chart.element.id + '_Series_' + index.series + '_Point' + '_' + index.point;
         let series = chart.series[index.series];
@@ -19065,19 +19394,58 @@ class Selection extends BaseSelection {
             series.marker.visible) ? (elementId + '_Symbol' + suffix) : elementId;
         return [getElement$1(elementId), (series.type === 'RangeArea' && series.marker.visible) ? getElement$1(elementId + '1') : null];
     }
+    /**
+     *  Method to get the selected cluster element
+     * @private.
+     */
     getClusterElements(chart, index) {
         let clusters = [];
+        let seriesStyle;
+        let selectedElements;
         for (let series of chart.visibleSeries) {
             index = new Index(series.index, index.point);
             clusters.push(this.getElementByIndex(chart, index)[0]);
+            seriesStyle = this.generateStyle(chart.visibleSeries[index.series]);
+            selectedElements = document.querySelectorAll('.' + seriesStyle);
+            this.findTrackballElements(selectedElements, seriesStyle);
+            if (!chart.isMultiSelect && selectedElements.length > 0 && selectedElements[0].id !== clusters[index.series].id) {
+                this.removeSelection(chart, index.series, selectedElements, seriesStyle, true);
+            }
         }
         return clusters;
     }
+    /**
+     *  Method to get trackball elements
+     * @private.
+     */
+    findTrackballElements(selectedElements, className) {
+        let trackballElements;
+        let elements;
+        for (let i = 0; i < selectedElements.length; i++) {
+            if (!isNullOrUndefined(selectedElements[i])) {
+                trackballElements = !isNullOrUndefined(selectedElements[i].parentNode) ?
+                    [].slice.call(selectedElements[0].parentNode.querySelectorAll('.' + className)) : [];
+                if (trackballElements.length > 0) {
+                    elements = [];
+                    for (let i = 0; i < trackballElements.length; i++) {
+                        if (trackballElements[i].id.indexOf('Trackball') > -1) {
+                            elements.push(trackballElements[i]);
+                        }
+                    }
+                    this.removeStyles(elements);
+                }
+            }
+        }
+    }
+    /**
+     *  Method to get the selected element
+     * @private.
+     */
     findElements(chart, series, index, suffix = '') {
         if (this.isSeriesMode) {
             return this.getSeriesElements(series);
         }
-        else if (chart.selectionMode === 'Cluster') {
+        else if (this.currentMode === 'Cluster') {
             return this.getClusterElements(chart, index);
         }
         else {
@@ -19089,15 +19457,74 @@ class Selection extends BaseSelection {
      * @return {void}
      * @private
      */
+    isAlreadySelected(event) {
+        let targetElem = event.target;
+        if (event.type === 'click') {
+            this.currentMode = this.chart.selectionMode;
+            this.styleId = this.chart.element.id + '_ej2_chart_selection';
+        }
+        else if (event.type === 'mousemove') {
+            this.currentMode = this.chart.highlightMode;
+            this.highlightDataIndexes = [];
+            this.styleId = this.chart.element.id + '_ej2_chart_highlight';
+        }
+        if (this.chart.highlightMode !== 'None' && this.chart.selectionMode === 'None') {
+            if (event.type === 'click') {
+                return false;
+            }
+        }
+        if ((this.chart.highlightMode !== 'None' && this.previousSelectedEle && this.previousSelectedEle[0])) {
+            let parentNodeId = targetElem.parentNode.id;
+            let isElement;
+            if (targetElem.parentNode) {
+                isElement = (parentNodeId.indexOf('SeriesGroup') > 0 || parentNodeId.indexOf('SymbolGroup') > 0) ? true : false;
+            }
+            for (let i = 0; i < this.previousSelectedEle.length; i++) {
+                if (this.previousSelectedEle[i].hasAttribute('class')) {
+                    if (this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1 &&
+                        (isElement || event.type === 'click')) {
+                        this.previousSelectedEle[i].removeAttribute('class');
+                        this.addOrRemoveIndex(this.highlightDataIndexes, this.indexFinder(this.previousSelectedEle[i].id));
+                    }
+                    else if (!isElement && this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1) {
+                        this.performSelection(this.indexFinder(this.previousSelectedEle[i].id), this.chart, this.previousSelectedEle[i]);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    /**
+     * To find the selected element.
+     * @return {void}
+     * @private
+     */
     calculateSelectedElements(event) {
-        let targetElement = event.target;
-        if (this.chart.selectionMode === 'None' || targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
+        if (isNullOrUndefined(event.target)) {
             return;
         }
+        let targetElement = event.target;
+        if ((this.chart.selectionMode === 'None' && this.chart.highlightMode === 'None') ||
+            targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
+            return;
+        }
+        if (event.type === 'mousemove') {
+            if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
+                targetElement.getAttribute('class').indexOf('selection') > -1)) {
+                return;
+            }
+            if (!isNullOrUndefined(targetElement.parentNode) && targetElement.parentNode.hasAttribute('class') &&
+                (targetElement.parentNode.getAttribute('class').indexOf('highlight') > 0 ||
+                    targetElement.parentNode.getAttribute('class').indexOf('selection') > 0)) {
+                return;
+            }
+        }
+        this.isAlreadySelected(event);
         if (targetElement.id.indexOf('_Series_') > -1) {
             let element;
             if (targetElement.id.indexOf('_Trackball_1') > -1) {
                 element = getElement$1(targetElement.id.split('_Trackball_')[0] + '_Symbol');
+                element = isNullOrUndefined(element) ? getElement$1(targetElement.id.split('_Trackball_')[0]) : element;
             }
             else if (targetElement.id.indexOf('_Trackball_0') > -1) {
                 return null;
@@ -19105,39 +19532,56 @@ class Selection extends BaseSelection {
             this.performSelection(this.indexFinder(targetElement.id), this.chart, element || targetElement);
         }
     }
+    /**
+     *  Method to perform the selection
+     * @private.
+     */
     performSelection(index, chart, element) {
-        this.isSeriesMode = chart.selectionMode === 'Series';
+        this.isSeriesMode = this.currentMode === 'Series';
         if (chart.series[index.series].type === 'BoxAndWhisker' &&
             element.id === chart.element.id + '_Series_' + index.series + '_Point_' + index.point + '_BoxPath') {
-            element = element.parentElement;
+            element = element.parentNode;
         }
-        switch (chart.selectionMode) {
+        if (chart.series[index.series].type === 'Area' && (this.currentMode === 'Point' || this.currentMode === 'Cluster') &&
+            (element.id === this.chart.element.id + '_Series_' + index.series)) {
+            let className = this.generateStyle(chart.series[index.series]);
+            let selectionEle = document.querySelectorAll('.' + className);
+            this.findTrackballElements(selectionEle, className);
+            this.blurEffect(chart.element.id, chart.visibleSeries);
+        }
+        switch (this.currentMode) {
             case 'Series':
                 this.selection(chart, index, this.getSeriesElements(chart.series[index.series]));
-                this.selectionComplete(chart, index, chart.selectionMode);
+                this.selectionComplete(chart, index, this.currentMode);
                 this.blurEffect(chart.element.id, chart.visibleSeries);
                 break;
             case 'Point':
                 if (!isNaN(index.point)) {
                     this.selection(chart, index, [element]);
-                    this.selectionComplete(chart, index, chart.selectionMode);
+                    this.selectionComplete(chart, index, this.currentMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
             case 'Cluster':
                 if (!isNaN(index.point)) {
-                    this.clusterSelection(chart, chart.series, index);
-                    this.selectionComplete(chart, index, chart.selectionMode);
+                    this.clusterSelection(chart, index);
+                    this.selectionComplete(chart, index, this.currentMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
         }
     }
+    /**
+     *  Method to get the selected data index
+     * @private.
+     */
     selectionComplete(chart, index, selectionMode) {
         let points;
         let pointIndex;
         let seriesIndex;
         let selectedPointValues = [];
+        let yValue;
+        let selectedPointX;
         if (selectionMode === 'Cluster') {
             for (let series of chart.visibleSeries) {
                 if (series.visible) {
@@ -19145,26 +19589,28 @@ class Selection extends BaseSelection {
                         pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i].point : index.point;
                         seriesIndex = series.index;
                         points = series.points;
-                        let yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
-                            points[pointIndex].regions[0].y;
-                        let selectedPointX = points[pointIndex].xValue;
-                        if (chart.primaryXAxis.valueType === 'Category') {
-                            selectedPointX = points[pointIndex].x.toLocaleString();
-                        }
-                        else if (chart.primaryXAxis.valueType === 'DateTime') {
-                            selectedPointX = new Date(points[pointIndex].xValue);
-                        }
-                        if (series.category !== 'Indicator') {
-                            selectedPointValues.push({
-                                x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
-                                pointIndex: pointIndex
-                            });
-                        }
-                        if (series.type === 'RangeArea') {
-                            selectedPointValues.push({
-                                x: selectedPointX, y: points[pointIndex].regions[0].y,
-                                seriesIndex: seriesIndex, pointIndex: pointIndex
-                            });
+                        if (!isNaN(pointIndex)) {
+                            yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                                points[pointIndex].regions[0].y;
+                            selectedPointX = points[pointIndex].xValue;
+                            if (chart.primaryXAxis.valueType === 'Category') {
+                                selectedPointX = points[pointIndex].x.toLocaleString();
+                            }
+                            else if (chart.primaryXAxis.valueType === 'DateTime') {
+                                selectedPointX = new Date(points[pointIndex].xValue);
+                            }
+                            if (series.category !== 'Indicator') {
+                                selectedPointValues.push({
+                                    x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                                    pointIndex: pointIndex
+                                });
+                            }
+                            if (series.type === 'RangeArea') {
+                                selectedPointValues.push({
+                                    x: selectedPointX, y: points[pointIndex].regions[0].y,
+                                    seriesIndex: seriesIndex, pointIndex: pointIndex
+                                });
+                            }
                         }
                     }
                 }
@@ -19192,19 +19638,21 @@ class Selection extends BaseSelection {
                 seriesIndex = this.selectedDataIndexes[i].series;
                 let series = chart.series[seriesIndex];
                 points = series.points;
-                let selectedPointX = points[pointIndex].xValue;
-                let yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
-                    points[pointIndex].regions[0].y;
-                if (chart.primaryXAxis.valueType === 'Category') {
-                    selectedPointX = points[pointIndex].x.toLocaleString();
+                if (!isNaN(pointIndex)) {
+                    selectedPointX = points[pointIndex].xValue;
+                    yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                        points[pointIndex].regions[0].y;
+                    if (chart.primaryXAxis.valueType === 'Category') {
+                        selectedPointX = points[pointIndex].x.toLocaleString();
+                    }
+                    else if (chart.primaryXAxis.valueType === 'DateTime') {
+                        selectedPointX = new Date(points[pointIndex].xValue);
+                    }
+                    selectedPointValues.push({
+                        x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                        pointIndex: pointIndex
+                    });
                 }
-                else if (chart.primaryXAxis.valueType === 'DateTime') {
-                    selectedPointX = new Date(points[pointIndex].xValue);
-                }
-                selectedPointValues.push({
-                    x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
-                    pointIndex: pointIndex
-                });
             }
         }
         let args = {
@@ -19214,31 +19662,61 @@ class Selection extends BaseSelection {
         };
         chart.trigger(selectionComplete, args);
     }
-    selection(chart, index, selectedElements) {
-        if (!(chart.selectionMode === 'Lasso')) {
-            if (!chart.isMultiSelect && (chart.selectionMode.indexOf('Drag') === -1)) {
-                this.removeMultiSelectEelments(chart, this.selectedDataIndexes, index, chart.series);
+    /**
+     *  Method to perform selection
+     * @private.
+     */
+    selection(chart, index, selectedElements, legendClick$$1 = false) {
+        if (!(this.currentMode === 'Lasso')) {
+            if (!chart.isMultiSelect && (this.currentMode.indexOf('Drag') === -1 && this.styleId.indexOf('highlight') === -1 &&
+                chart.selectionMode !== 'None')) {
+                this.removeMultiSelectElements(chart, this.selectedDataIndexes, index, chart.series);
             }
         }
-        let className = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
-        if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
-            this.removeStyles(selectedElements);
-            this.addOrRemoveIndex(this.selectedDataIndexes, index);
-        }
-        else {
-            this.applyStyles(selectedElements);
-            this.addOrRemoveIndex(this.selectedDataIndexes, index, true);
+        if (!isNullOrUndefined(selectedElements[0])) {
+            let isAdd;
+            let className = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
+            let pClassName = selectedElements[0].parentNode &&
+                (selectedElements[0].parentNode.getAttribute('class') || '');
+            if (className !== '' && this.currentMode !== 'Cluster') {
+                this.findTrackballElements(selectedElements, className);
+            }
+            if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
+                this.removeStyles(selectedElements);
+            }
+            else if (selectedElements[0].parentNode && pClassName.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
+                this.removeStyles([selectedElements[0].parentNode]);
+            }
+            else {
+                this.previousSelectedEle = chart.highlightMode !== 'None' ? selectedElements : [];
+                this.applyStyles(selectedElements);
+                isAdd = true;
+            }
+            if (this.styleId.indexOf('highlight') > 0 && chart.highlightMode !== 'None') {
+                this.addOrRemoveIndex(this.highlightDataIndexes, index, isAdd);
+            }
+            else {
+                this.addOrRemoveIndex(this.selectedDataIndexes, index, isAdd);
+            }
         }
     }
-    clusterSelection(chart, series, index) {
+    /**
+     *  Method to get the cluster selection element
+     * @private.
+     */
+    clusterSelection(chart, index) {
         this.selection(chart, index, this.getClusterElements(chart, new Index(index.series, index.point)));
     }
-    removeMultiSelectEelments(chart, index, currentIndex, seriesCollection) {
+    /**
+     * Method to remove the multi selected elements
+     * @private.
+     */
+    removeMultiSelectElements(chart, index, currentIndex, seriesCollection) {
         let series;
         for (let i = 0; i < index.length; i++) {
             series = seriesCollection[index[i].series];
             if ((this.isSeriesMode && !this.toEquals(index[i], currentIndex, this.isSeriesMode)) ||
-                (this.control.selectionMode === 'Cluster' && !this.toEquals(index[i], currentIndex, false)) ||
+                (this.currentMode === 'Cluster' && !this.toEquals(index[i], currentIndex, false)) ||
                 (!this.isSeriesMode && this.toEquals(index[i], currentIndex, true) && !this.toEquals(index[i], currentIndex, false))) {
                 this.removeStyles(this.findElements(chart, series, index[i]));
                 index.splice(i, 1);
@@ -19246,19 +19724,31 @@ class Selection extends BaseSelection {
             }
         }
     }
-    blurEffect(chartId, visibleSeries) {
-        let visibility = this.checkVisibility(this.selectedDataIndexes); // legend click scenario
+    /**
+     * Method to remove the selection
+     * @private.
+     */
+    blurEffect(chartId, visibleSeries, legendClick$$1 = false) {
+        let visibility = this.styleId.indexOf('highlight') > 0 ? this.checkVisibility(this.highlightDataIndexes) :
+            this.checkVisibility(this.selectedDataIndexes); // legend click scenario
         for (let series of visibleSeries) {
             if (series.visible) {
-                this.checkSelectionElements(getElement$1(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility);
+                this.checkSelectionElements(getElement$1(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility, legendClick$$1, series.index);
                 if (!isNullOrUndefined(getElement$1(chartId + 'SymbolGroup' + series.index))) {
-                    this.checkSelectionElements(getElement$1(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility);
+                    this.checkSelectionElements(getElement$1(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility, legendClick$$1, series.index);
                 }
             }
         }
     }
-    checkSelectionElements(element, className, visibility) {
+    /**
+     * Method to add the add/remove class to element
+     * @private.
+     */
+    checkSelectionElements(element, className, visibility, legendClick$$1, series) {
         let children = (this.isSeriesMode ? [element] : element.childNodes);
+        if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
+            children = (element.children);
+        }
         let elementClassName;
         let parentClassName;
         let legendShape;
@@ -19266,6 +19756,12 @@ class Selection extends BaseSelection {
         for (let i = 0; i < children.length; i++) {
             elementClassName = children[i].getAttribute('class') || '';
             parentClassName = children[i].parentNode.getAttribute('class') || '';
+            if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
+                className = elementClassName.indexOf('selection') > 0 ||
+                    elementClassName.indexOf('highlight') > 0 ? elementClassName : className;
+                className = (parentClassName.indexOf('selection') > 0 ||
+                    parentClassName.indexOf('highlight') > 0) ? parentClassName : className;
+            }
             if (elementClassName.indexOf(className) === -1 &&
                 parentClassName.indexOf(className) === -1 && visibility) {
                 this.addSvgClass(children[i], this.unselected);
@@ -19273,22 +19769,51 @@ class Selection extends BaseSelection {
             else {
                 selectElement = children[i];
                 this.removeSvgClass(children[i], this.unselected);
+                this.removeSvgClass(children[i].parentNode, this.unselected);
+            }
+            if (children[i].id.indexOf('Trackball') > 0 && selectElement.classList[0] === className) {
+                this.removeSvgClass(children[i], this.unselected);
+                this.removeSvgClass(children[i].parentNode, this.unselected);
+                this.addSvgClass(children[i], className);
+            }
+        }
+        if (element.id.indexOf('Symbol') > -1) {
+            if ((element.querySelectorAll('.' + className)[0]) && element.querySelectorAll('.' + className)[0].getAttribute('class')
+                === className) {
+                let symbolEle = getElement$1(this.control.element.id + '_Series_' + element.id[element.id.length - 1]);
+                let seriesClassName = symbolEle && symbolEle.hasAttribute('class') ? symbolEle.getAttribute('class') : '';
+                if (seriesClassName.indexOf(this.unselected) > -1) {
+                    this.removeSvgClass(symbolEle, this.unselected);
+                }
             }
         }
         if (this.control.legendModule && this.control.legendSettings.visible) {
-            legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + className.split('_series_')[1]);
+            legendShape = getElement$1(this.control.element.id + '_chart_legend_shape_' + series);
             if (legendShape) {
+                if (legendShape.hasAttribute('class')) {
+                    this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
+                }
                 elementClassName = selectElement.getAttribute('class') || '';
                 parentClassName = selectElement.parentNode.getAttribute('class') || '';
                 if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
                     this.addSvgClass(legendShape, this.unselected);
+                    this.removeSvgClass(legendShape, className);
                 }
                 else {
                     this.removeSvgClass(legendShape, this.unselected);
+                    ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') ?
+                        this.removeSvgClass(legendShape, className) : this.addSvgClass(legendShape, className);
+                }
+                if (legendClick$$1 && parentClassName.indexOf(className) > -1) {
+                    this.addSvgClass(legendShape, className);
                 }
             }
         }
     }
+    /**
+     *  Method to apply the styles
+     * @private.
+     */
     applyStyles(elements) {
         for (let element of elements) {
             if (element) {
@@ -19298,9 +19823,17 @@ class Selection extends BaseSelection {
             }
         }
     }
+    /**
+     *  Method to get the selection class
+     * @private.
+     */
     getSelectionClass(id) {
         return this.generateStyle(this.control.series[this.indexFinder(id).series]);
     }
+    /**
+     *  Method to remove styles
+     * @private.
+     */
     removeStyles(elements) {
         for (let element of elements) {
             if (element) {
@@ -19308,19 +19841,27 @@ class Selection extends BaseSelection {
             }
         }
     }
-    addOrRemoveIndex(indexes, index, add) {
+    /**
+     *  Method to remove the selected data index
+     * @private.
+     */
+    addOrRemoveIndex(indexes, index, isAdd) {
         for (let i = 0; i < indexes.length; i++) {
             if (this.toEquals(indexes[i], index, this.isSeriesMode)) {
                 indexes.splice(i, 1);
                 i--;
             }
         }
-        if (add) {
+        if (isAdd) {
             indexes.push(index);
         }
     }
+    /**
+     *  Method to get the equal index
+     * @private.
+     */
     toEquals(first, second, checkSeriesOnly) {
-        return ((first.series === second.series || (this.control.selectionMode === 'Cluster' && !checkSeriesOnly))
+        return ((first.series === second.series || (this.currentMode === 'Cluster' && !checkSeriesOnly))
             && (checkSeriesOnly || (first.point === second.point)));
     }
     /**
@@ -19331,16 +19872,59 @@ class Selection extends BaseSelection {
     redrawSelection(chart, oldMode) {
         this.isSeriesMode = oldMode === 'Series';
         let selectedDataIndexes = extend([], this.selectedDataIndexes, null, true);
-        this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+        let highlightDataIndexes = extend([], this.highlightDataIndexes, null, true);
+        if (this.styleId.indexOf('highlight') > 0 && highlightDataIndexes.length > 0) {
+            this.removeSelectedElements(chart, this.highlightDataIndexes, chart.series);
+            selectedDataIndexes = highlightDataIndexes;
+        }
+        else {
+            this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+        }
         this.blurEffect(chart.element.id, chart.visibleSeries);
         this.selectDataIndex(chart, selectedDataIndexes);
     }
     /** @private */
-    legendSelection(chart, series) {
-        let seriesStyle = this.generateStyle(chart.visibleSeries[series]);
-        let selectedElements = document.getElementsByClassName(seriesStyle);
-        this.isSeriesMode = chart.selectionMode === 'Series';
-        let isBlurEffectNeeded = true;
+    legendSelection(chart, series, event) {
+        let targetElement = event.target;
+        if (event.type === 'mousemove') {
+            if (event.target.id.indexOf('text') > 1) {
+                targetElement = getElement$1(event.target.id.replace('text', 'shape'));
+            }
+            if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
+                targetElement.getAttribute('class').indexOf('selection') > -1)) {
+                return;
+            }
+            this.currentMode = this.chart.highlightMode;
+        }
+        let isPreSelected = this.isAlreadySelected(event);
+        if (isPreSelected) {
+            let seriesStyle = this.generateStyle(chart.visibleSeries[series]);
+            let selectedElements = (document.querySelectorAll('.' + seriesStyle));
+            this.isSeriesMode = this.currentMode === 'Series';
+            let isBlurEffectNeeded = true;
+            if (selectedElements.length > 0) {
+                this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
+            }
+            else {
+                for (let element of chart.visibleSeries) {
+                    if (element.index !== series && !chart.isMultiSelect) {
+                        seriesStyle = this.generateStyle(chart.visibleSeries[element.index]);
+                        selectedElements = document.querySelectorAll('.' + seriesStyle);
+                        this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
+                    }
+                }
+                let seriesElements = this.getSeriesElements(chart.visibleSeries[series]);
+                for (let seriesElement of seriesElements) {
+                    this.checkSelectionElements(seriesElement, seriesStyle, false, true, series);
+                }
+                this.isSeriesMode = true;
+                this.selection(chart, new Index(series, NaN), seriesElements, true);
+                this.isSeriesMode = chart.selectionMode === 'Series';
+                this.blurEffect(chart.element.id, chart.visibleSeries, true);
+            }
+        }
+    }
+    removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded) {
         if (selectedElements.length > 0) {
             let elements = [];
             for (let i = 0; i < selectedElements.length; i++) {
@@ -19349,11 +19933,11 @@ class Selection extends BaseSelection {
             this.removeStyles(elements);
             this.isSeriesMode = true;
             this.addOrRemoveIndex(this.selectedDataIndexes, new Index(series, NaN));
-            for (let series of chart.visibleSeries) {
-                seriesStyle = this.generateStyle(series);
-                if (document.getElementsByClassName(seriesStyle).length > 0) {
+            for (let value of chart.visibleSeries) {
+                seriesStyle = this.generateStyle(value);
+                if (document.querySelectorAll('.' + seriesStyle).length > 0) {
                     for (let element of elements) {
-                        this.checkSelectionElements(element, seriesStyle, true);
+                        this.checkSelectionElements(element, seriesStyle, true, true, series);
                     }
                     isBlurEffectNeeded = false;
                     break;
@@ -19364,17 +19948,8 @@ class Selection extends BaseSelection {
                 this.blurEffect(chart.element.id, chart.visibleSeries);
             }
         }
-        else {
-            let seriesElements = this.getSeriesElements(chart.visibleSeries[series]);
-            for (let seriesElement of seriesElements) {
-                this.checkSelectionElements(seriesElement, seriesStyle, false);
-            }
-            this.isSeriesMode = true;
-            this.selection(chart, new Index(series, NaN), seriesElements);
-            this.isSeriesMode = chart.selectionMode === 'Series';
-            this.blurEffect(chart.element.id, chart.visibleSeries);
-        }
     }
+    /** @private */
     getSeriesElements(series) {
         let seriesElements = [series.seriesElement];
         if (series.marker.visible && series.type !== 'Scatter' && series.type !== 'Bubble' && !series.isRectSeries) {
@@ -19382,6 +19957,7 @@ class Selection extends BaseSelection {
         }
         return seriesElements;
     }
+    /** @private */
     indexFinder(id) {
         let ids = ['NaN', 'NaN'];
         if (id.indexOf('SeriesGroup') > -1) {
@@ -19397,6 +19973,10 @@ class Selection extends BaseSelection {
         }
         else if (id.indexOf('_Series_') > -1) {
             ids[0] = id.split('_Series_')[1];
+        }
+        else if (id.indexOf('_chart_legend_shape_') > -1) {
+            ids = id.split('_chart_legend_shape_');
+            ids[0] = ids[1];
         }
         return new Index(parseInt(ids[0], 10), parseInt(ids[1], 10));
     }
@@ -19636,7 +20216,8 @@ class Selection extends BaseSelection {
         let direction = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
             ' L ' + (x + 4) + ' ' + (y - 4);
         closeIcon.appendChild(this.chart.svgRenderer.drawPath({
-            id: this.closeIconId + '_cross' + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), d: direction,
+            id: this.closeIconId + '_cross' +
+                (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), d: direction,
             stroke: circleStroke, 'stroke-width': 2, fill: circleStroke
         }, null));
         this.closeIcon = closeIcon;
@@ -19666,7 +20247,7 @@ class Selection extends BaseSelection {
                     this.filterArray = [];
                     this.totalSelectedPoints = [];
                 }
-                if (this.chart.selectionMode === 'Lasso') {
+                if (this.currentMode === 'Lasso') {
                     if (this.multiDataIndexes[index] != null) {
                         for (let i = 0; i < this.multiDataIndexes[index].length; i++) {
                             this.multiDataIndexes[index][i].isSelect = false;
@@ -19789,7 +20370,7 @@ class Selection extends BaseSelection {
                     break;
             }
         }
-        if (this.chart.selectionMode !== 'Lasso') {
+        if (this.currentMode !== 'Lasso') {
             this.changeCursorStyle(resize, getElement$1((this.chart.allowMultiSelection) ? this.draggedRect +
                 this.targetIndex : this.draggedRect), cursorStyle);
         }
@@ -19853,6 +20434,7 @@ class Selection extends BaseSelection {
         if (chart.selectionMode === 'None') {
             return;
         }
+        this.currentMode = chart.selectionMode;
         if ((this.dragging || this.resizing) && this.dragRect.width > 5 && this.dragRect.height > 5) {
             this.calculateDragSelectedElements(chart, this.dragRect);
         }
@@ -19889,6 +20471,7 @@ class Selection extends BaseSelection {
     /** @private */
     dragStart(chart, seriesClipRect, mouseDownX, mouseDownY, event) {
         let mode = chart.selectionMode;
+        this.currentMode = chart.selectionMode;
         this.dragging = (mode.indexOf('Drag') > -1 || mode === 'Lasso') && (chart.isDoubleTap || !chart.isTouch) &&
             chart.chartAreaType !== 'PolarRadar';
         let target = event.target;
@@ -19935,6 +20518,19 @@ class Selection extends BaseSelection {
     mouseMove(event) {
         let chart = this.chart;
         let target = event.target;
+        if (chart.highlightMode !== 'None') {
+            if (!isNullOrUndefined(target)) {
+                if (event.target.id.indexOf('text') > 1) {
+                    target = getElement$1(event.target.id.replace('text', 'shape'));
+                }
+                if ((target).hasAttribute('class') && ((target).getAttribute('class').indexOf('highlight') > -1 ||
+                    target.getAttribute('class').indexOf('selection') > -1)) {
+                    return;
+                }
+                this.calculateSelectedElements(event);
+                return;
+            }
+        }
         if (chart.selectionMode === 'None') {
             return;
         }
@@ -19989,7 +20585,7 @@ class Selection extends BaseSelection {
                 element = document.elementFromPoint(point.symbolLocations[0].x + offsetX, point.symbolLocations[0].y + offsetY);
                 if (element === path) {
                     point.isSelect = true;
-                    if ((this.chart.allowMultiSelection) && this.chart.selectionMode === 'Lasso') {
+                    if ((this.chart.allowMultiSelection) && this.currentMode === 'Lasso') {
                         this.multiDataIndexes[this.count][this.seriesIndex] = point;
                         this.seriesIndex++;
                     }
@@ -20186,6 +20782,81 @@ class DataEditing {
 }
 
 /**
+ * Highlight src file
+ */
+// tslint:disable:no-string-literal
+/**
+ * `Highlight` module handles the selection for chart.
+ * @private
+ */
+class Highlight extends Selection {
+    /**
+     * Constructor for selection module.
+     * @private.
+     */
+    constructor(chart) {
+        super(chart);
+        this.chart = chart;
+        this.renderer = chart.renderer;
+        this.wireEvents();
+    }
+    /**
+     * Binding events for selection module.
+     */
+    wireEvents() {
+        if (this.chart.isDestroyed || (this.chart.stockChart && this.chart.stockChart.onPanning)) {
+            return;
+        }
+        this.chart.on(Browser.touchMoveEvent, this.mouseMove, this);
+    }
+    /**
+     * UnBinding events for selection module.
+     */
+    unWireEvents() {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.off(Browser.touchMoveEvent, this.mouseMove);
+    }
+    /**
+     * To find private variable values
+     */
+    declarePrivateVariables(chart) {
+        this.styleId = chart.element.id + '_ej2_chart_highlight';
+        this.unselected = chart.element.id + '_ej2_deselected';
+        this.selectedDataIndexes = [];
+        this.highlightDataIndexes = [];
+        this.isSeriesMode = chart.highlightMode === 'Series';
+    }
+    /**
+     * Method to select the point and series.
+     * @return {void}
+     */
+    invokeHighlight(chart) {
+        this.declarePrivateVariables(chart);
+        this.series = extend({}, chart.visibleSeries, null, true);
+        this.seriesStyles();
+        this.currentMode = chart.highlightMode;
+    }
+    /**
+     * Get module name.
+     * @private
+     */
+    getModuleName() {
+        return 'Highlight';
+    }
+    /**
+     * To destroy the highlight.
+     * @return {void}
+     * @private
+     */
+    destroy(chart) {
+        this.unWireEvents();
+        // Destroy method performed here
+    }
+}
+
+/**
  * `DataLabel` module is used to render data label for the data point.
  */
 class DataLabel {
@@ -20345,8 +21016,7 @@ class DataLabel {
                                     }
                                 }
                             }
-                            if ((!isCollide(rect, chart.dataLabelCollections, clip) || dataLabel.labelIntersectAction === 'None')
-                                && isRender) {
+                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
                                 chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
                                 if (this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -20379,7 +21049,9 @@ class DataLabel {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
+            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, 
+            // tslint:disable-next-line:align
+            false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     }
     /**
@@ -20457,7 +21129,7 @@ class DataLabel {
         if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
-            rect.y = (rect.y < 0) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
+            rect.y = rect.y < 0 ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
                 - (clipRect.x + clipRect.width) + padding : 0;
             rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)
@@ -21228,6 +21900,9 @@ class Legend extends BaseLegend {
     mouseMove(e) {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
             this.move(e);
+            if (this.chart.highlightModule && this.chart.highlightMode !== 'None') {
+                this.click(e);
+            }
         }
     }
     /**
@@ -21345,7 +22020,7 @@ class Legend extends BaseLegend {
         legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
     }
     /** @private */
-    LegendClick(seriesIndex) {
+    LegendClick(seriesIndex, event) {
         let chart = this.chart;
         let series = chart.visibleSeries[seriesIndex];
         let legend = this.legendCollections[seriesIndex];
@@ -21390,10 +22065,7 @@ class Legend extends BaseLegend {
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
             chart.refreshAxis();
-            // No need to refresh the trendline series in legend click.
-            if (!(series.category === 'TrendLine')) {
-                series.refreshAxisLabel();
-            }
+            series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
@@ -21401,10 +22073,16 @@ class Legend extends BaseLegend {
                 chart.selectionModule.selectedDataIndexes = selectedDataIndexes;
                 chart.selectionModule.redrawSelection(chart, chart.selectionMode);
             }
+            if (chart.highlightModule && chart.highlightMode !== 'None') {
+                chart.highlightModule.redrawSelection(chart, chart.highlightMode);
+            }
             chart.redraw = false;
         }
         else if (chart.selectionModule) {
-            chart.selectionModule.legendSelection(chart, seriesIndex);
+            chart.selectionModule.legendSelection(chart, seriesIndex, event);
+        }
+        else if (chart.highlightModule) {
+            chart.highlightModule.legendSelection(chart, seriesIndex, event);
         }
         series.chart[changeDetection] = false;
     }
@@ -21450,7 +22128,7 @@ class Legend extends BaseLegend {
         for (let id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 seriesIndex = parseInt(targetId.split(id)[1], 10);
-                this.LegendClick(seriesIndex);
+                this.LegendClick(seriesIndex, event);
                 break;
             }
         }
@@ -21467,7 +22145,7 @@ class Legend extends BaseLegend {
             return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage(null, 1, 2) : 0)), region.rect));
         });
         if (legendRegion.length && this.chart.enableCanvas) {
-            this.LegendClick(legendRegion[0].index);
+            this.LegendClick(legendRegion[0].index, event);
         }
     }
     /**
@@ -24854,6 +25532,9 @@ class PieSeries extends PieBase {
                     let path = new PathOption(accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
                     createBorderEle.removeAttribute('transform');
+                    if (this.accumulation.selectionMode !== 'None' && event.target.hasAttribute('class')) {
+                        this.accumulation.accumulationSelectionModule.addSvgClass(createBorderEle, event.target.getAttribute('class'));
+                    }
                     seriousGroup.appendChild(createBorderEle);
                     if (point.isExplode && createBorderEle) {
                         let borderExplode = srcElem.getAttribute('transform');
@@ -25081,14 +25762,21 @@ let AccumulationChart = class AccumulationChart extends Component {
      * To render the accumulation chart elements
      */
     render() {
-        this.trigger(load, { accumulation: this, chart: this });
-        this.setTheme();
-        this.accBaseModule = new AccumulationBase(this);
-        this.pieSeriesModule = new PieSeries(this);
-        this.calculateVisibleSeries();
-        this.processData();
-        this.renderComplete();
-        this.allowServerDataBinding = true;
+        let loadEventData = {
+            chart: this.isBlazor ? {} : this,
+            accumulation: this.isBlazor ? {} : this,
+            theme: this.theme, name: load, cancel: false
+        };
+        this.trigger(load, loadEventData, () => {
+            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.setTheme();
+            this.accBaseModule = new AccumulationBase(this);
+            this.pieSeriesModule = new PieSeries(this);
+            this.calculateVisibleSeries();
+            this.processData();
+            this.renderComplete();
+            this.allowServerDataBinding = true;
+        });
     }
     /**
      * Method to unbind events for accumulation chart
@@ -25497,7 +26185,7 @@ let AccumulationChart = class AccumulationChart extends Component {
             return null;
         }
         this.accumulationLegendModule.getLegendOptions(this, this.visibleSeries);
-        this.accumulationLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize);
+        this.accumulationLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
     }
     /**
      * To render elements for accumulation chart
@@ -25574,7 +26262,7 @@ let AccumulationChart = class AccumulationChart extends Component {
     renderBorder() {
         let padding = this.border.width;
         appendChildElement(false, this.svgObject, this.renderer.drawRectangle(new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1, new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))), this.redraw);
-        // to draw back ground image for accumulation chart
+        // to draw back ground image for accumulation chart        
         let backGroundImage = this.backgroundImage;
         if (backGroundImage) {
             let image = new ImageOption(this.availableSize.height - padding, this.availableSize.width - padding, backGroundImage, 0, 0, this.element.id + '_background', 'visible', 'none');
@@ -25693,6 +26381,7 @@ let AccumulationChart = class AccumulationChart extends Component {
             this.unWireEvents();
             super.destroy();
             this.element.classList.remove('e-accumulationchart');
+            this.element.innerHTML = '';
         }
     }
     /**
@@ -25924,6 +26613,15 @@ __decorate$7([
 __decorate$7([
     Property('None')
 ], AccumulationChart.prototype, "selectionMode", void 0);
+__decorate$7([
+    Property('None')
+], AccumulationChart.prototype, "highLightMode", void 0);
+__decorate$7([
+    Property('None')
+], AccumulationChart.prototype, "selectionPattern", void 0);
+__decorate$7([
+    Property('None')
+], AccumulationChart.prototype, "highlightPattern", void 0);
 __decorate$7([
     Property(true)
 ], AccumulationChart.prototype, "enableBorderOnMouseMove", void 0);
@@ -27638,9 +28336,21 @@ class AccumulationSelection extends BaseSelection {
         if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
             this.removeStyles(selectedElements, index);
             this.addOrRemoveIndex(this.selectedDataIndexes, index);
+            if (accumulation.enableBorderOnMouseMove) {
+                let borderElement = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                if (!isNullOrUndefined(borderElement)) {
+                    this.removeSvgClass(borderElement, borderElement.getAttribute('class'));
+                }
+            }
         }
         else {
             this.applyStyles(selectedElements, index);
+            if (accumulation.enableBorderOnMouseMove) {
+                let borderElement = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
+                if (!isNullOrUndefined(borderElement)) {
+                    this.addSvgClass(borderElement, selectedElements[0].getAttribute('class'));
+                }
+            }
             this.addOrRemoveIndex(this.selectedDataIndexes, index, true);
         }
     }
@@ -27967,12 +28677,6 @@ class RangeSeries extends NiceInterval {
             this.processDataSource(control.dataSource, control.query, control);
         }
     }
-    findGMT(control, data, xName) {
-        if (!control.isGMT && data) {
-            control.isGMT = !((data[0][xName]).toString().indexOf('GMT+') > -1 ||
-                (data[0][xName]).toString().indexOf('GMT-') > -1);
-        }
-    }
     processDataSource(dataSource, query, control, series) {
         if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource) && isNullOrUndefined(query)) {
             this.dataManagerSuccess({ result: dataSource, count: dataSource.length }, control, series);
@@ -27989,9 +28693,6 @@ class RangeSeries extends NiceInterval {
     dataManagerSuccess(e, control, series) {
         let viewData = e.count ? e.result : [];
         control.allowServerDataBinding = false;
-        if (e.count) {
-            this.findGMT(control, viewData, (series ? series.xName : null) || control.xName);
-        }
         this.processJsonData(viewData, control, Object.keys(viewData).length, series);
         this.seriesLength += series ? 1 : this.seriesLength;
         if (!series || this.seriesLength === control.series.length) {
@@ -28272,14 +28973,13 @@ class RangeNavigatorAxis extends DateTime {
      */
     findAxisLabels(axis) {
         axis.visibleLabels = [];
-        let offset = this.rangeNavigator.isGMT ? (new Date().getTimezoneOffset() * 60 * 1000) : 0;
-        let start = new Date(axis.visibleRange.min + offset);
+        let start = new Date(axis.visibleRange.min);
         let nextInterval;
         let text;
         let interval = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
         switch (axis.actualIntervalType) {
             case 'Years':
-                start = new Date(start.getFullYear().toString());
+                start = new Date(start.getFullYear(), 0, 1);
                 break;
             case 'Quarter':
                 if (start.getMonth() <= 2) {
@@ -28314,11 +29014,11 @@ class RangeNavigatorAxis extends DateTime {
                 start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours(), start.getMinutes(), start.getSeconds());
                 break;
         }
-        nextInterval = start.getTime() + offset;
+        nextInterval = start.getTime();
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
             format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
         });
-        while (nextInterval < axis.visibleRange.max) {
+        while (nextInterval <= axis.visibleRange.max) {
             text = this.dateFormats(this.rangeNavigator.format(new Date(nextInterval)), axis, axis.visibleLabels.length);
             axis.visibleLabels.push(new VisibleLabels(text, nextInterval, this.rangeNavigator.labelStyle, text));
             nextInterval = this.increaseDateTimeInterval(axis, nextInterval, interval).getTime();
@@ -28977,7 +29677,7 @@ class RangeSlider {
     }
     /**
      * Trigger changed event
-     * @private
+     * @param private
      */
     triggerEvent(range) {
         let argsData;
@@ -29151,7 +29851,10 @@ class RangeSlider {
         }
         else if (this.currentSlider === 'firstLevelLabels' || this.currentSlider === 'secondLevelLabels') {
             let secondLabel = control.rangeAxis[this.currentSlider][this.labelIndex + 1];
-            this.performAnimation(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? secondLabel.value : range.max), control);
+            /**
+             * One millisecond is subtracted from the label to indicate the previous label value
+             */
+            this.performAnimation(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), control);
             trigger = false;
         }
         if (this.isDrag && control.allowSnapping) {
@@ -29259,13 +29962,13 @@ let RangeNavigator = class RangeNavigator extends Component {
         /** @private */
         this.animateSeries = true;
         this.chartid = 57725;
-        /** @private */
-        this.isGMT = false;
     }
     /**
      * Starting point of the control initialization
      */
     preRender() {
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.setCulture();
         this.allowServerDataBinding = false;
@@ -29307,15 +30010,21 @@ let RangeNavigator = class RangeNavigator extends Component {
      * To render the range navigator
      */
     render() {
-        this.trigger('load', { rangeNavigator: this });
-        this.setTheme();
-        this.initPrivateVariables();
-        this.createRangeSvg();
-        this.calculateBounds();
-        this.chartSeries.renderChart(this);
-        removeElement$1('chartmeasuretext');
-        this.renderComplete();
-        this.allowServerDataBinding = true;
+        let loadEventData = {
+            name: 'load', rangeNavigator: this.isBlazor ? {} : this,
+            theme: this.theme
+        };
+        this.trigger('load', loadEventData, () => {
+            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.setTheme();
+            this.initPrivateVariables();
+            this.createRangeSvg();
+            this.calculateBounds();
+            this.chartSeries.renderChart(this);
+            removeElement$1('chartmeasuretext');
+            this.renderComplete();
+            this.allowServerDataBinding = true;
+        });
     }
     /**
      * Theming for rangeNavigator
@@ -29382,8 +30091,7 @@ let RangeNavigator = class RangeNavigator extends Component {
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
-        let blazor = 'Blazor';
-        this.trigger('loaded', { rangeNavigator: window[blazor] ? {} : this });
+        this.trigger('loaded', { rangeNavigator: this.isBlazor ? {} : this });
         this.rangeSlider.setSlider(this.startValue, this.endValue, false, this.tooltip.enable && this.tooltip.displayMode === 'Always');
     }
     /**
@@ -29762,6 +30470,7 @@ let RangeNavigator = class RangeNavigator extends Component {
         this.unWireEvents();
         this.rangeSlider.destroy();
         super.destroy();
+        this.element.innerHTML = '';
         this.element.classList.remove('e-rangenavigator');
     }
 };
@@ -29828,6 +30537,9 @@ __decorate$10([
 __decorate$10([
     Property(false)
 ], RangeNavigator.prototype, "allowSnapping", void 0);
+__decorate$10([
+    Property(false)
+], RangeNavigator.prototype, "allowIntervalData", void 0);
 __decorate$10([
     Property(false)
 ], RangeNavigator.prototype, "useGroupingSeparator", void 0);
@@ -30388,7 +31100,7 @@ class RangeTooltip {
                 format: format || 'MM/dd/yyyy',
                 type: firstToLowerCase(control.skeletonType),
                 skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null)
-            }))(new Date(value + (control.isGMT ? new Date().getTimezoneOffset() * 60 * 1000 : 0)));
+            }))(new Date(value));
         }
         else {
             xAxis.format = control.intl.getNumberFormat({
@@ -30463,19 +31175,6 @@ class CartesianChart {
         }
         this.cartesianChartSize = this.calculateChartSize();
         stockChart.chart = new Chart({
-            load: (args) => {
-                if (stockChart.tooltip.header === null) {
-                    args.chart.tooltip.header = '<b>${point.x}</b>';
-                }
-                if (stockChart.tooltip.format === null) {
-                    args.chart.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
-                        ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
-                    if (stockChart.series[0].volume !== '') {
-                        args.chart.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
-                    }
-                }
-                args.chart.animateSeries = false;
-            },
             chartArea: stockChart.chartArea,
             margin: this.findMargin(stockChart),
             primaryXAxis: this.copyObject(stockChart.primaryXAxis),
@@ -30507,7 +31206,6 @@ class CartesianChart {
             pointMove: (args) => {
                 this.stockChart.trigger('pointMove', args);
             },
-            onZooming: (args) => { this.stockChart.trigger('onZooming', args); },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),
@@ -32155,12 +32853,13 @@ class StockChart extends Component {
      * Pre render for financial Chart
      */
     preRender() {
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.isProtectedOnChange = true;
         this.setCulture();
-        this.stockChartTheme = getThemeColor(this.theme);
         this.wireEvents();
     }
     /**
@@ -32227,19 +32926,23 @@ class StockChart extends Component {
      * To Initialize the control rendering.
      */
     render() {
-        this.trigger('load', { stockChart: this });
-        this.storeDataSource();
-        this.drawSVG();
-        this.renderTitle();
-        this.chartModuleInjection();
-        this.chartRender();
-        if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
-            this.stockChartDataManagerSuccess();
-            this.initialRender = false;
-        }
-        this.renderComplete();
-        this.allowServerDataBinding = true;
-        this.isProtectedOnChange = false;
+        let loadEventData = { name: 'load', stockChart: this.isBlazor ? {} : this, theme: this.theme };
+        this.trigger('load', loadEventData, () => {
+            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.stockChartTheme = getThemeColor(this.theme);
+            this.storeDataSource();
+            this.drawSVG();
+            this.renderTitle();
+            this.chartModuleInjection();
+            this.chartRender();
+            if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
+                this.stockChartDataManagerSuccess();
+                this.initialRender = false;
+            }
+            this.renderComplete();
+            this.allowServerDataBinding = true;
+            this.isProtectedOnChange = false;
+        });
     }
     /**
      * DataManager Success
@@ -32718,7 +33421,7 @@ class StockChart extends Component {
         }
     }
     findTitleColor() {
-        if (this.theme.indexOf('Highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
+        if (this.theme.toLocaleLowerCase().indexOf('highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
             return '#ffffff';
         }
         return '#424242';
@@ -32838,9 +33541,6 @@ __decorate$9([
 __decorate$9([
     Event()
 ], StockChart.prototype, "pointMove", void 0);
-__decorate$9([
-    Event()
-], StockChart.prototype, "onZooming", void 0);
 __decorate$9([
     Property('None')
 ], StockChart.prototype, "selectionMode", void 0);
@@ -33285,6 +33985,14 @@ var BulletChartTheme;
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    BulletChartTheme.legendLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
     BulletChartTheme.dataLabelFont = {
         size: '13px',
         fontWeight: 'Normal',
@@ -33320,6 +34028,7 @@ function getBulletThemeColor(theme, bullet) {
         categoryFontColor: '#666666',
         labelFontFamily: 'SegoeUI',
         tooltipFill: 'rgba(0, 8, 22, 0.75)',
+        legendLabel: '#353535',
         tooltipBoldLabel: '#ffffff',
         featuredMeasureColor: '#181818',
         comparativeMeasureColor: '#181818',
@@ -33343,6 +34052,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#666666',
                 labelFontFamily: 'SegoeUI',
                 tooltipFill: 'rgba(0, 8, 22, 0.75)',
+                legendLabel: '#353535',
                 tooltipBoldLabel: '#ffffff',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -33366,6 +34076,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: 'rgba(0,0,0,0.54)',
                 labelFontFamily: 'Helvetica',
                 tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                legendLabel: '#212529',
                 tooltipBoldLabel: 'rgba(255,255,255)',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -33389,6 +34100,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#FFFFFF',
                 labelFontFamily: 'SegoeUI',
                 tooltipFill: '#ffffff',
+                legendLabel: '#ffffff',
                 tooltipBoldLabel: '#000000',
                 featuredMeasureColor: '#000000',
                 comparativeMeasureColor: '#000000',
@@ -33414,6 +34126,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#FFFFFF',
                 labelFontFamily: 'Helvetica',
                 tooltipFill: '#F4F4F4',
+                legendLabel: '#DADADA',
                 tooltipBoldLabel: '#282727',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -33437,6 +34150,7 @@ function getBulletThemeColor(theme, bullet) {
                 categoryFontColor: '#202528',
                 labelFontFamily: 'HelveticaNeue',
                 tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                legendLabel: '#212529',
                 tooltipBoldLabel: 'rgba(255,255,255)',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -33559,22 +34273,16 @@ class ScaleGroup {
         let bounds;
         for (let i = 0; i < dataCount; i++) {
             data = bulletChart.dataSource[i];
-            let argsData;
-            argsData = {
-                name: barRender, bulletChart: bulletChart, value: data[bulletChart.valueField], target: data[bulletChart.targetField],
-                category: data[bulletChart.categoryField]
-            };
-            bulletChart.trigger(barRender, argsData);
-            categoryValue = argsData.category;
+            categoryValue = data[bulletChart.categoryField];
             if (isHorizontal) {
                 lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
             }
             else {
                 lPoint = initialBoundsStart + (featureBarSize * i) + (featureBarSize / 2) - bulletChart.valueHeight / 2;
             }
-            bounds = this.calculateFeatureMeasureBounds(+argsData.value, categoryValue, isHorizontal);
+            bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
             if (data && bulletChart.type === 'Dot') {
-                let value = +argsData.value;
+                let value = data[bulletChart.valueField];
                 if (isHorizontal) {
                     bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
                         ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
@@ -33657,6 +34365,7 @@ class ScaleGroup {
     }
     renderCommonComparativeSymbol(dataCount, isHorizontal) {
         let bulletChart = this.bulletChart;
+        let value;
         let rect = bulletChart.initialClipRect;
         let scaleLength = isHorizontal ? rect.width : rect.height;
         let y1;
@@ -33677,14 +34386,8 @@ class ScaleGroup {
         let featureBarSize = (isHorizontal ? rect.height : rect.width) / dataCount;
         let svgElement;
         for (let k = 0; k < dataCount; k++) {
-            let argsData;
-            argsData = {
-                // tslint:disable-next-line:max-line-length
-                name: barRender, bulletChart: bulletChart, value: bulletChart.dataSource[k][bulletChart.valueField], target: bulletChart.dataSource[k][bulletChart.targetField],
-                category: bulletChart.dataSource[k][bulletChart.categoryField]
-            };
-            bulletChart.trigger(barRender, argsData);
-            values = values.concat(argsData.target);
+            value = bulletChart.dataSource[k][bulletChart.targetField];
+            values = values.concat(value);
             for (let i = 0; i < values.length; i++) {
                 targetType = targetTypes[i % targetTypeLength];
                 if (values[i] >= minimum && values[i] <= maximum) {
@@ -33721,7 +34424,8 @@ class ScaleGroup {
         let shapeObject;
         let shapeElement;
         let bulletChart = this.bulletChart;
-        let size = bulletChart.targetWidth;
+        let strokeWidth = (targetType === 'Cross') ? bulletChart.targetWidth - 1 : 1;
+        let size = (targetType === 'Circle') ? bulletChart.targetWidth - 1 : bulletChart.targetWidth;
         let lx = isHorizontal ? x1 + (size / 2) : y1 + ((y2 - y1) / 2);
         let ly = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
         let id = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
@@ -33731,13 +34435,13 @@ class ScaleGroup {
             shapeElement = bulletChart.renderer.drawLine(shapeObject);
         }
         else if (targetType === 'Circle') {
-            shapeObject = new CircleOption(id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor }, 1, lx, ly, size);
+            shapeObject = new CircleOption(id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor || 'black' }, 1, lx, ly, size);
             shapeElement = bulletChart.renderer.drawCircle(shapeObject);
         }
         else {
             let crossDirection = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
                 (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
-            shapeObject = new PathOption(id, 'transparent', 1, bulletChart.targetColor, 1, '', crossDirection);
+            shapeObject = new PathOption(id, 'transparent', strokeWidth, bulletChart.targetColor, 1, '', crossDirection);
             shapeElement = bulletChart.renderer.drawPath(shapeObject);
         }
         shapeElement.setAttribute('class', className);
@@ -33755,7 +34459,7 @@ class ScaleGroup {
                 (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
             'y2': y2,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor
+            'stroke': bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     }
@@ -33769,7 +34473,7 @@ class ScaleGroup {
             'x2': x2,
             'y2': y1,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor
+            'stroke': bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     }
@@ -33852,9 +34556,6 @@ class ScaleGroup {
             centerY = isValuePlot ? valueY : valueY + elementBarHeight;
             centerX = valueX;
         }
-        else {
-            return null;
-        }
         valueBarElement.style.visibility = 'hidden';
         new Animation({}).animate(valueBarElement, {
             duration: animateDuration,
@@ -33895,9 +34596,6 @@ class ScaleGroup {
             x = parseFloat(targetBarelement.getAttribute('x1'));
             centerY = y;
             centerX = x;
-        }
-        else {
-            return null;
         }
         targetBarelement.style.visibility = 'hidden';
         this.animateRect(targetBarelement, centerX, centerY, index + 1);
@@ -33949,6 +34647,15 @@ __decorate$14([
 __decorate$14([
     Property(null)
 ], Range.prototype, "color", void 0);
+__decorate$14([
+    Property(null)
+], Range.prototype, "index", void 0);
+__decorate$14([
+    Property(null)
+], Range.prototype, "name", void 0);
+__decorate$14([
+    Property('Rectangle')
+], Range.prototype, "shape", void 0);
 /**
  * Configures the major tick lines.
  */
@@ -34052,6 +34759,53 @@ __decorate$14([
 __decorate$14([
     Complex(BulletChartTheme.dataLabelFont, BulletLabelStyle)
 ], BulletDataLabel.prototype, "labelStyle", void 0);
+/**
+ * Configures the legends in charts.
+ */
+class BulletChartLegendSettings extends ChildProperty {
+}
+__decorate$14([
+    Property(false)
+], BulletChartLegendSettings.prototype, "visible", void 0);
+__decorate$14([
+    Complex({ x: 0, y: 0 }, Location)
+], BulletChartLegendSettings.prototype, "location", void 0);
+__decorate$14([
+    Property(8)
+], BulletChartLegendSettings.prototype, "padding", void 0);
+__decorate$14([
+    Property('Center')
+], BulletChartLegendSettings.prototype, "alignment", void 0);
+__decorate$14([
+    Property(10)
+], BulletChartLegendSettings.prototype, "shapeHeight", void 0);
+__decorate$14([
+    Property(10)
+], BulletChartLegendSettings.prototype, "shapeWidth", void 0);
+__decorate$14([
+    Complex(BulletChartTheme.legendLabelFont, BulletLabelStyle)
+], BulletChartLegendSettings.prototype, "textStyle", void 0);
+__decorate$14([
+    Property('Auto')
+], BulletChartLegendSettings.prototype, "position", void 0);
+__decorate$14([
+    Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+], BulletChartLegendSettings.prototype, "margin", void 0);
+__decorate$14([
+    Complex({}, Border)
+], BulletChartLegendSettings.prototype, "border", void 0);
+__decorate$14([
+    Property(5)
+], BulletChartLegendSettings.prototype, "shapePadding", void 0);
+__decorate$14([
+    Property('transparent')
+], BulletChartLegendSettings.prototype, "background", void 0);
+__decorate$14([
+    Property(1)
+], BulletChartLegendSettings.prototype, "opacity", void 0);
+__decorate$14([
+    Property(3)
+], BulletChartLegendSettings.prototype, "tabIndex", void 0);
 
 var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -34092,6 +34846,8 @@ let BulletChart = class BulletChart extends Component {
      * Initialize the event handler.
      */
     preRender() {
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.allowServerDataBinding = false;
         this.unWireEvents();
         this.initPrivateValues();
@@ -34120,16 +34876,26 @@ let BulletChart = class BulletChart extends Component {
      * To Initialize the bullet chart rendering.
      */
     render() {
-        this.trigger('load', { bulletChart: this });
-        this.setTheme();
-        this.createSvg(this);
-        this.findRange();
-        this.calculatePosition();
-        this.renderBulletElements();
-        let blazor = 'Blazor';
-        this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
-        this.allowServerDataBinding = true;
-        this.renderComplete();
+        let loadEventData = {
+            bulletChart: this.isBlazor ? {} : this,
+            theme: this.theme, name: 'load'
+        };
+        this.trigger('load', loadEventData, () => {
+            this.theme = this.isBlazor ? loadEventData.theme : this.theme;
+            this.setTheme();
+            this.createSvg(this);
+            this.findRange();
+            if (this.bulletChartLegendModule && this.legendSettings.visible) {
+                this.calculateVisibleElements();
+                this.bulletChartLegendModule.getLegendOptions(this.visibleRanges, this);
+            }
+            this.calculatePosition();
+            this.renderBulletElements();
+            let blazor = 'Blazor';
+            this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
+            this.allowServerDataBinding = true;
+            this.renderComplete();
+        });
     }
     /**
      * Theming for bullet chart
@@ -34256,9 +35022,20 @@ let BulletChart = class BulletChart extends Component {
         //this.bulletAxis.renderYAxisLabels(intervalValue, scaleGroup, this.bulletChartRect);
         this.bindData();
         this.renderDataLabel();
+        this.renderBulletLegend();
         //this.changeOrientation(scaleGroup);
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
+    }
+    /**
+     * To render the legend
+     */
+    renderBulletLegend() {
+        if (this.bulletChartLegendModule && this.bulletChartLegendModule.legendCollections.length) {
+            this.bulletChartLegendModule.calTotalPage = true;
+            let bounds = this.bulletChartLegendModule.legendBounds;
+            this.bulletChartLegendModule.renderLegend(this, this.legendSettings, bounds);
+        }
     }
     /**
      * Handles the bullet chart resize.
@@ -34345,6 +35122,9 @@ let BulletChart = class BulletChart extends Component {
         this.maxLabelSize = this.getMaxLabelWidth(this);
         this.initialClipRect = this.getBulletBounds((this.orientation === 'Vertical' ? maxVerticalTitlteHeight : maxTitlteWidth), titleHeight, subTitleHeight, margin);
         this.bulletChartRect = new Rect(this.initialClipRect.x, this.initialClipRect.y, this.initialClipRect.width, this.initialClipRect.height);
+        if (this.bulletChartLegendModule) {
+            this.bulletChartLegendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, this.maxLabelSize);
+        }
     }
     /**
      * Calculate the rect values based on title position.
@@ -34448,6 +35228,19 @@ let BulletChart = class BulletChart extends Component {
         }
         return this.maxLabelSize;
     }
+    calculateVisibleElements() {
+        let range;
+        let rangeCollection;
+        this.visibleRanges = [];
+        rangeCollection = this.ranges;
+        for (let i = 0, len = rangeCollection.length; i < len; i++) {
+            range = rangeCollection[i];
+            range.index = i;
+            range.color = range.color;
+            this.visibleRanges.push(range);
+            rangeCollection[i] = range;
+        }
+    }
     /**
      * To render the title of the bullet chart
      */
@@ -34496,14 +35289,14 @@ let BulletChart = class BulletChart extends Component {
                         y = this.margin.top + elementSize.height / 2 + padding;
                         break;
                     case 'Bottom':
-                        x = (this.availableSize.width) / 2 + padding * 2;
+                        x = (this.availableSize.width) / 2;
                         // tslint:disable-next-line:max-line-length
                         y = this.availableSize.height - this.margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding : 0);
                         break;
                     case 'Left':
                         y = this.findVerticalAlignment(margin);
                         anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
-                        x = margin.left + elementSize.height / 3;
+                        x = margin.left;
                         // tslint:disable-next-line:max-line-length
                         break;
                     case 'Right':
@@ -34684,6 +35477,7 @@ let BulletChart = class BulletChart extends Component {
         EventHandler.remove(this.element, startEvent, this.bulletMouseDown);
         EventHandler.remove(this.element, moveEvent, this.bulletMouseMove);
         EventHandler.remove(this.element, cancelEvent, this.bulletMouseLeave);
+        EventHandler.remove(this.element, 'click', this.bulletChartOnMouseClick);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
     }
     /**
@@ -34695,6 +35489,7 @@ let BulletChart = class BulletChart extends Component {
         EventHandler.add(this.element, Browser.touchMoveEvent, this.bulletMouseMove, this);
         EventHandler.add(this.element, cancelEvent, this.bulletMouseLeave, this);
         EventHandler.add(this.element, Browser.touchStartEvent, this.bulletMouseDown, this);
+        EventHandler.add(this.element, 'click', this.bulletChartOnMouseClick, this);
         this.resizeBound = this.bulletResize.bind(this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
         /*! Apply the style for chart */
@@ -34729,12 +35524,9 @@ let BulletChart = class BulletChart extends Component {
                 }
             }
         }
-        if (!this.isTouch(e)) {
+        if (!this.isTouchEvent(e)) {
             let id = 'tooltipDiv' + this.element.id;
             let tooltipDiv = document.getElementById(id);
-            if (isBlazor()) {
-                resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
-            }
             if (tooltipDiv) {
                 remove(tooltipDiv);
             }
@@ -34759,7 +35551,7 @@ let BulletChart = class BulletChart extends Component {
      * @private
      */
     bulletMouseLeave(e) {
-        if (!this.isTouch(e)) {
+        if (!this.isTouchEvent(e)) {
             let tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
             if (tooltipDiv) {
                 remove(tooltipDiv);
@@ -34771,7 +35563,7 @@ let BulletChart = class BulletChart extends Component {
      * @return {boolean}
      * @private
      */
-    isTouch(event) {
+    isTouchEvent(event) {
         if ((event.pointerType === 'touch') || (event.type.indexOf('touch') > -1)) {
             return true;
         }
@@ -34783,7 +35575,7 @@ let BulletChart = class BulletChart extends Component {
      * @private
      */
     bulletMouseDown(e) {
-        if (this.isTouch(e)) {
+        if (this.isTouchEvent(e)) {
             remove(document.getElementById(('tooltipDiv' + this.element.id)));
             let targetId = e.target.id;
             /* tslint:disable:no-string-literal */
@@ -34793,6 +35585,17 @@ let BulletChart = class BulletChart extends Component {
                 this.bulletTooltipModule._displayTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
             }
         }
+    }
+    /**
+     * Handles the mouse click on bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    bulletChartOnMouseClick(e) {
+        let element = e.target;
+        this.trigger(bulletChartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
+        this.notify('click', e);
+        return false;
     }
     /**
      * Handles the print method for bullet chart control.
@@ -34908,9 +35711,22 @@ let BulletChart = class BulletChart extends Component {
      */
     requiredModules() {
         let modules = [];
+        let rangeName;
+        for (let i = 0; i < this.ranges.length; i++) {
+            if (this.ranges[i].name !== null) {
+                rangeName = true;
+            }
+        }
+        this.isLegend = (this.legendSettings.visible && ((rangeName) || !!this.isLegend || this.targetField !== '' || this.valueField !== ''));
         if (this.tooltip.enable) {
             modules.push({
                 member: 'BulletTooltip',
+                args: [this]
+            });
+        }
+        if (this.isLegend) {
+            modules.push({
+                member: 'BulletChartLegend',
                 args: [this]
             });
         }
@@ -34931,6 +35747,7 @@ let BulletChart = class BulletChart extends Component {
         this.removeSvg();
         this.svgObject = null;
         this.element.classList.remove('e-BulletChart');
+        this.element.innerHTML = '';
     }
 };
 __decorate$13([
@@ -35015,6 +35832,9 @@ __decorate$13([
     Complex({}, BulletDataLabel)
 ], BulletChart.prototype, "dataLabel", void 0);
 __decorate$13([
+    Complex({}, BulletChartLegendSettings)
+], BulletChart.prototype, "legendSettings", void 0);
+__decorate$13([
     Property(false)
 ], BulletChart.prototype, "enableGroupSeparator", void 0);
 __decorate$13([
@@ -35064,13 +35884,16 @@ __decorate$13([
 ], BulletChart.prototype, "tooltipRender", void 0);
 __decorate$13([
     Event()
-], BulletChart.prototype, "barRender", void 0);
-__decorate$13([
-    Event()
 ], BulletChart.prototype, "load", void 0);
 __decorate$13([
     Event()
 ], BulletChart.prototype, "loaded", void 0);
+__decorate$13([
+    Event()
+], BulletChart.prototype, "bulletChartMouseClick", void 0);
+__decorate$13([
+    Event()
+], BulletChart.prototype, "legendRender", void 0);
 __decorate$13([
     Event()
 ], BulletChart.prototype, "beforePrint", void 0);
@@ -35089,6 +35912,7 @@ class BulletTooltip {
     constructor(bullet) {
         this.control = bullet;
         this.elementId = bullet.element.id;
+        this.bulletAxis = new BulletChartAxis(this.control);
     }
     /**
      * To create tooltip div element
@@ -35140,20 +35964,27 @@ class BulletTooltip {
             let targetVal = [];
             let categoryVal;
             let tooltipdiv;
+            let format = this.bulletAxis.getFormat(this.control);
+            let isCustomFormat = format.match('{value}') !== null;
             measureId = targetId.substring(targetId.lastIndexOf('_') + 1);
+            let targetValues = [];
+            this.bulletAxis.format = this.bulletAxis.bulletChart.intl.getNumberFormat({
+                format: isCustomFormat ? '' : format, useGrouping: this.bulletAxis.bulletChart.enableGroupSeparator
+            });
             currentVal = this.control.dataSource[measureId][this.control.valueField];
             targetVal = targetVal.concat(this.control.dataSource[measureId][this.control.targetField]);
             categoryVal = this.control.dataSource[measureId][this.control.categoryField];
-            if (localizedText) {
-                data = {
-                    value: currentVal.toLocaleString(locale), target: targetVal.map((x) => { return x.toLocaleString(locale); }),
-                    category: (!isNullOrUndefined(categoryVal) ? categoryVal.toLocaleString(locale) : categoryVal)
-                };
+            let labelCurrentText = currentVal ? (currentVal).toString() : '';
+            let labelTargetText = targetVal ? (targetVal).toString() : '';
+            let labelCategoryText = categoryVal ? (categoryVal).toString() : '';
+            labelCurrentText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +currentVal);
+            for (let i = 0; i < targetVal.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +targetVal[i]));
             }
-            else {
-                data = { value: currentVal, target: targetVal, category: categoryVal };
-                blazorTooltipData = { value: currentVal, target: targetVal.toString(), category: categoryVal };
-            }
+            labelCategoryText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +categoryVal);
+            data = { value: labelCurrentText, target: targetValues, category: labelCategoryText };
+            blazorTooltipData = { value: labelCurrentText, target: labelTargetText, category: labelCategoryText };
             let style = 'position: absolute; z-index: 13000; display: block;';
             if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
                 tooltipdiv = this.control.createElement('div');
@@ -35259,6 +36090,218 @@ class BulletTooltip {
      */
     destroy(chart) {
         // Destroy method called here
+    }
+}
+
+/**
+ * Chart legend
+ */
+/**
+ * `Legend` module is used to render legend for the chart.
+ */
+class BulletChartLegend extends BaseLegend {
+    constructor(chart) {
+        super(chart);
+        this.library = this;
+        this.addEventListener();
+    }
+    /**
+     * Binding events for legend module.
+     */
+    addEventListener() {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.on('click', this.click, this);
+        this.chart.on(Browser.touchEndEvent, this.mouseEnd, this);
+        this.chart.on(Browser.touchMoveEvent, this.bulletMouseMove, this);
+    }
+    /**
+     * UnBinding events for bullet chart legend module.
+     */
+    removeEventListener() {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.off('click', this.click);
+        this.chart.off(Browser.touchEndEvent, this.mouseEnd);
+        this.chart.off(Browser.touchMoveEvent, this.bulletMouseMove);
+    }
+    /**
+     * To handle mosue move for legend module
+     */
+    bulletMouseMove(e) {
+        if (this.chart.legendSettings.visible && this.chart.isTouch) {
+            this.move(e);
+        }
+    }
+    /**
+     * To handle mosue end for legend module
+     */
+    mouseEnd(e) {
+        if (this.chart.legendSettings.visible && this.chart.isTouch) {
+            this.move(e);
+        }
+    }
+    /**
+     * Get the legend options.
+     * @return {void}
+     * @private
+     */
+    getLegendOptions(visibleRangeCollection, chart) {
+        this.legendCollections = [];
+        let fill;
+        let count = 0;
+        let key = 'color';
+        let bulletChart = this.chart;
+        for (let range of visibleRangeCollection) {
+            if (range.name !== null) {
+                fill = range.color ? range.color : bulletChart.themeStyle.rangeStrokes[range.index][key];
+                this.legendCollections.push(new LegendOptions(range.name, fill, range.shape, this.chart.legendSettings.visible, null, null, false, range.index, null));
+                count++;
+            }
+        }
+        if (bulletChart.dataSource !== null && bulletChart.valueField !== '') {
+            fill = bulletChart.valueFill || 'black';
+            let shape = bulletChart.orientation === 'Vertical' ? 'TargetRect' : 'ActualRect';
+            this.legendCollections.push(new LegendOptions('Actual', fill, shape, this.chart.legendSettings.visible, null, null, false, count++, null));
+        }
+        if (bulletChart.dataSource !== null && bulletChart.targetField !== '') {
+            fill = bulletChart.targetColor || 'black';
+            let shape = bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect';
+            for (let i = 0; i < Object.keys(bulletChart.dataSource).length; i++) {
+                if (isNullOrUndefined(bulletChart.dataSource[i][bulletChart.targetField].length)
+                    || bulletChart.dataSource[i][bulletChart.targetField].length === 1) {
+                    while (i === 0) {
+                        this.legendCollections.push(new LegendOptions('Target', fill, shape, this.chart.legendSettings.visible, null, null, false, count++, null));
+                        break;
+                    }
+                }
+                else {
+                    let targetTypes = bulletChart.targetTypes;
+                    let targetType = [];
+                    let targetTypeLength = targetTypes.length;
+                    while (i === 0) {
+                        for (let i = 0; i < targetTypeLength; i++) {
+                            targetType[i] = targetTypes[i % targetTypeLength];
+                            targetType[i] = (targetType[i] === 'Rect') ? bulletChart.orientation === 'Vertical' ?
+                                'ActualRect' : 'TargetRect' : (targetType[i]);
+                            targetType[i] = (targetType[i] === 'Cross') ? 'Multiply' : targetType[i];
+                            this.legendCollections.push(new LegendOptions('Target_' + i, fill, targetType[i], this.chart.legendSettings.visible, null, null, false, count++, null));
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    /** @private */
+    getLegendBounds(availableSize, bulletLegendBounds, legend) {
+        let extraWidth = 0;
+        let padding = legend.padding;
+        let extraHeight = 0;
+        if (!this.isVertical) {
+            extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
+        }
+        else {
+            extraWidth = !legend.width ? ((availableSize.width / 100) * 5) : 0;
+        }
+        bulletLegendBounds.height += extraHeight;
+        bulletLegendBounds.width += extraWidth;
+        let maximumWidth = 0;
+        let legendRowWidth = 0;
+        let legendRowCount = 0;
+        let legendWidth = 0;
+        let columnHeight = 0;
+        let shapeHeight = legend.shapeHeight;
+        let shapeWidth = legend.shapeWidth;
+        let shapePadding = legend.shapePadding;
+        let legendEventArgs;
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        let render = false;
+        for (let bulletLegendOption of this.legendCollections) {
+            legendEventArgs = {
+                fill: bulletLegendOption.fill, text: bulletLegendOption.text, shape: bulletLegendOption.shape,
+                name: legendRender, cancel: false
+            };
+            this.chart.trigger(legendRender, legendEventArgs);
+            bulletLegendOption.render = !legendEventArgs.cancel;
+            bulletLegendOption.text = legendEventArgs.text;
+            bulletLegendOption.fill = legendEventArgs.fill;
+            bulletLegendOption.shape = legendEventArgs.shape;
+            bulletLegendOption.textSize = measureText(bulletLegendOption.text, legend.textStyle);
+            if (bulletLegendOption.render && bulletLegendOption.text !== '') {
+                render = true;
+                legendWidth = shapeWidth + shapePadding + bulletLegendOption.textSize.width + padding;
+                legendRowWidth = legendRowWidth + legendWidth;
+                if (bulletLegendBounds.width < (padding + legendRowWidth) || this.isVertical) {
+                    maximumWidth = Math.max(maximumWidth, (legendRowWidth + padding - (this.isVertical ? 0 : legendWidth)));
+                    if (legendRowCount === 0 && (legendWidth !== legendRowWidth)) {
+                        legendRowCount = 1;
+                    }
+                    legendRowWidth = this.isVertical ? 0 : legendWidth;
+                    legendRowCount++;
+                    columnHeight = (legendRowCount * (this.maxItemHeight + padding)) + padding;
+                }
+            }
+        }
+        columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding);
+        this.isPaging = bulletLegendBounds.height < columnHeight;
+        this.totalPages = legendRowCount;
+        if (render) {
+            this.setBounds(Math.max((legendRowWidth + padding), maximumWidth), columnHeight, legend, bulletLegendBounds);
+        }
+        else {
+            this.setBounds(0, 0, legend, bulletLegendBounds);
+        }
+    }
+    /** @private */
+    getRenderPoint(bulletLegendOption, start, textPadding, prevLegend, rect, count, firstLegend) {
+        let previousBound = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
+        let padding = this.legend.padding;
+        if ((previousBound + (bulletLegendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
+            this.isVertical) {
+            bulletLegendOption.location.x = start.x;
+            bulletLegendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
+                prevLegend.location.y + this.maxItemHeight + padding;
+        }
+        else {
+            bulletLegendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
+            bulletLegendOption.location.y = prevLegend.location.y;
+        }
+        let availwidth = (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
+            textPadding - this.legend.shapeWidth / 2);
+        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle);
+    }
+    /**
+     * To show the tooltip for the trimmed text in legend.
+     * @return {void}
+     */
+    click(event) {
+        let symbolTargetId = event.target.id;
+        if (symbolTargetId.indexOf(this.legendID + '_pagedown') > -1) {
+            this.changePage(event, false);
+        }
+        else if (symbolTargetId.indexOf(this.legendID + '_pageup') > -1) {
+            this.changePage(event, true);
+        }
+    }
+    /**
+     * Get module name
+     */
+    getModuleName() {
+        return 'BulletChartLegend';
+    }
+    /**
+     * To destroy the Legend.
+     * @return {void}
+     * @private
+     */
+    destroy(chart) {
+        /**
+         * Destroy method calling here
+         */
+        this.removeEventListener();
     }
 }
 
@@ -41360,5 +42403,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, onZooming, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, barRender, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

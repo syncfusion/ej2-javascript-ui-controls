@@ -76,7 +76,7 @@ export class Formula {
         this.parent.on(formulaOperation, this.performFormulaOperation, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
-        this.parent.on(click, this.clickHandler, this);
+        this.parent.on(click, this.formulaClick, this);
         this.parent.on(refreshFormulaDatasource, this.refreshFormulaDatasource, this);
     }
 
@@ -85,7 +85,7 @@ export class Formula {
             this.parent.off(formulaOperation, this.performFormulaOperation);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(keyDown, this.keyDownHandler);
-            this.parent.off(click, this.clickHandler);
+            this.parent.off(click, this.formulaClick);
             this.parent.off(refreshFormulaDatasource, this.refreshFormulaDatasource);
         }
     }
@@ -101,7 +101,7 @@ export class Formula {
                 this.endEdit();
                 break;
             case 'addDefinedName':
-                this.addDefinedName(<DefineNameModel>args.definedName);
+                args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName);
                 break;
             case 'getNames':
                 if (!args.sheetName) {
@@ -195,9 +195,9 @@ export class Formula {
         }
         this.parent.notify(
             editOperation, {
-                action: 'refreshEditor', value: updatedFormulaValue,
-                refreshFormulaBar: true, refreshEditorElem: true, refreshCurPos: !this.isFormulaBar
-            });
+            action: 'refreshEditor', value: updatedFormulaValue,
+            refreshFormulaBar: true, refreshEditorElem: true, refreshCurPos: !this.isFormulaBar
+        });
     }
 
     private onSuggestionComplete(args: { result: string[], cancel: boolean }): void {
@@ -264,7 +264,7 @@ export class Formula {
         }
     }
 
-    private clickHandler(e: MouseEvent & TouchEvent): void {
+    private formulaClick(e: MouseEvent & TouchEvent): void {
         if (this.parent.isEdit) {
             let trgtElem: HTMLElement = <HTMLElement>e.target;
             this.isFormulaBar = trgtElem.classList.contains('e-formula-bar');
@@ -404,6 +404,8 @@ export class Formula {
     }
 
     private addDefinedName(definedName: DefineNameModel): boolean {
+        let name: string = definedName.name;
+        let isAdded: boolean = false;
         if (!definedName.refersTo) {
             let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetTab - 1);
             let sheetName: string = getSheetName(this.parent);
@@ -428,16 +430,24 @@ export class Formula {
             definedName.refersTo = sheetName + '!' + selectRange;
             definedName.scope = 'Workbook';
         }
-        let eventArgs: { [key: string]: Object } = {
-            action: 'addDefinedName', definedName: definedName, isAdded: false
-        };
-        this.parent.notify(workbookFormulaOperation, eventArgs);
-        if (!eventArgs.isAdded) {
+        if (name.length > 0 && (/^([a-zA-Z_0-9.]){0,255}$/.test(name))) {
+            let eventArgs: { [key: string]: Object } = {
+                action: 'addDefinedName', definedName: definedName, isAdded: false
+            };
+            this.parent.notify(workbookFormulaOperation, eventArgs);
+            isAdded = <boolean>eventArgs.isAdded;
+            if (!eventArgs.isAdded) {
+                (this.parent.serviceLocator.getService(dialog) as Dialog).show({
+                    content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DefineNameExists'),
+                    width: '300'
+                });
+            }
+        } else {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-                content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DefineNameExists'),
+                content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DefineNameInValid'),
                 width: '300'
             });
         }
-        return true;
+        return isAdded;
     }
 }

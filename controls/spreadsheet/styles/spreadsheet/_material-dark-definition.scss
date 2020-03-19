@@ -13,6 +13,7 @@ $cell-background: #fff !default;
 $cell-color: #000 !default;
 $cell-border-color: $grey-300 !default;
 $hdr-cell-border-color: $grey-800 !default;
+$dlg-error-color: #dd2c2c !default;
 //enddefault
 //selection
 $selection-border-color: $accent !default;
@@ -87,3 +88,22 @@ $hyper-text-border: #979797  !default;
 $filter-icon-margin-bottom: 0 !default;
 $filter-icon-bigger-margin-bottom: 12px !default;
 //End Filtering
+//Find And Replace
+$find-popup-border-top-color: #fafafa !default;
+$find-popup-border-color: #e0e0e0 !default;
+$find-tool-dlg-width: 330px !default;
+$find-tool-dlg-height: 46px !default;
+$find-dlg-width: 470px !default;
+$find-dlg-height: 474px !default;
+$find-goto-dlg-height: 220px !default;
+$find-alert-dlg-height: 160px !default;
+$bigger-find-tool-dlg-width: 403px !default;
+$bigger-find-tool-dlg-height: 59px !default;
+$bigger-goto-alert-dlg-height: 168px !default;
+$bigger-find-alert-dlg-height: 168px !default;
+$bigger-find-goto-dlg-height: 241px !default;
+//End Find And Replace
+//Protect Sheet
+$protect-dlg-height: 381px !default;
+$protect-dlg-width: 287px !default;
+//End Protect Sheet

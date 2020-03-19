@@ -1,13 +1,12 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
 import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';
-import { FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} from '@syncfusion/ej2-base';
-import { cssClass, Sortable, moveTo, SortOrder } from '@syncfusion/ej2-lists';
+import { cssClass, Sortable, moveTo, } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -78,7 +77,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 /**
  * The ListBox is a graphical user interface component used to display a list of items.
  * Users can select one or more items in the list using a checkbox or by keyboard selection.
- * It supports sorting, grouping, reordering, and drag and drop of items.
+ * It supports sorting, grouping, reordering and drag and drop of items.
  * ```html
  * <select id="listbox">
  *      <option value='1'>Badminton</option>
@@ -121,114 +120,6 @@ export class ListBox extends DropDownBase {
     protected isCustomFiltering: boolean;
     private jsonData: { [key: string]: Object }[] | string[] | boolean[] | number[];
     private toolbarAction: string;
-    /**
-     * The `fields` property maps the columns of the data table and binds the data to the component.
-     * * text - Maps the text column from data table for each list item.
-     * * value - Maps the value column from data table for each list item.
-     * * iconCss - Maps the icon class column from data table for each list item.
-     * * groupBy - Group the list items with it's related items by mapping groupBy field.
-     * ```html
-     * <input type="text" tabindex="1" id="list"> </input>
-     * ```
-     * ```typescript  
-     *   let customers: ListBox = new ListBox({
-     *      dataSource:new DataManager({ url:'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
-     *      query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(5),
-     *      fields: { text: 'ContactName', value: 'CustomerID' },
-     *      placeholder: 'Select a customer'
-     *   });
-     *   customers.appendTo("#list");
-     * ```
-     * @default {text: null, value: null, iconCss: null, groupBy: null}
-     */
-    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
-    public fields: FieldSettingsModel;
-    /**
-     * Enable or disable persisting ListBox component's state between page reloads. 
-     * If enabled, following list of states will be persisted.
-     * 1. value
-     * @default false
-     */
-    @Property(false)
-    public enablePersistence: boolean;
-    /**
-     * Accepts the template design and assigns it to each list item present in the popup.
-     * We have built-in `template engine`
-     * 
-     * which provides options to compile template string into a executable function. 
-     * For EX: We have expression evolution as like ES6 expression string literals. 
-     * @default null
-     */
-    @Property(null)
-    public itemTemplate: string;
-    /**
-     * Specifies the `sortOrder` to sort the ListBox data source. The available type of sort orders are
-     * * `None` - The data source is not sorting.
-     * * `Ascending` - The data source is sorting with ascending order.
-     * * `Descending` - The data source is sorting with descending order.
-     * @default None
-     */
-    @Property<SortOrder>('None')
-    public sortOrder: SortOrder;
-    /**
-     * Specifies a value that indicates whether the ListBox component is enabled or not.
-     * @default true
-     */
-    @Property(true)
-    public enabled: boolean;
-    /**
-     * Accepts the list items either through local or remote service and binds it to the ListBox component.
-     * It can be an array of JSON Objects or an instance of
-     * `DataManager`.
-     * @default []
-     */
-    @Property([])
-    public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
-    /**
-     * Accepts the external `Query`
-     * which will execute along with the data processing.
-     * @default null
-     */
-    @Property(null)
-    public query: Query;
-    /**   
-     * Determines on which filter type, the component needs to be considered on search action. 
-     * The `FilterType` and its supported data types are 
-     * 
-     * <table> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td><td colSpan=1 rowSpan=1> 
-     * Supported Types<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
-     * String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
-     * <tr> 
-     * <td colSpan=1 rowSpan=1> 
-     * Contains<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
-     * </table>
-     * 
-     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
-     * @default 'StartsWith'
-     */
-    @Property('StartsWith')
-    public filterType: FilterType;
-    /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     */
-    @Property()
-    public locale: string;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -449,10 +340,27 @@ export class ListBox extends DropDownBase {
         this.initLoad = true;
         this.isCustomFiltering = false;
         this.initialSelectedOptions = this.value;
-        super.render();
+        if (isBlazor() && this.isServerRendered) {
+            this.list = this.element.parentElement;
+            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + cssClass.li);
+            this.mainList = this.ulElement = this.list.querySelector('ul');
+            if (this.allowFiltering) {
+                this.setFiltering();
+            }
+            this.initToolbarAndStyles();
+            this.updateSelectionSettings();
+            this.wireEvents();
+            this.initDraggable();
+            this.initLoad = false;
+        } else {
+            super.render();
+        }
         this.renderComplete();
     }
 
+     private updateBlazorListData(data: { [key: string]: Object }[] | string[] | boolean[] | number[]): void {
+        this.sortedData = this.jsonData = this.listData = data;
+    }
     private initWrapper(): void {
         let hiddenSelect: Element = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
         this.list.classList.add('e-listbox-wrapper');
@@ -480,6 +388,10 @@ export class ListBox extends DropDownBase {
         this.validationAttribute(this.element as HTMLInputElement, hiddenSelect as HTMLSelectElement);
         this.list.setAttribute('role', 'listbox');
         attributes(this.list, { 'role': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
+        this.updateSelectionSettings();
+    }
+
+    private updateSelectionSettings(): void {
         if (this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll && this.liCollections.length) {
             let l10nSelect: L10n = new L10n(
                 this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
@@ -612,8 +524,9 @@ export class ListBox extends DropDownBase {
 
     protected showSpinner(): void {
         if (!this.spinner) {
-            this.spinner = this.createElement('div', { className: 'e-listbox-wrapper', styles: 'height:' + formatUnit(this.height) });
+            this.spinner = this.createElement('div', { className: 'e-listbox-wrapper' });
         }
+        this.spinner.style.height = formatUnit(this.height);
         this.element.parentElement.insertBefore(this.spinner, this.element.nextSibling);
         createSpinner({ target: this.spinner }, this.createElement);
         showSpinner(this.spinner);
@@ -1226,33 +1139,39 @@ export class ListBox extends DropDownBase {
     }
 
     private setFiltering(): InputObject | void {
+        let filterInputObj: InputObject;
         if (isNullOrUndefined(this.filterParent)) {
-            this.filterParent = this.createElement('span', {
-                className: 'e-filter-parent'
-            });
-            this.filterInput = <HTMLInputElement>this.createElement('input', {
-                attrs: { type: 'text' },
-                className: 'e-input-filter'
-            });
-            this.element.parentNode.insertBefore(this.filterInput, this.element);
-            let filterInputObj: InputObject = Input.createInput(
-                {
-                    element: this.filterInput
-                },
-                this.createElement
-            );
-            append([filterInputObj.container], this.filterParent);
-            prepend([this.filterParent], this.list);
-            attributes(this.filterInput, {
-                'aria-disabled': 'false',
-                'aria-owns': this.element.id + '_options',
-                'role': 'listbox',
-                'aria-activedescendant': null,
-                'autocomplete': 'off',
-                'autocorrect': 'off',
-                'autocapitalize': 'off',
-                'spellcheck': 'false'
-            });
+            if (isBlazor() && this.isServerRendered) {
+                this.filterParent = this.list.querySelector('.e-filter-parent');
+                this.filterInput = this.list.querySelector('.e-input-filter');
+            } else {
+                this.filterParent = this.createElement('span', {
+                    className: 'e-filter-parent'
+                });
+                this.filterInput = <HTMLInputElement>this.createElement('input', {
+                    attrs: { type: 'text' },
+                    className: 'e-input-filter'
+                });
+                this.element.parentNode.insertBefore(this.filterInput, this.element);
+                filterInputObj = Input.createInput(
+                    {
+                        element: this.filterInput
+                    },
+                    this.createElement
+                );
+                append([filterInputObj.container], this.filterParent);
+                prepend([this.filterParent], this.list);
+                attributes(this.filterInput, {
+                    'aria-disabled': 'false',
+                    'aria-owns': this.element.id + '_options',
+                    'role': 'listbox',
+                    'aria-activedescendant': null,
+                    'autocomplete': 'off',
+                    'autocorrect': 'off',
+                    'autocapitalize': 'off',
+                    'spellcheck': 'false'
+                });
+            }
             this.inputString = this.filterInput.value;
             EventHandler.add(this.filterInput, 'input', this.onInput, this);
             EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
@@ -1301,7 +1220,7 @@ export class ListBox extends DropDownBase {
             if (!isKey && (this.maximumSelectionLength > (this.value && this.value.length) || !isSelect) &&
                 (this.maximumSelectionLength >= (this.value && this.value.length) || !isSelect) &&
                 !(this.maximumSelectionLength < (this.value && this.value.length))) {
-                this.notify('updatelist', { li: li, e: e });
+                this.notify('updatelist', { li: li, e: e, module: 'listbox' });
             }
             if (this.allowFiltering && !isKey) {
                 let liDataValue: string = this.getFormattedValue(li.getAttribute('data-value')) as string;
@@ -1512,7 +1431,14 @@ export class ListBox extends DropDownBase {
                 tListBox.liCollections = tliCollections.concat(rLiCollection.reverse());
             }
             if (tListBox.listData.length === 0) {
-                tListBox.ulElement.innerHTML = '';
+                if (isBlazor()) {
+                    let textNode: HTMLElement = tListBox.ulElement.childNodes[1] as HTMLElement;
+                    if (textNode) {
+                        textNode.nodeValue = '';
+                    }
+                } else {
+                    tListBox.ulElement.innerHTML = '';
+                }
             }
             dataIdx.sort((n1: number, n2: number) => n2 - n1).forEach((i: number) => {
                 listData.splice(i, 1)[0];
@@ -1565,6 +1491,7 @@ export class ListBox extends DropDownBase {
             }
             fListBox.updateSelectedOptions();
             if (fListBox.listData.length === 0) {
+                // tslint:disable-next-line
                 fListBox.l10nUpdate();
             }
         }
@@ -1595,10 +1522,24 @@ export class ListBox extends DropDownBase {
             return;
         }
         if (tListBox.listData.length === 0) {
-            tListBox.ulElement.innerHTML = '';
+            if (isBlazor()) {
+                let textNode: HTMLElement = tListBox.ulElement.childNodes[1] as HTMLElement;
+                if (textNode) {
+                    textNode.nodeValue = '';
+                }
+            } else {
+                tListBox.ulElement.innerHTML = '';
+            }
         }
         if (isRefresh) {
-            fListBox.ulElement.innerHTML = '';
+            if (isBlazor()) {
+                let textNode: HTMLElement = fListBox.ulElement.childNodes[1] as HTMLElement;
+                if (textNode) {
+                    textNode.nodeValue = '';
+                }
+            } else {
+                fListBox.ulElement.innerHTML = '';
+            }
         } else {
             moveTo(
                 fListBox.ulElement,
@@ -1639,6 +1580,7 @@ export class ListBox extends DropDownBase {
         }
         fListBox.updateSelectedOptions();
         if (fListBox.listData.length === 0) {
+            // tslint:disable-next-line
             fListBox.l10nUpdate();
         }
     }
@@ -1889,7 +1831,7 @@ export class ListBox extends DropDownBase {
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            if (this.allowFiltering) {
+            if (this.allowFiltering && this.selectionSettings.showCheckbox) {
                 for (let i: number = 0; i < selectedOptions.length; i++) {
                     if (values.indexOf(selectedOptions[i]) > -1) {
                         continue;
@@ -2022,7 +1964,7 @@ export class ListBox extends DropDownBase {
             this.list.removeChild(this.list.getElementsByTagName('ul')[0]);
             this.list.appendChild(this.ulElement);
 
-            if (this.selectionSettings.showSelectAll) {
+            if (this.selectionSettings.showSelectAll && !this.list.getElementsByClassName('e-selectall-parent')[0]) {
                 let l10nShow: L10n = new L10n(
                     this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
                 this.showSelectAll = true;
@@ -2034,11 +1976,13 @@ export class ListBox extends DropDownBase {
                 this.checkSelectAll();
             }
         } else {
-            if (this.selectionSettings.showSelectAll) {
+            if (this.list.getElementsByClassName('e-selectall-parent')[0]) {
                 this.list.removeChild(this.list.getElementsByClassName('e-selectall-parent')[0]);
             }
             for (index; index < liCollLen; index++) {
-                liColl[index].removeChild(liColl[index].getElementsByClassName('e-checkbox-wrapper')[0]);
+                if (liColl[index].classList.contains('e-list-item')) {
+                    liColl[index].removeChild(liColl[index].getElementsByClassName('e-checkbox-wrapper')[0]);
+                }
                 if (liColl[index].hasAttribute('aria-selected')) {
                     liColl[index].removeAttribute('aria-selected');
                 }
@@ -2095,14 +2039,18 @@ export class ListBox extends DropDownBase {
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.innerHTML = '';
         } else {
-            this.element.style.display = 'inline-block';
-            if (this.toolbarSettings.items.length) {
-                this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
-                detach(this.list.nextElementSibling);
+            if (!isBlazor()) {
+                this.element.style.display = 'inline-block';
+                if (this.toolbarSettings.items.length) {
+                    this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
+                    detach(this.list.nextElementSibling);
+                }
+                this.list.parentElement.insertBefore(this.element, this.list);
             }
-            this.list.parentElement.insertBefore(this.element, this.list);
         }
-        super.destroy();
+        if (!isBlazor()) {
+            super.destroy();
+        }
     }
 
     /**

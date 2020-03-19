@@ -23,6 +23,14 @@ export namespace BulletChartTheme {
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    export let legendLabelFont: IFontMapping = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
     export let dataLabelFont: IFontMapping = {
         size: '13px',
         fontWeight: 'Normal',
@@ -58,6 +66,7 @@ export function getBulletThemeColor(theme: ChartTheme, bullet: BulletChart): IBu
         categoryFontColor : '#666666',
         labelFontFamily: 'SegoeUI',
         tooltipFill: 'rgba(0, 8, 22, 0.75)',
+        legendLabel: '#353535',
         tooltipBoldLabel: '#ffffff',
         featuredMeasureColor: '#181818',
         comparativeMeasureColor: '#181818',
@@ -81,6 +90,7 @@ export function getBulletThemeColor(theme: ChartTheme, bullet: BulletChart): IBu
                 categoryFontColor : '#666666',
                 labelFontFamily: 'SegoeUI',
                 tooltipFill: 'rgba(0, 8, 22, 0.75)',
+                legendLabel: '#353535',
                 tooltipBoldLabel: '#ffffff',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -104,6 +114,7 @@ export function getBulletThemeColor(theme: ChartTheme, bullet: BulletChart): IBu
                 categoryFontColor : 'rgba(0,0,0,0.54)',
                 labelFontFamily: 'Helvetica',
                 tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                legendLabel: '#212529',
                 tooltipBoldLabel: 'rgba(255,255,255)',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -127,6 +138,7 @@ export function getBulletThemeColor(theme: ChartTheme, bullet: BulletChart): IBu
                 categoryFontColor : '#FFFFFF',
                 labelFontFamily: 'SegoeUI',
                 tooltipFill: '#ffffff',
+                legendLabel: '#ffffff',
                 tooltipBoldLabel: '#000000',
                 featuredMeasureColor: '#000000',
                 comparativeMeasureColor: '#000000',
@@ -152,6 +164,7 @@ export function getBulletThemeColor(theme: ChartTheme, bullet: BulletChart): IBu
                 categoryFontColor : '#FFFFFF',
                 labelFontFamily: 'Helvetica',
                 tooltipFill: '#F4F4F4',
+                legendLabel: '#DADADA',
                 tooltipBoldLabel: '#282727',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',
@@ -175,6 +188,7 @@ export function getBulletThemeColor(theme: ChartTheme, bullet: BulletChart): IBu
                 categoryFontColor : '#202528',
                 labelFontFamily: 'HelveticaNeue',
                 tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                legendLabel: '#212529',
                 tooltipBoldLabel: 'rgba(255,255,255)',
                 featuredMeasureColor: '#181818',
                 comparativeMeasureColor: '#181818',

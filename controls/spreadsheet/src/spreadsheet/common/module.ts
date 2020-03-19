@@ -121,6 +121,10 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
         member: 'collaborativeEditing',
         args: [context]
     });
+    modules.push({
+        member: 'protectSheet',
+        args: [context]
+    });
     if (context.allowHyperlink) {
         modules.push({
             member: 'spreadsheetHyperlink',
@@ -135,5 +139,20 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     }
     if (context.allowFiltering) {
         modules.push({ member: 'filter', args: [context] });
+    }
+    if (context.allowWrap) {
+        modules.push({ member: 'wrapText', args: [context] });
+    }
+    if (context.allowInsert) {
+        modules.push({ member: 'insert', args: [context] });
+    }
+    if (context.allowDelete) {
+        modules.push({ member: 'delete', args: [context] });
+    }
+    if (context.allowDataValidation) {
+        modules.push({ member: 'dataValidation', args: [context] });
+    }
+    if (context.allowFindAndReplace) {
+        modules.push({ member: 'findAndReplace', args: [context] });
     }
 }

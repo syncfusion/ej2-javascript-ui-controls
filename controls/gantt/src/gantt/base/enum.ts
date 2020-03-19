@@ -54,8 +54,10 @@ export type ToolbarItem =
     'ZoomToFit' |
      /** To export Gantt in excel sheet */
     'ExcelExport' |
-     /** To export Gantt is CSV */
-    'CsvExport';
+     /** To export Gantt in CSV */
+    'CsvExport' |
+    /** To export Gantt in PDF */
+    'PdfExport';
 
 /** 
  * Defines the schedule header mode. They are
@@ -226,7 +228,133 @@ export type ContextMenuType =
     'Content';
 
 /**
+ * To define work unit for whole project
+ */
+export type WorkUnit =
+    /** To define unit value of work as minute */
+    'Minute' |
+    /** To define unit value of work as hour */
+    'Hour' |
+    /** To define unit value of work as day */
+    'Day';
+
+/**
+ * To define task type for task
+ */
+export type TaskType =
+    /** To define task type as fixedUnit */
+    'FixedUnit' |
+    /** To define task type as fixedWork */
+    'FixedWork' |
+    /** To define task type as fixedDuration */
+    'FixedDuration';
+export type PdfPageSize =
+    'Letter' |
+    'Note' |
+    'Legal' |
+    'A0' |
+    'A1' |
+    'A2' |
+    'A3' |
+    'A4' |
+    'A5' |
+    'A6' |
+    'A7' |
+    'A8' |
+    'A9' |
+    'B0' |
+    'B1' |
+    'B2' |
+    'B3' |
+    'B4' |
+    'B5' |
+    'Archa' |
+    'Archb' |
+    'Archc' |
+    'Archd' |
+    'Arche' |
+    'Flsa' |
+    'HalfLetter' |
+    'Letter11x17' |
+    'Ledger';
+
+/**
+ * Defines PDF page orientation.
+ */
+export type PageOrientation =
+    'Landscape' |
+    'Portrait';
+
+export type PdfDashStyle =
+    'Solid' |
+    'Dash' |
+    'Dot' |
+    'DashDot' |
+    'DashDotDot';
+
+/**
+ * Defines PDF horizontal alignment.
+ */
+export type PdfHAlign =
+    /** left alignment */
+    'Left' |
+    /** right alignment */
+    'Right' |
+    /** center alignment */
+    'Center' |
+    /** justify alignment */
+    'Justify';
+
+/**
+ * Defines PDF vertical alignment.
+ */
+export type PdfVAlign =
+    /** top alignment */
+    'Top' |
+    /** bottom alignment */
+    'Bottom' |
+    /** middle alignment */
+    'Middle';
+
+
+/**
+ * Defines Export Type.
+ */
+export type ExportType =
+    /** Current view data in gantt is exported. */
+    'CurrentViewData' |
+    /** All data of the gantt is exported. */
+    'AllData';
+
+/**
+ * Defines the exporting theme
+ */
+export type PdfTheme =
+    'Material' |
+    'Fabric' |
+    'Bootstrap' |
+    'Bootstrap 4';
+
+/**
  * @hidden
  */
 export type CObject =
     { [key: string]: Object; };
+/** 
+ * To define schedule mode of Gantt
+ */
+export type ScheduleMode =
+/** Tasks are displayed in auto scheduled mode. */
+'Auto' |
+/** Tasks are displayed in manual scheduled mode */
+'Manual' |
+/** Tasks are rendered in both auto and manual scheduled mode based on datasource values */
+'Custom';
+/*
+* To define view type of the Gantt
+*/
+export type ViewType =
+   /** Define project view type Gantt */
+   'ProjectView' |
+   /** Define resource view type Gantt */
+   'ResourceView';

@@ -73,4 +73,46 @@ describe('Iframe Content renderer module', () => {
             destroy(rteObj);
         });
     });
+
+    describe('rte Iframe enableRtl testing if enabled', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: true,
+                iframeSettings: {
+                    enable: true
+                }
+            });
+        });
+
+        it('rtl Mode testing', () => {
+            expect(rteObj.element.classList.contains('e-rtl')).toBe(true);
+            expect((rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument.querySelector('body').classList.contains('e-rtl')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('rte Iframe enableRtl testing if disabled', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                iframeSettings: {
+                    enable: true
+                }
+            });
+        });
+
+        it('rtl Mode testing', () => {
+            expect(rteObj.element.classList.contains('e-rtl')).toBe(false);
+            expect((rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument.querySelector('body').classList.contains('e-rtl')).toBe(false);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

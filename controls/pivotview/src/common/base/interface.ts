@@ -1,10 +1,11 @@
 import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet } from '../../base/engine';
-import { IDrilledItem, IStringIndex, IField } from '../../base/engine';
-import { Mode, SelectionMode, PdfBorderStyle } from '../base/enum';
+import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings, IFormatSettings } from '../../base/engine';
+import { IFilter } from '../../base/engine';
+import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties } from '@syncfusion/ej2-grids';
 import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
-import { CellSelectingEventArgs, ColumnModel } from '@syncfusion/ej2-grids';
+import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { SeriesModel, ExportType } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
@@ -64,7 +65,9 @@ export interface NewReportArgs {
 }
 
 export interface ToolbarArgs {
-    /** Defines current dataSource */
+    /** Defines current dataSource
+     * @blazorType List<Syncfusion.Blazor.Navigations.ItemModel>
+     */
     customToolbar?: ItemModel[];
 }
 
@@ -81,29 +84,54 @@ export interface EnginePopulatedEventArgs {
 }
 
 export interface FieldDroppedEventArgs {
+    /** Defines dropped field name */
+    fieldName?: string;
     /** Defines dropped field item */
     droppedField?: IFieldOptions;
     /** Defines current dataSource */
     dataSourceSettings?: IDataOptions;
     /** Defines dropped axis */
     droppedAxis?: string;
+    /** Defines dropped field position
+     * @blazorType int
+     */
+    droppedPosition?: number;
 }
 
 export interface FieldDropEventArgs {
-    /** Defines dropped field item */
-    droppedField?: IField;
+    /** Defines drop field name */
+    fieldName?: string;
+    /** Defines drop field item */
+    dropField?: IFieldOptions;
     /** Defines current report */
     dataSourceSettings?: IDataOptions;
-    /** Defines dropped field axis */
-    droppedAxis?: string;
+    /** Defines drop field axis */
+    dropAxis?: string;
+    /** Defines drop field position
+     * @blazorType int
+     */
+    dropPosition?: number;
     /** Defines dragged field axis */
     draggedAxis?: string;
-    /** Defines an option to restrict the field dropped operation */
+    /** Defines an option to restrict the field drop operation */
+    cancel?: boolean;
+}
+
+export interface FieldDragStartEventArgs {
+    /** Defines drag field name */
+    fieldName?: string;
+    /** Defines drag field item */
+    fieldItem?: IFieldOptions;
+    /** Defines current report */
+    dataSourceSettings?: IDataOptions;
+    /** Defines drag field axis */
+    axis?: string;
+    /** Defines an option to restrict the field drag operation */
     cancel?: boolean;
 }
 
 export interface BeforeExportEventArgs {
-    /** Defines exported file name */
+    /** Defines exported field name */
     fileName?: string;
     /** Defines header text */
     header?: string;
@@ -115,16 +143,33 @@ export interface BeforeExportEventArgs {
     allowRepeatHeader?: boolean;
     /** Defines style */
     style?: PdfTheme;
+    /** 
+     * @blazorType Syncfusion.Blazor.Grids.PdfExportProperties
+     */
     pdfExportProperties?: PdfExportProperties;
     isMultipleExport?: boolean;
     pdfDoc?: Object;
     isBlob?: boolean;
+    /** 
+     * @blazorType Syncfusion.Blazor.Grids.ExcelExportProperties
+     */
     excelExportProperties?: ExcelExportProperties;
     /* tslint:disable-next-line */
     workbook?: any;
+    /** 
+     * @blazorDefaultValueIgnore
+     * @isEnumeration
+     * @blazorType Syncfusion.Blazor.Charts.ExportType
+     */
     type?: ExportType;
     orientation?: PdfPageOrientation;
+    /** 
+     * @blazorType int
+     */
     width?: number;
+    /** 
+     * @blazorType int
+     */
     height?: number;
 }
 
@@ -140,7 +185,9 @@ export interface PdfCellRenderArgs {
 export interface PdfStyle {
     /** Defines the font family */
     fontFamily?: string;
-    /** Defines the font size */
+    /** Defines the font size
+     * @blazorType int
+     */
     fontSize?: number;
     /** Defines the brush color of font */
     textBrushColor?: string;
@@ -178,19 +225,31 @@ export interface DrillThroughEventArgs {
     rowHeaders: string;
     columnHeaders: string;
     value: string;
+    /** 
+     * @blazorType List<Syncfusion.Blazor.Grids.ColumnModel>
+     */
     gridColumns?: ColumnModel[];
 }
 
 export interface MemberFilteringEventArgs {
-    filterSettings?: Object;
-    dataSourceSettings?: Object;
+    filterSettings?: IFilter;
+    dataSourceSettings?: IDataOptions;
     cancel?: boolean;
 }
 
 export interface CellSelectedObject {
     currentCell: IAxisSet;
+    /** 
+     * @blazorType string
+     */
     value: number | string;
+    /** 
+     * @blazorType string
+     */
     rowHeaders: string | number | Date;
+    /** 
+     * @blazorType string
+     */
     columnHeaders: string | number | Date;
     measure: string;
 }
@@ -209,12 +268,16 @@ export interface PivotCellSelectedEventArgs extends CellSelectingEventArgs {
 export interface DrillArgs {
     drillInfo?: IDrilledItem;
     pivotview?: PivotView;
+    cancel?: boolean;
 }
 
 export interface PivotColumn {
     allowReordering: boolean;
     allowResizing: boolean;
     headerText: string;
+    /** 
+     * @blazorType string
+     */
     width: string | number;
 }
 
@@ -230,6 +293,9 @@ export interface BeginDrillThroughEventArgs {
 }
 
 export interface ChartSeriesCreatedEventArgs {
+    /** 
+     * @blazorType List<Syncfusion.Blazor.Charts.SeriesModel>
+     */
     series: SeriesModel[];
     cancel: boolean;
 }
@@ -252,6 +318,9 @@ export interface SelectionSettings {
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
      * @default Flow
+     * @isEnumeration
+     * @blazorDefaultValue Syncfusion.Blazor.Grids.CellSelectionMode.Flow
+     * @blazorType Syncfusion.Blazor.Grids.CellSelectionMode
      */
     cellSelectionMode?: CellSelectionMode;
 
@@ -284,6 +353,9 @@ export interface SelectionSettings {
      * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
      *  rows can be selected by using CTRL or SHIFT key.
      * @default Default
+     * @isEnumeration
+     * @blazorDefaultValue Syncfusion.Blazor.Grids.CheckboxSelectionType.Default
+     * @blazorType Syncfusion.Blazor.Grids.CheckboxSelectionType
      */
     checkboxMode?: CheckboxSelectionType;
 
@@ -330,7 +402,9 @@ export interface IAction {
 }
 
 export interface ExcelRow {
-    /**  Defines the index for cells */
+    /**  Defines the index for cells
+     * @blazorType int
+     */
     index?: number;
     /**  Defines the cells in a row */
     cells?: ExcelCell[];
@@ -338,27 +412,48 @@ export interface ExcelRow {
 }
 
 export interface ExcelColumn {
-    /**  Defines the index for cells */
+    /**  Defines the index for cells
+     * @blazorType int
+     */
     index?: number;
-    /**  Defines the width of each column */
+    /**  Defines the width of each column
+     * @blazorType int
+     */
     width: number;
 
 }
 
 export interface ExcelStyles extends ExcelStyle {
+    /** Defines the horizontal alignment for cell style
+     * @blazorDefaultValueIgnore
+     * @blazorType Syncfusion.Blazor.Grids.ExcelHAlign
+     */
+    hAlign?: ExcelHAlign;
+    /** Defines the vertical alignment for cell style
+     * @blazorDefaultValueIgnore
+     * @blazorType Syncfusion.Blazor.Grids.ExcelVAlign
+     */
+    vAlign?: ExcelVAlign;
     /** Defines the cell number format */
     numberFormat?: string;
 }
-/* tslint:enable */
 
 export interface ExcelCell {
-    /** Defines the index for the cell */
+    /** Defines the index for the cell
+     * @blazorType int
+     */
     index?: number;
-    /** Defines the column span for the cell  */
+    /** Defines the column span for the cell
+     * @blazorType int
+     */
     colSpan?: number;
-    /** Defines the column span for the cell  */
+    /** Defines the column span for the cell
+     * @blazorType int
+     */
     rowSpan?: number;
-    /** Defines the value of the cell */
+    /** Defines the value of the cell
+     * @blazorType string
+     */
     value?: string | boolean | number | Date;
     /** Defines the style of the cell */
     style?: ExcelStyles;
@@ -428,7 +523,9 @@ export interface PdfTheme {
 }
 
 export interface PdfThemeStyle {
-    /** Defines the font size of theme style. */
+    /** Defines the font size of theme style.
+     * @blazorType int
+     */
     fontSize?: number;
     /** Defines the font of the theme. */
     font?: PdfStandardFont | PdfTrueTypeFont;
@@ -451,7 +548,9 @@ export interface PdfThemeStyle {
 export interface PdfBorder {
     /** Defines the border color */
     color?: string;
-    /** Defines the border width */
+    /** Defines the border width
+     * @blazorType int
+     */
     width?: number;
     /** Defines the border dash style */
     dashStyle?: PdfBorderStyle;
@@ -482,11 +581,18 @@ export interface QueryCellInfoEventArgs {
     data?: Object;
     /** Defines the cell element. */
     cell?: Element;
-    /** Defines the column object associated with this cell. */
+    /** Defines the column object associated with this cell.
+     * @blazorDefaultValueIgnore
+     * @blazorType Syncfusion.Blazor.Grids.ColumnModel
+     */
     column?: Column;
-    /** Defines the no. of columns to be spanned */
+    /** Defines the no. of columns to be spanned
+     * @blazorType int
+     */
     colSpan?: number;
-    /** Defines the no. of rows to be spanned */
+    /** Defines the no. of rows to be spanned
+     * @blazorType int
+     */
     rowSpan?: number;
     /** Defines the current action. */
     requestType?: string;
@@ -509,13 +615,90 @@ export interface OffsetModel {
     /**
      * x value of the marker position
      * @default 0
+     * @blazorType int
      */
     x?: number;
 
     /**
      * y value of the marker position
      * @default 0
+     * @blazorType int
      */
     y?: number;
 
+}
+
+export interface MemberEditorOpenEventArgs {
+    /** Defines the selected filter field name */
+    fieldName?: string;
+    /**
+     * @blazorType Dictionary<string,object>
+     */
+    /** Defines the filter members of the field */
+    fieldMembers?: { [key: string]: Object; }[];
+    /** Defines current filter settings */
+    filterSetting?: IFilter;
+    /** Defines an option to restrict the member editor dialog open */
+    cancel?: boolean;
+}
+
+export interface FieldRemoveEventArgs {
+    /** Defines current report */
+    dataSourceSettings?: IDataOptions;
+    /** Defines removed field name */
+    fieldName?: string;
+    /** Defines removed field item */
+    fieldItem?: IFieldOptions;
+    /** Defines removed field axis */
+    axis?: string;
+    /** Defines an option to restrict the field remove operation */
+    cancel?: boolean;
+}
+
+export interface CalculatedFieldCreateEventArgs {
+    /** Defines current report */
+    dataSourceSettings?: IDataOptions;
+    /** Defines calculated field name */
+    fieldName?: string;
+    /** Defines calcualted field item */
+    calculatedField?: ICalculatedFields;
+    /** 
+     * @blazorType List<ICalculatedFieldSettings>
+     */
+    /** Defines current calculated field settings */
+    calculatedFieldSettings?: ICalculatedFieldSettings[];
+    /** Defines an option to restrict the calculated field create operation */
+    cancel?: boolean;
+}
+
+export interface NumberFormattingEventArgs {
+    /** 
+     * @blazorType List<IFormatSettings>
+     */
+    /** Defines current format settings */
+    formatSettings?: IFormatSettings[];
+    /** Defines format name */
+    formatName?: string;
+    /** Defines an option to restrict the format field create operation */
+    cancel?: boolean;
+}
+
+export interface AggregateMenuOpenEventArgs {
+    /** 
+     * @blazorType List<SummaryTypes>
+     */
+    /** Defines summary types to show in context menu */
+    aggregateTypes?: AggregateTypes[];
+    /** Defines selected field name */
+    fieldName?: string;
+    /** Defines an option to restrict the conext menu open */
+    cancel?: boolean;
+}
+
+/**
+ * @hidden
+ */
+export interface TreeDataInfo {
+    index: number;
+    isSelected: boolean;
 }

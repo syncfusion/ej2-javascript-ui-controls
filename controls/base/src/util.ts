@@ -193,7 +193,8 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
                         result[key] = extend(clone, {}, copy, deep);
                     }
                 } else {
-                    clone = src ? src : [];
+                    /* istanbul ignore next */
+                    clone = isBlazor() ? src && Object.keys(copy).length : src ? src : [];
                     result[key] = extend([], clone, copy, deep);
                 }
             } else {

@@ -1,8 +1,8 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, classList, closest, compile, createElement, deleteObject, extend, formatUnit, getElement, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
+import { Edit, ForeignKey, Grid, Page, Predicate, Toolbar, ValueFormatter, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getForeignData, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
-import { ColumnMenu, ContextMenu, Edit as Edit$1, ExcelExport, Filter as Filter$1, Reorder, Resize, RowDD, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
+import { ColumnMenu, ContextMenu, Edit as Edit$1, ExcelExport, Filter, Reorder, Resize, RowDD, Selection, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { ContextMenu as ContextMenu$1, Tab, Toolbar as Toolbar$1 } from '@syncfusion/ej2-navigations';
 import { Count, HtmlEditor, Link, QuickToolbar, RichTextEditor, Toolbar as Toolbar$2 } from '@syncfusion/ej2-richtexteditor';
@@ -10,6 +10,7 @@ import { MaskedTextBox, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
+import { ElementLayouter, PdfBorderOverlapStyle, PdfColor, PdfCompositeField, PdfDashStyle, PdfDocument, PdfFontFamily, PdfFontStyle, PdfLayoutBreakType, PdfLayoutElement, PdfLayoutFormat, PdfLayoutResult, PdfLayoutType, PdfLineCap, PdfPage, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfStringLayouter, PdfTextAlignment, PdfVerticalAlignment, PdfWordWrapType, PointF, RectangleF, RowLayoutResult, SizeF } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Common methods used in Gantt
@@ -83,6 +84,12 @@ function getIndex(value, key1, collection, key2) {
         }
     }
     return index;
+}
+function pixelToPoint(value) {
+    return (value * 76) / 92;
+}
+function pointToPixel(value) {
+    return (value * 92) / 76;
 }
 
 /**
@@ -363,7 +370,7 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
         var totalHours = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
         var holidaysCount = isAutoSchedule ? this.getHolidaysCount(sDate, eDate) : 0;
         var totWorkDays = (totalHours - (weekendCount * 86400) - (holidaysCount * 86400)) / 86400; // working days between two dates
-        var nonWorkHours = this.getNonWorkingSecondsOnDate(sDate, eDate);
+        var nonWorkHours = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule);
         var totalNonWorkTime = (totWorkDays * (86400 - this.parent.secondsPerDay)) +
             (weekendCount * 86400) + (holidaysCount * 86400) + nonWorkHours;
         return totalNonWorkTime;
@@ -513,19 +520,22 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
      * @private
      * @param ganttProp
      */
-    DateProcessor.prototype.getValidStartDate = function (ganttProp) {
+    DateProcessor.prototype.getValidStartDate = function (ganttProp, isAuto) {
         var sDate = null;
-        if (isNullOrUndefined(ganttProp.startDate)) {
-            if (!isNullOrUndefined(ganttProp.endDate)) {
-                sDate = new Date(ganttProp.endDate.getTime());
+        var startDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        var endDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        var duration = !ganttProp.isAutoSchedule && ganttProp.autoDuration ? ganttProp.autoDuration : ganttProp.duration;
+        if (isNullOrUndefined(startDate)) {
+            if (!isNullOrUndefined(endDate)) {
+                sDate = new Date(endDate.getTime());
                 this.setTime(this.parent.defaultStartTime, sDate);
             }
-            else if (!isNullOrUndefined(ganttProp.duration)) {
+            else if (!isNullOrUndefined(duration)) {
                 sDate = this.getProjectStartDate(ganttProp);
             }
         }
         else {
-            sDate = new Date(ganttProp.startDate.getTime());
+            sDate = new Date(startDate.getTime());
         }
         return sDate;
     };
@@ -534,27 +544,30 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
      * @param ganttProp
      * @private
      */
-    DateProcessor.prototype.getValidEndDate = function (ganttProp) {
+    DateProcessor.prototype.getValidEndDate = function (ganttProp, isAuto) {
         var eDate = null;
-        if (isNullOrUndefined(ganttProp.endDate)) {
-            if (!isNullOrUndefined(ganttProp.startDate)) {
+        var startDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        var endDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        var duration = isAuto ? ganttProp.autoDuration : ganttProp.duration;
+        if (isNullOrUndefined(endDate)) {
+            if (!isNullOrUndefined(startDate)) {
                 if (ganttProp.isMilestone) {
-                    eDate = this.checkStartDate(ganttProp.startDate);
+                    eDate = this.checkStartDate(startDate);
                 }
                 else {
-                    eDate = new Date(ganttProp.startDate.getTime());
+                    eDate = new Date(startDate.getTime());
                     this.setTime(this.parent.defaultEndTime, eDate);
                 }
             }
-            else if (!isNullOrUndefined(ganttProp.duration)) {
+            else if (!isNullOrUndefined(duration)) {
                 var sDate = this.getValidStartDate(ganttProp);
                 if (sDate) {
-                    eDate = this.getEndDate(sDate, ganttProp.duration, ganttProp.durationUnit, ganttProp, false);
+                    eDate = this.getEndDate(sDate, duration, ganttProp.durationUnit, ganttProp, false);
                 }
             }
         }
         else {
-            eDate = new Date(ganttProp.endDate.getTime());
+            eDate = new Date(endDate.getTime());
         }
         return eDate;
     };
@@ -795,14 +808,14 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
      * @param startDate
      * @param endDate
      */
-    DateProcessor.prototype.getNonWorkingSecondsOnDate = function (startDate, endDate) {
+    DateProcessor.prototype.getNonWorkingSecondsOnDate = function (startDate, endDate, isAutoSchedule) {
         var sHour = this.getSecondsInDecimal(startDate);
         var eHour = this.getSecondsInDecimal(endDate);
         var startRangeIndex = -1;
         var endRangeIndex = -1;
         var totNonWrkSecs = 0;
-        var startOnHoliday = this.isOnHolidayOrWeekEnd(startDate, null);
-        var endOnHoliday = this.isOnHolidayOrWeekEnd(endDate, null);
+        var startOnHoliday = isAutoSchedule ? this.isOnHolidayOrWeekEnd(startDate, null) : false;
+        var endOnHoliday = isAutoSchedule ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
         for (var i = 0; i < this.parent.nonWorkingTimeRanges.length; i++) {
             var val = this.parent.nonWorkingTimeRanges[i];
             if (sHour >= val.from && sHour <= val.to) {
@@ -1044,6 +1057,32 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
         return value;
     };
     /**
+     * Method to get work with value and unit.
+     * @param work
+     * @param workUnit
+     * @private
+     */
+    DateProcessor.prototype.getWorkString = function (work, workUnit) {
+        var value = '';
+        if (!isNullOrUndefined(work)) {
+            value += parseFloat(work).toFixed(2) + ' ';
+            if (!isNullOrUndefined(workUnit)) {
+                var plural = work !== 1;
+                if (workUnit === 'day') {
+                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
+                }
+                else if (workUnit === 'hour') {
+                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+                }
+                else if (workUnit === 'minute') {
+                    value += plural ? this.parent.localeObj.getConstant('minutes') :
+                        this.parent.localeObj.getConstant('minute');
+                }
+            }
+        }
+        return value;
+    };
+    /**
      *
      * @param editArgs
      * @private
@@ -1182,7 +1221,6 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             this.taskIds = [];
             this.parent.ids = [];
             this.recordIndex = 0;
-            this.taskIds = [];
             this.hierarchyData = [];
             this.parent.predecessorsCollection = [];
             this.parent.treeGrid.parentData = [];
@@ -1240,6 +1278,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
     TaskProcessor.prototype.cloneDataSource = function () {
         var taskIdMapping = this.parent.taskFields.id;
         var parentIdMapping = this.parent.taskFields.parentID;
+        var hierarchicalData = [];
         if (!isNullOrUndefined(taskIdMapping) && !isNullOrUndefined(parentIdMapping)) {
             var data = [];
             for (var i = 0; i < this.dataArray.length; i++) {
@@ -1253,10 +1292,63 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                 this.parent.taskFields.child = 'Children';
             }
             this.constructDataSource(data);
-            this.prepareDataSource(this.hierarchyData);
+            hierarchicalData = this.hierarchyData;
         }
         else {
-            this.prepareDataSource(this.dataArray);
+            hierarchicalData = this.dataArray;
+        }
+        if (this.parent.viewType !== 'ProjectView') {
+            var resources = extend([], [], this.parent.resources, true);
+            var unassignedTasks = [];
+            this.constructResourceViewDataSource(resources, hierarchicalData, unassignedTasks);
+            if (unassignedTasks.length > 0) {
+                var record = {};
+                record[this.parent.resourceFields.id] = 0;
+                record[this.parent.resourceFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+                record[this.parent.taskFields.child] = unassignedTasks;
+                resources.push(record);
+            }
+            hierarchicalData = resources;
+        }
+        this.prepareDataSource(hierarchicalData);
+    };
+    /**
+     *
+     *
+     */
+    TaskProcessor.prototype.constructResourceViewDataSource = function (resources, data, unassignedTasks) {
+        var _loop_1 = function (i) {
+            var tempData = data[i];
+            var child = this_1.parent.taskFields.child;
+            var resourceData = tempData && tempData[this_1.parent.taskFields.resourceInfo];
+            var resourceIdMapping = this_1.parent.resourceFields.id;
+            if (!tempData[child] && resourceData && resourceData.length) {
+                resourceData.forEach(function (resource) {
+                    var id = (typeof resource === 'object') ? resource[resourceIdMapping] :
+                        resource;
+                    for (var j = 0; j < resources.length; j++) {
+                        if (resources[j][resourceIdMapping].toString() === id.toString()) {
+                            if (resources[j][child]) {
+                                resources[j][child].push(tempData);
+                            }
+                            else {
+                                resources[j][child] = [tempData];
+                            }
+                            break;
+                        }
+                    }
+                });
+            }
+            else if (!tempData[child]) {
+                unassignedTasks.push(tempData);
+            }
+            if (tempData[this_1.parent.taskFields.child] && tempData[this_1.parent.taskFields.child].length) {
+                this_1.constructResourceViewDataSource(resources, tempData[this_1.parent.taskFields.child], unassignedTasks);
+            }
+        };
+        var this_1 = this;
+        for (var i = 0; i < data.length; i++) {
+            _loop_1(i);
         }
     };
     /**
@@ -1265,7 +1357,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
      */
     TaskProcessor.prototype.prepareDataSource = function (data) {
         this.prepareRecordCollection(data, 0);
-        if (this.parent.taskFields.dependency) {
+        if (this.parent.taskFields.dependency && this.parent.predecessorModule) {
             this.parent.predecessorModule.ensurePredecessorCollection();
         }
     };
@@ -1275,8 +1367,9 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             var tempData = data[i];
             var ganttData = this.createRecord(tempData, level, parentItem, true);
             ganttData.index = this.recordIndex++;
-            this.parent.ids[ganttData.index] = ganttData.ganttProperties.taskId.toString();
+            this.parent.ids[ganttData.index] = ganttData.ganttProperties.rowUniqueID;
             this.parent.flatData.push(ganttData);
+            this.parent.setTaskIds(ganttData);
             var childData = tempData[this.parent.taskFields.child];
             if (!isNullOrUndefined(childData) && childData.length > 0) {
                 this.prepareRecordCollection(childData, ganttData.level + 1, ganttData);
@@ -1305,26 +1398,53 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
      * @param isLoad
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     TaskProcessor.prototype.createRecord = function (data, level, parentItem, isLoad) {
         var taskSettings = this.parent.taskFields;
+        var resourceFields = this.parent.resourceFields;
         var child = data[taskSettings.child];
         var progress = data[taskSettings.progress];
+        var id = null;
+        var name = null;
         progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
         var predecessors = data[taskSettings.dependency];
         var baselineStartDate = this.getDateFromFormat(data[taskSettings.baselineStartDate]);
         var baselineEndDate = this.getDateFromFormat(data[taskSettings.baselineEndDate]);
         var ganttData = {};
         var ganttProperties = {};
+        var autoSchedule = (this.parent.taskMode === 'Auto') ? true :
+            (this.parent.taskMode === 'Manual') ? false :
+                data[taskSettings.manual] === true ? false : true;
         this.parent.setRecordValue('ganttProperties', ganttProperties, ganttData);
-        this.parent.setRecordValue('taskId', data[taskSettings.id], ganttProperties, true);
+        if (!isNullOrUndefined(data[taskSettings.id])) {
+            id = data[taskSettings.id];
+            name = data[taskSettings.name];
+            this.addTaskData(ganttData, data, isLoad);
+        }
+        else if (!isNullOrUndefined(data[resourceFields.id])) {
+            id = data[resourceFields.id];
+            name = data[resourceFields.name];
+            this.addTaskData(ganttData, data, false);
+        }
+        this.parent.setRecordValue('taskId', id, ganttProperties, true);
+        this.parent.setRecordValue('taskName', name, ganttProperties, true);
         if (taskSettings.parentID) {
             this.parent.setRecordValue('parentId', data[taskSettings.parentID], ganttProperties, true);
         }
-        this.parent.setRecordValue('taskName', data[taskSettings.name], ganttProperties, true);
-        this.addTaskData(ganttData, data, isLoad);
         this.addCustomFieldValue(data, ganttData);
-        this.parent.setRecordValue('isAutoSchedule', true, ganttProperties, true);
-        this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
+        this.parent.setRecordValue('isAutoSchedule', autoSchedule, ganttProperties, true);
+        if (!this.parent.isSameResourceAdd) {
+            this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
+        }
+        else {
+            var preProperties = getValue('ganttProperties.resourceInfo', data);
+            if (preProperties) {
+                this.parent.setRecordValue('resourceInfo', preProperties, ganttProperties, true);
+            }
+            else {
+                this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
+            }
+        }
         this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
         this.updateResourceName(ganttData);
         this.calculateScheduledValues(ganttData, data, isLoad);
@@ -1356,10 +1476,15 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         else {
             this.parent.setRecordValue('hasChildRecords', false, ganttData);
         }
+        if (ganttData.hasChildRecords) {
+            this.parent.setRecordValue('autoStartDate', ganttData.ganttProperties.startDate, ganttProperties);
+            this.parent.setRecordValue('autoEndDate', ganttData.ganttProperties.endDate, ganttProperties);
+            this.parent.setRecordValue('autoDuration', ganttData.ganttProperties.duration, ganttProperties);
+        }
         this.parent.setRecordValue('expanded', (ganttData.hasChildRecords && this.parent.collapseAllParentTasks) ? false : true, ganttData);
         this.updateExpandStateMappingValue(ganttData, data);
         if (!isLoad) {
-            this.parent.setRecordValue('width', this.calculateWidth(ganttProperties), ganttProperties, true);
+            this.parent.setRecordValue('width', this.calculateWidth(ganttData), ganttProperties, true);
             this.parent.setRecordValue('left', this.calculateLeft(ganttProperties), ganttProperties, true);
             this.parent.setRecordValue('progressWidth', this.getProgressWidth(ganttProperties.width, progress), ganttProperties, true);
             if (ganttProperties.baselineEndDate && ganttProperties.baselineStartDate) {
@@ -1367,14 +1492,61 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                 this.parent.setRecordValue('baselineWidth', this.calculateBaselineWidth(ganttProperties), ganttProperties, true);
             }
         }
-        this.updateTaskData(ganttData);
-        if (!isNullOrUndefined(parentItem)) {
-            parentItem.childRecords.push(ganttData);
+        if (isNullOrUndefined(taskSettings.work)) {
+            this.updateWorkWithDuration(ganttData);
         }
+        if (!isNullOrUndefined(taskSettings.manual)) {
+            this.parent.dataOperation.updateMappingData(ganttData, 'manual');
+        }
+        this.updateTaskData(ganttData);
         if (predecessors) {
             this.parent.predecessorsCollection.push(ganttData);
         }
+        if (!isNullOrUndefined(parentItem)) {
+            parentItem.childRecords.push(ganttData);
+        }
+        if (this.parent.viewType === 'ProjectView') {
+            this.parent.setRecordValue('rowUniqueID', ganttProperties.taskId.toString(), ganttProperties, true);
+        }
+        else {
+            var uniqueId = ganttData.uniqueID.replace(this.parent.element.id + '_data_', '');
+            this.parent.setRecordValue('rowUniqueID', uniqueId, ganttData);
+            this.parent.setRecordValue('rowUniqueID', uniqueId, ganttProperties, true);
+        }
         return ganttData;
+    };
+    /**
+     * Method to calculate work based on resource unit and duration.
+     * @param ganttData
+     */
+    TaskProcessor.prototype.updateWorkWithDuration = function (ganttData) {
+        var resources = ganttData.ganttProperties.resourceInfo;
+        var work = 0;
+        if (!isNullOrUndefined(resources)) {
+            var resourcesLength = resources.length;
+            var index = void 0;
+            var resourceUnit = void 0;
+            var resourceOneDayWork = void 0;
+            var actualOneDayWork = (this.parent.secondsPerDay) / 3600;
+            var durationInDay = this.getDurationInDay(ganttData.ganttProperties.duration, ganttData.ganttProperties.durationUnit);
+            for (index = 0; index < resourcesLength; index++) {
+                resourceUnit = resources[index][this.parent.resourceFields.unit]; //in percentage 
+                resourceOneDayWork = resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : actualOneDayWork; //in hours
+                work += (resourceOneDayWork * durationInDay);
+            }
+            //Update work as per defined unit.
+            if (ganttData.ganttProperties.workUnit === 'minute') {
+                work = work * 60;
+            }
+            if (ganttData.ganttProperties.workUnit === 'day') {
+                work = work / actualOneDayWork;
+            }
+            //To check the decimal places.
+            if (work % 1 !== 0) {
+                work = parseFloat(work.toFixed(2));
+            }
+        }
+        this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
     };
     /**
      *
@@ -1389,7 +1561,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             cloneParent.expanded = parent.expanded;
             cloneParent.level = parent.level;
             cloneParent.index = parent.index;
-            cloneParent.taskId = parent.ganttProperties.taskId;
+            cloneParent.taskId = parent.ganttProperties.rowUniqueID;
             return cloneParent;
         }
         else {
@@ -1473,6 +1645,10 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         var isMileStone = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         var durationMapping = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
         this.parent.setRecordValue('durationUnit', this.validateDurationUnitMapping(durationMapping), ganttProperties, true);
+        var work = !isNullOrUndefined(data[taskSettings.work]) ? parseInt(data[taskSettings.work], 10) : 0;
+        this.parent.setRecordValue('workUnit', this.validateWorkUnitMapping(this.parent.workUnit), ganttProperties, true);
+        this.parent.setRecordValue('taskType', this.parent.taskType, ganttProperties, true);
+        this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
         if (!endDate && !startDate && (isNullOrUndefined(duration) || duration === '')) {
             if (this.parent.allowUnscheduledTasks) {
                 return;
@@ -1509,6 +1685,93 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
             this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
         }
+        if (!isNullOrUndefined(taskSettings.work)) {
+            this.parent.setRecordValue('durationUnit', this.parent.durationUnit, ganttProperties, true);
+            if (isNaN(work) || isNullOrUndefined(work)) {
+                this.parent.setRecordValue('work', 0, ganttProperties, true);
+                this.parent.setRecordValue('duration', 0, ganttProperties, true);
+                this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+                this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
+            }
+            else {
+                this.parent.setRecordValue('work', work, ganttProperties, true);
+                this.updateDurationWithWork(ganttData);
+                if (ganttProperties.duration === 0) {
+                    this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+                    this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
+                }
+                else if (!isNullOrUndefined(ganttProperties.startDate) && !isNullOrUndefined(ganttProperties.duration)) {
+                    this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
+                    this.calculateEndDate(ganttData);
+                }
+            }
+            this.parent.dataOperation.updateMappingData(ganttData, 'work');
+        }
+    };
+    /**
+     * Method to update duration with work value.
+     * @param ganttData
+     */
+    TaskProcessor.prototype.updateDurationWithWork = function (ganttData) {
+        var ganttProperties = ganttData.ganttProperties;
+        var resources = ganttProperties.resourceInfo;
+        if (!isNullOrUndefined(resources)) {
+            var resourcesLength = !isNullOrUndefined(resources) ? resources.length : 0;
+            var totalResourceOneDayWork = 0;
+            var actualOneDayWork = (this.parent.secondsPerDay) / 3600;
+            var updatedDuration = 0;
+            var resourceUnit = void 0;
+            var index = void 0;
+            var totalHours = void 0;
+            for (index = 0; index < resourcesLength; index++) {
+                resourceUnit = resources[index][this.parent.resourceFields.unit]; //in percentage 
+                totalResourceOneDayWork += (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : actualOneDayWork); //in hours
+            }
+            totalHours = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
+            if (resourcesLength > 0) {
+                updatedDuration += (totalHours / totalResourceOneDayWork);
+            }
+            //Update duration as per defined unit.
+            if (ganttProperties.durationUnit === 'minute') {
+                updatedDuration = updatedDuration * actualOneDayWork * 60;
+            }
+            if (ganttProperties.durationUnit === 'hour') {
+                updatedDuration = updatedDuration * actualOneDayWork;
+            }
+            //To check the decimal places.
+            if (updatedDuration % 1 !== 0) {
+                updatedDuration = parseFloat(updatedDuration.toFixed(2));
+            }
+            if (!isNullOrUndefined(ganttProperties.duration)) {
+                this.parent.setRecordValue('duration', updatedDuration, ganttProperties, true);
+            }
+        }
+    };
+    /**
+     * Update units of resources with respect to duration and work of a task.
+     * @param ganttData
+     */
+    TaskProcessor.prototype.updateUnitWithWork = function (ganttData) {
+        var ganttProperties = ganttData.ganttProperties;
+        var resources = ganttProperties.resourceInfo;
+        var resourcesLength = !isNullOrUndefined(resources) ? resources.length : 0;
+        var actualOneDayWork = (this.parent.secondsPerDay) / 3600;
+        if (resourcesLength === 0) {
+            return;
+        }
+        var durationInDay = this.getDurationInDay(ganttData.ganttProperties.duration, ganttData.ganttProperties.durationUnit);
+        var totalHours = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
+        var totalUnitInPercentage = durationInDay > 0 ? (totalHours / (durationInDay * actualOneDayWork)) * 100 : 0;
+        var individualUnit = totalUnitInPercentage > 0 ? totalUnitInPercentage / resourcesLength : 100;
+        //To check the decimal places.
+        if (individualUnit % 1 !== 0) {
+            individualUnit = parseFloat(individualUnit.toFixed(2));
+        }
+        for (var index = 0; index < resourcesLength; index++) {
+            resources[index][this.parent.resourceFields.unit] = individualUnit;
+        }
+        //To update the unit value in data source
+        this.updateResourceName(ganttData);
     };
     TaskProcessor.prototype.calculateDateFromEndDate = function (endDate, duration, ganttData) {
         var ganttProperties = ganttData.ganttProperties;
@@ -1581,18 +1844,19 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
      * @param ganttProp
      * @private
      */
-    TaskProcessor.prototype.calculateWidth = function (ganttProp) {
-        var sDate = ganttProp.startDate;
-        var eDate = ganttProp.endDate;
+    TaskProcessor.prototype.calculateWidth = function (ganttData, isAuto) {
+        var ganttProp = ganttData.ganttProperties;
+        var sDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        var eDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
         var unscheduledTaskWidth = 3;
         if (isNullOrUndefined(sDate) && isNullOrUndefined(eDate)) {
-            sDate = this.getValidStartDate(ganttProp);
-            eDate = this.getValidEndDate(ganttProp);
+            sDate = this.getValidStartDate(ganttProp, isAuto);
+            eDate = this.getValidEndDate(ganttProp, isAuto);
         }
         if (isNullOrUndefined(sDate) || isNullOrUndefined(eDate)) {
             return unscheduledTaskWidth;
         }
-        else if (ganttProp.isMilestone) {
+        else if (ganttProp.isMilestone && (!ganttData.hasChildRecords || ganttProp.isAutoSchedule)) {
             //let taskBarHeight: number = this.getTaskbarHeight();
             return 0;
         }
@@ -1615,15 +1879,18 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
      * @param ganttProp
      * @private
      */
-    TaskProcessor.prototype.calculateLeft = function (ganttProp) {
+    TaskProcessor.prototype.calculateLeft = function (ganttProp, isAuto) {
         var sDate = null;
         var left = -300;
+        var startDate = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
+        var endDate = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        var duration = isAuto ? ganttProp.autoDuration : ganttProp.duration;
         var milestone = ganttProp.isMilestone;
-        if (ganttProp.startDate) {
-            sDate = new Date(ganttProp.startDate.getTime());
+        if (startDate) {
+            sDate = new Date(startDate.getTime());
         }
-        else if (ganttProp.endDate) {
-            sDate = new Date(ganttProp.endDate.getTime());
+        else if (endDate) {
+            sDate = new Date(endDate.getTime());
             milestone = true;
         }
         else {
@@ -1633,6 +1900,29 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             left = this.getTaskLeft(sDate, milestone);
         }
         return left;
+    };
+    /**
+     * calculate the left position of the auto scheduled taskbar
+     * @param {ITaskData} ganttProperties - Defines the gantt data.
+     * @private
+     */
+    TaskProcessor.prototype.calculateAutoLeft = function (ganttProperties) {
+        return this.getTaskLeft(ganttProperties.autoStartDate, ganttProperties.isMilestone);
+    };
+    /**
+     * To calculate duration of Gantt record with auto scheduled start date and auto scheduled end date
+     * @param {ITaskData} ganttProperties - Defines the gantt data.
+     */
+    TaskProcessor.prototype.calculateAutoDuration = function (ganttProperties) {
+        return this.getDuration(ganttProperties.autoStartDate, ganttProperties.autoEndDate, ganttProperties.durationUnit, false, ganttProperties.isMilestone);
+    };
+    /**
+     * calculate the with between auto scheduled start date and auto scheduled end date
+     * @param {ITaskData} ganttProperties - Defines the gantt data.
+     * @private
+     */
+    TaskProcessor.prototype.calculateAutoWidth = function (ganttProperties) {
+        return this.getTaskWidth(ganttProperties.autoStartDate, ganttProperties.autoEndDate);
     };
     /**
      * calculate the left margin of the baseline element
@@ -1722,7 +2012,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
     TaskProcessor.prototype.updateMappingData = function (ganttData, fieldName) {
         var columnMapping = this.parent.columnMapping;
         var ganttProp = ganttData.ganttProperties;
-        if (isNullOrUndefined(columnMapping[fieldName])) {
+        if (isNullOrUndefined(columnMapping[fieldName]) && fieldName !== 'taskType') {
             return;
         }
         if (fieldName === 'predecessorName') {
@@ -1730,11 +2020,17 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         }
         else if (fieldName === 'resourceInfo') {
             var resourceData = ganttProp.resourceInfo;
+            var resourceSettings = this.parent.resourceFields;
             var resourcesId = [];
             var resourcesName = [];
             for (var i = 0; i < resourceData.length; i++) {
-                resourcesId.push(resourceData[i][this.parent.resourceIDMapping]);
-                resourcesName.push(resourceData[i][this.parent.resourceNameMapping]);
+                resourcesId.push(resourceData[i][resourceSettings.id]);
+                var resName = resourceData[i][resourceSettings.name];
+                var resourceUnit = resourceData[i][resourceSettings.unit];
+                if (resourceUnit !== 100) {
+                    resName += '[' + resourceUnit + '%' + ']';
+                }
+                resourcesName.push(resName);
             }
             this.parent.setRecordValue('resourceNames', resourcesName.join(','), ganttProp, true);
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], resourcesId, ganttData);
@@ -1745,6 +2041,18 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         }
         else if (fieldName === 'duration') {
             this.setRecordDuration(ganttData, columnMapping[fieldName]);
+        }
+        else if (fieldName === 'work') {
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], this.getWorkString(ganttProp.work, ganttProp.workUnit), ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
+        }
+        else if (fieldName === 'taskType') {
+            this.parent.setRecordValue('taskData.' + 'taskType', ganttProp[fieldName], ganttData);
+            this.parent.setRecordValue('taskType', ganttProp[fieldName], ganttData);
+        }
+        else if (fieldName === 'manual') {
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
         }
         else {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], ganttProp[fieldName], ganttData);
@@ -1782,6 +2090,17 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         else {
             this.parent.setRecordValue(mapping, duration, task);
             this.parent.setRecordValue('taskData.' + mapping, duration, task);
+        }
+    };
+    TaskProcessor.prototype.getWorkInHour = function (work, workUnit) {
+        if (workUnit === 'day') {
+            return work * (this.parent.secondsPerDay / 3600);
+        }
+        else if (workUnit === 'minute') {
+            return work / 60;
+        }
+        else {
+            return work;
         }
     };
     /**
@@ -1840,6 +2159,10 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                 this.parent.setRecordValue('taskData.' + dataMapping.parentID, ganttProperties.parentId, ganttData);
                 this.parent.setRecordValue(dataMapping.parentID, ganttProperties.parentId, ganttData);
             }
+            if (dataMapping.work) {
+                this.parent.setRecordValue('taskData.' + dataMapping.work, this.getWorkString(ganttProperties.work, ganttProperties.workUnit), ganttData);
+                this.parent.setRecordValue(dataMapping.work, ganttProperties.work, ganttData);
+            }
         }
     };
     /**
@@ -1853,31 +2176,73 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
         var resourceData = this.parent.resources;
-        var resourceIDMapping = this.parent.resourceIDMapping;
+        var resourceIDMapping = this.parent.resourceFields.id;
+        var resourceUnitMapping = this.parent.resourceFields.unit;
+        var resourceGroup = this.parent.resourceFields.group;
         var resources = [];
-        var _loop_1 = function (count) {
+        var _loop_2 = function (count) {
             var resource = resourceData.filter(function (resourceInfo) {
-                return (resourceIdCollection[count] === resourceInfo[resourceIDMapping]);
+                if (typeof (resourceIdCollection[count]) === 'object' &&
+                    resourceIdCollection[count][resourceIDMapping] === resourceInfo[resourceIDMapping]) {
+                    return true;
+                }
+                else {
+                    return (resourceIdCollection[count] === resourceInfo[resourceIDMapping]);
+                }
             });
             var ganttDataResource = extend({}, resource[0]);
             resources.push(ganttDataResource);
+            if (!isNullOrUndefined(resourceUnitMapping) && !isNullOrUndefined(resourceIdCollection[count][resourceUnitMapping])) {
+                ganttDataResource[resourceUnitMapping] = resourceIdCollection[count][resourceUnitMapping];
+            }
+            if (!isNullOrUndefined(resourceGroup) && !isNullOrUndefined(resourceIdCollection[count][resourceGroup])) {
+                ganttDataResource[resourceGroup] = resourceIdCollection[count][resourceGroup];
+            }
         };
         for (var count = 0; count < resourceIdCollection.length; count++) {
-            _loop_1(count);
+            _loop_2(count);
         }
+        this.updateResourceUnit(resources);
         return resources;
+    };
+    /**
+     * To set resource unit in Gantt record
+     * @private
+     */
+    TaskProcessor.prototype.updateResourceUnit = function (resourceData) {
+        var resourceUnit = this.parent.resourceFields.unit;
+        if (!isNullOrUndefined(resourceUnit)) {
+            var length_1 = resourceData.length;
+            var index = void 0;
+            for (index = 0; index < length_1; index++) {
+                if (isNullOrUndefined(resourceData[index][resourceUnit])) {
+                    resourceData[index][resourceUnit] = 100;
+                }
+            }
+        }
     };
     TaskProcessor.prototype.updateResourceName = function (data) {
         var resourceInfo = data.ganttProperties.resourceInfo;
         var resourceName = [];
         if (resourceInfo) {
+            var taskResources = extend([], [], data.taskData[this.parent.taskFields.resourceInfo], true);
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, [], data);
             for (var i = 0; i < resourceInfo.length; i++) {
                 var resource = resourceInfo[i];
-                resourceName.push(resource[this.parent.resourceNameMapping]);
+                var resName = resource[this.parent.resourceFields.name];
+                var resourceUnit = resource[this.parent.resourceFields.unit];
+                if (resourceUnit !== 100) {
+                    resName += '[' + resourceUnit + '%' + ']';
+                }
+                resourceName.push(resName);
                 if (data.taskData) {
                     var mapping = this.parent.taskFields.resourceInfo;
-                    data.taskData[mapping].push(resource[this.parent.resourceIDMapping]);
+                    if (typeof (taskResources[i] === 'object')) {
+                        data.taskData[mapping].push(taskResources[i]);
+                    }
+                    else {
+                        data.taskData[mapping].push(resource[this.parent.resourceFields.id]);
+                    }
                 }
             }
             this.parent.setRecordValue('resourceNames', resourceName.join(','), data.ganttProperties, true);
@@ -1911,6 +2276,22 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             unit = this.parent.durationUnit.toLocaleLowerCase();
+        }
+        return unit;
+    };
+    TaskProcessor.prototype.validateWorkUnitMapping = function (workUnit) {
+        var unit = workUnit;
+        if (unit === 'minute') {
+            unit = 'minute';
+        }
+        else if (unit === 'hour') {
+            unit = 'hour';
+        }
+        else if (unit === 'day') {
+            unit = 'day';
+        }
+        else {
+            unit = this.parent.workUnit.toLocaleLowerCase();
         }
         return unit;
     };
@@ -1970,9 +2351,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                 childData = parentItem.childRecords;
             }
             if (parentItem && childData.indexOf(data) === childData.length - 1 && !data.hasChildRecords) {
-                if (parentItem.ganttProperties.isAutoSchedule) {
-                    this.updateParentItems(parentItem);
-                }
+                this.updateParentItems(parentItem);
             }
         }
     };
@@ -1986,6 +2365,9 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             var data = flatData[i];
             var task = data.ganttProperties;
             this.updateWidthLeft(data);
+            if (this.parent.taskMode !== 'Auto' && data.hasChildRecords) {
+                this.updateAutoWidthLeft(data);
+            }
             this.parent.setRecordValue('baselineLeft', this.calculateBaselineLeft(task), task, true);
             this.parent.setRecordValue('baselineWidth', this.calculateBaselineWidth(task), task, true);
             this.parent.dataOperation.updateTaskData(data);
@@ -1998,9 +2380,19 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
      */
     TaskProcessor.prototype.updateWidthLeft = function (data) {
         var ganttRecord = data.ganttProperties;
-        this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(ganttRecord), ganttRecord, true);
+        this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data), ganttRecord, true);
         this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttRecord), ganttRecord, true);
-        this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(ganttRecord.width, ganttRecord.progress), ganttRecord, true);
+        this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth((ganttRecord.isAutoSchedule || !data.hasChildRecords ? ganttRecord.width : ganttRecord.autoWidth), ganttRecord.progress), ganttRecord, true);
+    };
+    /**
+     * method to update left, width, progress width in record
+     * @param data
+     * @private
+     */
+    TaskProcessor.prototype.updateAutoWidthLeft = function (data) {
+        var ganttRecord = data.ganttProperties;
+        this.parent.setRecordValue('autoWidth', this.calculateWidth(data, true), ganttRecord, true);
+        this.parent.setRecordValue('autoLeft', this.calculateLeft(ganttRecord, true), ganttRecord, true);
     };
     /**
      * To calculate parent progress value
@@ -2042,12 +2434,15 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
     /**
      * @private
      */
-    TaskProcessor.prototype.updateParentItems = function (cloneParent) {
-        var parentData = this.parent.getParentTask(cloneParent);
+    // tslint:disable-next-line:max-func-body-length
+    TaskProcessor.prototype.updateParentItems = function (cloneParent, isParent) {
+        var parentData = isParent ? cloneParent : this.parent.getParentTask(cloneParent);
         var deleteUpdate = false;
+        var ganttProp = parentData.ganttProperties;
         if (parentData.childRecords.length > 0) {
-            var previousStartDate = parentData.ganttProperties.startDate;
-            var previousEndDate = parentData.ganttProperties.endDate;
+            var previousStartDate = ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate;
+            var previousEndDate = ganttProp.isAutoSchedule ? ganttProp.endDate :
+                ganttProp.autoEndDate;
             var childRecords = parentData.childRecords;
             var childLength = childRecords.length;
             var totalDuration = 0;
@@ -2056,10 +2451,18 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             var maxEndDate = null;
             var milestoneCount = 0;
             var totalProgress = 0;
+            var childCompletedWorks = 0;
             for (var count = 0; count < childLength; count++) {
                 var childData = childRecords[count];
                 if (this.parent.isOnDelete && childData.isDelete) {
-                    if (childLength === 1) {
+                    if (childLength === 1 && this.parent.viewType === 'ProjectView') {
+                        if (isBlazor()) {
+                            var id = parentData.ganttProperties.rowUniqueID;
+                            var task = this.parent.getRecordByID(id);
+                            if (task && this.parent.editedRecords.indexOf(task) === -1) {
+                                this.parent.editedRecords.push(task);
+                            }
+                        }
                         deleteUpdate = true;
                     }
                     continue;
@@ -2086,13 +2489,14 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                 else {
                     milestoneCount++;
                 }
+                childCompletedWorks += childData.ganttProperties.work;
             }
             if (!deleteUpdate) {
                 if (this.compareDates(previousStartDate, minStartDate) !== 0) {
-                    this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
+                    this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate', minStartDate, parentData.ganttProperties, true);
                 }
                 if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
-                    this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
+                    this.parent.setRecordValue(ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate', maxEndDate, parentData.ganttProperties, true);
                 }
                 var taskCount = void 0;
                 if (this.parent.isOnDelete) {
@@ -2106,10 +2510,22 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                 var milestone = (taskCount === 0) && minStartDate && maxEndDate &&
                     minStartDate.getTime() === maxEndDate.getTime() ? true : false;
                 this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
-                this.calculateDuration(parentData);
+                if (parentProp.isAutoSchedule) {
+                    this.calculateDuration(parentData);
+                }
+                this.updateWorkWithDuration(parentData);
+                var parentWork = parentProp.work;
+                parentWork += childCompletedWorks;
+                this.parent.setRecordValue('work', parentWork, parentProp, true);
+                this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
+                this.updateMappingData(parentData, 'taskType');
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                 this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
+                if (!parentProp.isAutoSchedule) {
+                    this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
+                    this.updateAutoWidthLeft(parentData);
+                }
                 this.resetDependency(parentData);
                 this.updateWidthLeft(parentData);
                 this.updateTaskData(parentData);
@@ -2121,7 +2537,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             this.updateTaskData(parentData);
         }
         var parentItem = this.parent.getParentTask(parentData.parentItem);
-        if (parentItem && parentItem.ganttProperties.isAutoSchedule) {
+        if (parentItem) {
             this.updateParentItems(parentItem);
         }
         deleteUpdate = false;
@@ -2193,6 +2609,16 @@ var parentMilestoneTop = 'e-parent-milestone-top';
 var parentMilestoneBottom = 'e-parent-milestone-bottom';
 var traceChildTaskBar = 'e-gantt-child-taskbar';
 var traceChildProgressBar = 'e-gantt-child-progressbar';
+var manualParentMainContainer = 'e-manualparent-main-container';
+var manualParentTaskBar = 'e-gantt-manualparenttaskbar';
+var manualParentMilestone = 'e-gantt-manualparent-milestone';
+var manualParentMilestoneTop = 'e-manualparent-milestone-top';
+var manualParentMilestoneBottom = 'e-manualparent-milestone-bottom';
+var manualChildTaskBar = 'e-gantt-child-manualtaskbar';
+var manualChildProgressBar = 'e-gantt-child-manualprogressbar';
+var manualParentRightResizer = 'e-gantt-manualparenttaskbar-right';
+var manualParentLeftResizer = 'e-gantt-manualparenttaskbar-left';
+var traceManualUnscheduledTask = 'e-gantt-unscheduled-manualtask';
 var traceParentTaskBar = 'e-gantt-parent-taskbar';
 var traceParentProgressBar = 'e-gantt-parent-progressbar';
 var traceUnscheduledTask = 'e-gantt-unscheduled-task';
@@ -2886,7 +3312,7 @@ var GanttChart = /** @__PURE__ @class */ (function () {
         var rows = [];
         for (var i = 0; i < chartRows.length; i++) {
             if (chartRows[i].classList.contains('gridrowtaskId'
-                + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
+                + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
                 rows.push(chartRows[i]);
             }
         }
@@ -3209,6 +3635,8 @@ var Timeline = /** @__PURE__ @class */ (function () {
         this.isZoomIn = false;
         this.isZooming = false;
         this.isZoomToFit = false;
+        this.topTierCollection = [];
+        this.bottomTierCollection = [];
         this.parent = ganttObj;
         this.initProperties();
     }
@@ -3934,16 +4362,23 @@ var Timeline = /** @__PURE__ @class */ (function () {
         var endDate = new Date(this.timelineRoundOffEndDate.toString());
         var scheduleDateCollection = [];
         do {
-            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count);
+            // PDf export collection
+            var timelineCell = {};
+            timelineCell.startDate = new Date(startDate.getTime());
+            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell);
             scheduleDateCollection.push(new Date(startDate.toString()));
             increment = this.getIncrement(startDate, count, mode);
             newTime = startDate.getTime() + increment;
             startDate.setTime(newTime);
             if (startDate >= endDate) {
-                parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count);
+                /* tslint:disable-next-line */
+                parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
             }
             parentTh = parentTh + parentTr;
             parentTr = '';
+            var tierCollection = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
+            timelineCell.endDate = new Date(startDate.getTime());
+            tierCollection.push(timelineCell);
         } while (!(startDate >= endDate));
         return parentTh;
     };
@@ -4027,7 +4462,8 @@ var Timeline = /** @__PURE__ @class */ (function () {
      * @return {string}
      * @private
      */
-    Timeline.prototype.getHeaterTemplateString = function (scheduleWeeks, mode, tier, isLast, count) {
+    /* tslint:disable-next-line */
+    Timeline.prototype.getHeaterTemplateString = function (scheduleWeeks, mode, tier, isLast, count, timelineCell) {
         var parentTr = '';
         var td = '';
         var format = tier === 'topTier' ?
@@ -4048,6 +4484,8 @@ var Timeline = /** @__PURE__ @class */ (function () {
             : thWidth;
         isWeekendCell = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         var textClassName = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
+        var value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
+            this.customFormat(scheduleWeeks, format, tier, mode, formatter));
         td += this.parent.timelineModule.isSingleTier ?
             '<th class="' + timelineSingleHeaderCell + ' ' : '<th class="' + timelineTopHeaderCell;
         td += isWeekendCell ? ' ' + weekendHeaderCell : '';
@@ -4057,8 +4495,7 @@ var Timeline = /** @__PURE__ @class */ (function () {
             'background-color:' + this.customTimelineSettings.weekendBackground + ';' : '';
         td += '"><div class="' + timelineHeaderCellLabel + textClassName + '" style="width:' +
             (thWidth - 1) + 'px;' + (this.parent.timelineSettings.showTooltip ? '"title="' + date : '');
-        td += '">' + (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
-            this.customFormat(scheduleWeeks, format, tier, mode, formatter)) + '</div>';
+        td += '">' + value + '</div>';
         parentTr += td;
         parentTr += '</th>';
         td = '';
@@ -4068,6 +4505,10 @@ var Timeline = /** @__PURE__ @class */ (function () {
         else if ((this.isSingleTier || tier === 'topTier') && isLast) {
             this.totalTimelineWidth = (this.totalTimelineWidth - cellWidth) + thWidth;
         }
+        // PDf export collection
+        timelineCell.value = value;
+        timelineCell.isWeekend = isWeekendCell;
+        timelineCell.width = cellWidth;
         return parentTr;
     };
     /**
@@ -4749,7 +5190,7 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         var tasksMapping = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual'];
         var _loop_1 = function (i) {
             var column = {};
             if (typeof ganttObj.columns[i] === 'string') {
@@ -4761,10 +5202,18 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
             var columnName = [];
             if (tasksMapping.length > 0) {
                 columnName = tasksMapping.filter(function (name) {
-                    return column.field === tasks[name];
+                    if (column.field === 'taskType' && !isNullOrUndefined(tasks.work)) {
+                        return column.field;
+                    }
+                    else {
+                        return column.field === tasks[name];
+                    }
                 });
             }
             if (columnName.length === 0) {
+                if (column.field === this_1.parent.resourceFields.group) {
+                    return "continue";
+                }
                 this_1.parent.customColumns.push(column.field);
                 column.headerText = column.headerText ? column.headerText : column.field;
                 column.width = column.width ? column.width : 150;
@@ -4774,10 +5223,16 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
                 return "continue";
             }
             else {
-                var index = tasksMapping.indexOf(columnName[0]);
-                tasksMapping.splice(index, 1);
-                this_1.createTreeGridColumn(column, true);
-                this_1.parent.columnMapping[columnName[0]] = column.field;
+                if (column.field === 'taskType') {
+                    this_1.createTreeGridColumn(column, true);
+                    this_1.parent.columnMapping[column.field] = column.field;
+                }
+                else {
+                    var index = tasksMapping.indexOf(columnName[0]);
+                    tasksMapping.splice(index, 1);
+                    this_1.createTreeGridColumn(column, true);
+                    this_1.parent.columnMapping[columnName[0]] = column.field;
+                }
             }
         };
         var this_1 = this;
@@ -4791,7 +5246,18 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
                 column.field = tasks[tasksMapping[j]];
                 this.createTreeGridColumn(column, length === 0);
                 this.parent.columnMapping[tasksMapping[j]] = column.field;
+                if (column.field === tasks.work) {
+                    var column_1 = {};
+                    column_1.field = 'taskType';
+                    this.createTreeGridColumn(column_1, length === 0);
+                    this.parent.columnMapping[column_1.field] = column_1.field;
+                }
             }
+        }
+        if (this.parent.viewType !== 'ProjectView') {
+            var column = {};
+            this.composeUniqueIDColumn(column);
+            this.createTreeGridColumn(column, true);
         }
     };
     /**
@@ -4799,6 +5265,7 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
      * @param column
      * @param isDefined
      */
+    /* tslint:disable-next-line:max-func-body-length */
     GanttTreeGrid.prototype.createTreeGridColumn = function (column, isDefined) {
         var taskSettings = this.parent.taskFields;
         column.disableHtmlEncode = column.disableHtmlEncode ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
@@ -4884,6 +5351,35 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
         }
+        else if (taskSettings.work === column.field) {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('work');
+            column.width = column.width ? column.width : 150;
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.workValueAccessor.bind(this);
+            column.editType = column.editType ? column.editType : 'numericedit';
+        }
+        else if (column.field === 'taskType') {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskType');
+            column.width = column.width ? column.width : 150;
+            //column.type = 'string';
+            column.editType = 'dropdownedit';
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.taskTypeValueAccessor.bind(this);
+        }
+        else if (taskSettings.manual === column.field && this.parent.taskMode === 'Custom') {
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('taskMode');
+            column.width = column.width ? column.width : 120;
+            column.editType = column.editType ? column.editType : 'dropdownedit';
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.modeValueAccessor.bind(this);
+            column.edit = {
+                params: {
+                    query: new Query(),
+                    dataSource: [
+                        { id: 1, text: this.parent.localeObj.getConstant('manual'), value: true },
+                        { id: 2, text: this.parent.localeObj.getConstant('auto'), value: false }
+                    ],
+                    fields: { text: 'text', value: 'value' }
+                },
+            };
+        }
         this.bindTreeGridColumnProperties(column, isDefined);
     };
     /**
@@ -4902,7 +5398,17 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
      * @private
      */
     GanttTreeGrid.prototype.getResourceIds = function (data) {
-        return getValue(this.parent.taskFields.resourceInfo, data.taskData);
+        var value = getValue(this.parent.taskFields.resourceInfo, data.taskData);
+        var id = [];
+        if (!isNullOrUndefined(value)) {
+            for (var i = 0; i < value.length; i++) {
+                id.push(typeof value[i] === 'object' ? value[i][this.parent.resourceFields.id] : value[i]);
+            }
+            return id;
+        }
+        else {
+            return value;
+        }
     };
     /**
      * Create Id column
@@ -4914,6 +5420,17 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         column.width = column.width ? column.width : 100;
         column.allowEditing = column.allowEditing ? column.allowEditing : false;
         column.editType = column.editType ? column.editType : 'numericedit';
+        if (this.parent.viewType !== 'ProjectView') {
+            column.valueAccessor = this.idValueAccessor.bind(this);
+            column.isPrimaryKey = false;
+        }
+    };
+    GanttTreeGrid.prototype.composeUniqueIDColumn = function (column) {
+        column.field = 'rowUniqueID';
+        column.isPrimaryKey = true;
+        column.headerText = 'UniqueID';
+        column.allowEditing = false;
+        column.visible = false;
     };
     /**
      * Create progress column
@@ -4953,6 +5470,31 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
             return ganttProp.resourceNames;
         }
         return '';
+    };
+    GanttTreeGrid.prototype.workValueAccessor = function (field, data, column) {
+        var ganttProp = data.ganttProperties;
+        if (!isNullOrUndefined(ganttProp)) {
+            return this.parent.dataOperation.getWorkString(ganttProp.work, ganttProp.workUnit);
+        }
+        return '';
+    };
+    GanttTreeGrid.prototype.taskTypeValueAccessor = function (field, data, column) {
+        var ganttProp = data.ganttProperties;
+        if (!isNullOrUndefined(ganttProp)) {
+            return ganttProp.taskType;
+        }
+        return '';
+    };
+    GanttTreeGrid.prototype.modeValueAccessor = function (field, data, column) {
+        if (data[field]) {
+            return 'Manual';
+        }
+        else {
+            return 'Auto';
+        }
+    };
+    GanttTreeGrid.prototype.idValueAccessor = function (field, data, column) {
+        return data.level === 0 ? 'R-' + data.ganttProperties.taskId : 'T-' + data.ganttProperties.taskId;
     };
     GanttTreeGrid.prototype.updateScrollTop = function (args) {
         this.treeGridElement.querySelector('.e-content').scrollTop = getValue('top', args);
@@ -5522,6 +6064,12 @@ var TaskFields = /** @__PURE__ @class */ (function (_super) {
     __decorate$12([
         Property(null)
     ], TaskFields.prototype, "notes", void 0);
+    __decorate$12([
+        Property(null)
+    ], TaskFields.prototype, "work", void 0);
+    __decorate$12([
+        Property(null)
+    ], TaskFields.prototype, "manual", void 0);
     return TaskFields;
 }(ChildProperty));
 
@@ -5698,6 +6246,48 @@ var SortSettings = /** @__PURE__ @class */ (function (_super) {
     return SortSettings;
 }(ChildProperty));
 
+var __extends$17 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines mapping property to get resource details from resource collection.
+ */
+var ResourceFields = /** @__PURE__ @class */ (function (_super) {
+    __extends$17(ResourceFields, _super);
+    function ResourceFields() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$16([
+        Property(null)
+    ], ResourceFields.prototype, "id", void 0);
+    __decorate$16([
+        Property(null)
+    ], ResourceFields.prototype, "name", void 0);
+    __decorate$16([
+        Property(null)
+    ], ResourceFields.prototype, "unit", void 0);
+    __decorate$16([
+        Property(null)
+    ], ResourceFields.prototype, "group", void 0);
+    return ResourceFields;
+}(ChildProperty));
+
 /**
  * Export all generated models for complex settings
  */
@@ -5816,10 +6406,12 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
             var template = (data.ganttProperties.startDate && data.ganttProperties.endDate
-                && data.ganttProperties.duration) ? ('<div class="' + childTaskBarInnerDiv + ' ' + traceChildTaskBar + '"' +
+                && data.ganttProperties.duration) ? ('<div class="' + childTaskBarInnerDiv + ' ' + traceChildTaskBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                '' : manualChildTaskBar) + '"' +
                 'style="width:' + data.ganttProperties.width + 'px;height:' +
                 (this.taskBarHeight) + 'px;">' + '<div class="' + childProgressBarInnerDiv + ' ' +
-                traceChildProgressBar + '"' +
+                traceChildProgressBar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                '' : manualChildProgressBar) + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;height:100%;' +
                 'border-top-right-radius:' + this.getBorderRadius(data.ganttProperties) + 'px;' +
@@ -5828,15 +6420,18 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                 (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 labelString + '</span></div></div>') :
                 (data.ganttProperties.startDate && !data.ganttProperties.endDate && !data.ganttProperties.duration) ? ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
-                    unscheduledTaskbarLeft + '"' +
+                    unscheduledTaskbarLeft + ' ' + (data.ganttProperties.isAutoSchedule ?
+                    '' : manualChildTaskBar) + '"' +
                     'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
                     (data.ganttProperties.endDate && !data.ganttProperties.startDate && !data.ganttProperties.duration) ?
                         ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
-                            unscheduledTaskbarRight + '"' +
+                            unscheduledTaskbarRight + ' ' + (data.ganttProperties.isAutoSchedule ?
+                            '' : manualChildTaskBar) + '"' +
                             'style="left:' + data.ganttProperties.left + 'px; height:' + this.taskBarHeight + 'px;"></div>') :
                         (data.ganttProperties.duration && !data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
                             ('<div class="' + childProgressBarInnerDiv + ' ' + traceChildTaskBar + ' ' +
-                                unscheduledTaskbar + '"' +
+                                unscheduledTaskbar + ' ' + (data.ganttProperties.isAutoSchedule ?
+                                '' : manualChildTaskBar) + '"' +
                                 'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
                                 ' height:' + this.taskBarHeight + 'px;"></div>') : '';
             childTaskbarNode = this.createDivElement(template);
@@ -5972,6 +6567,44 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         }
         return rightLabelNode;
     };
+    ChartRows.prototype.getManualTaskbar = function () {
+        var data = this.templateData;
+        var taskbarHeight = (this.taskBarHeight / 2 - 1);
+        var innerDiv = (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration) ?
+            ('<div class="' + manualParentTaskBar + '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                taskbarHeight / 5 + 'px;border-left-width:' + taskbarHeight / 5 +
+                'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') :
+            (!data.ganttProperties.startDate && !data.ganttProperties.endDate && data.ganttProperties.duration) ?
+                ('<div class="' + manualParentTaskBar + ' ' + traceManualUnscheduledTask +
+                    '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                    (taskbarHeight / 5 + 1) + 'px;border-left-width:' + taskbarHeight / 5 +
+                    'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') : ('<div class="' +
+                manualParentTaskBar + ' ' + (data.ganttProperties.startDate ? unscheduledTaskbarLeft : unscheduledTaskbarRight) +
+                '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
+                taskbarHeight * 2 + 'px;border-left-width:' + taskbarHeight / 5 +
+                'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>');
+        var template = '<div class="' + manualParentMainContainer + '"' +
+            'style=left:' + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
+            'width:' + data.ganttProperties.width + 'px;' +
+            'height:' + taskbarHeight + 'px;>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
+            data.ganttProperties.duration) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
+            '"height:' + taskbarHeight + 'px;border-left-width:' + taskbarHeight / 5 +
+            'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
+            '<div class="e-gantt-manualparenttaskbar-right" style=' +
+            'left:' + (data.ganttProperties.width - taskbarHeight / 5) + 'px;height:' +
+            (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
+            taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
+        var milestoneTemplate = '<div class="' + manualParentMilestone + '" style="position:absolute;left:' +
+            (data.ganttProperties.left - data.ganttProperties.autoLeft - (this.milestoneHeight / 2)) +
+            'px;width:' + (this.milesStoneRadius * 2) +
+            'px;">' + '<div class="' + manualParentMilestoneTop + '" style="border-right-width:' +
+            this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
+            this.milesStoneRadius + 'px;"></div>' +
+            '<div class="' + manualParentMilestoneBottom + '" style="top:' +
+            (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
+            this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
+        return this.createDivElement(data.ganttProperties.width === 0 ? milestoneTemplate : template);
+    };
     /**
      * To get parent taskbar node.
      * @return {NodeList}
@@ -5995,9 +6628,13 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
+            var tHeight = this.taskBarHeight / 5;
             var template = '<div class="' + parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + traceParentTaskBar + '"' +
-                ' style="width:' + (data.ganttProperties.width) + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + (data.ganttProperties.isAutoSchedule ? data.ganttProperties.width :
+                data.ganttProperties.autoWidth) + 'px;height:' + (data.ganttProperties.isAutoSchedule ? this.taskBarHeight :
+                (tHeight * 3)) + 'px;margin-top:' + (data.ganttProperties.isAutoSchedule ? '' :
+                (tHeight * 2)) + 'px;">' +
                 '<div class="' + parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -6013,7 +6650,8 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                 '<div class="' + parentMilestoneBottom + '" style="top:' +
                 (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
                 this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
-            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ? milestoneTemplate : template);
+            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ?
+                data.ganttProperties.isAutoSchedule ? milestoneTemplate : '' : template);
         }
         return parentTaskbarNode;
     };
@@ -6154,14 +6792,19 @@ var ChartRows = /** @__PURE__ @class */ (function () {
     };
     ChartRows.prototype.taskbarContainer = function () {
         var data = this.templateData;
+        var manualParent = this.parent.editModule && this.parent.editSettings.allowTaskbarEditing &&
+            this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
+            true : false;
         var template = '<div class="' + taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
-            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
-            this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
-            (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-            this.taskBarMarginTop + 'px;left:' + (data.ganttProperties.left) + 'px;height:' +
-            this.taskBarHeight + 'px;')) + '"></div>';
+            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
+            ('width:' + this.milestoneHeight + 'px;height:' +
+                this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
+                (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
+            'px;margin-top:' + this.taskBarMarginTop + 'px;left:' + (!data.hasChildRecords || data.ganttProperties.isAutoSchedule ?
+            data.ganttProperties.left : data.ganttProperties.autoLeft) + 'px;height:' +
+            this.taskBarHeight + 'px;cursor:' + (data.ganttProperties.isAutoSchedule ? 'move;' : 'auto;'))) + '"></div>';
         return this.createDivElement(template);
     };
     ChartRows.prototype.rightLabelContainer = function () {
@@ -6276,9 +6919,19 @@ var ChartRows = /** @__PURE__ @class */ (function () {
     };
     ChartRows.prototype.taskNameWidth = function (ganttData) {
         ganttData = this.templateData;
+        var ganttProp = ganttData.ganttProperties;
         var width;
         if (ganttData.ganttProperties.isMilestone) {
             width = (ganttData.ganttProperties.left - (this.parent.getTaskbarHeight() / 2));
+        }
+        else if (ganttData.hasChildRecords && !ganttProp.isAutoSchedule) {
+            if (!this.parent.allowUnscheduledTasks) {
+                width = (ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime()) ?
+                    ganttProp.autoLeft : ganttProp.left;
+            }
+            else {
+                width = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
+            }
         }
         else {
             width = ganttData.ganttProperties.left;
@@ -6290,8 +6943,26 @@ var ChartRows = /** @__PURE__ @class */ (function () {
     };
     ChartRows.prototype.getRightLabelLeft = function (ganttData) {
         ganttData = this.templateData;
+        var ganttProp = ganttData.ganttProperties;
+        var left;
+        var endLeft;
+        var width;
         if (ganttData.ganttProperties.isMilestone) {
             return ganttData.ganttProperties.left + (this.parent.getTaskbarHeight() / 2);
+        }
+        else if (ganttData.hasChildRecords && !ganttProp.isAutoSchedule) {
+            if (!this.parent.allowUnscheduledTasks) {
+                left = ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime() ? ganttProp.autoLeft : ganttProp.left;
+                endLeft = ganttProp.autoEndDate.getTime() < ganttProp.endDate.getTime() ?
+                    this.parent.dataOperation.getTaskLeft(ganttProp.endDate, ganttProp.isMilestone) :
+                    this.parent.dataOperation.getTaskLeft(ganttProp.autoEndDate, ganttProp.isMilestone);
+                width = endLeft - left;
+            }
+            else {
+                left = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
+                width = ganttProp.autoWidth;
+            }
+            return left + width;
         }
         else {
             return ganttData.ganttProperties.left + ganttData.ganttProperties.width;
@@ -6317,11 +6988,16 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             var length_1 = ganttData.ganttProperties.resourceInfo.length;
             if (length_1 > 0) {
                 for (var i = 0; i < length_1; i++) {
+                    var resourceName = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.name];
+                    var resourceUnit = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceFields.unit];
+                    if (resourceUnit !== 100) {
+                        resourceName += '[' + resourceUnit + '%' + ']';
+                    }
                     if (isNullOrUndefined(resource)) {
-                        resource = ganttData.ganttProperties.resourceInfo[i][this.parent.resourceNameMapping];
+                        resource = resourceName;
                     }
                     else {
-                        resource += ' , ' + ganttData.ganttProperties.resourceInfo[i][this.parent.resourceNameMapping];
+                        resource += ' , ' + resourceName;
                     }
                 }
                 return resource;
@@ -6403,6 +7079,10 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         }
         if (this.templateData.hasChildRecords) {
             var parentTaskbarTemplateNode = this.getParentTaskbarNode(i);
+            if (!this.templateData.ganttProperties.isAutoSchedule) {
+                var manualTaskbar = this.getManualTaskbar();
+                taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
+            }
             if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
             }
@@ -6659,7 +7339,9 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             var data = selectedItem;
             tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
             this.triggerQueryTaskbarInfoByIndex(tr, data);
-            this.parent.treeGrid.grid.setRowData(data.ganttProperties.taskId, data);
+            /* tslint:disable-next-line */
+            var dataId = this.parent.viewType === 'ProjectView' ? parseInt(data.ganttProperties.rowUniqueID) : data.ganttProperties.rowUniqueID;
+            this.parent.treeGrid.grid.setRowData(dataId, data);
             var row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));
             row.data = data;
         }
@@ -6775,7 +7457,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 var predecessorItem = predecessorVal[c];
                 var preValue = {};
                 preValue.from = getValue('from', predecessorItem);
-                preValue.to = getValue('to', predecessorItem) ? getValue('to', predecessorItem) : ganttProp.taskId;
+                preValue.to = getValue('to', predecessorItem) ? getValue('to', predecessorItem) : ganttProp.rowUniqueID;
                 preValue.type = getValue('type', predecessorItem) ? getValue('type', predecessorItem) : 'FS';
                 var offsetUnits = getValue('offset', predecessorItem);
                 if (isNullOrUndefined(offsetUnits)) {
@@ -6884,7 +7566,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 from: match[0],
                 type: predecessorText,
                 isDrawn: false,
-                to: ganttRecord.ganttProperties.taskId.toString(),
+                to: ganttRecord.ganttProperties.rowUniqueID.toString(),
                 offsetUnit: offsetUnits.durationUnit,
                 offset: offsetUnits.duration
             };
@@ -6909,7 +7591,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < length_1; i++) {
                 var currentValue = predecessors[i];
                 var temp = '';
-                if (currentValue.from !== data.ganttProperties.taskId.toString()) {
+                if (currentValue.from !== data.ganttProperties.rowUniqueID.toString()) {
                     temp = currentValue.from + currentValue.type;
                     if (currentValue.offset !== 0) {
                         temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
@@ -7017,7 +7699,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < connectorCount; i++) {
             var connector = connectorsCollection[i];
             successorGanttRecord = this.parent.getRecordByID(connector.from);
-            if (connector.from !== ganttRecord.ganttProperties.taskId.toString()) {
+            if (connector.from !== ganttRecord.ganttProperties.rowUniqueID.toString()) {
                 if (successorGanttRecord) {
                     var predecessorCollection = void 0;
                     if (successorGanttRecord.ganttProperties.predecessor) {
@@ -7061,7 +7743,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
             var count = void 0;
             var parentGanttRecord = void 0;
             var record = null;
-            var currentTaskId_1 = ganttRecord.ganttProperties.taskId.toString();
+            var currentTaskId_1 = ganttRecord.ganttProperties.rowUniqueID.toString();
             var predecessors = predecessorsCollection.filter(function (data) {
                 if (data.to === currentTaskId_1) {
                     return data;
@@ -7075,7 +7757,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 predecessor = predecessors[count];
                 parentGanttRecord = this.parent.getRecordByID(predecessor.from);
                 record = this.parent.getRecordByID(predecessor.to);
-                if (record.ganttProperties.isAutoSchedule) {
+                if (record.ganttProperties.isAutoSchedule || this.parent.validateManualTasksOnLinking) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
             }
@@ -7091,9 +7773,10 @@ var Dependency = /** @__PURE__ @class */ (function () {
             || isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties))) {
             return;
         }
-        if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule)) {
+        if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule ||
+            this.parent.validateManualTasksOnLinking)) {
             var childRecordProperty = childGanttRecord.ganttProperties;
-            var currentTaskId_2 = childRecordProperty.taskId.toString();
+            var currentTaskId_2 = childRecordProperty.rowUniqueID.toString();
             var predecessorsCollection = childRecordProperty.predecessor;
             var childPredecessor = predecessorsCollection.filter(function (data) {
                 if (data.to === currentTaskId_2) {
@@ -7108,7 +7791,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
             this.parent.dataOperation.updateMappingData(childGanttRecord, 'startDate');
             this.dateValidateModule.calculateEndDate(childGanttRecord);
             this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(childRecordProperty), childRecordProperty, true);
-            this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(childRecordProperty), childRecordProperty, true);
+            this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(childGanttRecord), childRecordProperty, true);
             this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(childRecordProperty.width, childRecordProperty.progress), childRecordProperty, true);
             if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
                 && this.parent.isInPredecessorValidation) {
@@ -7128,7 +7811,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
         var parentGanttRecord;
         var childGanttRecord;
         var validatedPredecessor = predecessorsCollection.filter(function (data) {
-            if (data.to === ganttRecord.ganttProperties.taskId.toString()) {
+            if (data.to === ganttRecord.ganttProperties.rowUniqueID.toString()) {
                 return data;
             }
             else {
@@ -7315,7 +7998,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
             var parentGanttRecord = void 0;
             var record = null;
             var predecessor = void 0;
-            var currentTaskId_3 = childGanttRecord.ganttProperties.taskId.toString();
+            var currentTaskId_3 = childGanttRecord.ganttProperties.rowUniqueID.toString();
             var predecessors = predecessorsCollection.filter(function (data) {
                 if (data.to === currentTaskId_3) {
                     return data;
@@ -7342,8 +8025,8 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 else {
                     this.parent.isValidationEnabled = false;
                 }
-                if ((childGanttRecord.ganttProperties.taskId.toString() === predecessor.to
-                    || childGanttRecord.ganttProperties.taskId.toString() === predecessor.from)
+                if ((childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.to
+                    || childGanttRecord.ganttProperties.rowUniqueID.toString() === predecessor.from)
                     && (!validationOn || validationOn === 'predecessor')) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
@@ -7383,7 +8066,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
         var recPredecessor = record.ganttProperties.predecessor;
         if (recPredecessor && recPredecessor.length > 0) {
             validPredecessor = recPredecessor.filter(function (value) {
-                return value.from !== record.ganttProperties.taskId.toString();
+                return value.from !== record.ganttProperties.rowUniqueID.toString();
             });
         }
         return validPredecessor;
@@ -7456,7 +8139,7 @@ var ConnectorLine = /** @__PURE__ @class */ (function () {
             connectorObj.childIndex = childIndex;
             connectorObj.rowHeight = this.parent.rowHeight;
             connectorObj.type = predecessor.type;
-            connectorObj.connectorLineId = 'parent' + parentGanttRecord.taskId + 'child' + childGanttRecord.taskId;
+            connectorObj.connectorLineId = 'parent' + parentGanttRecord.rowUniqueID + 'child' + childGanttRecord.rowUniqueID;
             connectorObj.milestoneParent = parentGanttRecord.isMilestone ? true : false;
             connectorObj.milestoneChild = childGanttRecord.isMilestone ? true : false;
             if (isNullOrUndefined(isScheduledTask(parentGanttRecord)) || isNullOrUndefined(isScheduledTask(childGanttRecord))) {
@@ -8359,8 +9042,8 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
         this.toolTipObj.target = '.e-header-cell-label, .e-gantt-child-taskbar,' +
             '.e-gantt-parent-taskbar, .e-gantt-milestone, .e-gantt-unscheduled-taskbar' +
             '.e-event-markers, .e-baseline-bar, .e-event-markers,' +
-            '.e-connector-line-container, .e-indicator-span, .e-notes-info,' +
-            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone';
+            '.e-connector-line-container, .e-indicator-span, .e-notes-info, .e-gantt-manualparent-milestone,' +
+            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone, .e-gantt-manualparenttaskbar';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
         this.toolTipObj.enableHtmlSanitizer = false;
@@ -8373,6 +9056,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
         this.toolTipObj.isStringTemplate = true;
         this.toolTipObj.appendTo(this.parent.element);
     };
+    /* tslint:disable-next-line:max-func-body-length */
     Tooltip$$1.prototype.tooltipBeforeRender = function (args) {
         var parent = this.parent;
         if (parent.isOnEdit) {
@@ -8446,6 +9130,18 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                 else if (args.target.classList.contains('e-notes-info')) {
                     var ganttData = this.parent.ganttChartModule.getRecordByTarget(args.event);
                     argsData.content = this.toolTipObj.content = ganttData.ganttProperties.notes;
+                    if (isNullOrUndefined(argsData.content)) {
+                        args.cancel = true;
+                    }
+                }
+                else if (args.target.classList.contains('e-gantt-manualparenttaskbar')) {
+                    argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('manualtaskbar', data, parent, args);
+                    if (isNullOrUndefined(argsData.content)) {
+                        args.cancel = true;
+                    }
+                }
+                else if (args.target.classList.contains('e-gantt-manualparent-milestone')) {
+                    argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('manualmilestone', data, parent, args);
                     if (isNullOrUndefined(argsData.content)) {
                         args.cancel = true;
                     }
@@ -8534,6 +9230,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
     /**
      *  Getting tooltip content for different elements
      */
+    /* tslint:disable-next-line:max-func-body-length */
     Tooltip$$1.prototype.getTooltipContent = function (elementType, ganttData, parent, args) {
         var content$$1;
         var data;
@@ -8551,15 +9248,18 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                     this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr></tbody></table>';
                 break;
             case 'taskbar':
+                var scheduledTask = !ganttData.hasChildRecords || data.isAutoSchedule ? true : false;
                 var startDate = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
-                    this.parent.localeObj.getConstant('startDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.localeObj.getConstant(scheduledTask ? 'startDate' : 'subTasksStartDate') +
+                    '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(scheduledTask ? data.startDate : data.autoStartDate, this.parent.dateFormat) +
+                    '</td></tr>' : '';
                 var endDate = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
-                    this.parent.localeObj.getConstant('endDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.endDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.localeObj.getConstant(scheduledTask ? 'endDate' : 'subTasksEndDate') +
+                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' + this.parent.getFormatedDate(scheduledTask ? data.endDate : data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
                 var duration = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
-                    '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(data.duration, data.durationUnit) +
+                    '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString((scheduledTask ? data.duration : data.autoDuration), data.durationUnit) +
                     '</td></tr>' : '';
                 var progress = !isNullOrUndefined(data.progress) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('progress') + '</td><td>:</td><td>' + data.progress +
@@ -8606,6 +9306,39 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
             case 'timeline':
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';
                 break;
+            case 'manualtaskbar':
+                var autoStartDate = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                var autoEndDate = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                var durationValue = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
+                    '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(data.duration, data.durationUnit) +
+                    '</td></tr>' : '';
+                var manualStartDate = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('startDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                var manualEndDate = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('endDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.endDate, this.parent.dateFormat) + '</td></tr>' : '';
+                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + manualStartDate + autoStartDate + manualEndDate + autoEndDate + durationValue + '</tbody></table>';
+                break;
+            case 'manualmilestone':
+                var autoStart = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                var autoEnd = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                var date = '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
+                    '<td class = "e-gantt-tooltip-value">' +
+                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr>';
+                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + date + autoStart + autoEnd + '</tbody></table>';
+                break;
         }
         return content$$1;
     };
@@ -8629,8 +9362,8 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
         var toTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[1])];
         var predecessor = fromTask.ganttProperties.predecessor.filter(function (pdc) { return pdc.to === taskIds[1]; });
         var predecessorTooltipData = {
-            fromId: fromTask.ganttProperties.taskId,
-            toId: toTask.ganttProperties.taskId,
+            fromId: fromTask.ganttProperties.rowUniqueID,
+            toId: toTask.ganttProperties.rowUniqueID,
             fromName: fromTask.ganttProperties.taskName,
             toName: toTask.ganttProperties.taskName,
             linkType: predecessor[0].type,
@@ -8844,11 +9577,11 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                 if (this.selectionModule) {
                     if (this.selectionSettings.mode !== 'Cell' &&
                         !isNullOrUndefined(this.currentViewData[this.selectedRowIndex])) {
-                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.taskId;
+                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.rowUniqueID;
                     }
                     else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
                         var selectCellIndex = this.selectionModule.getSelectedRowCellIndexes();
-                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.taskId;
+                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.rowUniqueID;
                     }
                 }
                 if (selectedId) {
@@ -9014,6 +9747,23 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             focusSearch: 'ctrl+shift+70' //F Key
         };
         this.zoomingLevels = this.getZoomingLevels();
+        this.resourceFieldsMapping();
+        if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
+            this.resourceFields.unit = 'unit';
+        }
+        if (!isNullOrUndefined(this.taskFields.work)) {
+            this.taskType = 'FixedWork';
+        }
+        this.taskIds = [];
+    };
+    /**
+     * Method to map resource fields.
+     *
+     */
+    Gantt.prototype.resourceFieldsMapping = function () {
+        var resourceSettings = this.resourceFields;
+        resourceSettings.id = !isNullOrUndefined(resourceSettings.id) ? resourceSettings.id : this.resourceIDMapping;
+        resourceSettings.name = !isNullOrUndefined(resourceSettings.name) ? resourceSettings.name : this.resourceNameMapping;
     };
     /**
      * To validate height and width
@@ -9101,7 +9851,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         this.timelineModule.processTimelineUnit();
         this.timelineModule.calculateZoomingLevelsPerDayWidth(); // To calculate the perDaywidth
         // predecessor calculation
-        if (this.taskFields.dependency) {
+        if (this.predecessorModule && this.taskFields.dependency) {
             this.predecessorModule.updatePredecessors();
             if (this.isInPredecessorValidation) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
@@ -9419,6 +10169,15 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         return value;
     };
     /**
+     * Get work value as string combined with work and unit values.
+     * @param {number} work - Defines the work value.
+     * @param {string} workUnit - Defines the work unit.
+     */
+    Gantt.prototype.getWorkString = function (work, workUnit) {
+        var value = this.dateValidationModule.getWorkString(work, workUnit);
+        return value;
+    };
+    /**
      *
      * @param args
      * @private
@@ -9449,7 +10208,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             setValue('isGanttCreated', true, args);
             this.renderComplete();
         }
-        if (this.taskFields.dependency) {
+        if (this.predecessorModule && this.taskFields.dependency) {
             this.connectorLineIds = [];
             this.updatedConnectorLineCollection = [];
             this.predecessorModule.createConnectorLinesCollection(this.currentViewData);
@@ -9652,6 +10411,9 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                 case 'enableRtl':
                     isRefresh = true;
                     break;
+                case 'validateManualTasksOnLinking':
+                    this.validateManualTasksOnLinking = newProp.validateManualTasksOnLinking;
+                    break;
             }
         }
         if (isRefresh) {
@@ -9784,6 +10546,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         if (this.showColumnMenu) {
             modules.push({
                 member: 'columnMenu',
+                args: [this]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'pdfExport',
                 args: [this]
             });
         }
@@ -9936,6 +10704,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @hidden
      */
+    /* tslint:disable-next-line:max-func-body-length */
     Gantt.prototype.getDefaultLocale = function () {
         var ganttLocale = {
             emptyRecord: 'No records to display',
@@ -9949,6 +10718,14 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             notes: 'Notes',
             baselineStartDate: 'Baseline Start Date',
             baselineEndDate: 'Baseline End Date',
+            taskMode: 'Task Mode',
+            changeScheduleMode: 'Change Schedule Mode',
+            subTasksStartDate: 'SubTasks Start Date',
+            subTasksEndDate: 'SubTasks End Date',
+            scheduleStartDate: 'Schedule Start Date',
+            scheduleEndDate: 'Schedule End Date',
+            auto: 'Auto',
+            manual: 'Manual',
             type: 'Type',
             offset: 'Offset',
             resourceName: 'Resources',
@@ -9977,6 +10754,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             zoomToFit: 'Zoom to fit',
             excelExport: 'Excel export',
             csvExport: 'CSV export',
+            pdfExport: 'Pdf export',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',
@@ -10022,7 +10800,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             leftTaskLabel: 'Left task label',
             rightTaskLabel: 'Right task label',
             timelineCell: 'Timeline cell',
-            confirmPredecessorDelete: 'Are you sure you want to remove dependency link?'
+            confirmPredecessorDelete: 'Are you sure you want to remove dependency link?',
+            unit: 'Unit',
+            work: 'Work',
+            taskType: 'Task Type',
+            unassignedTask: 'Unassigned Task',
+            group: 'Group'
         };
         return ganttLocale;
     };
@@ -10143,6 +10926,19 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         return this.excelExportModule ? this.treeGrid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
     };
     /**
+     * Export Gantt data to PDF document.
+     * @param  {pdfExportProperties} PdfExportProperties - Defines the export properties of the Gantt.
+     * @param  {isMultipleExport} isMultipleExport - Define to enable multiple export.
+     * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
+     * @return {Promise<any>}
+     * @blazorType void
+     */
+    /* tslint:disable-next-line */
+    Gantt.prototype.pdfExport = function (pdfExportProperties, isMultipleExport, pdfDoc) {
+        return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc)
+            : null;
+    };
+    /**
      * Clears all the filtered columns in Gantt.
      * @return {void}
      */
@@ -10164,7 +10960,8 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Gantt.prototype.renderWorkingDayCell = function (args) {
-        var nonWorkingDays = !this.includeWeekend ? this.nonWorkingDayIndex : [];
+        var includeWeekend = this.taskMode !== 'Auto' ? true : this.includeWeekend ? true : false;
+        var nonWorkingDays = !includeWeekend ? this.nonWorkingDayIndex : [];
         var holidays = this.totalHolidayDates;
         if (nonWorkingDays.length > 0 && nonWorkingDays.indexOf(args.date.getDay()) !== -1) {
             args.isDisabled = true;
@@ -10254,7 +11051,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     Gantt.prototype.setRecordValue = function (field, value, record, isTaskData) {
         if (this.isOnEdit || this.isOnDelete) {
             this.makeCloneData(field, record, isTaskData);
-            var id = isTaskData ? record.taskId : record.ganttProperties.taskId;
+            var id = isTaskData ? record.rowUniqueID : record.ganttProperties.rowUniqueID;
             var task = this.getRecordByID(id);
             if (task && this.editedRecords.indexOf(task) === -1) {
                 this.editedRecords.push(task);
@@ -10612,6 +11409,20 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             return '';
         }
     };
+    /**
+     * Method to get class name for unscheduled tasks
+     * @param ganttProp
+     * @private
+     */
+    Gantt.prototype.isUnscheduledTask = function (ganttProp) {
+        if (isNullOrUndefined(ganttProp.startDate) || isNullOrUndefined(ganttProp.endDate) ||
+            isNullOrUndefined(ganttProp.duration)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
     Gantt.prototype.createGanttPopUpElement = function () {
         var popup = this.createElement('div', { className: 'e-ganttpopup', styles: 'display:none;' });
         var content$$1 = this.createElement('div', { className: 'e-content', attrs: { tabIndex: '-1' } });
@@ -10907,6 +11718,40 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * To change the mode of a record.
+     * @return {void}
+     */
+    Gantt.prototype.changeTaskMode = function (data) {
+        var tasks = this.taskFields;
+        var ganttData = this.getRecordByID(data[tasks.id]);
+        var ganttProp = ganttData.ganttProperties;
+        this.isOnEdit = true;
+        this.setRecordValue('isAutoSchedule', !ganttProp.isAutoSchedule, ganttProp, true);
+        this.setRecordValue('taskData.' + tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        this.setRecordValue(tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        this.editModule.updateTaskScheduleModes(ganttData);
+        var args = {
+            data: ganttData
+        };
+        this.editModule.initiateUpdateAction(args);
+    };
+    /**
+     * @private
+     */
+    Gantt.prototype.getTaskIds = function () {
+        return this.taskIds;
+    };
+    /**
+     * @private
+     */
+    Gantt.prototype.setTaskIds = function (data) {
+        if (this.viewType !== 'ProjectView') {
+            var id = data.ganttProperties.taskId;
+            id = data.level === 0 ? 'R' + id : 'T' + id;
+            this.taskIds.push(id);
+        }
+    };
     __decorate([
         Property(true)
     ], Gantt.prototype, "allowKeyboard", void 0);
@@ -11034,6 +11879,15 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         Property(-1)
     ], Gantt.prototype, "selectedRowIndex", void 0);
     __decorate([
+        Property('hour')
+    ], Gantt.prototype, "workUnit", void 0);
+    __decorate([
+        Property('FixedUnit')
+    ], Gantt.prototype, "taskType", void 0);
+    __decorate([
+        Property('ProjectView')
+    ], Gantt.prototype, "viewType", void 0);
+    __decorate([
         Collection([{ from: 8, to: 12 }, { from: 13, to: 17 }], DayWorkingTime)
     ], Gantt.prototype, "dayWorkingTime", void 0);
     __decorate([
@@ -11045,6 +11899,9 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Complex({}, TaskFields)
     ], Gantt.prototype, "taskFields", void 0);
+    __decorate([
+        Complex({}, ResourceFields)
+    ], Gantt.prototype, "resourceFields", void 0);
     __decorate([
         Complex({}, TimelineSettings)
     ], Gantt.prototype, "timelineSettings", void 0);
@@ -11081,6 +11938,15 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], Gantt.prototype, "contextMenuItems", void 0);
+    __decorate([
+        Property(false)
+    ], Gantt.prototype, "allowPdfExport", void 0);
+    __decorate([
+        Property(false)
+    ], Gantt.prototype, "validateManualTasksOnLinking", void 0);
+    __decorate([
+        Property('Auto')
+    ], Gantt.prototype, "taskMode", void 0);
     __decorate([
         Complex({}, FilterSettings)
     ], Gantt.prototype, "filterSettings", void 0);
@@ -11249,11 +12115,47 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Gantt.prototype, "onMouseMove", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "beforePdfExport", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "pdfExportComplete", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "pdfQueryCellInfo", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "pdfQueryTaskbarInfo", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "pdfQueryTimelineCellInfo", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "pdfColumnHeaderQueryCellInfo", void 0);
     Gantt = __decorate([
         NotifyPropertyChanges
     ], Gantt);
     return Gantt;
 }(Component));
+
+/**
+ * public Enum for `PdfHorizontalOverflowType`.
+ * @private
+ */
+var PdfHorizontalOverflowType;
+(function (PdfHorizontalOverflowType) {
+    /**
+     * Specifies the type of `NextPage`.
+     * @private
+     */
+    PdfHorizontalOverflowType[PdfHorizontalOverflowType["NextPage"] = 0] = "NextPage";
+    /**
+     * Specifies the type of `LastPage`.
+     * @private
+     */
+    PdfHorizontalOverflowType[PdfHorizontalOverflowType["LastPage"] = 1] = "LastPage";
+})(PdfHorizontalOverflowType || (PdfHorizontalOverflowType = {}));
 
 /**
  *  This file was to define all public and internal events
@@ -11310,7 +12212,8 @@ var CellEdit = /** @__PURE__ @class */ (function () {
             return;
         }
         if (data.hasChildRecords && (field === taskSettings.endDate || field === taskSettings.duration
-            || field === taskSettings.dependency || field === taskSettings.progress)) {
+            || field === taskSettings.dependency || field === taskSettings.progress
+            || field === taskSettings.work || field === 'taskType')) {
             args.cancel = true;
         }
         else {
@@ -11320,14 +12223,19 @@ var CellEdit = /** @__PURE__ @class */ (function () {
                     args.cell = getElement(args.cell);
                     args.row = getElement(args.row);
                 }
+                if (data.level === 0 && _this.parent.viewType === 'ResourceView') {
+                    args.cancel = true;
+                }
                 callBackPromise_1.resolve(args);
                 if (!args.cancel) {
-                    _this.isCellEdit = true;
-                    if (!isNullOrUndefined(_this.parent.toolbarModule)) {
-                        _this.parent.toolbarModule.refreshToolbarItems();
-                    }
                     if (args.columnName === _this.parent.taskFields.notes) {
                         _this.openNotesEditor(args);
+                    }
+                    else {
+                        _this.isCellEdit = true;
+                        if (!isNullOrUndefined(_this.parent.toolbarModule)) {
+                            _this.parent.toolbarModule.refreshToolbarItems();
+                        }
                     }
                 }
             });
@@ -11347,7 +12255,7 @@ var CellEdit = /** @__PURE__ @class */ (function () {
             var columnTypes = this.parent.editModule.dialogModule.updatedEditFields.map(function (x) { return x.type; });
             var index = columnTypes.indexOf('Notes');
             if (index !== -1) {
-                this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.taskId);
+                this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.rowUniqueID);
                 var tabObj = document.getElementById(this.parent.element.id + '_Tab').ej2_instances[0];
                 tabObj.selectedItem = index;
             }
@@ -11408,7 +12316,7 @@ var CellEdit = /** @__PURE__ @class */ (function () {
                 this.durationEdited(editedArgs);
             }
             else if (column.field === this.parent.taskFields.resourceInfo) {
-                this.resourceEdited(editedArgs, editedObj);
+                this.resourceEdited(editedArgs, editedObj, data, true);
             }
             else if (column.field === this.parent.taskFields.progress) {
                 this.progressEdited(editedArgs);
@@ -11422,6 +12330,15 @@ var CellEdit = /** @__PURE__ @class */ (function () {
             }
             else if (column.field === this.parent.taskFields.notes) {
                 this.notedEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.work) {
+                this.workEdited(editedArgs);
+            }
+            else if (column.field === 'taskType' && !isNullOrUndefined(this.parent.taskFields.work)) {
+                this.typeEdited(editedArgs, editedObj);
+            }
+            else if (column.field === this.parent.taskFields.manual) {
+                this.taskmodeEdited(editedArgs);
             }
             else {
                 this.parent.setRecordValue('taskData.' + column.field, editedArgs.data[column.field], editedArgs.data);
@@ -11452,6 +12369,15 @@ var CellEdit = /** @__PURE__ @class */ (function () {
     CellEdit.prototype.notedEdited = function (args) {
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.notes, args.data[this.parent.taskFields.name], args.data);
         this.parent.setRecordValue('notes', args.data[this.parent.taskFields.notes], args.data.ganttProperties, true);
+        this.updateEditedRecord(args);
+    };
+    /**
+     * To update task schedule mode cell with new value
+     * @param args
+     */
+    CellEdit.prototype.taskmodeEdited = function (args) {
+        this.parent.setRecordValue('isAutoSchedule', !args.data[this.parent.taskFields.manual], args.data.ganttProperties, true);
+        this.parent.editModule.updateTaskScheduleModes(args.data);
         this.updateEditedRecord(args);
     };
     /**
@@ -11531,6 +12457,7 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         this.parent.dataOperation.updateMappingData(args.data, 'startDate');
         this.parent.dataOperation.updateMappingData(args.data, 'endDate');
         this.parent.dataOperation.updateMappingData(args.data, 'duration');
+        this.parent.editModule.updateResourceRelatedFields(args.data, 'endDate');
         this.updateEditedRecord(args);
     };
     /**
@@ -11539,10 +12466,20 @@ var CellEdit = /** @__PURE__ @class */ (function () {
      */
     CellEdit.prototype.durationEdited = function (args) {
         var ganttProb = args.data.ganttProperties;
-        var endDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.endDate);
-        var startDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.startDate);
         var durationString = args.data[this.parent.taskFields.duration];
         this.parent.dataOperation.updateDurationValue(durationString, ganttProb);
+        this.updateDates(args);
+        this.parent.editModule.updateResourceRelatedFields(args.data, 'duration');
+        this.updateEditedRecord(args);
+    };
+    /**
+     * To update start date, end date based on duration
+     * @param args
+     */
+    CellEdit.prototype.updateDates = function (args) {
+        var ganttProb = args.data.ganttProperties;
+        var endDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.endDate);
+        var startDate = this.parent.dateValidationModule.getDateFromFormat(ganttProb.startDate);
         var currentDuration = ganttProb.duration;
         if (isNullOrUndefined(currentDuration)) {
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
@@ -11563,7 +12500,6 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         this.parent.dataOperation.updateMappingData(args.data, 'endDate');
         this.parent.dataOperation.updateMappingData(args.data, 'startDate');
         this.parent.dataOperation.updateMappingData(args.data, 'duration');
-        this.updateEditedRecord(args);
     };
     /**
      * To update progress cell with new value
@@ -11574,7 +12510,9 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         this.parent.setRecordValue('progress', (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]), ganttRecord.ganttProperties, true);
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.progress, (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]), args.data);
         if (!args.data.hasChildRecords) {
-            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(ganttRecord.ganttProperties.width, ganttRecord.ganttProperties.progress), ganttRecord.ganttProperties, true);
+            var width = ganttRecord.ganttProperties.isAutoSchedule ? ganttRecord.ganttProperties.width :
+                ganttRecord.ganttProperties.autoWidth;
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(width, ganttRecord.ganttProperties.progress), ganttRecord.ganttProperties, true);
         }
         this.updateEditedRecord(args);
     };
@@ -11602,11 +12540,49 @@ var CellEdit = /** @__PURE__ @class */ (function () {
      * @param args
      * @param editedObj
      */
-    CellEdit.prototype.resourceEdited = function (args, editedObj) {
-        if (editedObj[this.parent.taskFields.resourceInfo]) {
-            args.data.ganttProperties.resourceInfo = this.parent.dataOperation.setResourceInfo(editedObj);
+    CellEdit.prototype.resourceEdited = function (args, editedObj, previousData, isResourceEdited) {
+        var resourceSettings = this.parent.resourceFields;
+        var editedResourceId = editedObj[this.parent.taskFields.resourceInfo];
+        if (editedResourceId) {
+            var tempResourceInfo = this.parent.dataOperation.setResourceInfo(editedObj);
+            var editedResouceLength = tempResourceInfo.length;
+            var previousResource = previousData.ganttProperties.resourceInfo;
+            var index = void 0;
+            var editedResources = [];
+            var resourceData = this.parent.resources;
+            var newIndex = void 0;
+            var _loop_1 = function (count) {
+                if (previousResource) {
+                    var previousResourceLength = previousResource.length;
+                    for (newIndex = 0; newIndex < previousResourceLength; newIndex++) {
+                        if (previousResource[newIndex][resourceSettings.id] === editedResourceId[count]) {
+                            index = newIndex;
+                            break;
+                        }
+                        else {
+                            index = -1;
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(index) && index !== -1) {
+                    editedResources.push(previousResource[index]);
+                }
+                else {
+                    var resource = resourceData.filter(function (resourceInfo) {
+                        return (editedResourceId[count] === resourceInfo[resourceSettings.id]);
+                    });
+                    var ganttDataResource = extend({}, resource[0]);
+                    ganttDataResource[resourceSettings.unit] = 100;
+                    editedResources.push(ganttDataResource);
+                }
+            };
+            for (var count = 0; count < editedResouceLength; count++) {
+                _loop_1(count);
+            }
+            args.data.ganttProperties.resourceInfo = editedResources;
             this.parent.dataOperation.updateMappingData(args.data, 'resourceInfo');
-            this.updateEditedRecord(args);
+            this.parent.editModule.updateResourceRelatedFields(args.data, 'resource');
+            this.updateEditedRecord(args, isResourceEdited, previousResource);
         }
     };
     /**
@@ -11621,6 +12597,31 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         }
     };
     /**
+     * To update task's work cell with new value
+     * @param editedArgs
+     */
+    CellEdit.prototype.workEdited = function (editedArgs) {
+        var ganttProb = editedArgs.data.ganttProperties;
+        var workValue = editedArgs.data[this.parent.taskFields.work];
+        this.parent.setRecordValue('work', workValue, ganttProb, true);
+        this.parent.editModule.updateResourceRelatedFields(editedArgs.data, 'work');
+        this.updateDates(editedArgs);
+        this.updateEditedRecord(editedArgs);
+    };
+    /**
+     * To update task type cell with new value
+     * @param args
+     * @param editedObj
+     */
+    CellEdit.prototype.typeEdited = function (args, editedObj) {
+        var key = 'taskType';
+        var ganttProb = args.data.ganttProperties;
+        var taskType = editedObj[key];
+        this.parent.setRecordValue('taskType', taskType, ganttProb, true);
+        //this.parent.dataOperation.updateMappingData(args.data, 'taskType');
+        this.updateEditedRecord(args);
+    };
+    /**
      * To compare start date and end date from Gantt record
      * @param ganttRecord
      */
@@ -11633,8 +12634,13 @@ var CellEdit = /** @__PURE__ @class */ (function () {
      * To start method save action with edited cell value
      * @param args
      */
-    CellEdit.prototype.updateEditedRecord = function (args) {
-        this.parent.editModule.initiateUpdateAction(args);
+    CellEdit.prototype.updateEditedRecord = function (args, isResourceEdited, previousResources) {
+        if (this.parent.viewType === 'ResourceView') {
+            this.parent.editModule.updateRsourceRecords(args, isResourceEdited, previousResources);
+        }
+        else {
+            this.parent.editModule.initiateUpdateAction(args);
+        }
     };
     /**
      * To remove all public private properties
@@ -11725,7 +12731,8 @@ var EditTooltip = /** @__PURE__ @class */ (function () {
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
                     this.toolTipObj.offsetX = -this.taskbarEdit.taskBarEditRecord.ganttProperties.width;
                 }
-                else if (this.taskbarEdit.taskBarEditAction === 'RightResizing') {
+                else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
+                    this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
                     this.toolTipObj.offsetX = 0;
                 }
                 else if (this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
@@ -11768,6 +12775,7 @@ var EditTooltip = /** @__PURE__ @class */ (function () {
                         this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
                     break;
                 case 'RightResizing':
+                case 'ParentResizing':
                     tooltipString = this.parent.localeObj.getConstant('endDate') + ' : ';
                     tooltipString += instance.formatDate(editRecord.endDate, { format: this.parent.dateFormat });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
@@ -11776,6 +12784,7 @@ var EditTooltip = /** @__PURE__ @class */ (function () {
                 case 'ChildDrag':
                 case 'ParentDrag':
                 case 'MilestoneDrag':
+                case 'ManualParentDrag':
                     if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.startDate)) {
                         tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
                         tooltipString += instance.formatDate(editRecord.startDate, { format: this.parent.dateFormat });
@@ -11840,7 +12849,8 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         this.roundOffDuration = true;
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
-        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth'];
+        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth',
+            'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth',];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     };
@@ -11908,10 +12918,10 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         if (predecessors) {
             for (var i = 0; i < predecessors.length; i++) {
                 var predecessor = predecessors[i];
-                if (ganttProp.taskId.toString() === predecessor.from) {
+                if (ganttProp.rowUniqueID.toString() === predecessor.from) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
-                else if (ganttProp.taskId.toString() === predecessor.to) {
+                else if (ganttProp.rowUniqueID.toString() === predecessor.to) {
                     this.applyActiveColor(predecessor.from, predecessor.to, show);
                 }
             }
@@ -11931,7 +12941,7 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         }
     };
     TaskbarEdit.prototype.applyActiveColor = function (from, to, enable) {
-        var taskId = this.taskBarEditRecord.ganttProperties.taskId.toString();
+        var taskId = this.taskBarEditRecord.ganttProperties.rowUniqueID.toString();
         var ganttRecord = (taskId === from) ? this.parent.getRecordByID(to) :
             this.parent.getRecordByID(from);
         var $tr = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(ganttRecord)];
@@ -11962,16 +12972,16 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         else if (childRecord.predecessor) {
             for (var i = 0; i < childRecord.predecessor.length; i++) {
                 var predecessor = childRecord.predecessor[i];
-                if (predecessor.from === parentRecord.taskId.toString() &&
-                    predecessor.to === childRecord.taskId.toString()) {
+                if (predecessor.from === parentRecord.rowUniqueID.toString() &&
+                    predecessor.to === childRecord.rowUniqueID.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.connectorSecondRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
                 }
-                else if (predecessor.from === childRecord.taskId.toString() &&
-                    predecessor.to === parentRecord.taskId.toString()) {
+                else if (predecessor.from === childRecord.rowUniqueID.toString() &&
+                    predecessor.to === parentRecord.rowUniqueID.toString()) {
                     this.parent.connectorLineEditModule.childRecord = this.taskBarEditRecord;
                     this.parent.connectorLineEditModule.predecessorIndex = i;
                     this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
@@ -11992,7 +13002,18 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
      */
     TaskbarEdit.prototype.updateTaskBarEditElement = function (e) {
         var target = this.getElementByPosition(e);
-        var element = parentsUntil$1(target, taskBarMainContainer);
+        var element;
+        if (target.classList.contains(manualParentRightResizer) || target.classList.contains(manualParentMainContainer)
+            || target.classList.contains(manualParentTaskBar)) {
+            element = parentsUntil$1(target, manualParentMainContainer);
+        }
+        else if (target.classList.contains(manualParentMilestoneTop) || target.classList.contains(manualParentMilestoneBottom)
+            || target.classList.contains(manualParentMilestone)) {
+            element = parentsUntil$1(target, manualParentMilestone);
+        }
+        else {
+            element = parentsUntil$1(target, taskBarMainContainer);
+        }
         if (this.parent.editSettings.allowTaskbarEditing && element) {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             this.editElement = element;
@@ -12096,8 +13117,20 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         else if (mouseDownElement.classList.contains(connectorPointRight)) {
             action = 'ConnectorPointRightDrag';
         }
+        else if (mouseDownElement.classList.contains(manualParentRightResizer)) {
+            action = 'ParentResizing';
+        }
+        else if (mouseDownElement.classList.contains(manualParentTaskBar) ||
+            mouseDownElement.classList.contains(manualParentMainContainer) ||
+            mouseDownElement.classList.contains(manualParentMilestone) ||
+            mouseDownElement.classList.contains(manualParentMilestoneTop) ||
+            mouseDownElement.classList.contains(manualParentMilestoneBottom) ||
+            mouseDownElement.classList.contains(manualParentMilestone)) {
+            action = 'ManualParentDrag';
+        }
         else if (data) {
-            action = data.hasChildRecords ? 'ParentDrag' : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
+            action = data.hasChildRecords ? this.parent.taskMode === 'Auto' ? 'ParentDrag' : ''
+                : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
         }
         return action;
     };
@@ -12182,6 +13215,9 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         if (this.taskBarEditRecord !== null) {
             args.editingFields = this.taskBarEditRecord.ganttProperties;
             args.data = this.taskBarEditRecord;
+            if (this.parent.viewType === 'ResourceView' && args.data.level === 0) {
+                return;
+            }
             args.recordIndex = recordIndex;
             args.taskBarEditAction = this.taskBarEditAction;
             args.roundOffDuration = this.roundOffDuration;
@@ -12195,11 +13231,11 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
             else if (this.taskBarEditAction === 'LeftResizing') {
                 this.enableLeftResizing(e);
             }
-            else if (this.taskBarEditAction === 'RightResizing') {
+            else if (this.taskBarEditAction === 'RightResizing' || this.taskBarEditAction === 'ParentResizing') {
                 this.enableRightResizing(e);
             }
             else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
-                this.taskBarEditAction === 'MilestoneDrag') {
+                this.taskBarEditAction === 'MilestoneDrag' || this.taskBarEditAction === 'ManualParentDrag') {
                 this.enableDragging(e);
             }
             else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
@@ -12508,8 +13544,10 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
                     this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
                 }
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'RightResizing':
+            case 'ParentResizing':
                 left = this.getRoundOffEndLeft(item, this.roundOffDuration);
                 var tempEndDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.startDate)) {
@@ -12521,10 +13559,12 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
                     this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
+                this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
                 break;
             case 'ParentDrag':
             case 'ChildDrag':
             case 'MilestoneDrag':
+            case 'ManualParentDrag':
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
                 projectStartDate = this.getDateByLeft(left);
                 if (!isNullOrUndefined(item.endDate) && isNullOrUndefined(item.startDate)) {
@@ -12616,10 +13656,10 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         if (!isRoundOff) {
             if ((tierMode !== 'Hour' && tierMode !== 'Minutes')) {
                 if (remainDaysInDecimal <= 0.5) {
-                    left = ganttRecord.left - remainDays;
+                    left = left - remainDays;
                 }
                 else if (remainDaysInDecimal > 0.5) {
-                    left = (ganttRecord.left - remainDays) + this.parent.perDayWidth / 2;
+                    left = (left - remainDays) + this.parent.perDayWidth / 2;
                 }
             }
         }
@@ -12628,16 +13668,16 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Hour') / (1000 * 60 * 60)));
                 remainDays = (this.parent.perDayWidth / 24) - ((this.parent.perDayWidth / 24) / remainingContribution);
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             }
             else if (tierMode === 'Minutes') {
                 remainingContribution =
                     (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Minutes') / (1000 * 60)));
                 remainDays = (this.parent.perDayWidth / (24 * 60)) - ((this.parent.perDayWidth / (24 * 60)) / remainingContribution);
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             }
             else {
-                left = ganttRecord.left - remainDays;
+                left = left - remainDays;
             }
         }
         return left;
@@ -12704,12 +13744,18 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         var traceParentTaskBar$$1 = this.taskBarEditElement.querySelector('.' + traceParentTaskBar);
         var traceParentProgressBar$$1 = this.taskBarEditElement.querySelector('.' + traceParentProgressBar);
         var traceConnectorPointRight = this.taskBarEditElement.querySelector('.' + rightConnectorPointOuterDiv);
+        var manualParentTaskbar = this.taskBarEditElement;
+        var manualTaskbar = this.taskBarEditElement.querySelector('.' + manualParentTaskBar);
+        var manualParentRight = this.taskBarEditElement.querySelector('.' + manualParentRightResizer);
+        var manualParentLeft = this.taskBarEditElement.querySelector('.' + manualParentLeftResizer);
         if (this.taskBarEditAction !== 'ConnectorPointRightDrag' &&
             this.taskBarEditAction !== 'ConnectorPointLeftDrag') {
-            taskBarMainContainer$$1.style.width = (width) + 'px';
-            taskBarMainContainer$$1.style.left = (item.left) + 'px';
-            leftLabelContainer$$1.style.width = (item.left) + 'px';
-            rightLabelContainer$$1.style.left = (item.left + width) + 'px';
+            if (this.taskBarEditAction !== 'ParentResizing' && this.taskBarEditAction !== 'ManualParentDrag') {
+                taskBarMainContainer$$1.style.width = (width) + 'px';
+                taskBarMainContainer$$1.style.left = (item.left) + 'px';
+                leftLabelContainer$$1.style.width = (item.left) + 'px';
+                rightLabelContainer$$1.style.left = (item.left + width) + 'px';
+            }
             if (traceConnectorPointRight) {
                 traceConnectorPointRight.style.left = (this.parent.isAdaptive ? (width + 10) : (width + 2)) + 'px';
             }
@@ -12734,6 +13780,13 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
             else if (this.taskBarEditAction === 'ParentDrag') {
                 traceParentTaskBar$$1.style.width = (width) + 'px';
                 traceParentProgressBar$$1.style.width = (item.progressWidth) + 'px';
+            }
+            else if (this.taskBarEditAction === 'ParentResizing') {
+                manualParentTaskbar.style.width = manualTaskbar.style.width = (item.width) + 'px';
+                manualParentRight.style.left = (item.width - manualParentLeft.offsetLeft) + 'px';
+            }
+            else if (this.taskBarEditAction === 'ManualParentDrag') {
+                manualParentTaskbar.style.left = (item.left - item.autoLeft) + 'px';
             }
             else {
                 traceChildTaskBar$$1.style.width = (width) + 'px';
@@ -12838,7 +13891,12 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
             this.parent.dataOperation.updateWidthLeft(args.data);
         }
         this.parent.dataOperation.updateTaskData(ganttRecord);
-        this.parent.editModule.initiateUpdateAction(args);
+        if (this.parent.viewType === 'ResourceView') {
+            this.parent.editModule.updateRsourceRecords(args);
+        }
+        else {
+            this.parent.editModule.initiateUpdateAction(args);
+        }
     };
     /**
      * To get progress in percentage.
@@ -12938,10 +13996,10 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         var target = this.getElementByPosition(e);
         var element = target;
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
-            predecessor = fromItem.taskId + 'S';
+            predecessor = fromItem.rowUniqueID + 'S';
         }
         else if (this.taskBarEditAction === 'ConnectorPointRightDrag') {
-            predecessor = fromItem.taskId + 'F';
+            predecessor = fromItem.rowUniqueID + 'F';
         }
         if (this.connectorSecondAction) {
             if (this.connectorSecondAction === 'ConnectorPointLeftDrag') {
@@ -13053,6 +14111,17 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
     return TaskbarEdit;
 }());
 
+var __assign$2 = (undefined && undefined.__assign) || function () {
+    __assign$2 = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign$2.apply(this, arguments);
+};
 /**
  *
  * @hidden
@@ -13070,6 +14139,8 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         this.addedRecord = null;
         this.dialogEditValidationFlag = false;
         this.ganttResources = [];
+        this.previousResource = [];
+        this.isResourceUpdate = false;
         this.parent = parent;
         this.localeObj = this.parent.localeObj;
         this.beforeOpenArgs = { cancel: false };
@@ -13238,7 +14309,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             var field = columns[i].field;
             if (field === taskSettings.id) {
                 tempData[field] = id;
-                tempData.ganttProperties.taskId = tempData[field];
+                tempData.ganttProperties.rowUniqueID = tempData[field];
             }
             else if (columns[i].field === taskSettings.startDate) {
                 if (isNullOrUndefined(tempData[taskSettings.endDate])) {
@@ -13271,6 +14342,14 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 tempData[field] = 0;
                 tempData.ganttProperties.progress = tempData[field];
             }
+            else if (columns[i].field === taskSettings.work) {
+                tempData[field] = 0;
+                tempData.ganttProperties.work = tempData[field];
+            }
+            else if (columns[i].field === 'taskType') {
+                tempData[field] = this.parent.taskType;
+                tempData.ganttProperties.taskType = tempData[field];
+            }
             else {
                 tempData[this.parent.ganttColumns[i].field] = '';
             }
@@ -13286,10 +14365,10 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             var selectedRowId = gObj.selectionModule ?
                 (gObj.selectionSettings.mode === 'Row' || gObj.selectionSettings.mode === 'Both') &&
                     gObj.selectionModule.selectedRowIndexes.length === 1 ?
-                    gObj.currentViewData[gObj.selectionModule.selectedRowIndexes[0]].ganttProperties.taskId :
+                    gObj.currentViewData[gObj.selectionModule.selectedRowIndexes[0]].ganttProperties.rowUniqueID :
                     gObj.selectionSettings.mode === 'Cell' &&
                         gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ?
-                        gObj.currentViewData[gObj.selectionModule.getSelectedRowCellIndexes()[0].rowIndex].ganttProperties.taskId :
+                        gObj.currentViewData[gObj.selectionModule.getSelectedRowCellIndexes()[0].rowIndex].ganttProperties.rowUniqueID :
                         null : null;
             if (!isNullOrUndefined(selectedRowId)) {
                 this.openEditDialog(selectedRowId);
@@ -13319,6 +14398,9 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             this.rowIndex = ganttObj.selectedRowIndex;
         }
         this.isEdit = true;
+        if (this.parent.viewType === 'ResourceView' && this.rowData.level === 0) {
+            return;
+        }
         if (Object.keys(this.rowData).length !== 0) {
             this.editedRecord = extend({}, {}, this.rowData, true);
             this.createDialog();
@@ -13429,8 +14511,8 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                     rte.destroy();
                 }
                 else if (id === 'Resources') {
-                    var gridObj = element.ej2_instances[0];
-                    gridObj.destroy();
+                    var treeGridObj = element.ej2_instances[0];
+                    treeGridObj.destroy();
                 }
                 else if (id.indexOf('Custom') !== -1) {
                     this.destroyCustomField(element);
@@ -13605,15 +14687,16 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             this.responsiveTabContent(id, ganttObj);
         }
         if (id === ganttObj.element.id + 'ResourcesTabContainer') {
-            var resourceGrid_1 = ganttObj.element.querySelector('#' + id).ej2_instances[0];
+            var resourceTreeGrid_1 = ganttObj.element.querySelector('#' + id).ej2_instances[0];
             var resources_1 = this.ganttResources;
+            var currentViewData = resourceTreeGrid_1.getCurrentViewRecords();
             if (resources_1 && resources_1.length > 0) {
-                resourceGrid_1.currentViewData.forEach(function (data, index) {
+                currentViewData.forEach(function (data, index) {
                     for (var i = 0; i < resources_1.length; i++) {
-                        if (data[ganttObj.resourceIDMapping] === resources_1[i][ganttObj.resourceIDMapping] &&
-                            !isNullOrUndefined(resourceGrid_1.selectionModule) &&
-                            resourceGrid_1.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
-                            resourceGrid_1.selectRow(index);
+                        if (data.taskData[ganttObj.resourceFields.id] === resources_1[i][ganttObj.resourceFields.id] &&
+                            !isNullOrUndefined(resourceTreeGrid_1.selectionModule) &&
+                            resourceTreeGrid_1.getSelectedRowIndexes().indexOf(index) === -1) {
+                            resourceTreeGrid_1.selectRow(index);
                         }
                     }
                 });
@@ -13685,6 +14768,11 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                     numeric.min = 0;
                     numeric.max = 100;
                 }
+                if (taskSettings.work === column.field) {
+                    numeric.change = function (args) {
+                        _this.validateScheduleFields(args, column, ganttObj);
+                    };
+                }
                 fieldsModel[column.field] = numeric;
                 break;
             case 'datepickeredit':
@@ -13716,6 +14804,22 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 fieldsModel[column.field] = dateTimePickerObj;
                 break;
             case 'dropdownedit':
+                if (column.field === 'taskType' || column.field === ganttObj.columnMapping.manual) {
+                    var dataKey = 'dataSource';
+                    var fieldsKey = 'fields';
+                    var types = [
+                        { 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }
+                    ];
+                    common[dataKey] = types;
+                    common[fieldsKey] = { value: 'Value' };
+                    var dropDownListObj = common;
+                    dropDownListObj.change = function (args) {
+                        if (column.field === taskSettings.manual) {
+                            _this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
+                        }
+                        _this.validateScheduleFields(args, column, ganttObj);
+                    };
+                }
                 fieldsModel[column.field] = common;
                 break;
             case 'maskededit':
@@ -13741,6 +14845,11 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
         }
+        else if (!isNullOrUndefined(args.event.path[1])) {
+            inputElement = args.event.path[1];
+            targetId = inputElement.querySelector('input').getAttribute('id');
+            inputElement = inputElement.querySelector('#' + targetId);
+        }
         var cellValue = inputElement.value;
         var colName = targetId.replace(ganttObj.element.id, '');
         this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
@@ -13754,6 +14863,9 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         }
         if (!isNullOrUndefined(tasks.duration)) {
             this.updateScheduleFields(dialog, ganttProp, 'duration');
+        }
+        if (!isNullOrUndefined(tasks.work)) {
+            this.updateScheduleFields(dialog, ganttProp, 'work');
         }
         this.dialogEditValidationFlag = false;
         return true;
@@ -13783,6 +14895,14 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                     && picker.value.toString() !== tempValue.toString())) {
                 picker.value = tempValue;
                 picker.dataBind();
+            }
+        }
+        else if (col.editType === 'numericedit') {
+            var numericTextBox = dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
+            tempValue = ganttProp[ganttField];
+            if (!isNullOrUndefined(tempValue)) {
+                numericTextBox.value = tempValue;
+                numericTextBox.dataBind();
             }
         }
     };
@@ -13891,6 +15011,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 }
             }
             this.validateDuration(currentData);
+            this.parent.editModule.updateResourceRelatedFields(currentData, 'duration');
         }
         if (taskSettings.startDate === columnName) {
             if (value !== '') {
@@ -13922,6 +15043,19 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 }
             }
             this.validateEndDate(currentData);
+        }
+        if (taskSettings.work === columnName) {
+            if (!isNullOrUndefined(value) && value !== '') {
+                this.parent.setRecordValue('work', value, ganttProp, true);
+                this.parent.editModule.updateResourceRelatedFields(currentData, 'work');
+                this.validateDuration(currentData);
+            }
+        }
+        if (columnName === 'taskType') {
+            this.parent.setRecordValue('taskType', value, ganttProp, true);
+        }
+        if (taskSettings.manual === columnName) {
+            this.parent.editModule.updateTaskScheduleModes(currentData);
         }
         return true;
     };
@@ -13984,11 +15118,14 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
     };
     DialogEdit.prototype.getResourcesModel = function (fields) {
         var ganttObj = this.parent;
+        var resourceSettings = ganttObj.resourceFields;
         if (isNullOrUndefined(fields) || fields.length === 0) {
-            fields = [ganttObj.resourceIDMapping, ganttObj.resourceNameMapping];
+            fields = [resourceSettings.id, resourceSettings.name, resourceSettings.unit, resourceSettings.group];
         }
         var inputModel = {
             allowFiltering: true,
+            treeColumnIndex: 5,
+            editSettings: { allowEditing: true, mode: 'Cell' },
             locale: this.parent.locale,
             allowSelection: true,
             rowHeight: this.parent.isAdaptive ? 48 : null,
@@ -14000,16 +15137,34 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         ];
         for (var i = 0; i < fields.length; i++) {
             var column = {};
-            if (fields[i] === ganttObj.resourceIDMapping) {
+            if (fields[i] === resourceSettings.id) {
                 column = {
-                    field: ganttObj.resourceIDMapping,
-                    headerText: this.localeObj.getConstant('id'), isPrimaryKey: true, width: '100px'
+                    field: resourceSettings.id,
+                    headerText: this.localeObj.getConstant('id'), isPrimaryKey: true, width: '100px',
+                    allowEditing: false
                 };
                 columns.push(column);
             }
-            else if (fields[i] === ganttObj.resourceNameMapping) {
+            else if (fields[i] === resourceSettings.name) {
                 column = {
-                    field: ganttObj.resourceNameMapping, headerText: this.localeObj.getConstant('name'),
+                    field: resourceSettings.name, headerText: this.localeObj.getConstant('name'),
+                    allowEditing: false
+                };
+                columns.push(column);
+            }
+            else if (fields[i] === resourceSettings.unit) {
+                column = {
+                    field: resourceSettings.unit,
+                    headerText: this.localeObj.getConstant('unit'),
+                    editType: 'numericedit'
+                };
+                columns.push(column);
+            }
+            else if (fields[i] === resourceSettings.group && !isNullOrUndefined(resourceSettings.group)) {
+                column = {
+                    field: resourceSettings.group,
+                    headerText: this.localeObj.getConstant('group'),
+                    allowEditing: false
                 };
                 columns.push(column);
             }
@@ -14123,6 +15278,12 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 else if (column.field === this.parent.taskFields.baselineEndDate) {
                     disabled = true;
                 }
+                else if (column.field === this.parent.taskFields.work) {
+                    disabled = true;
+                }
+                else if (column.field === 'taskType') {
+                    disabled = true;
+                }
             }
         }
         if (this.isEdit) {
@@ -14139,7 +15300,10 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 else if (column.field === this.parent.taskFields.progress) {
                     disabled = true;
                 }
-                else if (column.field === this.parent.taskFields.progress) {
+                else if (column.field === this.parent.taskFields.work) {
+                    disabled = true;
+                }
+                else if (column.field === 'taskType') {
                     disabled = true;
                 }
             }
@@ -14198,25 +15362,52 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         gridObj.appendTo(divElement);
         return divElement;
     };
-    DialogEdit.prototype.updateResourceCollection = function (args, resourceGridId) {
+    DialogEdit.prototype.updateResourceCollection = function (args, resourceTreeGridId) {
         if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {
             var ganttObj = this.parent;
-            var resourceGrid = ganttObj.element.querySelector('#' + resourceGridId).ej2_instances[0];
-            if (!isNullOrUndefined(resourceGrid) && resourceGrid.selectionModule.getSelectedRecords().length > 0) {
-                this.ganttResources = extend([], resourceGrid.selectionModule.getSelectedRecords());
+            var treeGridId = ganttObj.element.querySelector('#' + resourceTreeGridId);
+            var resourceTreeGrid = treeGridId.ej2_instances[0];
+            if (!isNullOrUndefined(resourceTreeGrid) && resourceTreeGrid.getSelectedRecords().length > 0) {
+                var tempRecords = resourceTreeGrid.getSelectedRecords();
+                var index = void 0;
+                var selectedItems = [];
+                for (index = 0; index < tempRecords.length; index++) {
+                    selectedItems.push(tempRecords[index].taskData);
+                }
+                this.ganttResources = extend([], selectedItems);
             }
             else {
                 this.ganttResources = [];
             }
         }
+        else {
+            this.ganttResources = [];
+        }
     };
     DialogEdit.prototype.renderResourceTab = function (itemName) {
         var _this = this;
         var ganttObj = this.parent;
+        var resourceSettings = ganttObj.resourceFields;
         var ganttData = this.beforeOpenArgs.rowData;
+        var rowResource = ganttData.ganttProperties.resourceInfo;
         var inputModel = this.beforeOpenArgs[itemName];
-        var resourceGridId = ganttObj.element.id + '' + itemName + 'TabContainer';
-        inputModel.dataSource = ganttObj.resources;
+        var resourceTreeGridId = ganttObj.element.id + '' + itemName + 'TabContainer';
+        var resourceData = extend([], [], ganttObj.resources, true);
+        this.parent.dataOperation.updateResourceUnit(resourceData);
+        if (!isNullOrUndefined(rowResource)) {
+            var count = void 0;
+            var rowResourceLength = rowResource.length;
+            var index = void 0;
+            var resourceDataLength = resourceData.length;
+            for (count = 0; count < rowResourceLength; count++) {
+                for (index = 0; index < resourceDataLength; index++) {
+                    if (rowResource[count][resourceSettings.id] === resourceData[index][resourceSettings.id]) {
+                        resourceData[index][resourceSettings.unit] = rowResource[count][resourceSettings.unit];
+                    }
+                }
+            }
+        }
+        inputModel.dataSource = resourceData;
         var resourceInfo = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (var i = 0; i < resourceInfo.length; i++) {
@@ -14224,20 +15415,21 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             }
         }
         inputModel.rowSelected = function (args) {
-            _this.updateResourceCollection(args, resourceGridId);
+            _this.updateResourceCollection(args, resourceTreeGridId);
         };
         inputModel.rowDeselected = function (args) {
-            _this.updateResourceCollection(args, resourceGridId);
+            _this.updateResourceCollection(args, resourceTreeGridId);
         };
-        var divElement = this.createDivElement('e-resource-div', resourceGridId);
-        Grid.Inject(Selection, Filter);
-        var gridObj = new Grid(inputModel);
+        var divElement = this.createDivElement('e-resource-div', resourceTreeGridId);
+        TreeGrid.Inject(Selection, Filter, Edit$1);
+        var treeGridObj = new TreeGrid(inputModel);
         var resourceColumn = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false) {
-            gridObj.allowSelection = false;
-            gridObj.allowFiltering = false;
+            treeGridObj.allowSelection = false;
+            treeGridObj.allowFiltering = false;
+            treeGridObj.editSettings.allowEditing = false;
         }
-        gridObj.appendTo(divElement);
+        treeGridObj.appendTo(divElement);
         return divElement;
     };
     DialogEdit.prototype.renderCustomTab = function (itemName) {
@@ -14311,9 +15503,9 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 continue;
             }
             var tempObject = {
-                id: data.ganttProperties.taskId.toString(),
-                text: (data.ganttProperties.taskId.toString() + '-' + data.ganttProperties.taskName),
-                value: data.ganttProperties.taskId.toString()
+                id: data.ganttProperties.rowUniqueID.toString(),
+                text: (data.ganttProperties.rowUniqueID.toString() + '-' + data.ganttProperties.taskName),
+                value: data.ganttProperties.rowUniqueID.toString()
             };
             this.preTaskIds.push(tempObject.id);
             this.preTableCollection.push(tempObject);
@@ -14329,7 +15521,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < predecessor.length; i++) {
                 var from = predecessor[i].from.toString();
                 var preData = {};
-                if (ganttProp.taskId.toString() !== from) {
+                if (ganttProp.rowUniqueID.toString() !== from) {
                     preData.id = from;
                     for (var index = 0; index < idCollection.length; index++) {
                         if (idCollection[index].value === from) {
@@ -14349,7 +15541,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
     };
     DialogEdit.prototype.updatePredecessorDropDownData = function (ganttData) {
         var index = -1;
-        var id = ganttData.ganttProperties.taskId.toString();
+        var id = ganttData.ganttProperties.rowUniqueID.toString();
         index = this.preTaskIds.indexOf(id);
         this.preTableCollection.splice(index, 1);
         this.preTaskIds.splice(index, 1);
@@ -14360,7 +15552,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         var ganttProp = data.ganttProperties;
         if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
             var predecessor = ganttProp.predecessor;
-            var fromId_1 = ganttProp.taskId.toString();
+            var fromId_1 = ganttProp.rowUniqueID.toString();
             predecessor.forEach(function (item) {
                 if (item.from.toString() === fromId_1) {
                     var toId = item.to;
@@ -14388,6 +15580,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         return types;
     };
     DialogEdit.prototype.initiateDialogSave = function () {
+        var _this = this;
         if (this.isEdit) {
             this.parent.initiateEditAction(true);
         }
@@ -14429,10 +15622,65 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 data: this.rowData,
                 action: 'DialogEditing'
             };
-            this.parent.editModule.initiateUpdateAction(editArgs);
+            if (this.parent.viewType === 'ResourceView') {
+                if (this.isResourceUpdate) {
+                    this.parent.editModule.updateRsourceRecords(editArgs, true, this.previousResource);
+                    this.previousResource = [];
+                }
+                else {
+                    this.parent.editModule.updateRsourceRecords(editArgs);
+                }
+            }
+            else {
+                this.parent.editModule.initiateUpdateAction(editArgs);
+            }
         }
         else {
-            this.parent.editModule.addRecord(this.addedRecord, this.parent.editSettings.newRowPosition);
+            if (this.parent.viewType === 'ResourceView') {
+                var newRecords = extend({}, this.addedRecord, true);
+                var addingRecords_1 = [];
+                var unassignedTasks = void 0;
+                if (newRecords[this.parent.taskFields.resourceInfo].length) {
+                    // Block for if the added recoed has resources
+                    newRecords[this.parent.taskFields.resourceInfo].forEach(function (resourceID) {
+                        var taskIds = _this.parent.getTaskIds();
+                        addingRecords_1.push(_this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
+                    });
+                    for (var j = 0; j < addingRecords_1.length; j++) {
+                        if (!addingRecords_1[j][this.parent.taskFields.resourceInfo]) {
+                            /* tslint:disable-next-line */
+                            this.parent.isSameResourceAdd = true;
+                            this.parent.editModule.addRecord(__assign$2({}, newRecords), 'Child', this.parent.ids.indexOf(addingRecords_1[j].ganttProperties.rowUniqueID));
+                            this.parent.isSameResourceAdd = false;
+                        }
+                    }
+                }
+                else {
+                    // Block for if the added record has no resources
+                    for (var i = 0; i < this.parent.currentViewData.length; i++) {
+                        /* tslint:disable-next-line */
+                        if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                            unassignedTasks = this.parent.currentViewData[i];
+                        }
+                    }
+                    this.parent.isOnEdit = false;
+                    if (unassignedTasks) {
+                        /* tslint:disable-next-line */
+                        this.parent.editModule.addRecord(__assign$2({}, newRecords), 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
+                    }
+                    else {
+                        // Block for create the unassigned task.
+                        var record = {};
+                        record[this.parent.taskFields.id] = 0;
+                        record[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+                        this.parent.editModule.addRecord(__assign$2({}, record), 'Bottom');
+                        this.parent.editModule.addRecord(__assign$2({}, newRecords), 'Child', this.parent.ids.length - 1);
+                    }
+                }
+            }
+            else {
+                this.parent.editModule.addRecord(this.addedRecord, this.parent.editSettings.newRowPosition);
+            }
         }
         return true;
     };
@@ -14471,6 +15719,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         this.parent.setRecordValue('endDate', fromRecord.ganttProperties.endDate, toRecord.ganttProperties, true);
         this.parent.setRecordValue('duration', fromRecord.ganttProperties.duration, toRecord.ganttProperties, true);
         this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, toRecord.ganttProperties, true);
+        this.parent.setRecordValue('work', fromRecord.ganttProperties.work, toRecord.ganttProperties, true);
         if (!isNullOrUndefined(this.parent.taskFields.startDate)) {
             this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.startDate);
         }
@@ -14486,6 +15735,12 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             else {
                 this.parent.setRecordValue('isMilestone', false, this.rowData.ganttProperties, true);
             }
+        }
+        if (!isNullOrUndefined(this.parent.taskFields.work)) {
+            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.work);
+        }
+        if (!isNullOrUndefined(this.parent.taskFields.manual)) {
+            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.manual);
         }
     };
     DialogEdit.prototype.updatePredecessorTab = function (preElement) {
@@ -14533,16 +15788,27 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         }
     };
     DialogEdit.prototype.updateResourceTab = function (resourceElement) {
-        var gridObj = resourceElement.ej2_instances[0];
+        var treeGridObj = resourceElement.ej2_instances[0];
+        if (treeGridObj) {
+            treeGridObj.grid.endEdit();
+        }
         var selectedItems = this.ganttResources;
+        if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(this.rowData.ganttProperties)) {
+            if (this.ganttResources !== this.rowData.ganttProperties.resourceInfo) {
+                this.isResourceUpdate = true;
+                this.previousResource = !isNullOrUndefined(this.rowData.ganttProperties.resourceInfo) ? this.rowData.ganttProperties.resourceInfo.slice() : [];
+            }
+        }
         var idArray = [];
         if (this.isEdit) {
             this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);
             this.parent.dataOperation.updateMappingData(this.rowData, 'resourceInfo');
+            this.parent.editModule.updateResourceRelatedFields(this.rowData, 'resource');
+            this.validateDuration(this.rowData);
         }
         else {
             for (var i = 0; i < selectedItems.length; i++) {
-                idArray.push(selectedItems[i][this.parent.resourceIDMapping]);
+                idArray.push(selectedItems[i][this.parent.resourceFields.id]);
             }
             this.addedRecord[this.parent.taskFields.resourceInfo] = idArray;
         }
@@ -14770,7 +16036,7 @@ var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
         return preIdArray;
     };
     ConnectorLineEdit.prototype.predecessorValidation = function (predecessor, record) {
-        var recordId = record.taskId;
+        var recordId = record.rowUniqueID;
         var currentId;
         var currentRecord;
         for (var count = 0; count < predecessor.length; count++) {
@@ -14788,12 +16054,13 @@ var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
                     currentRecord = this_1.parent.getRecordByID(currentId).ganttProperties;
                     if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                         currentRecord.predecessor.forEach(function (value) {
-                            if (currentRecord.taskId.toString() !== value.from) {
+                            if (currentRecord.rowUniqueID.toString() !== value.from) {
                                 currentIdArray.push(value.from.toString());
                             }
                         });
                     }
-                    if (recordId.toString() === currentRecord.taskId.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
+                    /* tslint:disable-next-line */
+                    if (recordId.toString() === currentRecord.rowUniqueID.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
                         return { value: false };
                     }
                     visitedIdArray.push(currentId);
@@ -14827,7 +16094,7 @@ var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
      */
     ConnectorLineEdit.prototype.validatePredecessorRelation = function (ganttRecord, predecessorString) {
         var flag = true;
-        var recordId = ganttRecord.ganttProperties.taskId;
+        var recordId = ganttRecord.ganttProperties.rowUniqueID;
         var predecessorIdArray;
         var currentId;
         if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
@@ -14871,14 +16138,14 @@ var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
                         //  let currentPredecessor='';
                         if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                             currentRecord.predecessor.forEach(function (value, index) {
-                                if (currentRecord.taskId.toString() !== value.from) {
+                                if (currentRecord.rowUniqueID.toString() !== value.from) {
                                     currentIdArray.push(value.from.toString());
                                     currentIdIndex = index;
                                 }
                             });
                             //    currentPredecessor=currentRecord.predecessor[0].from
                         }
-                        if (recordId.toString() === currentRecord.taskId.toString() ||
+                        if (recordId.toString() === currentRecord.rowUniqueID.toString() ||
                             currentIdArray.indexOf(recordId.toString()) !== -1) {
                             return { value: false };
                         }
@@ -14981,7 +16248,7 @@ var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
         }
         var _loop_4 = function (p) {
             var record = this_3.parent.currentViewData.filter(function (item) {
-                return item && item.ganttProperties.taskId.toString() === predecessorIdArray[p].toString();
+                return item && item.ganttProperties.rowUniqueID.toString() === predecessorIdArray[p].toString();
             });
             if (record[0] && record[0].hasChildRecords) {
                 return { value: false };
@@ -15468,7 +16735,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      * Method to update default edit params and editors for Gantt
      */
     Edit$$1.prototype.updateDefaultColumnEditors = function () {
-        var customEditorColumns = [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo];
+        var customEditorColumns = [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo, 'taskType'];
         for (var i = 0; i < customEditorColumns.length; i++) {
             if (!isNullOrUndefined(customEditorColumns[i]) && customEditorColumns[i].length > 0) {
                 var column = this.parent.getColumnByField(customEditorColumns[i], this.parent.treeGridModule.treeGridColumns);
@@ -15481,6 +16748,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     }
                     else if (column.field === this.parent.taskFields.resourceInfo) {
                         this.updateResourceColumnEditor(column);
+                    }
+                    else if (column.field === 'taskType') {
+                        this.updateTaskTypeColumnEditor(column);
                     }
                 }
             }
@@ -15544,6 +16814,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      */
     Edit$$1.prototype.getResourceEditor = function () {
         var _this = this;
+        var resourceSettings = this.parent.resourceFields;
         var editObject = {};
         var editor;
         MultiSelect.Inject(CheckBoxSelection);
@@ -15551,7 +16822,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             _this.parent.treeGridModule.currentEditRow = {};
             editor = new MultiSelect({
                 dataSource: new DataManager(_this.parent.resources),
-                fields: { text: _this.parent.resourceNameMapping, value: _this.parent.resourceIDMapping },
+                fields: { text: resourceSettings.name, value: resourceSettings.id },
                 mode: 'CheckBox',
                 showDropDownIcon: true,
                 popupHeight: '350px',
@@ -15568,14 +16839,57 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             }
             for (var i = 0; i < value.length; i++) {
                 for (var j = 0; j < _this.parent.resources.length; j++) {
-                    if (_this.parent.resources[j][_this.parent.resourceIDMapping] === value[i]) {
-                        resourcesName.push(_this.parent.resources[j][_this.parent.resourceNameMapping]);
+                    if (_this.parent.resources[j][resourceSettings.id] === value[i]) {
+                        resourcesName.push(_this.parent.resources[j][resourceSettings.name]);
                         break;
                     }
                 }
             }
             _this.parent.treeGridModule.currentEditRow[_this.parent.taskFields.resourceInfo] = value;
             return resourcesName.join(',');
+        };
+        editObject.destroy = function () {
+            if (editor) {
+                editor.destroy();
+            }
+        };
+        return editObject;
+    };
+    /**
+     * Method to update task type column editor for task type
+     */
+    Edit$$1.prototype.updateTaskTypeColumnEditor = function (column) {
+        if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
+            column.editType = 'dropdownedit';
+            column.edit = this.getTaskTypeEditor();
+            var ganttColumn = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
+            ganttColumn.editType = 'dropdownedit';
+            ganttColumn.edit = column.edit;
+        }
+    };
+    /**
+     * Method to create task type custom editor
+     */
+    Edit$$1.prototype.getTaskTypeEditor = function () {
+        var _this = this;
+        var editObject = {};
+        var editor;
+        var types = [{ 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
+        editObject.write = function (args) {
+            _this.parent.treeGridModule.currentEditRow = {};
+            editor = new DropDownList({
+                dataSource: new DataManager(types),
+                fields: { value: 'Value' },
+                popupHeight: '350px',
+                value: getValue('taskType', args.rowData.ganttProperties),
+            });
+            editor.appendTo(args.element);
+        };
+        editObject.read = function (element) {
+            var value = element.ej2_instances[0].value;
+            var key = 'taskType';
+            _this.parent.treeGridModule.currentEditRow[key] = value;
+            return value;
         };
         editObject.destroy = function () {
             if (editor) {
@@ -15791,6 +17105,16 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
             }
+            else if (tasks.work === key) {
+                ganttObj.setRecordValue('work', data[key], ganttData.ganttProperties, true);
+                this.parent.dataOperation.updateMappingData(ganttData, 'work');
+                this.parent.dataOperation.updateMappingData(ganttData, 'duration');
+                this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
+            }
+            else if (key === 'taskType') {
+                ganttObj.setRecordValue('taskType', data[key], ganttData.ganttProperties, true);
+                //this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
+            }
             else if (ganttObj.customColumns.indexOf(key) !== -1) {
                 var column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
@@ -15803,9 +17127,72 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
             }
+            else if (tasks.manual === key) {
+                ganttObj.setRecordValue('isAutoSchedule', !data[key], ganttData.ganttProperties, true);
+                this.parent.setRecordValue(key, data[key], ganttData);
+                this.updateTaskScheduleModes(ganttData);
+            }
         }
         if (isScheduleValueUpdated) {
             this.validateScheduleValues(scheduleFieldNames, ganttData, data);
+        }
+    };
+    /**
+     * To update duration, work, resource unit
+     * @param currentData
+     * @param column
+     */
+    Edit$$1.prototype.updateResourceRelatedFields = function (currentData, column) {
+        var ganttProp = currentData.ganttProperties;
+        var taskType = ganttProp.taskType;
+        var isEffectDriven;
+        if (!isNullOrUndefined(ganttProp.resourceInfo)) {
+            if (ganttProp.work > 0 || column === 'work') {
+                switch (taskType) {
+                    case 'FixedUnit':
+                        if (ganttProp.resourceInfo.length &&
+                            (column === 'work' || ((column === 'resource') && isEffectDriven))) {
+                            this.parent.dataOperation.updateDurationWithWork(currentData);
+                        }
+                        else if (column === 'work') {
+                            this.parent.dataOperation.updateUnitWithWork(currentData);
+                        }
+                        else {
+                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                        }
+                        break;
+                    case 'FixedWork':
+                        if (ganttProp.resourceInfo.length === 0) {
+                            return;
+                        }
+                        else {
+                            if (column === 'duration' || column === 'endDate') {
+                                this.parent.dataOperation.updateUnitWithWork(currentData);
+                                if (ganttProp.duration === 0) {
+                                    this.parent.setRecordValue('work', 0, ganttProp);
+                                    if (!isNullOrUndefined(this.parent.taskFields.work)) {
+                                        this.parent.dataOperation.updateMappingData(currentData, 'work');
+                                    }
+                                }
+                            }
+                            else {
+                                this.parent.dataOperation.updateDurationWithWork(currentData);
+                            }
+                        }
+                        break;
+                    case 'FixedDuration':
+                        if (ganttProp.resourceInfo.length && (column === 'work' || (isEffectDriven && (column === 'resource')))) {
+                            this.parent.dataOperation.updateUnitWithWork(currentData);
+                        }
+                        else {
+                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                        }
+                        break;
+                }
+            }
+            else {
+                this.parent.dataOperation.updateWorkWithDuration(currentData);
+            }
         }
     };
     Edit$$1.prototype.validateScheduleValues = function (fieldNames, ganttData, data) {
@@ -15911,6 +17298,86 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         return isValidatePredecessor;
     };
     /**
+     * Method to update the resource records while editing
+     * @private
+     */
+    Edit$$1.prototype.updateRsourceRecords = function (args, isResourceEdited, previousResources) {
+        var _this = this;
+        var editedRecords = [];
+        var unassignedTasks;
+        if (!args.data.hasChildRecords) {
+            for (var i = 0; i < this.parent.getTaskIds().length; i++) {
+                if (this.parent.getTaskIds()[i] === 'T' + args.data.ganttProperties.taskId) {
+                    editedRecords.push(this.parent.currentViewData[i]);
+                    this.updateGanttProperties(args.data, this.parent.currentViewData[i]);
+                    this.parent.dataOperation.updateTaskData(this.parent.currentViewData[i]);
+                }
+            }
+        }
+        if (isResourceEdited) {
+            // Block for if the resources of the task gets edited.
+            var addRecords_1 = [];
+            this.deleteRow(editedRecords);
+            if (args.data.taskData[this.parent.taskFields.resourceInfo].length) {
+                args.data.taskData[this.parent.taskFields.resourceInfo].forEach(function (resourceID) {
+                    var taskIds = _this.parent.getTaskIds();
+                    addRecords_1.push(_this.parent.currentViewData[taskIds.indexOf('R' + resourceID)]);
+                });
+                for (var j = 0; j < addRecords_1.length; j++) {
+                    if (!addRecords_1[j][this.parent.taskFields.resourceInfo]) {
+                        var data = __assign$1({}, args.data);
+                        data[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
+                        /* tslint:disable-next-line */
+                        this.parent.isSameResourceAdd = true;
+                        this.parent.editModule.addRecord(data, 'Child', this.parent.ids.indexOf(addRecords_1[j].ganttProperties.rowUniqueID));
+                        this.parent.isSameResourceAdd = false;
+                    }
+                }
+            }
+            else {
+                // Block for if the added record has no resources
+                for (var i = 0; i < this.parent.currentViewData.length; i++) {
+                    if (this.parent.currentViewData[i].ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask')) {
+                        unassignedTasks = this.parent.currentViewData[i];
+                    }
+                }
+                this.parent.isOnEdit = false;
+                if (unassignedTasks) {
+                    /* tslint:disable-next-line */
+                    this.parent.editModule.addRecord(__assign$1({}, args.data), 'Child', this.parent.ids.indexOf(unassignedTasks.ganttProperties.rowUniqueID));
+                }
+                else {
+                    // Block for create the unassigned task.
+                    var unassignTask = {};
+                    unassignTask[this.parent.taskFields.id] = 0;
+                    unassignTask[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+                    this.parent.editModule.addRecord(__assign$1({}, unassignTask), 'Bottom');
+                    this.parent.editModule.addRecord(__assign$1({}, args.data), 'Child', this.parent.ids.length - 1);
+                }
+            }
+        }
+        else {
+            for (var j = 0; j < editedRecords.length; j++) {
+                var editArgs = {};
+                editArgs.data = editedRecords[j];
+                this.parent.isOnEdit = true;
+                this.initiateUpdateAction(editArgs);
+                this.parent.isOnEdit = false;
+            }
+        }
+    };
+    /**
+     * Method to copy the ganttProperties values
+     */
+    Edit$$1.prototype.updateGanttProperties = function (data, updateData) {
+        var skipProperty = ['taskId', 'uniqueID', 'rowUniqueID', 'parentId'];
+        Object.keys(data.ganttProperties).forEach(function (property) {
+            if (skipProperty.indexOf(property) === -1) {
+                updateData.ganttProperties[property] = data.ganttProperties[property];
+            }
+        });
+    };
+    /**
      * Method to update all dependent record on edit action
      * @param args
      * @private
@@ -15983,10 +17450,6 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      */
     Edit$$1.prototype.updateEditedTask = function (args) {
         var ganttRecord = args.data;
-        /** Update parent up-to zeroth level */
-        if (ganttRecord.parentItem) {
-            this.parent.dataOperation.updateParentItems(ganttRecord.parentItem);
-        }
         this.updateParentChildRecord(ganttRecord);
         if (this.parent.isConnectorLineUpdate) {
             /* validating predecessor for updated child items */
@@ -16006,6 +17469,10 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
             }
         }
+        /** Update parent up-to zeroth level */
+        if (ganttRecord.parentItem || this.parent.taskMode !== 'Auto') {
+            this.parent.dataOperation.updateParentItems(ganttRecord, true);
+        }
         this.initiateSaveAction(args);
     };
     /**
@@ -16015,8 +17482,41 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      */
     Edit$$1.prototype.updateParentChildRecord = function (data) {
         var ganttRecord = data;
-        if (ganttRecord.hasChildRecords && this.taskbarMoved) {
+        if (ganttRecord.hasChildRecords && this.taskbarMoved && this.parent.taskMode === 'Auto') {
             this.updateChildItems(ganttRecord);
+        }
+    };
+    /**
+     * To update records while changing schedule mode.
+     * @return {void}
+     * @private
+     */
+    Edit$$1.prototype.updateTaskScheduleModes = function (data) {
+        var currentValue = data[this.parent.taskFields.startDate];
+        var ganttProp = data.ganttProperties;
+        if (data.hasChildRecords && ganttProp.isAutoSchedule) {
+            this.parent.setRecordValue('startDate', ganttProp.autoStartDate, ganttProp, true);
+            this.parent.setRecordValue('endDate', ganttProp.autoEndDate, ganttProp, true);
+            this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data, true), ganttProp, true);
+            this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttProp, true), ganttProp, true);
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(ganttProp.width, ganttProp.progress), ganttProp, true);
+            this.parent.dataOperation.calculateDuration(data);
+        }
+        else if (data.hasChildRecords && !ganttProp.isAutoSchedule) {
+            this.parent.dataOperation.updateWidthLeft(data);
+            this.parent.dataOperation.calculateDuration(data);
+            this.parent.setRecordValue('autoStartDate', ganttProp.startDate, ganttProp, true);
+            this.parent.setRecordValue('autoEndDate', ganttProp.endDate, ganttProp, true);
+            this.parent.setRecordValue('autoDuration', this.parent.dataOperation.calculateAutoDuration(data), ganttProp, true);
+            this.parent.dataOperation.updateAutoWidthLeft(data);
+        }
+        else {
+            var startDate = this.parent.dateValidationModule.checkStartDate(currentValue, data.ganttProperties);
+            this.parent.setRecordValue('startDate', startDate, data.ganttProperties, true);
+            this.parent.dataOperation.updateMappingData(data, 'startDate');
+            this.parent.dateValidationModule.calculateEndDate(data);
+            this.parent.setRecordValue('taskData.' + this.parent.taskFields.manual, data[this.parent.taskFields.manual], data);
+            this.parent.dataOperation.updateWidthLeft(data);
         }
     };
     /**
@@ -16073,7 +17573,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             if (isNaN(parentProgress)) {
                 parentProgress = 0;
             }
-            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(parent.ganttProperties.width, parentProgress), parent.ganttProperties, true);
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(parent.ganttProperties.isAutoSchedule ? parent.ganttProperties.width : parent.ganttProperties.autoWidth, parentProgress), parent.ganttProperties, true);
             this.parent.setRecordValue('progress', Math.floor(parentProgress), parent.ganttProperties, true);
             this.parent.setRecordValue('totalProgress', totalProgress, parent.ganttProperties, true);
             this.parent.setRecordValue('totalDuration', totalDuration, parent.ganttProperties, true);
@@ -16114,7 +17614,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 this.parent.chartRowsModule.refreshRow(rowIndex);
             }
             if (isRefreshGrid) {
-                this.parent.treeGrid.grid.setRowData(originalData.ganttProperties.taskId, originalData);
+                this.parent.treeGrid.grid.setRowData(originalData.ganttProperties.rowUniqueID, originalData);
                 var row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;
             }
@@ -16418,13 +17918,29 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.deleteSelectedItems = function () {
         if (!this.isFromDeleteMethod) {
             var selectedRecords = [];
+            var deleteRecords = [];
             if (this.parent.selectionSettings.mode !== 'Cell') {
                 selectedRecords = this.parent.selectionModule.getSelectedRecords();
             }
             else if (this.parent.selectionSettings.mode === 'Cell') {
                 selectedRecords = this.parent.selectionModule.getCellSelectedRecords();
             }
-            this.deleteRow(selectedRecords);
+            if (this.parent.viewType === 'ResourceView') {
+                for (var i = 0; i < selectedRecords.length; i++) {
+                    /* tslint:disable-next-line */
+                    if (selectedRecords[i].parentItem) {
+                        for (var j = 0; j < this.parent.getTaskIds().length; j++) {
+                            if (this.parent.getTaskIds()[j] === 'T' + selectedRecords[i].ganttProperties.taskId) {
+                                deleteRecords.push(this.parent.currentViewData[j]);
+                            }
+                        }
+                    }
+                }
+                this.deleteRow(deleteRecords);
+            }
+            else {
+                this.deleteRow(selectedRecords);
+            }
         }
         else {
             if (this.targetedRecords.length) {
@@ -16492,6 +18008,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             rowItems.forEach(function (item) {
                 item.isDelete = true;
             });
+            if (this.parent.viewType === 'ResourceView' && !tasks.length) {
+                rowItems = [];
+            }
             for (var i = 0; i < rowItems.length; i++) {
                 var deleteRecord = rowItems[i];
                 if (this.deletedTaskDetails.indexOf(deleteRecord) !== -1) {
@@ -16536,13 +18055,13 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var predecessors = record.ganttProperties.predecessor;
         for (var i = 0; i < predecessors.length; i++) {
             var predecessor = predecessors[i];
-            if (predecessor.from.toString() === record.ganttProperties.taskId.toString()) {
+            if (predecessor.from.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 var toRecord = this.parent.getRecordByID(predecessor.to.toString());
                 var toRecordPredcessor = extend([], [], toRecord.ganttProperties.predecessor, true);
                 var index = void 0;
                 for (var t = 0; t < toRecordPredcessor.length; t++) {
-                    if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.taskId.toString()
-                        && toRecordPredcessor[t].from.toString() === record.ganttProperties.taskId.toString()) {
+                    if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.rowUniqueID.toString()
+                        && toRecordPredcessor[t].from.toString() === record.ganttProperties.rowUniqueID.toString()) {
                         index = t;
                         break;
                     }
@@ -16550,13 +18069,13 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 toRecordPredcessor.splice(index, 1);
                 this.updatePredecessorValues(toRecord, toRecordPredcessor);
             }
-            else if (predecessor.to.toString() === record.ganttProperties.taskId.toString()) {
+            else if (predecessor.to.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 var fromRecord = this.parent.getRecordByID(predecessor.from.toString());
                 var fromRecordPredcessor = extend([], [], fromRecord.ganttProperties.predecessor, true);
                 var index = void 0;
                 for (var t = 0; t < fromRecordPredcessor.length; t++) {
-                    if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.taskId.toString()
-                        && fromRecordPredcessor[t].to.toString() === record.ganttProperties.taskId.toString()) {
+                    if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.rowUniqueID.toString()
+                        && fromRecordPredcessor[t].to.toString() === record.ganttProperties.rowUniqueID.toString()) {
                         index = t;
                         break;
                     }
@@ -16658,6 +18177,10 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         deletedRecords: isBlazor() ? getTaskData(blazorArgs.data) : getTaskData(eventArgs.data),
                         changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArgs.modifiedTaskData
                     };
+                    if (isBlazor()) {
+                        var blazAddedRec = 'addedRecords';
+                        updatedData[blazAddedRec] = [];
+                    }
                     var crud = data.saveChanges(updatedData, _this.parent.taskFields.id);
                     crud.then(function (e) { return _this.deleteSuccess(args); })
                         .catch(function (e) { return _this.dmFailure(e, args); });
@@ -16685,9 +18208,12 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             if (flatIndex !== -1) {
                 flatData.splice(flatIndex, 1);
             }
-            deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
+            deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
             if (flatIndex !== -1) {
                 this.parent.ids.splice(flatIndex, 1);
+                if (this.parent.viewType === 'ResourceView') {
+                    this.parent.getTaskIds().splice(flatIndex, 1);
+                }
             }
             if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
                 this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
@@ -16755,7 +18281,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var ids = this.parent.ids;
         /*Validate Task Id of data*/
         if (obj[taskModel.id]) {
-            if (ids.indexOf(obj[taskModel.id].toString()) !== -1) {
+            if (ids.indexOf(obj[taskModel.id].toString()) !== -1 && !this.parent.isSameResourceAdd) {
                 obj[taskModel.id] = null;
             }
             else {
@@ -16796,7 +18322,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.updateNewlyAddedDataBeforeAjax = function (obj, level, rowPosition, parentItem) {
         var cAddedRecord;
         cAddedRecord = this.parent.dataOperation.createRecord(obj, level);
-        cAddedRecord.index = parseInt(cAddedRecord.ganttProperties.taskId.toString(), 10) - 1;
+        cAddedRecord.index = parseInt(cAddedRecord.ganttProperties.rowUniqueID.toString(), 10) - 1;
         if (!isNullOrUndefined(parentItem)) {
             this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), cAddedRecord);
             var pIndex = cAddedRecord.parentItem ? cAddedRecord.parentItem.index : null;
@@ -16882,7 +18408,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var predecessorIndex;
         var updatedPredecessor = [];
         for (var count = 0; count < len; count++) {
-            if (predecessorCollection[count].to === parentRecordTaskData.taskId.toString()) {
+            if (predecessorCollection[count].to === parentRecordTaskData.rowUniqueID.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].from);
                 predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
                 var predecessorCollections = void 0;
@@ -16890,7 +18416,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 predecessorCollections.splice(predecessorIndex, 1);
                 this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
             }
-            else if (predecessorCollection[count].from === parentRecordTaskData.taskId.toString()) {
+            else if (predecessorCollection[count].from === parentRecordTaskData.rowUniqueID.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].to);
                 var stringPredecessor = this.predecessorToString(childRecord.ganttProperties.predecessor, parentRecord);
                 var prdcList = (childRecord.ganttProperties.predecessorsName.toString()).split(',');
@@ -16919,7 +18445,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var count = 0;
         var length = predecessorCollection.length;
         for (count; count < length; count++) {
-            if (record.ganttProperties.taskId.toString() !== predecessorCollection[count].from) {
+            if (record.ganttProperties.rowUniqueID.toString() !== predecessorCollection[count].from) {
                 var tem = predecessorCollection[count].from + predecessorCollection[count].type;
                 predecessorCollection[count].offset =
                     isNaN(predecessorCollection[count].offset) ? 0 : predecessorCollection[count].offset;
@@ -16953,12 +18479,16 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             case 'Top':
                 flatRecords.splice(0, 0, record);
                 currentViewData.splice(0, 0, record);
-                ids.splice(0, 0, record.ganttProperties.taskId.toString()); // need to check NAN
+                ids.splice(0, 0, record.ganttProperties.rowUniqueID.toString()); // need to check NAN
                 break;
             case 'Bottom':
                 flatRecords.push(record);
                 currentViewData.push(record);
-                ids.push(record.ganttProperties.taskId.toString()); // need to check NAN
+                ids.push(record.ganttProperties.rowUniqueID.toString()); // need to check NAN
+                if (this.parent.viewType === 'ResourceView') {
+                    var taskId = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
+                    this.parent.getTaskIds().push(taskId);
+                }
                 break;
             case 'Above':
                 /*Record Updates*/
@@ -16987,7 +18517,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     recordIndex = currentItemIndex + dataChildCount + 1;
                     //Expand Add record's parent item 
                     if (!this.addRowSelectedItem.expanded) {
-                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.taskId));
+                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.rowUniqueID));
                     }
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
@@ -17020,7 +18550,11 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         /* Record collection update */
         flatRecords.splice(recordIndex, 0, record);
         currentViewData.splice(updatedCollectionIndex, 0, record);
-        ids.splice(recordIndex, 0, record.ganttProperties.taskId.toString());
+        ids.splice(recordIndex, 0, record.ganttProperties.rowUniqueID.toString());
+        if (this.parent.viewType === 'ResourceView') {
+            var taskId = record.level === 0 ? 'R' + record.ganttProperties.taskId : 'T' + record.ganttProperties.taskId;
+            this.parent.getTaskIds().splice(recordIndex, 0, taskId);
+        }
         /* data Source update */
         if (!isNullOrUndefined(parentItem)) {
             childIndex = parentItem.childRecords.indexOf(this.addRowSelectedItem);
@@ -17046,7 +18580,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      */
     Edit$$1.prototype.constructTaskAddedEventArgs = function (cAddedRecord, modifiedRecords, event) {
         var eventArgs = {};
-        eventArgs.action = event;
+        eventArgs.action = eventArgs.requestType = event;
         eventArgs.data = cAddedRecord;
         eventArgs.newTaskData = getTaskData([cAddedRecord])[0];
         eventArgs.recordIndex = cAddedRecord.index;
@@ -17103,7 +18637,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 break;
             }
             if (getValue(this.parent.taskFields.id, dataCollection[i]).toString() ===
-                this.addRowSelectedItem.ganttProperties.taskId.toString()) {
+                this.addRowSelectedItem.ganttProperties.rowUniqueID.toString()) {
                 if (rowPosition === 'Above') {
                     dataCollection.splice(i, 0, record);
                 }
@@ -17209,7 +18743,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         var crud = data_1.saveChanges(updatedData, _this.parent.taskFields.id, null, new Query());
                         crud.then(function (e) {
                             if (_this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][_this.parent.taskFields.id]) &&
-                                e.addedRecords[0][_this.parent.taskFields.id] !== args.data.ganttProperties.taskId) {
+                                e.addedRecords[0][_this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {
                                 _this.parent.setRecordValue('taskId', e.addedRecords[0][_this.parent.taskFields.id], args.data.ganttProperties, true);
                                 _this.parent.setRecordValue('taskData.' + _this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
                                 _this.parent.setRecordValue(_this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
@@ -17310,7 +18844,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var ids = this.parent.ids;
         var flatRecordsIndex = flatRecords.indexOf(this.newlyAddedRecordBackup);
         var currentViewDataIndex = currentViewData.indexOf(this.newlyAddedRecordBackup);
-        var idsIndex = ids.indexOf(this.newlyAddedRecordBackup.ganttProperties.taskId.toString());
+        var idsIndex = ids.indexOf(this.newlyAddedRecordBackup.ganttProperties.rowUniqueID.toString());
         deleteObject(this.parent.previousRecords, flatRecords[flatRecordsIndex].uniqueID);
         if (this.newlyAddedRecordBackup.parentItem) {
             var parentItem = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
@@ -17415,10 +18949,10 @@ var Resize$1 = /** @__PURE__ @class */ (function () {
 /**
  * The Filter module is used to handle filter action.
  */
-var Filter$2 = /** @__PURE__ @class */ (function () {
+var Filter$1 = /** @__PURE__ @class */ (function () {
     function Filter$$1(gantt) {
         this.parent = gantt;
-        TreeGrid.Inject(Filter$1);
+        TreeGrid.Inject(Filter);
         this.parent.treeGrid.allowFiltering = this.parent.allowFiltering;
         this.updateCustomFilters();
         this.parent.treeGrid.filterSettings = getActualProperties(this.parent.filterSettings);
@@ -18174,7 +19708,7 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
     function Toolbar$$1(parent) {
         this.predefinedItems = {};
         this.items = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
+            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
         this.parent = parent;
         this.id = this.parent.element.id;
         this.parent.on('ui-toolbarupdate', this.propertyChanged, this);
@@ -18196,7 +19730,7 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
                 this.parent.element.appendChild(this.element);
             }
             var preItems = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
-                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
+                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
             for (var _i = 0, preItems_1 = preItems; _i < preItems_1.length; _i++) {
                 var item = preItems_1[_i];
                 var itemStr = item.toLowerCase();
@@ -19008,7 +20542,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         }
         switch (this.item) {
             case 'TaskInformation':
-                this.parent.openEditDialog(Number(this.rowData.ganttProperties.taskId));
+                this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
                 break;
             case 'Above':
             case 'Below':
@@ -19032,7 +20566,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                 break;
             case 'Milestone':
             case 'ToMilestone':
-                this.parent.convertToMilestone(this.rowData.ganttProperties.taskId);
+                this.parent.convertToMilestone(this.rowData.ganttProperties.rowUniqueID);
                 break;
             case 'DeleteTask':
                 this.parent.editModule.deleteRecord(this.rowData);
@@ -19066,6 +20600,10 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                 break;
             case 'Dependency' + index:
                 this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
+                break;
+            case 'Auto':
+            case 'Manual':
+                this.parent.changeTaskMode(this.rowData);
                 break;
         }
         args.type = 'Content';
@@ -19173,14 +20711,14 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                         this.updateItemVisibility(item.text);
                     }
                     else {
-                        var subMenu = [];
+                        var subMenu_1 = [];
                         if (!this.rowData.ganttProperties.isMilestone) {
-                            subMenu.push(this.createItemModel(content, 'ToMilestone', this.getLocale('toMilestone')));
+                            subMenu_1.push(this.createItemModel(content, 'ToMilestone', this.getLocale('toMilestone')));
                         }
                         else {
-                            subMenu.push(this.createItemModel(content, 'ToTask', this.getLocale('toTask')));
+                            subMenu_1.push(this.createItemModel(content, 'ToTask', this.getLocale('toTask')));
                         }
-                        item.items = subMenu;
+                        item.items = subMenu_1;
                     }
                     break;
                 case 'DeleteDependency':
@@ -19198,6 +20736,21 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                 case 'DeleteTask':
                     if (!this.parent.editSettings.allowDeleting || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
+                    }
+                    break;
+                case 'TaskMode':
+                    var subMenu = [];
+                    if (this.parent.taskMode !== 'Custom') {
+                        this.updateItemVisibility(item.text);
+                    }
+                    else {
+                        if (this.rowData.ganttProperties.isAutoSchedule) {
+                            subMenu.push(this.createItemModel(content, 'Manual', this.getLocale('manual')));
+                        }
+                        else {
+                            subMenu.push(this.createItemModel(content, 'Auto', this.getLocale('auto')));
+                        }
+                        item.items = subMenu;
                     }
                     break;
             }
@@ -19290,6 +20843,11 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                 contentMenuItem.items = [];
                 contentMenuItem.items.push({});
                 break;
+            case 'TaskMode':
+                contentMenuItem = this.createItemModel(content, item, this.getLocale('changeScheduleMode'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
+                break;
         }
         if (contentMenuItem) {
             this.contentMenuItems.push(contentMenuItem);
@@ -19307,7 +20865,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             var predecessor = _a[_i];
             var ganttData = this.parent.getRecordByID(predecessor.from);
             var ganttProp = ganttData.ganttProperties;
-            var text = ganttProp.taskId + ' - ' + ganttProp.taskName;
+            var text = ganttProp.rowUniqueID + ' - ' + ganttProp.taskName;
             var id = 'Dependency' + increment++;
             itemModel = this.createItemModel(content, id, text);
             items.push(itemModel);
@@ -19318,7 +20876,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         return ['AutoFitAll', 'AutoFit',
             'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
             'SortAscending', 'SortDescending', 'Add',
-            'DeleteDependency', 'Convert'
+            'DeleteDependency', 'Convert', 'TaskMode'
         ];
     };
     /**
@@ -19435,6 +20993,33 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
         };
     };
     return ExcelExport$$1;
+}());
+
+/**
+ * Configures columnMenu collection in Gantt.
+ */
+var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
+    function ColumnMenu$$1(parent) {
+        TreeGrid.Inject(ColumnMenu);
+        this.parent = parent;
+    }
+    /**
+     * To get column menu collection.
+     */
+    ColumnMenu$$1.prototype.getColumnMenu = function () {
+        return this.parent.treeGrid.columnMenuModule.getColumnMenu();
+    };
+    ColumnMenu$$1.prototype.destroy = function () {
+        // column menu destroy module
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    ColumnMenu$$1.prototype.getModuleName = function () {
+        return 'columnMenu';
+    };
+    return ColumnMenu$$1;
 }());
 
 /**
@@ -19565,7 +21150,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
     };
     RowDD$$1.prototype.dropRows = function (args, isByMethod) {
         this.dropPosition = args.dropPosition;
-        if (args.dropPosition !== 'Invalid') {
+        if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             var gObj = this.parent;
             var draggedRecord = void 0;
             var droppedRecord = void 0;
@@ -19599,7 +21184,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                             }
                             this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         }
                         else {
                             count = this.parent.editModule.getChildCount(droppedRecord, 0);
@@ -19608,15 +21193,15 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                             }
                             this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+                            this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
                         }
                         draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
                         draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
                         draggedRecord.level = this.ganttData[recordIndex1].level;
                         if (draggedRecord.hasChildRecords) {
                             var level = 1;
-                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                             this.updateChildRecordLevel(draggedRecord, level);
+                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                         }
                         if (droppedRecord.parentItem) {
                             var rec = this.parent.getParentTask(droppedRecord.parentItem).childRecords;
@@ -19730,7 +21315,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             }
             this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
             this.parent.flatData.splice(childRecordsLength, 0, this.draggedRecord);
-            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.taskId.toString());
+            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
             }
@@ -19763,7 +21348,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 expanded: parentItem.expanded,
                 level: parentItem.level,
                 index: parentItem.index,
-                taskId: parentItem.ganttProperties.taskId
+                taskId: parentItem.ganttProperties.rowUniqueID
             };
             draggedRecord.parentItem = createParentItem;
             draggedRecord.parentUniqueID = droppedRecord.uniqueID;
@@ -19803,7 +21388,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         this.draggedRecord.level = this.ganttData[recordIndex1].level;
         this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
         this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
-        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.taskId.toString());
+        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
         if (this.draggedRecord.hasChildRecords) {
             var level = 1;
             this.updateChildRecord(this.draggedRecord, recordIndex1);
@@ -19854,7 +21439,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             count++;
             gObj.currentViewData.splice(count, 0, currentRecord);
             gObj.flatData.splice(count, 0, currentRecord);
-            this.parent.ids.splice(count, 0, currentRecord.ganttProperties.taskId.toString());
+            this.parent.ids.splice(count, 0, currentRecord.ganttProperties.rowUniqueID.toString());
             if (gObj.taskFields.parentID && gObj.dataSource.length > 0) {
                 gObj.dataSource.splice(count, 0, currentRecord.taskData);
             }
@@ -19884,7 +21469,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             //method to delete the record from datasource collection
             if (deletedRow && !this.parent.taskFields.parentID) {
                 var deleteRecordIDs = [];
-                deleteRecordIDs.push(deletedRow.ganttProperties.taskId.toString());
+                deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
                 this.parent.editModule.removeFromDataSource(deleteRecordIDs);
             }
             if (gObj.taskFields.parentID) {
@@ -19982,30 +21567,4000 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Configures columnMenu collection in Gantt.
+ * @hidden
  */
-var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
-    function ColumnMenu$$1(parent) {
-        TreeGrid.Inject(ColumnMenu);
+var PdfGanttTheme = /** @__PURE__ @class */ (function () {
+    function PdfGanttTheme(theme) {
+        this.theme = theme;
+        this.ganttStyle = {};
+        this.setTheme(this.ganttStyle, this.theme);
+    }
+    Object.defineProperty(PdfGanttTheme.prototype, "style", {
+        get: function () {
+            if (this.ganttStyle) {
+                return this.ganttStyle;
+            }
+            else {
+                this.setTheme(this.ganttStyle, 'Material');
+                return this.ganttStyle;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /* tslint:disable-next-line:max-func-body-length */
+    PdfGanttTheme.prototype.setTheme = function (ganttStyle, theme) {
+        this.initStyles(ganttStyle);
+        ganttStyle.columnHeader.fontSize = 9.5;
+        ganttStyle.columnHeader.fontColor = new PdfColor(0, 0, 0);
+        ganttStyle.columnHeader.fontColor.gray = 0.2;
+        ganttStyle.columnHeader.backgroundColor = new PdfColor(255, 255, 255);
+        ganttStyle.columnHeader.borderColor = new PdfColor(234, 234, 234);
+        ganttStyle.columnHeader.format.lineAlignment = 1; //Centre
+        ganttStyle.columnHeader.format.alignment = 0; //Left
+        ganttStyle.fontFamily = PdfFontFamily.Helvetica;
+        ganttStyle.cell.fontSize = 9.5;
+        ganttStyle.cell.backgroundColor = new PdfColor(255, 255, 255);
+        ganttStyle.cell.borderColor = new PdfColor(234, 234, 234);
+        ganttStyle.cell.fontColor = new PdfColor(0, 0, 0);
+        ganttStyle.cell.fontColor.gray = 0.2;
+        ganttStyle.cell.format.lineAlignment = 1; // Centre
+        ganttStyle.cell.format.alignment = 0; // Left
+        ganttStyle.footer.fontSize = 9.5;
+        ganttStyle.footer.fontStyle = 0;
+        ganttStyle.footer.format.alignment = 1; //Centre
+        ganttStyle.footer.format.lineAlignment = 1; // Middle
+        ganttStyle.timeline.fontSize = 9.5;
+        ganttStyle.timeline.fontStyle = 0;
+        ganttStyle.timeline.backgroundColor = new PdfColor(252, 252, 252);
+        ganttStyle.timeline.fontColor = new PdfColor(40, 40, 39);
+        ganttStyle.chartGridLineColor = new PdfColor(206, 206, 206);
+        ganttStyle.timeline.borderColor = new PdfColor(206, 206, 206);
+        switch (theme) {
+            case 'Bootstrap':
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(49, 122, 185);
+                ganttStyle.taskbar.progressColor = new PdfColor(33, 82, 125);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(119, 119, 119);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(85, 85, 85);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(33, 82, 125);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(85, 85, 85);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(85, 85, 85);
+                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(33, 82, 125);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(0, 0, 0);
+                break;
+            case 'Bootstrap 4':
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(0, 123, 255);
+                ganttStyle.taskbar.progressColor = new PdfColor(0, 86, 179);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(108, 117, 125);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(73, 80, 87);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 86, 179);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(73, 80, 87);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(73, 80, 87);
+                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(0, 86, 179);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(33, 37, 41);
+                break;
+            case 'Fabric':
+                ganttStyle.columnHeader.fontColor = new PdfColor(102, 102, 102);
+                ganttStyle.cell.fontColor = new PdfColor(51, 51, 51);
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(0, 120, 214);
+                ganttStyle.taskbar.progressColor = new PdfColor(0, 91, 163);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(118, 118, 118);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(80, 80, 80);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(0, 91, 163);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(80, 80, 80);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(80, 80, 80);
+                ganttStyle.footer.fontColor = new PdfColor(51, 51, 51);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(0, 69, 122);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
+                break;
+            default:
+                //chart side theme
+                ganttStyle.taskbar.taskColor = new PdfColor(88, 105, 197);
+                ganttStyle.taskbar.progressColor = new PdfColor(63, 81, 181);
+                ganttStyle.taskbar.parentTaskColor = new PdfColor(132, 132, 132);
+                ganttStyle.taskbar.parentProgressColor = new PdfColor(97, 97, 97);
+                ganttStyle.taskbar.taskBorderColor = new PdfColor(63, 81, 181);
+                ganttStyle.taskbar.parentTaskBorderColor = new PdfColor(51, 51, 51);
+                ganttStyle.taskbar.milestoneColor = new PdfColor(97, 97, 97);
+                ganttStyle.footer.fontColor = new PdfColor(0, 0, 0);
+                ganttStyle.footer.fontColor.gray = 0.2;
+                ganttStyle.connectorLineColor = new PdfColor(63, 81, 181);
+                ganttStyle.footer.backgroundColor = new PdfColor(255, 255, 255);
+                ganttStyle.taskbar.progressFontColor = new PdfColor(255, 255, 255);
+                ganttStyle.label.fontColor = new PdfColor(51, 51, 51);
+                break;
+        }
+    };
+    PdfGanttTheme.prototype.initStyles = function (ganttStyle) {
+        ganttStyle.columnHeader = {};
+        ganttStyle.columnHeader.format = new PdfStringFormat();
+        ganttStyle.cell = {};
+        ganttStyle.cell.format = new PdfStringFormat();
+        ganttStyle.timeline = {};
+        ganttStyle.footer = {};
+        ganttStyle.footer.format = new PdfStringFormat();
+        ganttStyle.label = {};
+        ganttStyle.taskbar = {};
+    };
+    return PdfGanttTheme;
+}());
+
+/**
+ * Dictionary class
+ * @private
+ * @hidden
+ */
+var TemporaryDictionary = /** @__PURE__ @class */ (function () {
+    function TemporaryDictionary() {
+        /**
+         * @hidden
+         * @private
+         */
+        this.mKeys = [];
+        /**
+         * @hidden
+         * @private
+         */
+        this.mValues = [];
+    }
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.size = function () {
+        return this.mKeys.length;
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.add = function (key, value) {
+        if (key === undefined || key === null || value === undefined || value === null) {
+            throw new ReferenceError('Provided key or value is not valid.');
+        }
+        var index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            this.mKeys.push(key);
+            this.mValues.push(value);
+            return 1;
+        }
+        else {
+            throw new RangeError('An item with the same key has already been added.');
+        }
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.keys = function () {
+        return this.mKeys;
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.values = function () {
+        return this.mValues;
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.getValue = function (key) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        var index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            throw new RangeError('No item with the specified key has been added.');
+        }
+        else {
+            return this.mValues[index];
+        }
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.setValue = function (key, value) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        var index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            this.mKeys.push(key);
+            this.mValues.push(value);
+        }
+        else {
+            this.mValues[index] = value;
+        }
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.remove = function (key) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        var index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            throw new RangeError('No item with the specified key has been added.');
+        }
+        else {
+            this.mKeys.splice(index, 1);
+            this.mValues.splice(index, 1);
+            return true;
+        }
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.containsKey = function (key) {
+        if (key === undefined || key === null) {
+            throw new ReferenceError('Provided key is not valid.');
+        }
+        var index = this.mKeys.indexOf(key);
+        if (index < 0) {
+            return false;
+        }
+        return true;
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    TemporaryDictionary.prototype.clear = function () {
+        this.mKeys = [];
+        this.mValues = [];
+    };
+    return TemporaryDictionary;
+}());
+
+/**
+ * PdfBorders.ts class for EJ2-PDF
+ */
+/**
+ * `PdfBorders` class used represents the cell border of the PDF grid.
+ */
+var PdfBorders = /** @__PURE__ @class */ (function () {
+    // Constructor
+    /**
+     * Create a new instance for `PdfBorders` class.
+     * @private
+     */
+    function PdfBorders() {
+        var defaultBorderPenLeft = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenLeft.dashStyle = PdfDashStyle.Solid;
+        var defaultBorderPenRight = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenRight.dashStyle = PdfDashStyle.Solid;
+        var defaultBorderPenTop = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenTop.dashStyle = PdfDashStyle.Solid;
+        var defaultBorderPenBottom = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenBottom.dashStyle = PdfDashStyle.Solid;
+        this.leftPen = defaultBorderPenLeft;
+        this.rightPen = defaultBorderPenRight;
+        this.topPen = defaultBorderPenTop;
+        this.bottomPen = defaultBorderPenBottom;
+    }
+    Object.defineProperty(PdfBorders.prototype, "left", {
+        // Properties
+        /**
+         * Gets or sets the `Left`.
+         * @private
+         */
+        get: function () {
+            return this.leftPen;
+        },
+        set: function (value) {
+            this.leftPen = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBorders.prototype, "right", {
+        /**
+         * Gets or sets the `Right`.
+         * @private
+         */
+        get: function () {
+            return this.rightPen;
+        },
+        set: function (value) {
+            this.rightPen = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBorders.prototype, "top", {
+        /**
+         * Gets or sets the `Top`.
+         * @private
+         */
+        get: function () {
+            return this.topPen;
+        },
+        set: function (value) {
+            this.topPen = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBorders.prototype, "bottom", {
+        /**
+         * Gets or sets the `Bottom`.
+         * @private
+         */
+        get: function () {
+            return this.bottomPen;
+        },
+        set: function (value) {
+            this.bottomPen = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBorders.prototype, "all", {
+        /**
+         * sets the `All`.
+         * @private
+         */
+        set: function (value) {
+            this.leftPen = this.rightPen = this.topPen = this.bottomPen = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBorders.prototype, "isAll", {
+        /**
+         * Gets a value indicating whether this instance `is all`.
+         * @private
+         */
+        get: function () {
+            return ((this.leftPen === this.rightPen) && (this.leftPen === this.topPen) && (this.leftPen === this.bottomPen));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfBorders, "default", {
+        /**
+         * Gets the `default`.
+         * @private
+         */
+        get: function () {
+            return new PdfBorders();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfBorders;
+}());
+var PdfPaddings = /** @__PURE__ @class */ (function () {
+    function PdfPaddings(left, right, top, bottom) {
+        /**
+         * The 'left' border padding set.
+         * @private
+         */
+        this.hasLeftPad = false;
+        /**
+         * The 'right' border padding set.
+         * @private
+         */
+        this.hasRightPad = false;
+        /**
+         * The 'top' border padding set.
+         * @private
+         */
+        this.hasTopPad = false;
+        /**
+         * The 'bottom' border padding set.
+         * @private
+         */
+        this.hasBottomPad = false;
+        if (typeof left === 'undefined') {
+            //5.76 and 0 are taken from ms-word default table margins.
+            this.leftPad = this.rightPad = 5.76;
+            //0.5 is set for top and bottom by default.
+            this.bottomPad = this.topPad = 0.5;
+        }
+        else {
+            this.leftPad = left;
+            this.rightPad = right;
+            this.topPad = top;
+            this.bottomPad = bottom;
+            this.hasLeftPad = true;
+            this.hasRightPad = true;
+            this.hasTopPad = true;
+            this.hasBottomPad = true;
+        }
+    }
+    Object.defineProperty(PdfPaddings.prototype, "left", {
+        // Properties
+        /**
+         * Gets or sets the `left` value of the edge
+         * @private
+         */
+        get: function () {
+            return this.leftPad;
+        },
+        set: function (value) {
+            this.leftPad = value;
+            this.hasLeftPad = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPaddings.prototype, "right", {
+        /**
+         * Gets or sets the `right` value of the edge.
+         * @private
+         */
+        get: function () {
+            return this.rightPad;
+        },
+        set: function (value) {
+            this.rightPad = value;
+            this.hasRightPad = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPaddings.prototype, "top", {
+        /**
+         * Gets or sets the `top` value of the edge
+         * @private
+         */
+        get: function () {
+            return this.topPad;
+        },
+        set: function (value) {
+            this.topPad = value;
+            this.hasTopPad = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPaddings.prototype, "bottom", {
+        /**
+         * Gets or sets the `bottom` value of the edge.
+         * @private
+         */
+        get: function () {
+            return this.bottomPad;
+        },
+        set: function (value) {
+            this.bottomPad = value;
+            this.hasBottomPad = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfPaddings.prototype, "all", {
+        /**
+         * Sets value to all sides `left,right,top and bottom`.s
+         * @private
+         */
+        set: function (value) {
+            this.leftPad = this.rightPad = this.topPad = this.bottomPad = value;
+            this.hasLeftPad = true;
+            this.hasRightPad = true;
+            this.hasTopPad = true;
+            this.hasBottomPad = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfPaddings;
+}());
+
+/**
+ * PdfGridStyleBase.ts class for EJ2-PDF
+ */
+/**
+ * `PdfTreeGridStyle` class provides customization of the appearance for the 'PdfGrid'.
+ */
+var PdfTreeGridStyle = /** @__PURE__ @class */ (function () {
+    //constructor
+    /**
+     * Initialize a new instance for `PdfGridStyle` class.
+     * @private
+     */
+    function PdfTreeGridStyle() {
+        this.cellSpacing = 0;
+        this.borderOverlapStyle = PdfBorderOverlapStyle.Overlap;
+        this.allowHorizontalOverflow = false;
+        this.horizontalOverflowType = PdfHorizontalOverflowType.LastPage;
+        this.cellPadding = new PdfPaddings();
+    }
+    return PdfTreeGridStyle;
+}());
+
+var __extends$18 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ *
+ */
+var PdfTreeGridLayouter = /** @__PURE__ @class */ (function (_super) {
+    __extends$18(PdfTreeGridLayouter, _super);
+    function PdfTreeGridLayouter(baseFormat) {
+        var _this = _super.call(this, baseFormat) || this;
+        _this.columnRanges = [];
+        _this.repeatRowIndex = -1;
+        _this.currentBounds = new RectangleF(0, 0, 0, 0);
+        return _this;
+    }
+    Object.defineProperty(PdfTreeGridLayouter.prototype, "treegrid", {
+        get: function () {
+            return this.elements;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PdfTreeGridLayouter.prototype.layoutInternal = function (param) {
+        if (isNullOrUndefined(param)) {
+            throw Error('Argument Null Expection');
+        }
+        this.currentPage = param.page;
+        var format = param.format;
+        if (this.currentPage !== null) {
+            this.currentPageBounds = this.currentPage.getClientSize();
+        }
+        this.currentGraphics = this.currentPage.graphics;
+        if (format !== null && format.break === PdfLayoutBreakType.FitColumnsToPage) {
+            /* tslint:disable-next-line */
+            this.currentBounds = new RectangleF(new PointF(param.bounds.x, param.bounds.y), new SizeF(this.treegrid.columns.width, this.currentGraphics.clientSize.height));
+        }
+        else {
+            this.currentBounds = new RectangleF(new PointF(param.bounds.x, param.bounds.y), this.currentGraphics.clientSize);
+        }
+        if (this.treegrid.rows.count !== 0) {
+            this.currentBounds.width = (param.bounds.width > 0) ? param.bounds.width :
+                (this.currentBounds.width - this.treegrid.rows.getRow(0).cells.getCell(0).style.borders.left.width / 2);
+        }
+        else {
+            throw Error('Please add row or header into grid');
+        }
+        this.startLocation = new PointF(param.bounds.x, param.bounds.y);
+        if (param.bounds.height > 0) {
+            this.currentBounds.height = param.bounds.height;
+        }
+        if (!this.treegrid.style.allowHorizontalOverflow && !this.treegrid.isFitToWidth) {
+            this.treegrid.measureColumnsWidth();
+            this.determineColumnDrawRanges();
+        }
+        else {
+            this.treegrid.measureColumnsWidth(this.currentBounds);
+            this.columnRanges.push([0, this.treegrid.columns.count - 1]);
+        }
+        return this.layoutOnPage(param);
+    };
+    /**
+     * `Determines the column draw ranges`.
+     * @private
+     */
+    PdfTreeGridLayouter.prototype.determineColumnDrawRanges = function () {
+        var startColumn = 0;
+        var endColumn = 0;
+        var cellWidths = 0;
+        var availableWidth = this.currentGraphics.clientSize.width - this.currentBounds.x;
+        for (var i = 0; i < this.treegrid.columns.count; i++) {
+            cellWidths += this.treegrid.columns.getColumn(i).width;
+            if (cellWidths >= availableWidth) {
+                var subWidths = 0;
+                for (var j = startColumn; j <= i; j++) {
+                    subWidths += this.treegrid.columns.getColumn(j).width;
+                    if (subWidths > availableWidth) {
+                        break;
+                    }
+                    endColumn = j;
+                }
+                this.columnRanges.push([startColumn, endColumn]);
+                startColumn = endColumn + 1;
+                //endColumn = startColumn;
+                cellWidths = (endColumn <= i) ? this.treegrid.columns.getColumn(i).width : 0;
+            }
+        }
+        this.columnRanges.push([startColumn, this.treegrid.columns.count - 1]);
+    };
+    PdfTreeGridLayouter.prototype.getFormat = function (format) {
+        var f = format;
+        return f;
+    };
+    PdfTreeGridLayouter.prototype.layoutOnPage = function (param) {
+        var format = this.getFormat(param.format);
+        var result = null;
+        var layoutedPages = new TemporaryDictionary();
+        var startPage = param.page;
+        for (var index = 0; index < this.columnRanges.length; index++) {
+            var range = this.columnRanges[index];
+            this.cellStartIndex = range[0];
+            this.cellEndIndex = range[1];
+            var rowsCount = this.treegrid.rows.count;
+            var i = 0;
+            var repeatRow = false;
+            //Draw row by row with the specified cell range.
+            for (var j = 0; j < rowsCount; j++) {
+                var row = this.treegrid.rows.getRow(j);
+                i++;
+                var originalHeight = this.currentBounds.y;
+                if (this.currentPage !== null && !layoutedPages.containsKey(this.currentPage)) {
+                    layoutedPages.add(this.currentPage, range);
+                }
+                var rowResult = this.drawRow(row);
+                //if height remains same, it is understood that row is not draw in the page.
+                if (originalHeight === this.currentBounds.y) {
+                    repeatRow = true;
+                    this.repeatRowIndex = this.treegrid.rows.rowCollection.indexOf(row);
+                }
+                else {
+                    repeatRow = false;
+                    this.repeatRowIndex = -1;
+                }
+                while (!rowResult.isFinish && startPage !== null) {
+                    if (this.treegrid.allowRowBreakAcrossPages) {
+                        //If there is no space in the current page, add new page and then draw the remaining row.
+                        this.currentPage = this.getNextPageFormat(format);
+                        if (this.treegrid.enableHeader) {
+                            this.drawHeader();
+                        }
+                        originalHeight = this.currentBounds.y;
+                        this.checkBounds(format);
+                        rowResult = this.drawRow(row);
+                    }
+                    else if (!this.treegrid.allowRowBreakAcrossPages && i < length) {
+                        this.currentPage = this.getNextPageFormat(format);
+                        if (this.treegrid.enableHeader) {
+                            this.drawHeader();
+                        }
+                        break;
+                    }
+                    else if (i >= length) {
+                        break;
+                    }
+                }
+                if (!rowResult.isFinish && startPage !== null && format.layout !== PdfLayoutType.OnePage && repeatRow) {
+                    this.startLocation.x = this.currentBounds.x;
+                    this.currentPage = this.getNextPageFormat(format);
+                    if (this.treegrid.enableHeader) {
+                        this.drawHeader();
+                    }
+                    this.startLocation.y = this.currentBounds.y;
+                    if (format.paginateBounds === new RectangleF(0, 0, 0, 0)) {
+                        this.currentBounds.x += this.startLocation.x;
+                    }
+                    if (this.currentBounds.x === PdfBorders.default.left.width / 2) {
+                        this.currentBounds.y += this.startLocation.x;
+                    }
+                    this.drawRow(row);
+                    if (this.currentPage !== null && !layoutedPages.containsKey(this.currentPage)) {
+                        layoutedPages.add(this.currentPage, range);
+                    }
+                }
+            }
+            if (this.columnRanges.indexOf(range) < this.columnRanges.length - 1 &&
+                startPage !== null && format.layout !== PdfLayoutType.OnePage) {
+                this.currentPage = this.getNextPageFormat(format);
+                this.checkBounds(format);
+            }
+        }
+        result = this.getLayoutResult();
+        if (this.treegrid.style.allowHorizontalOverflow
+            && this.treegrid.style.horizontalOverflowType === PdfHorizontalOverflowType.NextPage) {
+            this.reArrangePages(layoutedPages);
+        }
+        return result;
+    };
+    PdfTreeGridLayouter.prototype.checkBounds = function (format) {
+        var location = new PointF(PdfBorders.default.right.width / 2, PdfBorders.default.top.width / 2);
+        if (format.paginateBounds === new RectangleF(0, 0, 0, 0) && this.startLocation === location) {
+            this.currentBounds.x += this.startLocation.x;
+            this.currentBounds.y += this.startLocation.y;
+        }
+    };
+    PdfTreeGridLayouter.prototype.drawHeader = function () {
+        this.drawRow(this.treegrid.rows.getRow(0));
+    };
+    PdfTreeGridLayouter.prototype.reArrangePages = function (layoutPages) {
+        var document = this.currentPage.document;
+        var pages = [];
+        var keys = layoutPages.keys();
+        for (var i = 0; i < keys.length; i++) {
+            var page = keys[i];
+            page.section = null;
+            pages.push(page);
+            document.pages.remove(page);
+        }
+        for (var i = 0; i < layoutPages.size(); i++) {
+            var count = (layoutPages.size() / this.columnRanges.length);
+            for (var j = i; j < layoutPages.size(); j += count) {
+                var page = pages[j];
+                if (document.pages.indexOf(page) === -1) {
+                    document.pages.add(page);
+                }
+            }
+        }
+    };
+    PdfTreeGridLayouter.prototype.getNextPageFormat = function (format) {
+        var section = this.currentPage.section;
+        var nextPage = null;
+        var index = section.indexOf(this.currentPage);
+        if (index === section.count - 1) {
+            nextPage = section.add();
+        }
+        else {
+            nextPage = section.getPages()[index + 1];
+        }
+        this.currentGraphics = nextPage.graphics;
+        this.currentBounds = new RectangleF(new PointF(0, 0), nextPage.getClientSize());
+        return nextPage;
+    };
+    PdfTreeGridLayouter.prototype.getLayoutResult = function () {
+        var bounds = new RectangleF(this.startLocation, new SizeF(this.currentBounds.width, this.currentBounds.y -
+            this.startLocation.y));
+        return new PdfTreeGridLayoutResult(this.currentPage, bounds);
+    };
+    PdfTreeGridLayouter.prototype.checkIfDefaultFormat = function (format) {
+        var defaultFormat = new PdfStringFormat();
+        return (format.alignment === defaultFormat.alignment && format.characterSpacing === defaultFormat.characterSpacing &&
+            format.clipPath === defaultFormat.clipPath && format.firstLineIndent === defaultFormat.firstLineIndent &&
+            format.horizontalScalingFactor === defaultFormat.horizontalScalingFactor &&
+            format.lineAlignment === defaultFormat.lineAlignment
+            && format.lineLimit === defaultFormat.lineLimit && format.lineSpacing === defaultFormat.lineSpacing &&
+            format.measureTrailingSpaces === defaultFormat.measureTrailingSpaces && format.noClip === defaultFormat.noClip &&
+            format.paragraphIndent === defaultFormat.paragraphIndent && format.rightToLeft === defaultFormat.rightToLeft &&
+            format.subSuperScript === defaultFormat.subSuperScript && format.wordSpacing === defaultFormat.wordSpacing &&
+            format.wordWrap === defaultFormat.wordWrap);
+    };
+    PdfTreeGridLayouter.prototype.drawRow = function (row, layoutResult, height) {
+        //.. Check if required space available.
+        //.....If the row conains spans which  falls through more than one page, then draw the row to next page.
+        if (isNullOrUndefined(layoutResult)) {
+            var result = new RowLayoutResult();
+            var height_1 = row.rowBreakHeight > 0 ? row.rowBreakHeight : row.height;
+            if (height_1 > this.currentPageBounds.height) {
+                if (this.treegrid.allowRowBreakAcrossPages) {
+                    result.isFinish = true;
+                    this.drawRowWithBreak(result, row, height_1);
+                }
+                else {
+                    // If AllowRowBreakAcrossPages is not true, draw the row till it fits the page.
+                    result.isFinish = false;
+                    this.drawRow(row, result, height_1);
+                }
+            }
+            else if (this.currentBounds.y + height_1 > this.currentPageBounds.height ||
+                this.currentBounds.y + height_1 > this.currentBounds.height) {
+                if (this.repeatRowIndex > -1 && this.repeatRowIndex === row.rowIndex) {
+                    if (this.treegrid.allowRowBreakAcrossPages) {
+                        result.isFinish = true;
+                        this.drawRowWithBreak(result, row, height_1);
+                    }
+                    else {
+                        result.isFinish = false;
+                        this.drawRow(row, result, height_1);
+                    }
+                }
+                else {
+                    result.isFinish = false;
+                }
+            }
+            else {
+                result.isFinish = true;
+                this.drawRow(row, result, height_1);
+            }
+            return result;
+        }
+        else {
+            var location_1 = new PointF(this.currentBounds.x, this.currentBounds.y);
+            layoutResult.bounds = new RectangleF(location_1, new SizeF(0, 0));
+            var leftAdjustment = 0;
+            height = this.reCalculateHeight(row, height);
+            for (var i = this.cellStartIndex; i <= this.cellEndIndex; i++) {
+                var cell = row.cells.getCell(i);
+                var column = this.treegrid.columns.getColumn(i);
+                if (column.isTreeColumn) {
+                    leftAdjustment = (row.level) * 10;
+                }
+                var cancelSpans = ((i > this.cellEndIndex + 1) && (cell.columnSpan > 1));
+                if (!cancelSpans) {
+                    for (var j = 1; j < cell.columnSpan; j++) {
+                        row.cells.getCell(i + j).isCellMergeContinue = true;
+                    }
+                }
+                var size = new SizeF(column.width, height);
+                if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
+                    cell.style.format = column.format;
+                }
+                /* tslint:disable-next-line */
+                var stringResult = cell.draw(this.currentGraphics, new RectangleF(location_1, size), cancelSpans, leftAdjustment);
+                /* tslint:disable-next-line */
+                if (row.treegrid.style.allowHorizontalOverflow && (cell.columnSpan > this.cellEndIndex || i + cell.columnSpan > this.cellEndIndex + 1) && this.cellEndIndex < row.cells.count - 1) {
+                    row.rowOverflowIndex = this.cellEndIndex;
+                }
+                location_1.x += column.width;
+                leftAdjustment = 0;
+            }
+            this.currentBounds.y += height;
+            /* tslint:disable-next-line */
+            layoutResult.bounds = new RectangleF(new PointF(layoutResult.bounds.x, layoutResult.bounds.y), new SizeF(location_1.x, location_1.y));
+            return null;
+        }
+    };
+    /**
+     *
+     */
+    PdfTreeGridLayouter.prototype.drawRowWithBreak = function (result, row, height) {
+        var location = new PointF(this.currentBounds.x, this.currentBounds.y);
+        result.bounds = new RectangleF(location, new SizeF(0, 0));
+        var leftAdjustment = 0;
+        this.treegridHeight = this.currentBounds.height;
+        // Calculate the remaining height.
+        row.rowBreakHeight = this.currentBounds.y + height - this.currentBounds.height;
+        // No need to explicit break if the row height is equal to treegrid height.
+        for (var c = 0; c < row.cells.count; c++) {
+            var cell = row.cells.getCell(c);
+            var cellHeight = cell.measureHeight();
+            if (cellHeight === height && cell.value === null) {
+                row.rowBreakHeight = this.currentBounds.y + height - this.currentBounds.height;
+            }
+        }
+        for (var i = this.cellStartIndex; i <= this.cellEndIndex; i++) {
+            var column = this.treegrid.columns.getColumn(i);
+            if (column.isTreeColumn) {
+                leftAdjustment = row.level * 10;
+            }
+            var cell = row.cells.getCell(i);
+            var cancelSpans = ((cell.columnSpan + i > this.cellEndIndex + 1) && (cell.columnSpan > 1));
+            if (!cancelSpans) {
+                for (var j = 1; j < cell.columnSpan; j++) {
+                    row.cells.getCell(i + j).isCellMergeContinue = true;
+                }
+            }
+            var tHeight = this.treegridHeight > 0 ? this.treegridHeight : this.currentBounds.height;
+            var size = new SizeF(column.width, tHeight);
+            if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
+                cell.style.format = column.format;
+            }
+            /* tslint:disable-next-line */
+            var stringResult = cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+            result.isFinish = (!result.isFinish) ? result.isFinish : cell.finishedDrawingCell;
+            location.x += column.width;
+            leftAdjustment = 0;
+            this.currentBounds.y += this.treegridHeight > 0 ? this.treegridHeight : height;
+            result.bounds = new RectangleF(new PointF(result.bounds.x, result.bounds.y), new SizeF(location.x, location.y));
+        }
+    };
+    /**
+     * `Recalculate row height` for the split cell to be drawn.
+     * @private
+     */
+    PdfTreeGridLayouter.prototype.reCalculateHeight = function (row, height) {
+        var newHeight = 0;
+        for (var i = this.cellStartIndex; i <= this.cellEndIndex; i++) {
+            if (!isNullOrUndefined(row.cells.getCell(i).remainingString) ||
+                row.cells.getCell(i).remainingString === '') {
+                newHeight = Math.max(newHeight, row.cells.getCell(i).measureHeight());
+            }
+        }
+        return Math.max(height, newHeight);
+    };
+    return PdfTreeGridLayouter;
+}(ElementLayouter));
+var PdfTreeGridLayoutResult = /** @__PURE__ @class */ (function (_super) {
+    __extends$18(PdfTreeGridLayoutResult, _super);
+    /**
+     * Constructor
+     * @private
+     */
+    function PdfTreeGridLayoutResult(page, bounds) {
+        return _super.call(this, page, bounds) || this;
+    }
+    return PdfTreeGridLayoutResult;
+}(PdfLayoutResult));
+/**
+ * `PdfGridLayoutFormat` class represents a flexible grid that consists of columns and rows.
+ */
+var PdfTreeGridLayoutFormat = /** @__PURE__ @class */ (function (_super) {
+    __extends$18(PdfTreeGridLayoutFormat, _super);
+    /**
+     * Initializes a new instance of the `PdfGridLayoutFormat` class.
+     * @private
+     */
+    function PdfTreeGridLayoutFormat(baseFormat) {
+        var _this = this;
+        if (typeof baseFormat === 'undefined') {
+            _this = _super.call(this) || this;
+        }
+        else {
+            _this = _super.call(this, baseFormat) || this;
+        }
+        return _this;
+    }
+    return PdfTreeGridLayoutFormat;
+}(PdfLayoutFormat));
+
+var __extends$19 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * PdfTreeGrid Class for EJ2-PDF
+ */
+var PdfTreeGrid = /** @__PURE__ @class */ (function (_super) {
+    __extends$19(PdfTreeGrid, _super);
+    function PdfTreeGrid() {
+        var _this = _super.call(this) || this;
+        _this.treeGridSize = new SizeF(0, 0);
+        _this.treeColumnIndex = 0;
+        _this.allowRowBreakAcrossPages = true;
+        _this.enableHeader = true;
+        _this.isFitToWidth = false;
+        _this.columns = new PdfTreeGridColumnCollection(_this);
+        _this.rows = new PdfTreeGridRowCollection(_this);
+        _this.headers = new PdfTreeGridHeaderCollection(_this);
+        _this.style = new PdfTreeGridStyle();
+        _this.rowHeight = 0;
+        return _this;
+    }
+    Object.defineProperty(PdfTreeGrid.prototype, "raiseBeginCellDraw", {
+        //Properties
+        /**
+         * Gets a value indicating whether the `start cell layout event` should be raised.
+         * @private
+         */
+        get: function () {
+            return (typeof this.beginCellDraw !== 'undefined' && typeof this.beginCellDraw !== null);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGrid.prototype, "raiseEndCellDraw", {
+        /**
+         * Gets a value indicating whether the `end cell layout event` should be raised.
+         * @private
+         */
+        get: function () {
+            return (typeof this.endCellDraw !== 'undefined' && typeof this.endCellDraw !== null);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGrid.prototype, "size", {
+        get: function () {
+            if ((this.treeGridSize.width === 0 && this.treeGridSize.height === 0)) {
+                this.treeGridSize = this.calculateTreeGridSize();
+            }
+            return this.treeGridSize;
+        },
+        set: function (value) {
+            this.treeGridSize = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * `Draws` the element on the page with the specified page, 'RectangleF' class and layout format
+     * @private
+     */
+    /* tslint:disable-next-line */
+    PdfTreeGrid.prototype.draw = function (arg1, arg2, arg3, arg4) {
+        if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2.x, arg2.y);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
+            return this.drawHelper(arg1, arg2, arg3, null);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'undefined') {
+            return this.drawHelper(arg1, arg2, null);
+        }
+        else if (arg2 instanceof PointF && typeof arg2.width === 'undefined' && arg3 instanceof PdfLayoutFormat) {
+            return this.drawHelper(arg1, arg2.x, arg2.y, arg3);
+        }
+        else if (typeof arg2 === 'number' && typeof arg3 === 'number' && (arg4 instanceof PdfLayoutFormat || arg4 == null)) {
+            var width = (arg1.graphics.clientSize.width - arg2);
+            var layoutRectangle = new RectangleF(arg2, arg3, width, 0);
+            return this.drawHelper(arg1, layoutRectangle, arg4);
+        }
+        else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'boolean') {
+            return this.drawHelper(arg1, arg2, null);
+        }
+        else {
+            return this.drawHelper(arg1, arg2, arg3);
+        }
+    };
+    PdfTreeGrid.prototype.measureColumnsWidth = function (bounds) {
+        if (typeof bounds !== 'undefined') {
+            var widths = this.columns.getDefaultWidths(bounds.width - bounds.x);
+            for (var i = 0; i < this.columns.count; i++) {
+                if (this.columns.getColumn(i).width < 0) {
+                    this.columns.getColumn(i).width = widths[i];
+                }
+            }
+        }
+        else {
+            var widths = [];
+            var cellWidth = 0;
+            var rowLevel = 0;
+            // if(this.headers.count > 0){
+            //     let colCount: number = this.headers.getHeader(0).cells.count;
+            //     for(let i: number = 0; i < colCount; i++){
+            //         let rowCount: number = this.headers.count;
+            //         for(let j: number = 0; j < rowCount; j++){
+            //             let tempWidth: number = this.headers.getHeader(j).cells.getCell(i).width;
+            //             let rowWidth: number = this.initialWidth > 0 ? Math.min(this.initialWidth, tempWidth) :
+            //                 tempWidth;
+            //             cellWidth = Math.max(cellWidth, rowWidth);
+            //         }
+            //         widths.push(cellWidth);
+            //     }
+            // }
+            var colCount = this.columns.count;
+            for (var i = 0; i < colCount; i++) {
+                var rowCount = this.rows.count;
+                for (var j = 0; j < rowCount; j++) {
+                    var tempWidth = this.rows.getRow(j).cells.getCell(i).width;
+                    var rowWidth = this.initialWidth > 0 ? Math.min(this.initialWidth, tempWidth) : tempWidth;
+                    cellWidth = Math.max(cellWidth, rowWidth);
+                    cellWidth = Math.max(this.columns.getColumn(i).width, cellWidth);
+                    if (this.columns.getColumn(i).isTreeColumn) {
+                        rowLevel = Math.max(rowLevel, this.rows.getRow(j).level);
+                    }
+                }
+                if (this.columns.getColumn(i).isTreeColumn) {
+                    widths.push(cellWidth + (rowLevel * 10));
+                }
+                else {
+                    widths.push(cellWidth);
+                }
+                cellWidth = 0;
+            }
+            for (var i = 0; i < this.columns.count; i++) {
+                if (this.columns.getColumn(i).width < 0) {
+                    this.columns.getColumn(i).width = widths[i];
+                }
+            }
+        }
+    };
+    PdfTreeGrid.prototype.calculateTreeGridSize = function () {
+        var height = 0;
+        var width = this.columns.width;
+        for (var i = 0; i < this.headers.count; i++) {
+            var row = this.headers.getHeader(i);
+            height += row.height;
+        }
+        for (var i = 0; i < this.rows.count; i++) {
+            var row = this.rows.getRow(i);
+            height += row.height;
+        }
+        return new SizeF(width, height);
+    };
+    PdfTreeGrid.prototype.drawGrid = function (page, x, y, format) {
+        this.initialWidth = page.graphics.clientSize.width;
+        var layout = new RectangleF(0, 0, page.getClientSize().height, 0);
+        return this.draw(page, layout, format);
+    };
+    PdfTreeGrid.prototype.layout = function (param) {
+        if (this.rows.count !== 0) {
+            var style = this.rows.getRow(0).cells.getCell(0).style;
+            if (style.borders.left.width !== 1) {
+                var x = style.borders.left.width / 2;
+                var y = style.borders.top.width / 2;
+                if (param.bounds.x === PdfBorders.default.right.width / 2 &&
+                    param.bounds.y === PdfBorders.default.right.width / 2) {
+                    var newBound = new RectangleF(new PointF(x, y), new SizeF(this.size.width, this.size.height));
+                    param.bounds = newBound;
+                }
+            }
+        }
+        this.setSpan();
+        this.layouter = new PdfTreeGridLayouter(this);
+        var result = this.layouter.layoutInternal(param);
+        return result;
+    };
+    PdfTreeGrid.prototype.onBeginCellDraw = function (args) {
+        if (this.raiseBeginCellDraw) {
+            this.beginCellDraw(this, args);
+        }
+    };
+    PdfTreeGrid.prototype.onEndCellDraw = function (args) {
+        if (this.raiseEndCellDraw) {
+            this.endCellDraw(this, args);
+        }
+    };
+    /* tslint:disable-next-line:max-func-body-length */
+    PdfTreeGrid.prototype.setSpan = function () {
+        var colSpan = 1;
+        var rowSpan = 1;
+        var currentCellIndex = 0;
+        var currentRowIndex = 0;
+        var maxSpan = 0;
+        var rowCount = this.headers.count;
+        for (var i = 0; i < rowCount; i++) {
+            var row = this.headers.getHeader(i);
+            maxSpan = 0;
+            var colCount = row.cells.count;
+            for (var j = 0; j < colCount; j++) {
+                var cell = row.cells.getCell(j);
+                maxSpan = Math.max(maxSpan, cell.rowSpan);
+                //Skip setting span map for already coverted rows/columns.
+                if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
+                    if (cell.columnSpan + j > row.cells.count) {
+                        throw new Error('Invalid span specified at row ' + j.toString() + ' column ' + i.toString());
+                    }
+                    if (cell.rowSpan + i > this.headers.count) {
+                        throw new Error('Invalid span specified at Header ' + j.toString() + ' column ' + i.toString());
+                    }
+                    if (cell.columnSpan > 1 && cell.rowSpan > 1) {
+                        colSpan = cell.columnSpan;
+                        rowSpan = cell.rowSpan;
+                        currentCellIndex = j;
+                        currentRowIndex = i;
+                        cell.isCellMergeStart = true;
+                        cell.isRowMergeStart = true;
+                        //Set Column merges for first row
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            row.cells.getCell(currentCellIndex).isRowMergeContinue = true;
+                            row.cells.getCell(currentCellIndex).rowSpan = rowSpan;
+                            colSpan--;
+                        }
+                        currentCellIndex = j;
+                        colSpan = cell.columnSpan;
+                        //Set Row Merges and column merges foreach subsequent rows.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
+                            rowSpan--;
+                            while (colSpan > 1) {
+                                currentCellIndex++;
+                                this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                                this.headers.getHeader(currentRowIndex).cells.getCell(currentCellIndex).isRowMergeContinue = true;
+                                colSpan--;
+                            }
+                            colSpan = cell.columnSpan;
+                            currentCellIndex = j;
+                        }
+                    }
+                    else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
+                        colSpan = cell.columnSpan;
+                        currentCellIndex = j;
+                        cell.isCellMergeStart = true;
+                        //Set Column merges.
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            colSpan--;
+                        }
+                    }
+                    else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
+                        rowSpan = cell.rowSpan;
+                        currentRowIndex = i;
+                        //Set row Merges.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.headers.getHeader(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            rowSpan--;
+                        }
+                    }
+                }
+            }
+            row.maximumRowSpan = maxSpan;
+        }
+        colSpan = rowSpan = 1;
+        currentCellIndex = currentRowIndex = 0;
+        rowCount = this.rows.count;
+        for (var i = 0; i < rowCount; i++) {
+            var row = this.rows.getRow(i);
+            var colcount = row.cells.count;
+            for (var j = 0; j < colcount; j++) {
+                var cell = row.cells.getCell(j);
+                //Skip setting span map for already coverted rows/columns.
+                if (!cell.isCellMergeContinue && !cell.isRowMergeContinue && (cell.columnSpan > 1 || cell.rowSpan > 1)) {
+                    if (cell.columnSpan + j > row.cells.count) {
+                        throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
+                    }
+                    if (cell.rowSpan + i > this.rows.count) {
+                        throw new Error('Invalid span specified at row {0} column {1} ' + j.toString());
+                    }
+                    if (cell.columnSpan > 1 && cell.rowSpan > 1) {
+                        colSpan = cell.columnSpan;
+                        rowSpan = cell.rowSpan;
+                        currentCellIndex = j;
+                        currentRowIndex = i;
+                        cell.isCellMergeStart = true;
+                        cell.isRowMergeStart = true;
+                        //set Column merges for first row.
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            colSpan--;
+                        }
+                        currentCellIndex = j;
+                        colSpan = cell.columnSpan;
+                        // Set row merges and column merges for each subsequentt rows.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            rowSpan--;
+                            while (colSpan > 1) {
+                                currentCellIndex++;
+                                this.rows.getRow(currentRowIndex).cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                                colSpan--;
+                            }
+                            colSpan = cell.columnSpan;
+                            currentCellIndex = j;
+                        }
+                    }
+                    else if (cell.columnSpan > 1 && cell.rowSpan === 1) {
+                        colSpan = cell.columnSpan;
+                        currentCellIndex = j;
+                        cell.isCellMergeStart = true;
+                        //set Column merges.
+                        while (colSpan > 1) {
+                            currentCellIndex++;
+                            row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
+                            colSpan--;
+                        }
+                    }
+                    else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
+                        rowSpan = cell.rowSpan;
+                        currentRowIndex = i;
+                        //set row merges.
+                        while (rowSpan > 1) {
+                            currentRowIndex++;
+                            this.rows.getRow(currentRowIndex).cells.getCell(j).isRowMergeContinue = true;
+                            rowSpan--;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    return PdfTreeGrid;
+}(PdfLayoutElement));
+
+/**
+ *
+ */
+var PdfTreeGridCell = /** @__PURE__ @class */ (function () {
+    function PdfTreeGridCell(row) {
+        this.cellWidth = 0;
+        this.cellHeight = 0;
+        /** @private */
+        this.finishedDrawingCell = true;
+        if (isNullOrUndefined(row)) {
+            this.rowSpan = 1;
+            this.columnSpan = 1;
+        }
+        else {
+            this.row = row;
+        }
+        this.style = {};
+    }
+    Object.defineProperty(PdfTreeGridCell.prototype, "height", {
+        /**
+         * Gets the `height` of the PdfTreeGrid cell.[Read-Only].
+         * @private
+         */
+        get: function () {
+            if (this.cellHeight === 0) {
+                this.cellHeight = this.measureHeight();
+            }
+            return this.cellHeight;
+        },
+        set: function (value) {
+            this.cellHeight = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridCell.prototype, "width", {
+        /**
+         * Gets the `width` of the PdfTreeGrid cell.[Read-Only].
+         * @private
+         */
+        get: function () {
+            if (this.cellWidth === 0) {
+                this.cellWidth = this.measureWidth();
+            }
+            return Math.round(this.cellWidth);
+        },
+        set: function (value) {
+            this.cellWidth = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PdfTreeGridCell.prototype.measureWidth = function () {
+        var width = 0;
+        var layouter = new PdfStringLayouter();
+        if (typeof this.value === 'string') {
+            /* tslint:disable-next-line */
+            var font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            /* tslint:disable-next-line */
+            var slr = layouter.layout(this.value, font, this.style.format, new SizeF(Number.MAX_VALUE, Number.MAX_VALUE), false, new SizeF(0, 0));
+            width += slr.actualSize.width;
+            width += (this.style.borders.left.width + this.style.borders.right.width) * 2;
+        }
+        if (typeof this.row.treegrid.style.cellPadding.left !== 'undefined' && this.row.treegrid.style.cellPadding.hasLeftPad) {
+            width += this.row.treegrid.style.cellPadding.left;
+        }
+        if (typeof this.row.treegrid.style.cellPadding.right !== 'undefined' && this.row.treegrid.style.cellPadding.hasRightPad) {
+            width += this.row.treegrid.style.cellPadding.right;
+        }
+        width += this.row.treegrid.style.cellSpacing;
+        return width;
+    };
+    /**
+     * @private
+     */
+    /* tslint:disable */
+    PdfTreeGridCell.prototype.measureHeight = function () {
+        var rowHeight = this.row.treegrid.rowHeight;
+        var height = 0;
+        var width = this.calculateWidth();
+        width -= this.row.treegrid.style.cellPadding.right + this.row.treegrid.style.cellPadding.left;
+        width -= this.style.borders.left.width + this.style.borders.right.width;
+        var layouter = new PdfStringLayouter();
+        if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
+            var currentValue = this.value;
+            if (!this.finishedDrawingCell) {
+                currentValue = !(isNullOrUndefined(this.remainingString) || this.remainingString === '') ? this.remainingString : this.value;
+            }
+            var font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            var slr = layouter.layout(currentValue, font, this.style.format, new SizeF(width, 0), false, new SizeF(0, 0));
+            height += slr.actualSize.height;
+            height += (this.style.borders.top.width + this.style.borders.bottom.width) * 2;
+        }
+        height += this.row.treegrid.style.cellPadding.top + this.row.treegrid.style.cellPadding.bottom;
+        height += this.row.treegrid.style.cellSpacing;
+        return height > rowHeight ? height : rowHeight;
+    };
+    /* tslint:enable */
+    PdfTreeGridCell.prototype.calculateWidth = function () {
+        var cellIndex = this.row.cells.indexOf(this);
+        var columnSpan = this.columnSpan;
+        var width = 0;
+        for (var i = 0; i < columnSpan; i++) {
+            width += this.row.treegrid.columns.getColumn(cellIndex + i).width;
+        }
+        if (this.row.treegrid.columns.getColumn(cellIndex).isTreeColumn) {
+            width -= (this.row.level * 10);
+        }
+        return width;
+    };
+    /**
+     * `Draws` the specified graphics.
+     * @private
+     */
+    PdfTreeGridCell.prototype.draw = function (graphics, bounds, cancelSubsequentSpans, leftAdjustment) {
+        var result = null;
+        if (cancelSubsequentSpans) {
+            // Cancel all subsequent cell spans, if no space exists.
+            var currentCellIndex = this.row.cells.indexOf(this);
+            for (var i = currentCellIndex + 1; i <= currentCellIndex + this.columnSpan; i++) {
+                this.row.cells.getCell(i).isCellMergeContinue = false;
+                this.row.cells.getCell(i).isRowMergeContinue = false;
+            }
+            this.columnSpan = 1;
+        }
+        // Skip cells which were already covered by span map.
+        if (this.isCellMergeContinue || this.isRowMergeContinue) {
+            if (this.isCellMergeContinue && this.row.treegrid.style.allowHorizontalOverflow) {
+                if ((this.row.rowOverflowIndex > 0 && (this.row.cells.indexOf(this) !== this.row.rowOverflowIndex + 1)) ||
+                    (this.row.rowOverflowIndex === 0 && this.isCellMergeContinue)) {
+                    return result;
+                }
+                else {
+                    return result;
+                }
+            }
+        }
+        //bounds = this.adjustContentLayoutArea(bounds);
+        this.drawCellBackground(graphics, bounds);
+        var textPen = null;
+        var textBrush = new PdfSolidBrush(this.style.fontColor);
+        var font = null;
+        if (this.row.isParentRow) {
+            font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, PdfFontStyle.Bold);
+        }
+        else {
+            font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+        }
+        var innerLayoutArea = bounds;
+        if (!this.isHeaderCell) {
+            innerLayoutArea.x = innerLayoutArea.x;
+            innerLayoutArea.width = innerLayoutArea.width;
+        }
+        if (innerLayoutArea.height >= graphics.clientSize.height) {
+            // To break row to next page
+            if (this.row.treegrid.allowRowBreakAcrossPages) {
+                innerLayoutArea.height -= innerLayoutArea.y;
+                bounds.height -= bounds.y;
+            }
+            else {
+                innerLayoutArea.height = graphics.clientSize.height;
+                bounds.height = graphics.clientSize.height;
+            }
+        }
+        innerLayoutArea = this.adjustContentLayoutArea(innerLayoutArea);
+        if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
+            var temp = null;
+            if (this.finishedDrawingCell) {
+                temp = (this.remainingString === '') ? this.remainingString : this.value;
+                /* tslint:disable-next-line */
+                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
+            }
+            else {
+                /* tslint:disable-next-line */
+                graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
+            }
+            result = graphics.stringLayoutResult;
+        }
+        if (this.style.borders != null) {
+            this.drawCellBorder(graphics, bounds);
+        }
+        return result;
+    };
+    /**
+     * Draw the `cell background`.
+     * @private
+     */
+    PdfTreeGridCell.prototype.drawCellBackground = function (graphics, bounds) {
+        var backgroundBrush = new PdfSolidBrush(this.style.backgroundColor);
+        if (backgroundBrush != null) {
+            graphics.save();
+            graphics.drawRectangle(backgroundBrush, bounds.x, bounds.y, bounds.width, bounds.height);
+            graphics.restore();
+        }
+        // if (this.style.backgroundImage != null) {
+        //     let image: PdfImage = this.getBackgroundImage();
+        //     graphics.drawImage(this.style.backgroundImage, bounds.x, bounds.y, bounds.width, bounds.height);
+        // }
+    };
+    /**
+     * `Adjusts the text layout area`.
+     * @private
+     */
+    PdfTreeGridCell.prototype.adjustContentLayoutArea = function (bounds) {
+        //Add Padding value to its Cell Bounds
+        var returnBounds = new RectangleF(new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
+        var cellPadding = this.style.padding;
+        if (this.value instanceof PdfTreeGrid) {
+            var size = this.value.size;
+            if (this.style.format.alignment === PdfTextAlignment.Center) {
+                returnBounds.x += cellPadding.left + (returnBounds.width - size.width) / 2;
+                returnBounds.y += cellPadding.top + (returnBounds.height - size.height) / 2;
+            }
+            else if (this.style.format.alignment === PdfTextAlignment.Left) {
+                returnBounds.x += cellPadding.left;
+                returnBounds.y += cellPadding.top;
+            }
+            else if (this.style.format.alignment === PdfTextAlignment.Right) {
+                returnBounds.x += cellPadding.left + (returnBounds.width - size.width);
+                returnBounds.y += cellPadding.top;
+            }
+        }
+        else {
+            returnBounds.x += cellPadding.left;
+            returnBounds.y += cellPadding.top;
+        }
+        return returnBounds;
+    };
+    /**
+     * @private
+     */
+    PdfTreeGridCell.prototype.drawCellBorder = function (graphics, bounds) {
+        if (this.row.treegrid.style.borderOverlapStyle === PdfBorderOverlapStyle.Inside) {
+            bounds.x += this.style.borders.left.width;
+            bounds.y += this.style.borders.top.width;
+            bounds.width -= this.style.borders.right.width;
+            bounds.height -= this.style.borders.bottom.width;
+        }
+        if (this.style.borders.isAll && this.isHeaderCell) {
+            graphics.drawRectangle(this.style.borders.left, bounds.x, bounds.y, bounds.width, bounds.height);
+            graphics.restore();
+            return;
+        }
+        else {
+            var p1 = new PointF(bounds.x, bounds.y + bounds.height);
+            var p2 = new PointF(bounds.x, bounds.y);
+            var pen = this.style.borders.left;
+            if (this.style.borders.left.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+            p1 = new PointF(bounds.x + bounds.width, bounds.y);
+            p2 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
+            pen = this.style.borders.right;
+            if ((bounds.x + bounds.width) > (graphics.clientSize.width - (pen.width / 2))) {
+                p1 = new PointF(graphics.clientSize.width - (pen.width / 2), bounds.y);
+                p2 = new PointF(graphics.clientSize.width - (pen.width / 2), bounds.y + bounds.height);
+            }
+            if (this.style.borders.right.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+            p1 = new PointF(bounds.x, bounds.y);
+            p2 = new PointF(bounds.x + bounds.width, bounds.y);
+            pen = this.style.borders.top;
+            if (this.style.borders.top.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+            p1 = new PointF(bounds.x + bounds.width, bounds.y + bounds.height);
+            p2 = new PointF(bounds.x, bounds.y + bounds.height);
+            pen = this.style.borders.bottom;
+            if (bounds.y + bounds.height > graphics.clientSize.height - pen.width / 2) {
+                p1 = new PointF(bounds.x + bounds.width, graphics.clientSize.height - pen.width / 2);
+                p2 = new PointF(bounds.x, graphics.clientSize.height - pen.width / 2);
+            }
+            if (this.style.borders.bottom.dashStyle === PdfDashStyle.Solid) {
+                pen.lineCap = PdfLineCap.Square;
+            }
+            graphics.drawLine(pen, p1, p2);
+            graphics.restore();
+        }
+    };
+    return PdfTreeGridCell;
+}());
+/**
+ * `PdfTreeGridCellCollection` class provides access to an ordered,
+ * strongly typed collection of 'PdfTreeGridCell' objects.
+ * @private
+ */
+var PdfTreeGridCellCollection = /** @__PURE__ @class */ (function () {
+    //Constructor
+    /**
+     * Initializes a new instance of the `PdfGridCellCollection` class with the row.
+     * @private
+     */
+    function PdfTreeGridCellCollection(row) {
+        this.treegridRow = row;
+        this.cells = [];
+    }
+    //Properties
+    /**
+     * Gets the current `cell`.
+     * @private
+     */
+    PdfTreeGridCellCollection.prototype.getCell = function (index) {
+        if (index < 0 || index >= this.count) {
+            throw new Error('IndexOutOfRangeException');
+        }
+        return this.cells[index];
+    };
+    Object.defineProperty(PdfTreeGridCellCollection.prototype, "count", {
+        /**
+         * Gets the cells `count`.[Read-Only].
+         * @private
+         */
+        get: function () {
+            return this.cells.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Implementation    
+    /**
+     * `Adds` this instance.
+     * @private
+     */
+    PdfTreeGridCellCollection.prototype.add = function (cell) {
+        if (typeof cell === 'undefined') {
+            var tempcell = new PdfTreeGridCell();
+            this.add(tempcell);
+            return cell;
+        }
+        else {
+            cell.row = this.treegridRow;
+            this.cells.push(cell);
+        }
+    };
+    /**
+     * Returns the `index of` a particular cell in the collection.
+     * @private
+     */
+    PdfTreeGridCellCollection.prototype.indexOf = function (cell) {
+        return this.cells.indexOf(cell);
+    };
+    return PdfTreeGridCellCollection;
+}());
+/**
+ *
+ */
+var PdfTreeGridRow = /** @__PURE__ @class */ (function () {
+    function PdfTreeGridRow(treegrid) {
+        this.treegridRowOverflowIndex = 0;
+        this.rowHeight = 0;
+        this.rowWidth = 0;
+        /* tslint:disable-next-line */
+        this._isParentRow = false;
+        this.intendLevel = 0;
+        this.pdfTreeGrid = treegrid;
+    }
+    Object.defineProperty(PdfTreeGridRow.prototype, "cells", {
+        get: function () {
+            if (isNullOrUndefined(this.treegridCells)) {
+                this.treegridCells = new PdfTreeGridCellCollection(this);
+            }
+            return this.treegridCells;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "isParentRow", {
+        get: function () {
+            return this._isParentRow;
+        },
+        set: function (value) {
+            this._isParentRow = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "treegrid", {
+        get: function () {
+            return this.pdfTreeGrid;
+        },
+        set: function (value) {
+            this.pdfTreeGrid = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "rowBreakHeight", {
+        /**
+         * `Height` of the row yet to be drawn after split.
+         * @private
+         */
+        get: function () {
+            if (typeof this.treegridRowBreakHeight === 'undefined') {
+                this.treegridRowBreakHeight = 0;
+            }
+            return this.treegridRowBreakHeight;
+        },
+        set: function (value) {
+            this.treegridRowBreakHeight = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "rowOverflowIndex", {
+        /**
+         * `over flow index` of the row.
+         * @private
+         */
+        get: function () {
+            return this.treegridRowOverflowIndex;
+        },
+        set: function (value) {
+            this.treegridRowOverflowIndex = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "level", {
+        get: function () {
+            return this.intendLevel;
+        },
+        set: function (value) {
+            this.intendLevel = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "height", {
+        /**
+         * Gets or sets the `height` of the row.
+         * @private
+         */
+        get: function () {
+            if (this.rowHeight === 0) {
+                this.rowHeight = this.measureHeight();
+            }
+            return this.rowHeight;
+        },
+        set: function (value) {
+            this.rowHeight = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "width", {
+        /**
+         * Gets or sets the `width` of the row.
+         * @private
+         */
+        get: function () {
+            if (this.rowWidth === 0) {
+                this.rowWidth = this.measureWidth();
+            }
+            return this.rowWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRow.prototype, "rowIndex", {
+        get: function () {
+            return this.treegrid.rows.rowCollection.indexOf(this);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PdfTreeGridRow.prototype.measureWidth = function () {
+        var columns = this.treegrid.columns.columns;
+        var totalWidth = 0;
+        for (var i = 0; i < columns.length; i++) {
+            var column = columns[i];
+            totalWidth += column.width;
+        }
+        return totalWidth;
+    };
+    PdfTreeGridRow.prototype.measureHeight = function () {
+        var rowHeight = this.cells.getCell(0).height;
+        for (var i = 0; i < this.cells.count; i++) {
+            var cell = this.cells.getCell(i);
+            if (cell.columnSpan === 1 || cell.rowSpan === 1) {
+                rowHeight = Math.max(rowHeight, cell.height);
+            }
+            else {
+                rowHeight = Math.min(rowHeight, cell.height);
+            }
+            cell.height = rowHeight;
+        }
+        return rowHeight;
+    };
+    return PdfTreeGridRow;
+}());
+/**
+ * `PdfTreeGridRowCollection` class provides access to an ordered, strongly typed collection of 'PdfTreeGridRow' objects.
+ * @private
+ */
+var PdfTreeGridRowCollection = /** @__PURE__ @class */ (function () {
+    // Constructor
+    /**
+     * Initializes a new instance of the `PdfTreeGridRowCollection` class with the parent grid.
+     * @private
+     */
+    function PdfTreeGridRowCollection(treegrid) {
+        this.rows = [];
+        this.treegrid = treegrid;
+    }
+    Object.defineProperty(PdfTreeGridRowCollection.prototype, "count", {
+        //Properties
+        /**
+         * Gets the number of header in the `PdfTreeGrid`.[Read-Only].
+         * @private
+         */
+        get: function () {
+            return this.rows.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridRowCollection.prototype, "rowCollection", {
+        //Implementation
+        /**
+         * Return the row collection of the `treegrid`.
+         * @private
+         */
+        get: function () {
+            return this.rows;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PdfTreeGridRowCollection.prototype.addRow = function (row) {
+        if (typeof row === 'undefined') {
+            var row_1 = new PdfTreeGridRow(this.treegrid);
+            this.addRow(row_1);
+            return row_1;
+        }
+        else {
+            if (row.cells.count === 0) {
+                for (var i = 0; i < this.treegrid.columns.count; i++) {
+                    row.cells.add(new PdfTreeGridCell());
+                }
+            }
+            this.rows.push(row);
+        }
+    };
+    /**
+     * Return the row by index.
+     * @private
+     */
+    PdfTreeGridRowCollection.prototype.getRow = function (index) {
+        return this.rows[index];
+    };
+    return PdfTreeGridRowCollection;
+}());
+/**
+ * `PdfTreeGridHeaderCollection` class provides customization of the settings for the header.
+ * @private
+ */
+var PdfTreeGridHeaderCollection = /** @__PURE__ @class */ (function () {
+    //constructor
+    /**
+     * Initializes a new instance of the `PdfTreeGridHeaderCollection` class with the parent grid.
+     * @private
+     */
+    function PdfTreeGridHeaderCollection(treegrid) {
+        /**
+         * The array to store the `rows` of the grid header.
+         * @private
+         */
+        this.rows = [];
+        this.treegrid = treegrid;
+        this.rows = [];
+    }
+    //Properties
+    /**
+     * Gets a 'PdfTreeGridRow' object that represents the `header` row in a 'PdfGridHeaderCollection' control.[Read-Only].
+     * @private
+     */
+    PdfTreeGridHeaderCollection.prototype.getHeader = function (index) {
+        return (this.rows[index]);
+    };
+    Object.defineProperty(PdfTreeGridHeaderCollection.prototype, "count", {
+        /**
+         * Gets the `number of header` in the 'PdfGrid'.[Read-Only]
+         * @private
+         */
+        get: function () {
+            return this.rows.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Implementation
+    /**
+     * `Adds` the specified row.
+     * @private
+     */
+    PdfTreeGridHeaderCollection.prototype.add = function (row) {
+        this.rows.push(row);
+    };
+    PdfTreeGridHeaderCollection.prototype.indexOf = function (row) {
+        return this.rows.indexOf(row);
+    };
+    return PdfTreeGridHeaderCollection;
+}());
+var PdfTreeGridColumn = /** @__PURE__ @class */ (function () {
+    function PdfTreeGridColumn(treegrid) {
+        this.columnWidth = 0;
+        this.treeColumnIndex = false;
+        /* tslint:disable-next-line */
+        this._headerText = '';
+        /* tslint:disable-next-line */
+        this._field = '';
+        this.treegrid = treegrid;
+    }
+    Object.defineProperty(PdfTreeGridColumn.prototype, "headerText", {
+        get: function () {
+            return this._headerText;
+        },
+        set: function (value) {
+            this._headerText = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridColumn.prototype, "field", {
+        get: function () {
+            return this._field;
+        },
+        set: function (value) {
+            this._field = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridColumn.prototype, "width", {
+        get: function () {
+            return this.columnWidth;
+        },
+        set: function (value) {
+            this.columnWidth = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridColumn.prototype, "isTreeColumn", {
+        get: function () {
+            return this.treeColumnIndex;
+        },
+        set: function (value) {
+            this.treeColumnIndex = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridColumn.prototype, "format", {
+        /**
+         * Gets or sets the information about the text `formatting`.
+         * @private
+         */
+        get: function () {
+            if (this.stringFormat == null) {
+                this.stringFormat = new PdfStringFormat(); //GetDefaultFormat();
+            }
+            return this.stringFormat;
+        },
+        set: function (value) {
+            this.stringFormat = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PdfTreeGridColumn;
+}());
+/**
+ * `PdfTreeGridColumnCollection` class provides access to an ordered,
+ * strongly typed collection of 'PdfTreeGridColumn' objects.
+ * @private
+ */
+var PdfTreeGridColumnCollection = /** @__PURE__ @class */ (function () {
+    //properties
+    //Constructors
+    /**
+     * Initializes a new instance of the `PdfTreeGridColumnCollection` class with the parent grid.
+     * @private
+     */
+    function PdfTreeGridColumnCollection(treegrid) {
+        /**
+         * @private
+         */
+        this.internalColumns = [];
+        /**
+         * @private
+         */
+        this.columnWidth = 0;
+        this.treegrid = treegrid;
+        this.internalColumns = [];
+    }
+    //Implementation
+    /**
+     * `Add` a new column to the 'PdfGrid'.
+     * @private
+     */
+    PdfTreeGridColumnCollection.prototype.add = function (count) {
+        // public add(column : PdfGridColumn) : void
+        // public add(arg : number|PdfGridColumn) : void {
+        // if (typeof arg === 'number') {
+        for (var i = 0; i < count; i++) {
+            this.internalColumns.push(new PdfTreeGridColumn(this.treegrid));
+            for (var index = 0; index < this.treegrid.rows.count; index++) {
+                var row = this.treegrid.rows.getRow(index);
+                var cell = new PdfTreeGridCell();
+                cell.value = '';
+                row.cells.add(cell);
+            }
+        }
+        // } else {
+        //     let column : PdfGridColumn = new PdfGridColumn(this.grid);
+        //     this.columns.push(column);
+        //     return column;
+        // }
+    };
+    Object.defineProperty(PdfTreeGridColumnCollection.prototype, "count", {
+        /**
+         * Gets the `number of columns` in the 'PdfGrid'.[Read-Only].
+         * @private
+         */
+        get: function () {
+            return this.internalColumns.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridColumnCollection.prototype, "width", {
+        /**
+         * Gets the `widths`.
+         * @private
+         */
+        get: function () {
+            if (this.columnWidth === 0) {
+                this.columnWidth = this.measureColumnsWidth();
+            }
+            return this.columnWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PdfTreeGridColumnCollection.prototype, "columns", {
+        /**
+         * Gets the `array of PdfGridColumn`.[Read-Only]
+         * @private
+         */
+        get: function () {
+            return this.internalColumns;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Gets the `PdfTreeGridColumn` from the specified index.[Read-Only]
+     * @private
+     */
+    PdfTreeGridColumnCollection.prototype.getColumn = function (index) {
+        if (index >= 0 && index <= this.columns.length) {
+            return this.columns[index];
+        }
+        else {
+            throw Error('can not get the column from the index: ' + index);
+        }
+    };
+    //Implementation
+    /**
+     * `Calculates the column widths`.
+     * @private
+     */
+    PdfTreeGridColumnCollection.prototype.measureColumnsWidth = function () {
+        var totalWidth = 0;
+        this.treegrid.measureColumnsWidth();
+        for (var i = 0, count = this.internalColumns.length; i < count; i++) {
+            totalWidth += this.internalColumns[i].width;
+        }
+        return totalWidth;
+    };
+    /**
+     * Gets the `widths of the columns`.
+     * @private
+     */
+    PdfTreeGridColumnCollection.prototype.getDefaultWidths = function (totalWidth) {
+        var widths = [];
+        var subFactor = this.count;
+        for (var i = 0; i < this.count; i++) {
+            widths[i] = this.internalColumns[i].width;
+            if (this.internalColumns[i].width > 0) {
+                totalWidth -= this.internalColumns[i].width;
+                subFactor--;
+            }
+            else {
+                widths[i] = 0;
+            }
+        }
+        for (var i = 0; i < this.count; i++) {
+            var width = totalWidth / subFactor;
+            if (widths[i] <= 0) {
+                widths[i] = width;
+            }
+        }
+        return widths;
+    };
+    return PdfTreeGridColumnCollection;
+}());
+
+/**
+ * Gantt Pdf Export base library
+ */
+
+/**
+ * @hidden
+ * `ExportHelper` for `PdfExport` & `ExcelExport`
+ */
+var ExportHelper = /** @__PURE__ @class */ (function () {
+    function ExportHelper(parent) {
         this.parent = parent;
     }
     /**
-     * To get column menu collection.
-     */
-    ColumnMenu$$1.prototype.getColumnMenu = function () {
-        return this.parent.treeGrid.columnMenuModule.getColumnMenu();
-    };
-    ColumnMenu$$1.prototype.destroy = function () {
-        // column menu destroy module
-    };
-    /**
-     * For internal use only - Get the module name.
+     * @return {void}
      * @private
      */
-    ColumnMenu$$1.prototype.getModuleName = function () {
-        return 'columnMenu';
+    ExportHelper.prototype.processGridExport = function (data, gantt, props) {
+        this.flatData = data;
+        this.gantt = gantt;
+        this.exportValueFormatter = new ExportValueFormatter(this.parent.locale);
+        this.exportProps = props;
+        this.rowIndex = 0;
+        this.colIndex = 0;
+        this.columns = this.parent.treeGrid.columns;
+        this.gantt.treeColumnIndex = this.parent.treeColumnIndex;
+        this.gantt.rowHeight = pixelToPoint(this.parent.rowHeight);
+        this.gantt.style.cellPadding.left = 0;
+        this.gantt.style.cellPadding.right = 0;
+        this.ganttStyle = this.gantt.ganttStyle;
+        this.gantt.borderColor = this.ganttStyle.chartGridLineColor;
+        this.processHeaderContent();
+        this.processGanttContent();
+        this.processTimeline();
+        this.processTaskbar();
+        this.processPredecessor();
     };
-    return ColumnMenu$$1;
+    ExportHelper.prototype.processHeaderContent = function () {
+        var _this = this;
+        this.rowIndex++;
+        this.row = this.gantt.rows.addRow();
+        var index = 0;
+        this.columns.forEach(function (column) {
+            if (_this.isColumnVisible(column)) {
+                _this.processColumnHeader(column, index);
+                index++;
+            }
+        });
+    };
+    ExportHelper.prototype.processColumnHeader = function (column, index) {
+        this.gantt.columns.add(1);
+        var pdfColumn = this.gantt.columns.getColumn(index);
+        if (this.parent.treeColumnIndex === index) {
+            pdfColumn.isTreeColumn = true;
+        }
+        var width = parseInt(column.width, 10);
+        pdfColumn.width = pixelToPoint(width);
+        this.totalColumnWidth += pdfColumn.width;
+        pdfColumn.headerText = column.headerText;
+        pdfColumn.field = column.field;
+        var cell = this.row.cells.getCell(index);
+        cell.value = column.headerText;
+        cell.isHeaderCell = true;
+        var treeGridHeaderHeight = this.parent.timelineModule.isSingleTier ? 45 : 60;
+        this.row.height = pixelToPoint(treeGridHeaderHeight);
+        this.copyStyles(this.ganttStyle.columnHeader, cell, false);
+        if (column.headerTextAlign) {
+            cell.style.format.alignment = PdfTextAlignment[column.headerTextAlign];
+        }
+        var args = {
+            cell: cell,
+            style: cell.style,
+            value: cell.value,
+            column: column
+        };
+        if (this.parent.pdfColumnHeaderQueryCellInfo) {
+            this.parent.trigger('pdfColumnHeaderQueryCellInfo', args);
+        }
+        cell.value = args.value;
+    };
+    ExportHelper.prototype.isColumnVisible = function (column) {
+        var visibleColumn = column.visible || this.exportProps.includeHiddenColumn;
+        var templateColumn = !isNullOrUndefined(column.template) ? false : true;
+        return (visibleColumn && templateColumn);
+    };
+    ExportHelper.prototype.processGanttContent = function () {
+        var _this = this;
+        if (this.flatData.length === 0) {
+            this.renderEmptyGantt();
+        }
+        else {
+            this.flatData.forEach(function (data) {
+                _this.row = _this.gantt.rows.addRow();
+                if (data.hasChildRecords) {
+                    _this.gantt.rows.getRow(_this.rowIndex).isParentRow = true;
+                    _this.processRecordRow(data);
+                }
+                else {
+                    _this.processRecordRow(data);
+                }
+                _this.rowIndex++;
+            });
+        }
+    };
+    /**
+     * Method for processing the timeline details
+     */
+    ExportHelper.prototype.processTimeline = function () {
+        var timelineSettings = this.parent.timelineModule;
+        this.gantt.chartHeader.topTierHeight = this.gantt.chartHeader.bottomTierHeight
+            = (this.parent.timelineModule.isSingleTier ? 45 : 60 / 2);
+        this.gantt.chartHeader.topTierCellWidth = timelineSettings.topTierCellWidth;
+        this.gantt.chartHeader.bottomTierCellWidth = timelineSettings.bottomTierCellWidth;
+        this.gantt.chartHeader.topTier = extend([], [], timelineSettings.topTierCollection, true);
+        this.gantt.chartHeader.bottomTier = extend([], [], timelineSettings.bottomTierCollection, true);
+        this.gantt.chartHeader.width = timelineSettings.totalTimelineWidth;
+        this.gantt.chartHeader.height = this.gantt.rows.getRow(0).height;
+        this.gantt.timelineStartDate = new Date(timelineSettings.timelineStartDate.getTime());
+    };
+    /**
+     * Method for create the predecessor collection for rendering
+     */
+    ExportHelper.prototype.processPredecessor = function () {
+        var _this = this;
+        if (isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
+            this.parent.predecessorModule.createConnectorLinesCollection(this.parent.currentViewData);
+            this.parent.updatedConnectorLineCollection.forEach(function (data) {
+                var predecessor = _this.gantt.predecessor.add();
+                predecessor.parentLeft = data.parentLeft;
+                predecessor.childLeft = data.childLeft;
+                predecessor.parentWidth = data.parentWidth;
+                predecessor.childWidth = data.childWidth;
+                predecessor.parentIndex = data.parentIndex;
+                predecessor.childIndex = data.childIndex;
+                predecessor.rowHeight = data.rowHeight;
+                predecessor.type = data.type;
+                predecessor.milestoneParent = data.milestoneParent;
+                predecessor.milestoneChild = data.milestoneChild;
+                predecessor.lineWidth = _this.parent.connectorLineWidth > 5 ? pixelToPoint(5) : pixelToPoint(_this.parent.connectorLineWidth);
+                predecessor.connectorLineColor = _this.ganttStyle.connectorLineColor;
+                _this.gantt.predecessorCollection.push(predecessor);
+            });
+        }
+    };
+    ExportHelper.prototype.processRecordRow = function (data) {
+        var _this = this;
+        this.colIndex = 0;
+        this.row.level = data.level;
+        this.columns.forEach(function (column) {
+            if (_this.isColumnVisible(column)) {
+                _this.processRecordCell(data, column, _this.row);
+                _this.colIndex++;
+            }
+        });
+    };
+    ExportHelper.prototype.processRecordCell = function (data, column, row) {
+        var cell = row.cells.getCell(this.colIndex);
+        var taskFields = this.parent.taskFields;
+        var ganttProps = data.ganttProperties;
+        if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
+            cell.value = this.parent.getFormatedDate(data[column.field]);
+        }
+        else if (column.field === taskFields.duration) {
+            cell.value = this.parent.getDurationString(ganttProps.duration, ganttProps.durationUnit);
+        }
+        else if (column.field === taskFields.resourceInfo) {
+            cell.value = ganttProps.resourceNames;
+        }
+        else {
+            cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
+        }
+        cell.isHeaderCell = false;
+        cell.style.padding = new PdfPaddings();
+        this.copyStyles(this.ganttStyle.cell, cell, row.isParentRow);
+        if (this.colIndex !== this.parent.treeColumnIndex) {
+            cell.style.format.alignment = PdfTextAlignment[column.textAlign];
+        }
+        else {
+            cell.style.format.paragraphIndent = cell.row.level * 10;
+        }
+        if (this.parent.pdfQueryCellInfo != null) {
+            var args = {
+                data: data,
+                value: cell.value,
+                column: column,
+                style: cell.style,
+                cell: cell
+            };
+            args.value = this.exportValueFormatter.formatCellValue(args);
+            if (this.parent.pdfQueryCellInfo) {
+                this.parent.trigger('pdfQueryCellInfo', args);
+            }
+            cell.value = args.value;
+        }
+    };
+    /**
+     * Method for create the taskbar collection for rendering
+     */
+    ExportHelper.prototype.processTaskbar = function () {
+        var _this = this;
+        this.flatData.forEach(function (data) {
+            var taskbar = _this.gantt.taskbar.add();
+            var ganttProp = data.ganttProperties;
+            taskbar.left = ganttProp.left;
+            taskbar.progress = ganttProp.progress;
+            taskbar.isScheduledTask = isScheduledTask(ganttProp);
+            if (isScheduledTask) {
+                if (isNullOrUndefined(ganttProp.endDate) && isNullOrUndefined(ganttProp.duration)) {
+                    taskbar.unscheduledTaskBy = 'startDate';
+                }
+                else if (isNullOrUndefined(ganttProp.startDate) && isNullOrUndefined(ganttProp.duration)) {
+                    taskbar.unscheduledTaskBy = 'endDate';
+                }
+                else {
+                    taskbar.unscheduledTaskBy = 'duration';
+                    taskbar.unscheduleStarteDate = _this.parent.dateValidationModule.getValidStartDate(data.ganttProperties);
+                    taskbar.unscheduleEndDate = _this.parent.dateValidationModule.getValidEndDate(data.ganttProperties);
+                }
+            }
+            else {
+                taskbar.unscheduleStarteDate = null;
+                taskbar.unscheduleEndDate = null;
+            }
+            taskbar.startDate = ganttProp.startDate;
+            taskbar.endDate = ganttProp.endDate;
+            taskbar.width = ganttProp.width;
+            taskbar.height = _this.parent.chartRowsModule.taskBarHeight;
+            taskbar.isMilestone = ganttProp.isMilestone;
+            taskbar.milestoneColor = new PdfColor(_this.ganttStyle.taskbar.milestoneColor);
+            taskbar.isParentTask = data.hasChildRecords;
+            if (ganttProp.isMilestone) {
+                taskbar.height = ganttProp.width;
+            }
+            if (data[_this.parent.labelSettings.leftLabel]) {
+                taskbar.leftTaskLabel.value = data[_this.parent.labelSettings.leftLabel].toString();
+            }
+            if (data[_this.parent.labelSettings.rightLabel]) {
+                taskbar.rightTaskLabel.value = data[_this.parent.labelSettings.rightLabel].toString();
+            }
+            var reduceLeft = ganttProp.isMilestone ? Math.floor(_this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+            taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
+            taskbar.fontFamily = _this.ganttStyle.fontFamily;
+            taskbar.progressWidth = ganttProp.progressWidth;
+            taskbar.labelColor = new PdfColor(_this.ganttStyle.label.fontColor);
+            taskbar.progressFontColor = new PdfColor(_this.ganttStyle.taskbar.progressFontColor);
+            if (taskbar.isParentTask) {
+                taskbar.taskColor = new PdfColor(_this.ganttStyle.taskbar.parentTaskColor);
+                taskbar.taskBorderColor = new PdfColor(_this.ganttStyle.taskbar.parentTaskBorderColor);
+                taskbar.progressColor = new PdfColor(_this.ganttStyle.taskbar.parentProgressColor);
+            }
+            else {
+                taskbar.taskColor = new PdfColor(_this.ganttStyle.taskbar.taskColor);
+                taskbar.taskBorderColor = new PdfColor(_this.ganttStyle.taskbar.taskBorderColor);
+                taskbar.progressColor = new PdfColor(_this.ganttStyle.taskbar.progressColor);
+            }
+            taskbar.gridLineColor = new PdfColor(_this.ganttStyle.chartGridLineColor);
+            _this.gantt.taskbarCollection.push(taskbar);
+            var taskStyle = {};
+            taskStyle.progressFontColor = taskbar.progressFontColor;
+            taskStyle.taskColor = taskbar.taskColor;
+            taskStyle.taskBorderColor = taskbar.taskBorderColor;
+            taskStyle.progressColor = taskbar.progressColor;
+            taskStyle.milestoneColor = taskbar.milestoneColor;
+            var args = {
+                taskbar: taskStyle,
+                data: data
+            };
+            if (_this.parent.pdfQueryTaskbarInfo) {
+                _this.parent.trigger('pdfQueryTaskbarInfo', args);
+            }
+        });
+    };
+    /**
+     * set text alignment of each columns in exporting grid
+     * @private
+     */
+    ExportHelper.prototype.getHorizontalAlignment = function (textAlign, format) {
+        if (format === undefined) {
+            format = new PdfStringFormat();
+        }
+        switch (textAlign) {
+            case 'Right':
+                format.alignment = PdfTextAlignment.Right;
+                break;
+            case 'Center':
+                format.alignment = PdfTextAlignment.Center;
+                break;
+            case 'Justify':
+                format.alignment = PdfTextAlignment.Justify;
+                break;
+            case 'Left':
+                format.alignment = PdfTextAlignment.Left;
+                break;
+        }
+        return format;
+    };
+    /**
+     * set vertical alignment of each columns in exporting grid
+     * @private
+     */
+    ExportHelper.prototype.getVerticalAlignment = function (verticalAlign, format, textAlign) {
+        if (format === undefined) {
+            format = new PdfStringFormat();
+            format = this.getHorizontalAlignment(textAlign, format);
+        }
+        switch (verticalAlign) {
+            case 'Bottom':
+                format.lineAlignment = PdfVerticalAlignment.Bottom;
+                break;
+            case 'Middle':
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                break;
+            case 'Top':
+                format.lineAlignment = PdfVerticalAlignment.Top;
+                break;
+        }
+        return format;
+    };
+    ExportHelper.prototype.getFontFamily = function (fontFamily) {
+        switch (fontFamily) {
+            case 'TimesRoman':
+                return 2;
+            case 'Courier':
+                return 1;
+            case 'Symbol':
+                return 3;
+            case 'ZapfDingbats':
+                return 4;
+            default:
+                return 0;
+        }
+    };
+    /* tslint:disable-next-line:no-any */
+    ExportHelper.prototype.getFont = function (content) {
+        if (content.font) {
+            return content.font;
+        }
+        var fontSize = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
+        var fontFamily = (!isNullOrUndefined(content.style.fontFamily)) ?
+            (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.TimesRoman;
+        var fontStyle = PdfFontStyle.Regular;
+        if (!isNullOrUndefined(content.style.bold) && content.style.bold) {
+            fontStyle |= PdfFontStyle.Bold;
+        }
+        if (!isNullOrUndefined(content.style.italic) && content.style.italic) {
+            fontStyle |= PdfFontStyle.Italic;
+        }
+        if (!isNullOrUndefined(content.style.underline) && content.style.underline) {
+            fontStyle |= PdfFontStyle.Underline;
+        }
+        if (!isNullOrUndefined(content.style.strikeout) && content.style.strikeout) {
+            fontStyle |= PdfFontStyle.Strikeout;
+        }
+        return new PdfStandardFont(fontFamily, fontSize, fontStyle);
+    };
+    ExportHelper.prototype.renderEmptyGantt = function () {
+        var row = this.gantt.rows.addRow();
+        row.cells.getCell(0).isHeaderCell = false;
+        row.height = pixelToPoint(this.parent.rowHeight);
+        this.copyStyles(this.ganttStyle.columnHeader, row.cells.getCell(0), row.isParentRow);
+        var count = this.columns.length;
+        this.mergeCells(0, 0, count);
+    };
+    ExportHelper.prototype.mergeCells = function (rowIndex, colIndex, lastColIndex) {
+        this.gantt.rows.getRow(rowIndex).cells.getCell(colIndex).columnSpan = lastColIndex;
+    };
+    ExportHelper.prototype.copyStyles = function (style, cell, isParentRow) {
+        cell.style.fontColor = new PdfColor(style.fontColor);
+        cell.style.backgroundColor = new PdfColor(style.backgroundColor);
+        cell.style.borderColor = new PdfColor(style.borderColor);
+        cell.style.fontSize = style.fontSize;
+        cell.style.fontStyle = style.fontStyle;
+        cell.style.format = extend({}, {}, style.format, true);
+        cell.style.borders = new PdfBorders();
+        cell.style.borders.all = new PdfPen(cell.style.borderColor);
+        cell.style.padding = new PdfPaddings();
+        cell.style.padding.all = 10;
+    };
+    /**
+     * @return {void}
+     * @private
+     */
+    ExportHelper.prototype.initializePdf = function (pdfDoc) {
+        this.pdfDoc = pdfDoc;
+        var widths = [];
+        var treeColumnIndex = 0;
+        var tWidth = (this.pdfDoc.pageSettings.width - 82);
+        if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82)) {
+            this.gantt.style.allowHorizontalOverflow = true;
+        }
+        else if ((tWidth / this.columns.length) < widths[treeColumnIndex]) {
+            this.gantt.columns.getColumn(treeColumnIndex).width = widths[treeColumnIndex];
+        }
+        var section = this.pdfDoc.sections.add();
+        if (this.exportProps.enableFooter || isNullOrUndefined(this.exportProps.enableFooter)) {
+            //code for draw the footer content            
+            var bounds = new RectangleF(0, 0, pdfDoc.pageSettings.width, 35);
+            var pen = new PdfPen(this.ganttStyle.chartGridLineColor);
+            var footer = new PdfPageTemplateElement(bounds);
+            var footerBrush = new PdfSolidBrush(this.ganttStyle.footer.backgroundColor);
+            footer.graphics.drawRectangle(pen, footerBrush, 0, 0, pdfDoc.pageSettings.width, 35);
+            /* tslint:disable-next-line */
+            var font = new PdfStandardFont(this.ganttStyle.fontFamily, this.ganttStyle.footer.fontSize, this.ganttStyle.footer.fontStyle);
+            var brush = new PdfSolidBrush(this.ganttStyle.footer.fontColor);
+            var pageNumber = new PdfPageNumberField(font);
+            var count = new PdfPageCountField(font, brush);
+            var compositeField = new PdfCompositeField(font, brush, 'Page {0}', pageNumber, count);
+            compositeField.stringFormat = this.ganttStyle.footer.format;
+            compositeField.bounds = bounds;
+            compositeField.draw(footer.graphics, new PointF(0, 0));
+            pdfDoc.template.bottom = footer;
+        }
+    };
+    return ExportHelper;
+}());
+/**
+ * @hidden
+ * `ExportValueFormatter` for `PdfExport` & `ExcelExport`
+ */
+var ExportValueFormatter = /** @__PURE__ @class */ (function () {
+    function ExportValueFormatter(culture) {
+        this.valueFormatter = new ValueFormatter(culture);
+        this.internationalization = new Internationalization(culture);
+    }
+    /* tslint:disable-next-line:no-any */
+    ExportValueFormatter.prototype.returnFormattedValue = function (args, customFormat) {
+        if (!isNullOrUndefined(args.value) && args.value) {
+            return this.valueFormatter.getFormatFunction(customFormat)(args.value);
+        }
+        else {
+            return '';
+        }
+    };
+    /**
+     * @private
+     */
+    /* tslint:disable-next-line:no-any */
+    ExportValueFormatter.prototype.formatCellValue = function (args) {
+        if (args.isForeignKey) {
+            args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
+        }
+        if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
+            return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
+        }
+        else if (args.column.type === 'boolean') {
+            return args.value ? 'true' : 'false';
+            /* tslint:disable-next-line:max-line-length */
+        }
+        else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {
+            if (typeof args.value === 'string') {
+                args.value = new Date(args.value);
+            }
+            if (typeof args.column.format === 'string') {
+                var format = void 0;
+                if (args.column.type === 'date') {
+                    format = { type: 'date', skeleton: args.column.format };
+                }
+                else if (args.column.type === 'time') {
+                    format = { type: 'time', skeleton: args.column.format };
+                }
+                else {
+                    format = { type: 'dateTime', skeleton: args.column.format };
+                }
+                return this.returnFormattedValue(args, format);
+            }
+            else {
+                if (args.column.format instanceof Object && args.column.format.type === undefined) {
+                    return (args.value.toString());
+                }
+                else {
+                    /* tslint:disable-next-line:max-line-length */
+                    var customFormat = void 0;
+                    if (args.column.type === 'date') {
+                        /* tslint:disable-next-line:max-line-length */
+                        customFormat = { type: args.column.format.type, format: args.column.format.format, skeleton: args.column.format.skeleton };
+                    }
+                    else if (args.column.type === 'time') {
+                        customFormat = { type: 'time', format: args.column.format.format, skeleton: args.column.format.skeleton };
+                    }
+                    else {
+                        customFormat = { type: 'dateTime', format: args.column.format.format, skeleton: args.column.format.skeleton };
+                    }
+                    return this.returnFormattedValue(args, customFormat);
+                }
+            }
+        }
+        else {
+            if ((!isNullOrUndefined(args.column.type) && !isNullOrUndefined(args.value)) || !isNullOrUndefined(args.value)) {
+                return (args.value).toString();
+            }
+            else {
+                return '';
+            }
+        }
+    };
+    return ExportValueFormatter;
+}());
+
+var __assign$4 = (undefined && undefined.__assign) || function () {
+    __assign$4 = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign$4.apply(this, arguments);
+};
+/**
+ * @hidden
+ */
+var PdfGanttTaskbarCollection = /** @__PURE__ @class */ (function () {
+    function PdfGanttTaskbarCollection(parent) {
+        /**
+         * @private
+         */
+        this.leftTaskLabel = {};
+        /**
+         * @private
+         */
+        this.rightTaskLabel = {};
+        this.startPage = -1;
+        this.endPage = -1;
+        this.parent = parent;
+    }
+    PdfGanttTaskbarCollection.prototype.add = function () {
+        return new PdfGanttTaskbarCollection(this.parent);
+    };
+    /**
+     * Get the next PDF page
+     */
+    PdfGanttTaskbarCollection.prototype.GetNextPage = function (page) {
+        var section = page.section;
+        var nextPage = null;
+        var index = section.indexOf(page);
+        if (index === section.count - 1) {
+            nextPage = section.add();
+        }
+        else {
+            nextPage = section.getPages()[index + 1];
+        }
+        return nextPage;
+    };
+    /**
+     * Draw the taskbar, chart back ground
+     * @private
+     */
+    /* tslint:disable */
+    PdfGanttTaskbarCollection.prototype.drawTaskbar = function (page, startPoint, detail, cumulativeWidth, rowHeight, taskbar) {
+        var taskGraphics = page.graphics;
+        var isNextPage = false;
+        var pageSize = page.getClientSize();
+        var taskPen = new PdfPen(taskbar.gridLineColor, 0.5);
+        var yPoint = startPoint.y + rowHeight;
+        //code for while current pdf page is exceed 
+        if (yPoint > pageSize.height) {
+            page = this.GetNextPage(page);
+            taskGraphics = page.graphics;
+            startPoint.y = 0;
+            if (this.parent.pdfExportModule.gantt.enableHeader) {
+                this.parent.pdfExportModule.gantt.chartHeader.drawPageTimeline(page, startPoint, detail);
+                startPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+            }
+            yPoint = startPoint.y + rowHeight;
+            isNextPage = true;
+        }
+        this.drawLeftLabel(page, startPoint, detail, cumulativeWidth);
+        //Draw Taskbar
+        var font = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
+        var fontColor = null;
+        var fontBrush = new PdfSolidBrush(this.progressFontColor);
+        var progressFormat = new PdfStringFormat();
+        progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
+        progressFormat.alignment = PdfTextAlignment.Right;
+        var pageIndex = -1;
+        if (!taskbar.isMilestone) {
+            var taskbarPen = new PdfPen(taskbar.taskBorderColor);
+            var taskBrush = new PdfSolidBrush(taskbar.taskColor);
+            var progressPen = new PdfPen(taskbar.progressColor);
+            var progressBrush = new PdfSolidBrush(taskbar.progressColor);
+            var adjustHeight = pixelToPoint((this.parent.rowHeight - this.height) / 2.0);
+            pageIndex = page.section.indexOf(page);
+            var startDate = isNullOrUndefined(this.unscheduleStarteDate) ? this.startDate : this.unscheduleStarteDate;
+            var endDate = isNullOrUndefined(this.unscheduleEndDate) ? this.endDate : this.unscheduleEndDate;
+            //Task start and end date both are in the range of header split up start and end date
+            if (detail.startDate <= startDate && endDate <= detail.endDate) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = __assign$4({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
+                    this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
+                }
+                else {
+                    taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
+                    if (this.progress > 0 && this.progressWidth > 0 && this.isScheduledTask) {
+                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
+                        if (!isNullOrUndefined(this.parent.taskFields.progress) && !isNullOrUndefined(this.parent.labelSettings.taskLabel)) {
+                            taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(this.progressWidth), pixelToPoint(this.height), progressFormat);
+                        }
+                    }
+                }
+                this.isCompleted = true;
+                this.startPage = pageIndex;
+                this.endPage = pageIndex;
+            }
+            //Task start date is in the range of header split up start and end date
+            else if (detail.startDate <= startDate && detail.endDate >= startDate && !(endDate < detail.endDate)) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = __assign$4({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                var renderWidth = 0;
+                this.width = this.width - (detail.totalWidth - (this.left - cumulativeWidth));
+                renderWidth = (detail.totalWidth - (this.left - cumulativeWidth));
+                if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
+                    this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
+                }
+                else {
+                    taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
+                    if (this.progress > 0 && this.progressWidth > 0 && this.isScheduledTask) {
+                        var progressBoundsWidth = 0;
+                        if (this.progressWidth <= renderWidth) {
+                            progressBoundsWidth = this.progressWidth;
+                        }
+                        else {
+                            progressBoundsWidth = renderWidth;
+                        }
+                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                        this.progressWidth -= progressBoundsWidth;
+                        if (this.progressWidth === 0 && this.progress !== 0 && this.parent.labelSettings.taskLabel) {
+                            taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(progressBoundsWidth), pixelToPoint(this.height), progressFormat);
+                        }
+                    }
+                }
+                this.left = 0;
+                this.isCompleted = false;
+                this.startPage = pageIndex;
+            }
+            //Task end date is in the range of header split up start and end date 
+            else if (endDate <= detail.endDate && detail.startDate <= endDate && !this.isCompleted) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = __assign$4({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
+                if (this.isScheduledTask) {
+                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
+                    if (this.progressWidth === 0 && this.progress !== 0) {
+                        taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(this.progressWidth), pixelToPoint(this.height), progressFormat);
+                    }
+                }
+                this.isCompleted = true;
+                this.endPage = pageIndex;
+            }
+            //Header splitup start and end date with in the task start and end date.
+            //So the task is takes entire width of page.
+            else if (startDate < detail.startDate && endDate > detail.endDate) {
+                if (!this.isStartPoint) {
+                    this.taskStartPoint = __assign$4({}, startPoint);
+                    this.isStartPoint = true;
+                }
+                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(detail.totalWidth), pixelToPoint(taskbar.height));
+                if (this.progress > 0 && this.progressWidth > 0 && this.isScheduledTask) {
+                    var progressBoundsWidth = 0;
+                    if (this.progressWidth <= detail.totalWidth) {
+                        progressBoundsWidth = this.progressWidth;
+                    }
+                    else {
+                        progressBoundsWidth = detail.totalWidth;
+                    }
+                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                    this.progressWidth -= progressBoundsWidth;
+                    if (this.progressWidth === 0 && this.progress !== 0) {
+                        taskGraphics.drawString(this.progress.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(progressBoundsWidth), pixelToPoint(this.height), progressFormat);
+                    }
+                }
+                this.isCompleted = false;
+                this.width -= detail.totalWidth;
+            }
+        }
+        else {
+            this.drawMilestone(page, startPoint, detail, cumulativeWidth);
+        }
+        this.drawRightLabel(page, startPoint, detail, cumulativeWidth);
+        return isNextPage;
+    };
+    /* tslint:enable */
+    /**
+     * Draw task right side label
+     */
+    PdfGanttTaskbarCollection.prototype.drawRightLabel = function (page, startPoint, detail, cumulativeWidth) {
+        var graphics = page.graphics;
+        var left;
+        if (this.rightTaskLabel.isLeftCalculated) {
+            left = this.rightTaskLabel.left;
+        }
+        else {
+            left = pixelToPoint(this.rightTaskLabel.left);
+        }
+        var actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+        if (detail.startPoint <= left && left < detail.endPoint &&
+            !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
+            var result = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
+            var font = new PdfStandardFont(this.fontFamily, 9);
+            var adjustHeight = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
+            var point = new PointF(actualLeft, startPoint.y + adjustHeight);
+            var size = new SizeF(result.actualSize.width, result.actualSize.height);
+            var labelBounds = new RectangleF(point, size);
+            var labelFormat = new PdfStringFormat();
+            labelFormat.alignment = PdfTextAlignment.Right;
+            labelFormat.lineAlignment = PdfVerticalAlignment.Middle;
+            if (result.actualSize.width > 0) {
+                var fontColor = null;
+                var fontBrush = new PdfSolidBrush(this.labelColor);
+                /* tslint:disable-next-line */
+                graphics.drawString(result.lines[0].text, font, fontColor, fontBrush, labelBounds.x, labelBounds.y, result.actualSize.width, result.actualSize.height, labelFormat);
+                if (result.remainder !== null) {
+                    this.rightTaskLabel.value = result.remainder;
+                    this.rightTaskLabel.left = detail.endPoint;
+                    this.rightTaskLabel.isLeftCalculated = true;
+                }
+                else {
+                    this.rightTaskLabel.isCompleted = true;
+                }
+            }
+            else {
+                this.rightTaskLabel.left = detail.endPoint;
+            }
+        }
+    };
+    /**
+     * Draw task left task label
+     */
+    PdfGanttTaskbarCollection.prototype.drawLeftLabel = function (page, startPoint, detail, cumulativeWidth) {
+        var graphics = page.graphics;
+        var left;
+        if (!isNullOrUndefined(this.leftTaskLabel.value)) {
+            var labelLeft = 0;
+            labelLeft = this.left;
+            if (!this.leftTaskLabel.isLeftCalculated) {
+                var result = this.getWidth(this.leftTaskLabel.value, Number.MAX_VALUE, 15);
+                var reduceLeft = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+                left = pixelToPoint(labelLeft - reduceLeft) - result.actualSize.width;
+                this.leftTaskLabel.left = left;
+                this.leftTaskLabel.isLeftCalculated = true;
+            }
+            else {
+                left = this.leftTaskLabel.left;
+            }
+            var actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
+                && !this.leftTaskLabel.isCompleted) {
+                var result = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
+                var font = new PdfStandardFont(this.fontFamily, 10);
+                var adjustHeight = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
+                var rightLabelpoint = new PointF(actualLeft, startPoint.y + adjustHeight);
+                var rightLabelSize = new SizeF(result.actualSize.width, result.actualSize.height);
+                var rightLabelBounds = new RectangleF(rightLabelpoint, rightLabelSize);
+                var rightLabelFormat = new PdfStringFormat();
+                rightLabelFormat.alignment = PdfTextAlignment.Right;
+                rightLabelFormat.lineAlignment = PdfVerticalAlignment.Middle;
+                if (result.actualSize.width > 0) {
+                    var fontColor = null;
+                    var fontBrush = new PdfSolidBrush(this.labelColor);
+                    /* tslint:disable-next-line */
+                    graphics.drawString(result.lines[0].text, font, fontColor, fontBrush, rightLabelBounds.x, rightLabelBounds.y, result.actualSize.width, result.actualSize.height, rightLabelFormat);
+                    if (result.remainder !== null) {
+                        this.leftTaskLabel.value = result.remainder;
+                        this.leftTaskLabel.left = detail.endPoint;
+                    }
+                    else {
+                        this.leftTaskLabel.isCompleted = true;
+                    }
+                }
+                else {
+                    this.leftTaskLabel.left = detail.endPoint;
+                }
+            }
+        }
+    };
+    PdfGanttTaskbarCollection.prototype.getWidth = function (value, width, height) {
+        var font = new PdfStandardFont(this.fontFamily, 10);
+        var layouter = new PdfStringLayouter();
+        var progressFormat = new PdfStringFormat();
+        progressFormat.alignment = PdfTextAlignment.Left;
+        progressFormat.wordWrap = PdfWordWrapType.Character;
+        progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
+        /* tslint:disable-next-line */
+        var result = layouter.layout(value, font, progressFormat, new SizeF(width, height), false, new SizeF(width, height));
+        return result;
+    };
+    /**
+     * Draw Unscheduled Task
+     */
+    PdfGanttTaskbarCollection.prototype.drawUnscheduledTask = function (taskGraphics, startPoint, cumulativeWidth, adjustHeight) {
+        var taskBrush = new PdfSolidBrush(this.taskColor);
+        /* tslint:disable-next-line */
+        taskGraphics.drawRectangle(taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(3), pixelToPoint(this.height));
+    };
+    /**
+     * Draw milestone task
+     */
+    PdfGanttTaskbarCollection.prototype.drawMilestone = function (page, startPoint, detail, cumulativeWidth) {
+        if (detail.startDate <= this.startDate && this.startDate <= detail.endDate) {
+            var taskGraphics = page.graphics;
+            var pageIndex = page.section.indexOf(page);
+            this.taskStartPoint = __assign$4({}, startPoint);
+            var milestonePen = new PdfPen(this.milestoneColor);
+            var adjustHeight = pixelToPoint(((this.parent.rowHeight - this.height) / 2.0));
+            var milestoneBrush = new PdfSolidBrush(this.milestoneColor);
+            taskGraphics.save(); //saving graphics state  
+            var height = Math.floor(this.parent.chartRowsModule.taskBarHeight * 0.6);
+            /* tslint:disable-next-line */
+            taskGraphics.translateTransform(startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+            taskGraphics.rotateTransform(45); //apply rotation
+            /* tslint:disable-next-line */
+            taskGraphics.drawRectangle(milestonePen, milestoneBrush, 0, 0, pixelToPoint(height), pixelToPoint(height));
+            taskGraphics.restore(); //restoring graphics state 
+            this.endPage = this.startPage = pageIndex;
+        }
+    };
+    return PdfGanttTaskbarCollection;
+}());
+
+/**
+ *
+ */
+var PdfTimeline = /** @__PURE__ @class */ (function () {
+    function PdfTimeline(gantt) {
+        this.width = 0;
+        this.gantt = gantt;
+        this.parent = gantt.parent;
+        this.topTierPoint = new PointF();
+        this.bottomTierPoint = new PointF();
+        this.topTierIndex = 0;
+        this.bottomTierIndex = 0;
+        this.prevTopTierIndex = 0;
+        this.prevBottomTierIndex = 0;
+    }
+    /**
+     * @private
+     * @param page
+     * @param startPoint
+     * @param detail
+     */
+    PdfTimeline.prototype.drawTimeline = function (page, startPoint, detail) {
+        var remainWidth = Math.floor(detail.totalWidth);
+        var renderWidth = 0;
+        var headerGraphics = page.graphics;
+        this.topTierPoint.x = startPoint.x;
+        this.topTierPoint.y = startPoint.y;
+        this.prevTopTierIndex = this.topTierIndex;
+        this.prevBottomTierIndex = this.bottomTierIndex;
+        while (remainWidth > 0) {
+            var pHeader = this.topTier[this.topTierIndex];
+            if (this.topTier.length > this.topTierIndex) {
+                var isCompleted = false;
+                if (!this.topTier[this.topTierIndex].isFinished) {
+                    if (remainWidth >= pHeader.width) {
+                        renderWidth = pHeader.width;
+                        pHeader.isFinished = true;
+                        pHeader.completedWidth = renderWidth;
+                        isCompleted = true;
+                    }
+                    else {
+                        renderWidth = remainWidth;
+                        isCompleted = false;
+                        pHeader.isFinished = false;
+                        pHeader.width = pHeader.width - remainWidth;
+                        pHeader.completedWidth = renderWidth;
+                    }
+                }
+                //Primary header Event Arguments
+                /* tslint:disable-next-line */
+                this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, renderWidth, pHeader.value, true);
+                this.topTierPoint.x += pixelToPoint(renderWidth);
+                remainWidth -= renderWidth;
+                if (isCompleted) {
+                    this.topTierIndex++;
+                }
+            }
+            else {
+                remainWidth = 0;
+            }
+        }
+        remainWidth = Math.floor(detail.totalWidth);
+        var height = this.parent.timelineModule.isSingleTier ? 0 : this.topTierHeight;
+        this.bottomTierPoint = new PointF(startPoint.x, pixelToPoint(startPoint.y + height));
+        while (remainWidth > 0) {
+            var secondHeader = this.bottomTier[this.bottomTierIndex];
+            if (this.bottomTier.length > this.bottomTierIndex) {
+                var isCompleted = true;
+                var width = secondHeader.width;
+                if (remainWidth < width) {
+                    width = remainWidth;
+                    isCompleted = false;
+                    secondHeader.completedWidth = width;
+                }
+                //Secondary header Event Arguments
+                /* tslint:disable-next-line */
+                this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false);
+                this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(width);
+                remainWidth -= width;
+                secondHeader.completedWidth = width;
+                if (isCompleted) {
+                    this.bottomTierIndex++;
+                }
+            }
+            else {
+                remainWidth = 0;
+            }
+        }
+    };
+    /**
+     * Draw the specific gantt chart side header when the taskbar exceeds the page
+     * @private
+     */
+    PdfTimeline.prototype.drawPageTimeline = function (page, startPoint, detail) {
+        var headerGraphics = page.graphics;
+        this.topTierPoint = extend({}, {}, startPoint, true);
+        for (var index = this.prevTopTierIndex; index <= this.topTierIndex; index++) {
+            if (this.topTier.length > index) {
+                var pHeader = this.topTier[index];
+                if (pHeader.completedWidth > 0) {
+                    //Primary header Event Arguments
+                    /* tslint:disable-next-line */
+                    this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, pHeader.completedWidth, pHeader.value, true);
+                    this.topTierPoint.x += pixelToPoint(pHeader.completedWidth);
+                }
+            }
+        }
+        this.bottomTierPoint.x = startPoint.x;
+        this.bottomTierPoint.y = pixelToPoint(startPoint.y + this.topTierHeight);
+        for (var index = this.prevBottomTierIndex; index <= this.bottomTierIndex; index++) {
+            if (this.bottomTier.length > index) {
+                var secondHeader = this.bottomTier[index];
+                if (secondHeader.completedWidth > 0) {
+                    //Secondary header Event Arguments
+                    /* tslint:disable-next-line */
+                    this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, secondHeader.width, secondHeader.value, false);
+                    this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
+                }
+            }
+        }
+    };
+    /**
+     * Method to trigger pdf query timelinecell event
+     */
+    /* tslint:disable-next-line */
+    PdfTimeline.prototype.triggerQueryTimelinecell = function (page, x, y, height, width, value, isTopTier) {
+        var graphics = page.graphics;
+        var timelineStyle = {};
+        var ganttStyle = this.gantt.ganttStyle;
+        timelineStyle.borderColor = new PdfColor(ganttStyle.timeline.borderColor);
+        timelineStyle.fontColor = new PdfColor(ganttStyle.timeline.fontColor);
+        timelineStyle.fontSize = ganttStyle.timeline.fontSize;
+        timelineStyle.fontStyle = ganttStyle.timeline.fontStyle;
+        timelineStyle.backgroundColor = new PdfColor(ganttStyle.timeline.backgroundColor);
+        if (ganttStyle.timeline.padding) {
+            timelineStyle.padding = ganttStyle.timeline.padding;
+        }
+        var format = new PdfStringFormat();
+        if (isNullOrUndefined(ganttStyle.timeline.format)) {
+            if (isTopTier) {
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                format.alignment = PdfTextAlignment.Left;
+            }
+            else {
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                format.alignment = PdfTextAlignment.Center;
+                format.wordWrap = PdfWordWrapType.Character;
+            }
+        }
+        else {
+            format = ganttStyle.timeline.format;
+        }
+        timelineStyle.format = format;
+        var eventArgs = {
+            timelineCell: timelineStyle,
+            value: value,
+        };
+        if (this.parent.pdfQueryTimelineCellInfo) {
+            this.parent.trigger('pdfQueryTimelineCellInfo', eventArgs);
+        }
+        var e = eventArgs.timelineCell;
+        var rectPen = new PdfPen(eventArgs.timelineCell.borderColor);
+        var rectBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
+        graphics.drawRectangle(rectPen, rectBrush, x, y, pixelToPoint(width), pixelToPoint(height));
+        var font = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
+        var textBrush = new PdfSolidBrush(eventArgs.timelineCell.fontColor);
+        var pLeft = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
+        var pTop = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;
+        /* tslint:disable-next-line */
+        graphics.drawString(eventArgs.value, font, null, textBrush, x + pLeft, y + pTop, pixelToPoint(width), pixelToPoint(height), e.format);
+    };
+    return PdfTimeline;
+}());
+
+var __assign$5 = (undefined && undefined.__assign) || function () {
+    __assign$5 = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign$5.apply(this, arguments);
+};
+/**
+ * @hidden
+ */
+var PdfGanttPredecessor = /** @__PURE__ @class */ (function () {
+    function PdfGanttPredecessor(parent, pdfGantt) {
+        this.parent = parent;
+        this.pdfGantt = pdfGantt;
+    }
+    /**
+     * @hidden
+     */
+    PdfGanttPredecessor.prototype.add = function () {
+        return new PdfGanttPredecessor(this.parent);
+    };
+    /**
+     * Calculate the predecesor line point and draw the predecessor
+     * @return {void}
+     * @private
+     */
+    PdfGanttPredecessor.prototype.drawPredecessor = function (pdfGantt) {
+        this.pdfGantt = pdfGantt;
+        var pages = pdfGantt.result.page.section.getPages();
+        var parentTask = pdfGantt.taskbarCollection[this.parentIndex];
+        var childTask = pdfGantt.taskbarCollection[this.childIndex];
+        var startPage = new PdfPage();
+        var endPage = new PdfPage();
+        var predecessorType = '';
+        var parentPageData;
+        var childPageData;
+        var parentY = 0;
+        var childY = 0;
+        switch (this.type) {
+            case 'FS':
+                if (childTask.startPage > -1 && parentTask.endPage > -1) {
+                    startPage = pages[parentTask.endPage];
+                    endPage = pages[childTask.startPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                            predecessorType = 'FSType1';
+                        }
+                        else {
+                            predecessorType = 'FSType2';
+                        }
+                    }
+                    else {
+                        if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                            predecessorType = 'FSType3';
+                        }
+                        else {
+                            predecessorType = 'FSType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+            case 'SF':
+                if (childTask.endPage > -1 && parentTask.startPage > -1) {
+                    startPage = pages[parentTask.startPage];
+                    endPage = pages[childTask.endPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft > this.childLeft + this.childWidth) {
+                            predecessorType = 'SFType1';
+                        }
+                        else {
+                            predecessorType = 'SFType2';
+                        }
+                    }
+                    else {
+                        if (this.parentLeft > this.childLeft + this.childWidth) {
+                            predecessorType = 'SFType3';
+                        }
+                        else {
+                            predecessorType = 'SFType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+            case 'FF':
+                if (childTask.endPage > -1 && parentTask.endPage > -1) {
+                    startPage = pages[parentTask.endPage];
+                    endPage = pages[childTask.endPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.endPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                            predecessorType = 'FFType1';
+                        }
+                        else {
+                            predecessorType = 'FFType2';
+                        }
+                    }
+                    else {
+                        if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                            predecessorType = 'FFType3';
+                        }
+                        else {
+                            predecessorType = 'FFType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+            case 'SS':
+                if (childTask.startPage > -1 && parentTask.startPage > -1) {
+                    startPage = pages[parentTask.startPage];
+                    endPage = pages[childTask.startPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.startPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft >= this.childLeft) {
+                            predecessorType = 'SSType1';
+                        }
+                        else {
+                            predecessorType = 'SSType2';
+                        }
+                    }
+                    else {
+                        if (this.parentLeft >= this.childLeft) {
+                            predecessorType = 'SSType3';
+                        }
+                        else {
+                            predecessorType = 'SSType4';
+                        }
+                    }
+                }
+                else {
+                    return;
+                }
+                break;
+        }
+        var midPoint = Math.round((this.parent.rowHeight - 1) / 2.0);
+        midPoint = pixelToPoint(midPoint);
+        /* tslint:disable-next-line */
+        var point1, point2, point3, point4, point5, point6;
+        point1 = point2 = point3 = point4 = point5 = point6 = new PointF();
+        var parentTaskpoint = __assign$5({}, parentTask.taskStartPoint);
+        var childTaskpoint = __assign$5({}, childTask.taskStartPoint);
+        parentY = parentTaskpoint.y + parentPageData.startPoint.y;
+        childY = childTaskpoint.y + childPageData.startPoint.y;
+        var ffpoint1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth), parentY + midPoint);
+        var sspoint1 = new PointF(pixelToPoint(this.parentLeft) - 1, parentY + midPoint);
+        var ffpoint3 = new PointF(pixelToPoint(this.childLeft - 20), childY + midPoint);
+        var ffpoint4 = new PointF(pixelToPoint(this.childLeft - 6 - this.lineWidth) - 1, childY + midPoint);
+        var sspoint4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 6 + this.lineWidth) + 1, childY + midPoint);
+        switch (predecessorType) {
+            case 'FSType1':
+            case 'FSType3':
+                point1 = ffpoint1;
+                point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+                point3 = ffpoint3;
+                point4 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'FSType2':
+                point1 = ffpoint1;
+                point2 = new PointF(point1.x + 10, parentY + midPoint);
+                point3 = new PointF(point1.x + 10, childY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft - 20), childY + 2);
+                point5 = ffpoint3;
+                point6 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+            case 'FSType4':
+                point1 = ffpoint1;
+                point2 = new PointF(point1.x + 10, parentY + midPoint);
+                point3 = new PointF(point1.x + 10, parentY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft - 20), parentY + 2);
+                point5 = ffpoint3;
+                point6 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+            case 'FFType1':
+            case 'FFType3':
+                point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'FFType2':
+            case 'FFType4':
+                point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth + 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SSType1':
+            case 'SSType3':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SSType2':
+            case 'SSType4':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = ffpoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SFType1':
+            case 'SFType3':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + midPoint);
+                point4 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+                break;
+            case 'SFType2':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, childY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), childY + 2);
+                point5 = new PointF(point4.x, childY + midPoint);
+                point6 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+            case 'SFType4':
+                point1 = sspoint1;
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point3 = new PointF(point2.x, parentY + 2);
+                point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + 2);
+                point5 = new PointF(point4.x, childY + midPoint);
+                point6 = sspoint4;
+                this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+                break;
+        }
+    };
+    /**
+     * @private
+     * Method to draw the predecessor lines with calculated connector points
+     */
+    /* tslint:disable-next-line */
+    PdfGanttPredecessor.prototype.connectLines = function (startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6) {
+        this.drawLine(startPage, point1, point2);
+        this.drawLine(startPage, point2, point3);
+        this.drawLine(startPage, point3, point4);
+        if (!isNullOrUndefined(point5) && !isNullOrUndefined(point6)) {
+            this.drawLine(startPage, point4, point5);
+            this.drawLine(startPage, point5, point6);
+        }
+        this.drawArrow(endPage, childTask, midPoint);
+    };
+    /**
+     * @private
+     * Method to check the predecessor line  occurs within the page
+     */
+    PdfGanttPredecessor.prototype.contains = function (rect, x, y) {
+        return rect.x <= x &&
+            x < rect.x + rect.width &&
+            rect.y <= y &&
+            y < rect.y + rect.height;
+    };
+    /**
+     * @private
+     * Find the PDF page index of given point
+     */
+    PdfGanttPredecessor.prototype.findPageIndex = function (point) {
+        var pageIndex = -1;
+        for (var index = 0; index < this.pdfGantt.pdfPageDetail.length; index++) {
+            var pageData = this.pdfGantt.pdfPageDetail[index];
+            var pageRect = new RectangleF(pageData.startPoint.x, pageData.startPoint.y, pageData.width, pageData.height);
+            if (this.contains(pageRect, point.x, point.y)) {
+                pageIndex = index;
+                break;
+            }
+        }
+        return pageIndex;
+    };
+    /**
+     * @private
+     * Draw predecessor line
+     */
+    PdfGanttPredecessor.prototype.drawLine = function (page, startPoint, endPoint) {
+        var pdfPages = this.pdfGantt.result.page.section.getPages();
+        var graphics = page.graphics;
+        var newEndPoint = __assign$5({}, endPoint);
+        var newStartPoint = __assign$5({}, endPoint);
+        var checkStartPoint = __assign$5({}, endPoint);
+        var pageData = this.pdfGantt.pdfPageDetail[page.section.indexOf(page) - this.pdfGantt.chartPageIndex];
+        var pageRect = new RectangleF(pageData.startPoint.x, pageData.startPoint.y, pageData.width, pageData.height);
+        var startPointCheck = this.contains(pageRect, startPoint.x, startPoint.y);
+        var endPointCheck = this.contains(pageRect, endPoint.x, endPoint.y);
+        var pageIndex = -1;
+        startPoint = new PointF(startPoint.x, startPoint.y);
+        endPoint = new PointF(endPoint.x, endPoint.y);
+        if (!startPointCheck && !endPointCheck) {
+            pageIndex = this.findPageIndex(startPoint);
+            if (pageIndex > -1) {
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                newStartPoint = startPoint;
+                newEndPoint = endPoint;
+                this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
+            }
+        }
+        else if (endPointCheck && !startPointCheck) {
+            pageIndex = this.findPageIndex(startPoint);
+            if (pageIndex > -1) {
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                newStartPoint = startPoint;
+                newEndPoint = endPoint;
+                this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
+            }
+        }
+        else if (!endPointCheck && startPointCheck) {
+            var pageRectLeft = pageRect.x;
+            var pageRectRight = pageRect.x + pageRect.width;
+            var pageRectBottom = pageRect.y + pageRect.height;
+            var pageRectTop = pageRect.y;
+            if (pageRectLeft > endPoint.x) {
+                checkStartPoint.x = endPoint.x = pageRectLeft - 1;
+                newStartPoint.x = pageRectLeft - 1;
+            }
+            else if (pageRectRight < endPoint.x) {
+                checkStartPoint.x = endPoint.x = pageRectRight;
+                newStartPoint.x = pageRectRight;
+                checkStartPoint.x += 1;
+            }
+            else if (pageRectBottom < endPoint.y) {
+                checkStartPoint.y = endPoint.y = pageRectBottom;
+                newStartPoint.y = pageRectBottom;
+                checkStartPoint.y += 1;
+                if (this.pdfGantt.enableHeader) {
+                    newStartPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                }
+            }
+            else if (pageRectTop > endPoint.y) {
+                newStartPoint.y = checkStartPoint.y = pageRectTop - 1;
+                endPoint.y = pageRectTop;
+                if (this.pdfGantt.enableHeader) {
+                    checkStartPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                    endPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                }
+            }
+            pageIndex = this.findPageIndex(checkStartPoint);
+            if (pageIndex !== -1) {
+                this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
+            }
+        }
+        if (startPointCheck) {
+            startPoint = new PointF(startPoint.x, startPoint.y);
+            endPoint = new PointF(endPoint.x, endPoint.y);
+            startPoint.x = startPoint.x + pageData.pageStartX - pageData.startPoint.x;
+            startPoint.y = startPoint.y - pageData.startPoint.y;
+            endPoint.x = endPoint.x + pageData.pageStartX - pageData.startPoint.x;
+            endPoint.y = endPoint.y - pageData.startPoint.y;
+            var brush = new PdfSolidBrush(this.connectorLineColor);
+            var predecessorPen = new PdfPen(brush, pixelToPoint(this.lineWidth));
+            graphics.drawLine(predecessorPen, startPoint, endPoint);
+        }
+    };
+    /**
+     * @private
+     * Draw predecessor arrow
+     */
+    PdfGanttPredecessor.prototype.drawArrow = function (page, childTask, midPoint) {
+        var pageData = this.pdfGantt.pdfPageDetail[page.section.indexOf(page) - this.pdfGantt.chartPageIndex];
+        /* tslint:disable-next-line */
+        var pageRect = new RectangleF(new PointF(pageData.startPoint.x, pageData.startPoint.y), new SizeF(pageData.width, pageData.height));
+        var startPoint = new PointF();
+        var pdfPages = page.section.getPages();
+        var width = 6 + this.lineWidth;
+        var point2;
+        if (this.type === 'FS' || this.type === 'SS') {
+            startPoint = new PointF(pixelToPoint(this.childLeft) - 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+        }
+        else {
+            startPoint = new PointF(pixelToPoint(this.childLeft + this.childWidth) + 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+        }
+        var startPointCheck = this.contains(pageRect, startPoint.x, startPoint.y);
+        if (!startPointCheck) {
+            var pageIndex = this.findPageIndex(startPoint);
+            if (pageIndex > -1) {
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                page = pdfPages[pageIndex + this.pdfGantt.chartPageIndex];
+            }
+        }
+        var graphics = page.graphics;
+        startPoint.x = startPoint.x - pageData.startPoint.x + pageData.pageStartX;
+        startPoint.y = startPoint.y - pageData.startPoint.y;
+        var point1 = new PointF(startPoint.x, startPoint.y + midPoint);
+        if (this.type === 'FS' || this.type === 'SS') {
+            point2 = new PointF(point1.x - pixelToPoint(width), point1.y - pixelToPoint(width));
+        }
+        else {
+            point2 = new PointF(point1.x + pixelToPoint(width), point1.y - pixelToPoint(width));
+        }
+        var point3 = new PointF(point2.x, point2.y + pixelToPoint(2 * width));
+        var brush = new PdfSolidBrush(this.connectorLineColor);
+        var predecessorPen = new PdfPen(brush, pixelToPoint(this.lineWidth));
+        graphics.drawLine(predecessorPen, point1, point2);
+        graphics.drawLine(predecessorPen, point2, point3);
+        graphics.drawLine(predecessorPen, point3, point1);
+    };
+    return PdfGanttPredecessor;
+}());
+
+var __extends$20 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign$3 = (undefined && undefined.__assign) || function () {
+    __assign$3 = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign$3.apply(this, arguments);
+};
+/**
+ *
+ */
+var PdfGantt = /** @__PURE__ @class */ (function (_super) {
+    __extends$20(PdfGantt, _super);
+    function PdfGantt(parent) {
+        var _this = _super.call(this) || this;
+        _this.exportProps = {};
+        _this.parent = parent;
+        _this.chartHeader = new PdfTimeline(_this);
+        _this.predecessor = new PdfGanttPredecessor(parent, _this);
+        _this.headerDetails = [];
+        _this.pdfPageDetail = [];
+        _this.taskbarCollection = [];
+        _this.predecessorCollection = [];
+        return _this;
+    }
+    Object.defineProperty(PdfGantt.prototype, "taskbar", {
+        get: function () {
+            if (isNullOrUndefined(this.taskbars)) {
+                this.taskbars = new PdfGanttTaskbarCollection(this.parent);
+            }
+            return this.taskbars;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PdfGantt.prototype.drawChart = function (result) {
+        this.result = result;
+        this.totalPages = this.result.page.section.count;
+        this.perColumnPages = this.totalPages / this.layouter.columnRanges.length;
+        this.calculateRange();
+        this.drawGantttChart();
+        this.drawPageBorder();
+    };
+    //Calcualte the header range for each pdf page based on schedule start and end date.
+    /* tslint:disable-next-line:max-func-body-length */
+    PdfGantt.prototype.calculateRange = function () {
+        var lastColumnRange = this.layouter.columnRanges[this.layouter.columnRanges.length - 1];
+        var totalColumnWidth = 0;
+        var isPageFinished = true;
+        var pageWidth = 0;
+        var remainWidth = 0;
+        var point = 0;
+        var headerWidth = pixelToPoint(this.chartHeader.width);
+        var timelineSettings = this.parent.timelineModule;
+        for (var index = lastColumnRange[0]; index <= lastColumnRange[1]; index++) {
+            totalColumnWidth += this.layouter.treegrid.columns.getColumn(index).width;
+        }
+        totalColumnWidth += 0.5;
+        if (totalColumnWidth + 100 < this.result.page.getClientSize().width) {
+            remainWidth = this.result.page.getClientSize().width - totalColumnWidth;
+            this.chartPageIndex = this.startPageIndex = this.totalPages - this.perColumnPages;
+            isPageFinished = false;
+            this.startPoint = new PointF(totalColumnWidth, 0);
+        }
+        else {
+            var nextPage = this.result.page.section.add();
+            this.chartPageIndex = this.startPageIndex = this.totalPages;
+            isPageFinished = true;
+            this.startPoint = new PointF(point, 0);
+        }
+        while (Math.round(point) < Math.round(headerWidth)) {
+            if (isPageFinished) {
+                pageWidth = this.result.page.getClientSize().width;
+            }
+            else {
+                pageWidth = remainWidth;
+                isPageFinished = true;
+            }
+            var detail = {};
+            var range = [];
+            var convertedWidth = pixelToPoint(this.chartHeader.bottomTierCellWidth);
+            var width = 0;
+            if (this.chartHeader.bottomTierCellWidth !== 0) {
+                width = (Math.floor(pageWidth / convertedWidth) * convertedWidth);
+            }
+            range[0] = point;
+            if (headerWidth - point <= width) {
+                range[1] = headerWidth;
+                detail.totalWidth = pointToPixel(headerWidth - point);
+            }
+            else {
+                range[1] = point + width;
+                detail.totalWidth = pointToPixel(width);
+            }
+            detail.startPoint = range[0];
+            detail.endPoint = range[1];
+            if (this.parent.cloneProjectStartDate.getHours() === 0 && this.parent.cloneProjectStartDate.getMinutes() === 0
+                && this.parent.cloneProjectStartDate.getSeconds() === 0) {
+                this.parent.cloneProjectStartDate.setHours(8);
+            }
+            var timelineStartDate = this.parent.dataOperation.getDateFromFormat(this.parent.cloneProjectStartDate);
+            var count = isNullOrUndefined(timelineSettings.customTimelineSettings.bottomTier.count) ?
+                timelineSettings.customTimelineSettings.topTier.count : timelineSettings.customTimelineSettings.bottomTier.count;
+            var scheduleType = timelineSettings.customTimelineSettings.bottomTier.unit === 'None' ?
+                timelineSettings.customTimelineSettings.topTier.unit : timelineSettings.customTimelineSettings.bottomTier.unit;
+            switch (scheduleType) {
+                case 'Minutes':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    var sDays = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
+                    detail.startDate.setMinutes(detail.startDate.getMinutes() + sDays * count);
+                    detail.startDate.setSeconds(detail.startDate.getSeconds() + 1);
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    var eDays = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
+                        / (this.chartHeader.bottomTierCellWidth));
+                    detail.endDate.setMinutes(detail.endDate.getMinutes() + eDays * count);
+                    break;
+                case 'Hour':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    var sDays1 = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
+                    detail.startDate.setHours(detail.startDate.getHours() + sDays1 * count);
+                    detail.startDate.setMinutes(detail.startDate.getMinutes() + 1);
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    var eDays1 = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
+                        / (this.chartHeader.bottomTierCellWidth));
+                    detail.endDate.setHours(detail.endDate.getHours() + eDays1 * count);
+                    break;
+                case 'Day':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    var startDays = (Math.round(detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth)));
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
+                    var endDays = Math.round(((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth))) - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays * count);
+                    break;
+                case 'Week':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    var startDays1 = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7);
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
+                    var endDays1 = Math.round((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays1 * count);
+                    break;
+                case 'Month':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    var startDays2 = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 31);
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays2 * count);
+                    var endDays2 = Math.round((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 31 - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays2 * count);
+                    break;
+                case 'Year':
+                    detail.startDate = new Date(timelineStartDate.getTime());
+                    var startDays3 = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 365);
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays3 * count);
+                    var endDays3 = Math.round((detail.endPoint - detail.startPoint)
+                        / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 365 - 1;
+                    detail.endDate = new Date(detail.startDate.getTime());
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays3 * count);
+                    break;
+            }
+            this.headerDetails.push(detail);
+            point += width;
+        }
+    };
+    PdfGantt.prototype.drawPageBorder = function () {
+        var pages = this.result.page.section.getPages();
+        for (var index = 0; index < pages.length; index++) {
+            var page = pages[index];
+            var graphics = page.graphics;
+            var pageSize = page.getClientSize();
+            var pen = new PdfPen(new PdfColor(206, 206, 206));
+            graphics.drawRectangle(pen, 0, 0, pageSize.width, pageSize.height);
+        }
+    };
+    //Draw the gantt chart side
+    PdfGantt.prototype.drawGantttChart = function () {
+        var _this = this;
+        var taskbarPoint = this.startPoint;
+        var pagePoint = new PointF();
+        var pageStartX = 0;
+        var cumulativeWidth = 0;
+        var cumulativeHeight = 0;
+        var pageData;
+        this.headerDetails.forEach(function (detail, index) {
+            var page = _this.result.page.section.getPages()[_this.startPageIndex];
+            _this.chartHeader.drawTimeline(page, _this.startPoint, detail);
+            taskbarPoint.y = taskbarPoint.y + pixelToPoint(_this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
+            pageStartX = taskbarPoint.x;
+            cumulativeHeight = pixelToPoint(_this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
+            _this.headerDetails[_this.headerDetails.indexOf(detail)].startIndex = _this.startPageIndex;
+            _this.headerDetails[_this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
+            for (var i = 0; i < _this.taskbarCollection.length; i++) {
+                var task = _this.taskbarCollection[i];
+                var rowHeight = _this.rows.getRow(i + 1).height;
+                var page_1 = _this.result.page.section.getPages()[_this.startPageIndex];
+                /* tslint:disable-next-line */
+                var isNextPage = task.drawTaskbar(page_1, taskbarPoint, detail, cumulativeWidth, rowHeight, _this.taskbarCollection[i]);
+                if (isNextPage) {
+                    if (_this.enableHeader) {
+                        taskbarPoint.y = pixelToPoint(_this.parent.timelineModule.isSingleTier ? 45 : 60);
+                    }
+                    else {
+                        taskbarPoint.y = 0;
+                    }
+                    _this.startPageIndex++;
+                    pageData = {};
+                    pageData.height = cumulativeHeight;
+                    pageData.pageStartX = pageStartX;
+                    pageData.startPoint = __assign$3({}, pagePoint);
+                    pageData.width = pixelToPoint(detail.totalWidth);
+                    _this.pdfPageDetail.push(pageData);
+                    pagePoint.y += pageData.height;
+                    if (_this.enableHeader) {
+                        cumulativeHeight = _this.chartHeader.height;
+                    }
+                    else {
+                        taskbarPoint.y = 0;
+                        cumulativeHeight = 0;
+                    }
+                }
+                taskbarPoint.y += rowHeight;
+                cumulativeHeight += rowHeight;
+                
+            }
+            _this.headerDetails[index].endIndex = _this.startPageIndex;
+            cumulativeWidth += detail.totalWidth;
+            pageData = {};
+            pageData.height = cumulativeHeight;
+            pageData.pageStartX = pageStartX;
+            pageData.startPoint = __assign$3({}, pagePoint);
+            pageData.width = pixelToPoint(detail.totalWidth);
+            _this.pdfPageDetail.push(pageData);
+            pagePoint.x += pageData.width;
+            pagePoint.y = 0;
+            if (_this.enableHeader) {
+                cumulativeHeight = _this.chartHeader.height;
+            }
+            else {
+                taskbarPoint.y = 0;
+            }
+            if (_this.headerDetails.indexOf(detail) !== _this.headerDetails.length - 1) {
+                var nextPage = _this.result.page.section.add();
+                _this.startPageIndex = _this.result.page.section.count - 1;
+                taskbarPoint = _this.startPoint = new PointF(0, 0);
+            }
+        });
+        // Draw predecessor line.
+        for (var i = 0; i < this.predecessorCollection.length; i++) {
+            var predecessor = this.predecessorCollection[i];
+            predecessor.drawPredecessor(this);
+        }
+    };
+    return PdfGantt;
+}(PdfTreeGrid));
+
+/**
+ *
+ * @hidden
+ */
+var PdfExport = /** @__PURE__ @class */ (function () {
+    /**
+     * @hidden
+     */
+    function PdfExport(parent) {
+        this.parent = parent;
+        this.helper = new ExportHelper(this.parent);
+        this.pdfDocument = undefined;
+    }
+    /**
+     *
+     */
+    PdfExport.prototype.getModuleName = function () {
+        return 'pdfExport';
+    };
+    /**
+     * To destroy Pdf export module.
+     * @private
+     */
+    PdfExport.prototype.destroy = function () {
+        // Destroy Method
+    };
+    PdfExport.prototype.initGantt = function () {
+        this.pdfDocument = undefined;
+        this.gantt = new PdfGantt(this.parent);
+        // this.gantt.exportValueFormatter = new ExportValueFormatter(this.parent.locale);        
+    };
+    /**
+     *
+     */
+    /* tslint:disable-next-line */
+    PdfExport.prototype.export = function (pdfExportProperties, isMultipleExport, pdfDoc) {
+        var _this = this;
+        var args = {
+            requestType: 'beforePdfExport',
+            ganttObject: this.parent,
+            cancel: false
+        };
+        this.parent.trigger('beforePdfExport', args);
+        if (getValue('cancel', args)) {
+            return new Promise(function (resolve, reject) {
+                return resolve();
+            });
+        }
+        return new Promise(function (resolve, reject) {
+            _this.exportWithData(pdfDoc, resolve, pdfExportProperties, isMultipleExport);
+        });
+    };
+    /* tslint:disable-next-line */
+    PdfExport.prototype.exportWithData = function (pdfDoc, resolve, pdfExportProperties, isMultipleExport) {
+        var _this = this;
+        var data = [];
+        if (isNullOrUndefined(pdfExportProperties)) {
+            pdfExportProperties = {};
+        }
+        if (pdfExportProperties.exportType === 'CurrentViewData') {
+            data = this.parent.currentViewData;
+        }
+        else {
+            data = this.parent.flatData;
+        }
+        this.initGantt();
+        if (!isNullOrUndefined(pdfDoc)) {
+            this.pdfDocument = pdfDoc;
+        }
+        else {
+            this.pdfDocument = new PdfDocument();
+        }
+        this.processExport(data, pdfExportProperties, isMultipleExport).then(function () {
+            _this.parent.trigger('pdfExportComplete', {});
+            resolve(_this.pdfDocument);
+        });
+    };
+    /* tslint:disable-next-line */
+    PdfExport.prototype.processExport = function (data, pdfExportProperties, isMultipleExport) {
+        var _this = this;
+        var section = this.pdfDocument.sections.add();
+        this.processSectionExportProperties(section, pdfExportProperties);
+        var pdfPage = section.pages.add();
+        return new Promise(function (resolve, reject) {
+            _this.helper.processGridExport(data, _this.gantt, pdfExportProperties);
+            _this.helper.initializePdf(_this.pdfDocument);
+            resolve();
+        }).then(function () {
+            var format = new PdfTreeGridLayoutFormat();
+            format.break = PdfLayoutBreakType.FitElement;
+            var layouter = _this.gantt.drawGrid(pdfPage, 0, 0, format);
+            _this.gantt.drawChart(layouter);
+            if (!isMultipleExport) {
+                // save the PDF
+                if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.fileName) {
+                    _this.pdfDocument.save(pdfExportProperties.fileName);
+                }
+                else {
+                    _this.pdfDocument.save('Export.pdf');
+                }
+                _this.pdfDocument.destroy();
+            }
+            return _this.pdfDocument;
+        });
+    };
+    PdfExport.prototype.processSectionExportProperties = function (section, pdfExportProperties) {
+        //To set section page size and page orientation.
+        if (!isNullOrUndefined(pdfExportProperties)) {
+            var pdfPageSettings = new PdfPageSettings();
+            if (!isNullOrUndefined(pdfExportProperties.pageOrientation && pdfExportProperties.pageOrientation === 'Portrait')) {
+                pdfPageSettings.orientation = PdfPageOrientation.Portrait;
+            }
+            else {
+                pdfPageSettings.orientation = PdfPageOrientation.Landscape;
+            }
+            if (!isNullOrUndefined(pdfExportProperties.pageSize)) {
+                pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
+            }
+            section.setPageSettings(pdfPageSettings);
+            if (!isNullOrUndefined(pdfExportProperties.ganttStyle)) {
+                var defaultGanttTheme = new PdfGanttTheme(pdfExportProperties.theme).style;
+                this.gantt.ganttStyle = extend({}, defaultGanttTheme, pdfExportProperties.ganttStyle, true);
+            }
+            else {
+                this.gantt.ganttStyle = new PdfGanttTheme(pdfExportProperties.theme).style;
+            }
+        }
+        else {
+            this.gantt.ganttStyle = new PdfGanttTheme(pdfExportProperties.theme).style;
+        }
+    };
+    PdfExport.prototype.getPageSize = function (pageSize) {
+        switch (pageSize) {
+            case 'Letter':
+                return new SizeF(612, 792);
+            case 'Note':
+                return new SizeF(540, 720);
+            case 'Legal':
+                return new SizeF(612, 1008);
+            case 'A0':
+                return new SizeF(2380, 3368);
+            case 'A1':
+                return new SizeF(1684, 2380);
+            case 'A2':
+                return new SizeF(1190, 1684);
+            case 'A3':
+                return new SizeF(842, 1190);
+            case 'A5':
+                return new SizeF(421, 595);
+            case 'A6':
+                return new SizeF(297, 421);
+            case 'A7':
+                return new SizeF(210, 297);
+            case 'A8':
+                return new SizeF(148, 210);
+            case 'A9':
+                return new SizeF(105, 148);
+            // case 'A10':
+            //     return new SizeF(74, 105);
+            case 'B0':
+                return new SizeF(2836, 4008);
+            case 'B1':
+                return new SizeF(2004, 2836);
+            case 'B2':
+                return new SizeF(1418, 2004);
+            case 'B3':
+                return new SizeF(1002, 1418);
+            case 'B4':
+                return new SizeF(709, 1002);
+            case 'B5':
+                return new SizeF(501, 709);
+            case 'Archa':
+                return new SizeF(648, 864);
+            case 'Archb':
+                return new SizeF(864, 1296);
+            case 'Archc':
+                return new SizeF(1296, 1728);
+            case 'Archd':
+                return new SizeF(1728, 2592);
+            case 'Arche':
+                return new SizeF(2592, 3456);
+            case 'Flsa':
+                return new SizeF(612, 936);
+            case 'HalfLetter':
+                return new SizeF(396, 612);
+            case 'Letter11x17':
+                return new SizeF(792, 1224);
+            case 'Ledger':
+                return new SizeF(1224, 792);
+            default:
+                return new SizeF(595, 842);
+        }
+    };
+    return PdfExport;
 }());
 
 /**
@@ -20020,5 +25575,5 @@ var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
  * Gantt index file
  */
 
-export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, ExcelExport$1 as ExcelExport, RowDD$1 as RowDD, ColumnMenu$1 as ColumnMenu, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
+export { Gantt, PdfHorizontalOverflowType, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, pixelToPoint, pointToPixel, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$1 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, ExcelExport$1 as ExcelExport, ColumnMenu$1 as ColumnMenu, RowDD$1 as RowDD, PdfExport, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings, ResourceFields };
 //# sourceMappingURL=ej2-gantt.es5.js.map

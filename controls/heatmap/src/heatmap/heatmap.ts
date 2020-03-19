@@ -32,6 +32,9 @@ import { LegendSettings, Legend } from '../heatmap/legend/legend';
 import { Adaptor, Data } from './datasource/adaptor';
 import { DataModel } from './datasource/adaptor-model';
 import { ILegendRenderEventArgs } from './model/interface';
+import { ExportUtils } from '../heatmap/utils/export';
+import { ExportType } from '../heatmap/utils/enum';
+import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 
 @NotifyPropertyChanges
 export class HeatMap extends Component<HTMLElement> implements INotifyPropertyChanged {
@@ -412,6 +415,18 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.unWireEvents();
         this.wireEvents();
     }
+
+    /**
+     * Handles the export method for heatmap control.
+     * @param type
+     * @param fileName
+     * @param orientation
+     */
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
+        let exportMap: ExportUtils = new ExportUtils(this);
+        exportMap.export(type, fileName, orientation);
+    }
+
     private initPrivateVariable(): void {
         this.renderer = new SvgRenderer(this.element.id);
         this.canvasRenderer = new CanvasRenderer(this.element.id);
@@ -857,6 +872,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     private axisTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         let targetId: string = (<HTMLElement>event.target).id;
         if ((targetId.indexOf(this.element.id + '_XAxis_Label') !== -1) ||
+            (targetId.indexOf(this.element.id + '_YAxis_Label') !== -1) ||
             (targetId.indexOf(this.element.id + '_XAxis_MultiLevel') !== -1) ||
             (targetId.indexOf(this.element.id + '_YAxis_MultiLevel') !== -1)) {
             let tooltipText: string = getTooltipText(this.tooltipCollection, x, y);
@@ -1010,6 +1026,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+    }
+
+    /**
+     * Method to print the heatmap.
+     */
+    public print(): void {
+        let exportChart: ExportUtils = new ExportUtils(this);
+        exportChart.print();
     }
 
     /**

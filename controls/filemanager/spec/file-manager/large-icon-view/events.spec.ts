@@ -5,7 +5,7 @@ import { FileManager } from '../../../src/file-manager/base/file-manager';
 import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
-import { BeforeSendEventArgs, FileOpenEventArgs, FileLoadEventArgs, ToolbarCreateEventArgs } from '../../../src/file-manager/base/interface';
+import { BeforeSendEventArgs, FileOpenEventArgs, FileLoadEventArgs, ToolbarCreateEventArgs, FileSelectionEventArgs } from '../../../src/file-manager/base/interface';
 import { UploadListCreateArgs, MenuOpenEventArgs, MenuClickEventArgs, ToolbarClickEventArgs, PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead2, multiCopySuccess1, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, singleSelectionDetails, getMultipleDetails, doubleClickRead, noExtension, noExtensionRename, noExtensionSuccess } from '../data';
@@ -499,6 +499,90 @@ describe('FileManager control LargeIcons view', () => {
                 expect((li2[1] as Element).classList.contains('e-active')).toBe(false);
                 done();
             }, 500);
+        });
+        it('for fileSelection', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                fileSelection: clickFn
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                mouseEventArgs.target = li[4];
+                expect(li[4].textContent).toBe('1.png');
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(i).toEqual(1);
+                mouseEventArgs.target = li[0];
+                expect(li[0].textContent).toBe('Documents');
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(i).toEqual(3);
+                i = 0;
+                mouseEventArgs.target = li[3].querySelector('.e-list-text');
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(i).toEqual(2);
+                expect(li[3].classList.contains('e-active')).toBe(true);
+                feObj.dataBind();
+                mouseEventArgs.ctrlKey = true;
+                mouseEventArgs.target = li[3].querySelector('.e-list-text');
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(i).toEqual(3);
+                expect(li[3].classList.contains('e-active')).toBe(false);
+                i = 0;
+                mouseEventArgs.target = li[1].querySelector('.e-list-text');
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(i).toEqual(1);
+                expect(li[1].classList.contains('e-active')).toBe(true);
+                feObj.dataBind();
+                mouseEventArgs.shiftKey = true;
+                mouseEventArgs.target = li[3].querySelector('.e-list-text');
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(i).toEqual(2);
+                expect(li[2].classList.contains('e-active')).toBe(true);
+                expect(li[3].classList.contains('e-active')).toBe(true);
+                done();
+            }, 500);
+        });
+        it('for fileSelection with cancel', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                fileSelection: (args: FileSelectionEventArgs) => { args.cancel = false; },
+                success: clickFn,
+                failure: clickFn
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                mouseEventArgs.target = li[3];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(i).toEqual(1);
+                expect(li[3].classList.contains('e-active')).toBe(true);
+                feObj.dataBind();
+                feObj.fileSelection = true;
+                mouseEventArgs.ctrlKey = true;
+                mouseEventArgs.target = li[3];
+                expect(li[3].classList.contains('e-active')).toBe(true);
+                done();
+            });
         });
         it('for fileSelect', (done: Function) => {
             feObj = new FileManager({

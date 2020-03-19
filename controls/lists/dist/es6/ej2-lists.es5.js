@@ -20,7 +20,8 @@ var cssClass = {
     disabled: 'e-disabled',
     image: 'e-list-img',
     iconWrapper: 'e-icon-wrapper',
-    anchorWrap: 'e-anchor-wrap'
+    anchorWrap: 'e-anchor-wrap',
+    navigable: 'e-navigable'
 };
 /**
  * Base List Generator
@@ -165,6 +166,7 @@ var ListBase;
         }
         var child = [];
         var li;
+        var anchorElement;
         if (dataSource && dataSource.length && !isNullOrUndefined(typeofData(dataSource).item) &&
             !typeofData(dataSource).item.hasOwnProperty(fields.id)) {
             id = generateId(); // generate id for drop-down-list option.
@@ -206,6 +208,7 @@ var ListBase;
                 }
                 li = generateSingleLevelLI(createElement, curItem, fieldData, fields, curOpt.itemClass, innerEle, (curItem.hasOwnProperty('isHeader') &&
                     curItem.isHeader) ? true : false, id, i, options);
+                anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 if (curOpt.itemNavigable && checkboxElement.length) {
                     prepend(checkboxElement, li.firstElementChild);
                 }
@@ -214,6 +217,7 @@ var ListBase;
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
+                anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 if (fieldData.hasOwnProperty(fields.tooltip)) {
                     li.setAttribute('title', fieldData[fields.tooltip]);
                 }
@@ -230,11 +234,24 @@ var ListBase;
                     && !curOpt.template) {
                     var attr = { src: fieldData[fields.imageUrl] };
                     merge(attr, fieldData[fields.imageAttributes]);
-                    prepend([createElement('img', { className: cssClass.image, attrs: attr })], li.firstElementChild);
+                    var imageElemnt = createElement('img', { className: cssClass.image, attrs: attr });
+                    if (anchorElement) {
+                        anchorElement.insertAdjacentElement('afterbegin', imageElemnt);
+                    }
+                    else {
+                        prepend([imageElemnt], li.firstElementChild);
+                    }
                 }
                 if (curOpt.showIcon && fieldData.hasOwnProperty(fields.iconCss) &&
                     !isNullOrUndefined(fieldData[fields.iconCss]) && !curOpt.template) {
-                    prepend([createElement('div', { className: cssClass.icon + ' ' + fieldData[fields.iconCss] })], li.firstElementChild);
+                    var iconElement = void 0;
+                    iconElement = createElement('div', { className: cssClass.icon + ' ' + fieldData[fields.iconCss] });
+                    if (anchorElement) {
+                        anchorElement.insertAdjacentElement('afterbegin', iconElement);
+                    }
+                    else {
+                        prepend([iconElement], li.firstElementChild);
+                    }
                 }
                 if (innerEle.length) {
                     prepend(innerEle, li.firstElementChild);
@@ -243,6 +260,9 @@ var ListBase;
                     prepend(checkboxElement, li.firstElementChild);
                 }
                 processSubChild(createElement, fieldData, fields, dataSource, curOpt, li, ariaAttributes.level);
+            }
+            if (anchorElement) {
+                addClass([li], [cssClass.navigable]);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 var curData = {
@@ -501,7 +521,7 @@ var ListBase;
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
-                li.setAttribute('data-value', value);
+                li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
@@ -601,9 +621,7 @@ var ListBase;
             li.innerText = text;
         }
         else {
-            if (!isNullOrUndefined(value)) {
-                li.setAttribute('data-value', value);
-            }
+            li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
             li.setAttribute('role', 'option');
             if (dataSource && fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {
                 setAttribute(li, fieldData[fields.htmlAttributes]);
@@ -644,7 +662,8 @@ var ListBase;
             disabled: 'e-disabled',
             image: "e-" + moduleName + "-img",
             iconWrapper: 'e-icon-wrapper',
-            anchorWrap: 'e-anchor-wrap'
+            anchorWrap: 'e-anchor-wrap',
+            navigable: 'e-navigable',
         };
     }
     function anchorTag(createElement, dataSource, fields, text, innerElements, isFullNavigation) {
@@ -923,7 +942,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      * Constructor for creating the widget
      */
     function ListView(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this_1 = _super.call(this, options, element) || this;
+        _this_1.itemReRender = false;
+        return _this_1;
     }
     /**
      * @private
@@ -954,6 +975,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                         this.virtualizationModule.reRenderUiVirtualization();
                     }
                     else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
                         this.reRender();
                     }
                     break;
@@ -973,11 +997,13 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'showCheckBox':
                 case 'checkBoxPosition':
-                    if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
-                    }
-                    else {
-                        this.setCheckbox();
+                    if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                        if (this.enableVirtualization) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
+                        else {
+                            this.setCheckbox();
+                        }
                     }
                     break;
                 case 'dataSource':
@@ -985,18 +1011,28 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                         this.virtualizationModule.reRenderUiVirtualization();
                     }
                     else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
                         this.reRender();
                     }
                     break;
                 case 'sortOrder':
                 case 'showIcon':
-                    if (this.enableVirtualization) {
-                        this.virtualizationModule.reRenderUiVirtualization();
+                    if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('ItemSorting');
+                        //tslint:enable
                     }
                     else {
-                        this.listBaseOption.showIcon = this.showIcon;
-                        this.curViewDS = this.getSubDS();
-                        this.resetCurrentList();
+                        if (this.enableVirtualization) {
+                            this.virtualizationModule.reRenderUiVirtualization();
+                        }
+                        else {
+                            this.listBaseOption.showIcon = this.showIcon;
+                            this.curViewDS = this.getSubDS();
+                            this.resetCurrentList();
+                        }
                     }
                     break;
                 default:
@@ -1044,65 +1080,73 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     // Support Component Functions
     ListView.prototype.header = function (text, showBack) {
-        if (this.headerEle === undefined && this.showHeader) {
-            if (this.enableHtmlSanitizer) {
-                this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
-            }
-            this.headerEle = this.createElement('div', { className: classNames.header });
-            var innerHeaderEle = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
-            var textEle = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
-            var hedBackButton = this.createElement('div', {
-                className: classNames.icon + ' ' + classNames.backIcon + ' e-but-back',
-                attrs: { style: 'display:none;' }
-            });
-            this.headerEle.appendChild(hedBackButton);
-            this.headerEle.appendChild(textEle);
-            if (this.headerTemplate) {
-                var compiledString = compile(this.headerTemplate);
-                var headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
-                append([headerTemplateEle], this.headerEle);
-                this.updateBlazorTemplates(false, true, true);
-            }
-            if (this.headerTemplate && this.headerTitle) {
-                textEle.classList.add('header');
-            }
-            this.element.classList.add('e-has-header');
-            prepend([this.headerEle], this.element);
+        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+            var args = { HeaderText: text, BackButton: showBack };
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('HeaderTitle', args);
+            // tslint:disable
         }
-        else if (this.headerEle) {
-            if (this.showHeader) {
-                this.headerEle.style.display = '';
-                var textEle = this.headerEle.querySelector('.' + classNames.headerText);
-                var hedBackButton = this.headerEle.querySelector('.' + classNames.backIcon);
+        else {
+            if (this.headerEle === undefined && this.showHeader) {
                 if (this.enableHtmlSanitizer) {
-                    text = SanitizeHtmlHelper.sanitize(text);
+                    this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
                 }
-                textEle.innerHTML = text;
-                if (this.headerTemplate && showBack) {
-                    textEle.parentElement.classList.remove('header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('nested-header');
+                this.headerEle = this.createElement('div', { className: classNames.header });
+                var innerHeaderEle = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
+                var textEle = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
+                var hedBackButton = this.createElement('div', {
+                    className: classNames.icon + ' ' + classNames.backIcon + ' e-but-back',
+                    attrs: { style: 'display:none;' }
+                });
+                this.headerEle.appendChild(hedBackButton);
+                this.headerEle.appendChild(textEle);
+                if (this.headerTemplate) {
+                    var compiledString = compile(this.headerTemplate);
+                    var headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
+                    append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
+                    append([headerTemplateEle], this.headerEle);
+                    this.updateBlazorTemplates(false, true, true);
                 }
-                if (this.headerTemplate && !showBack) {
-                    textEle.parentElement.classList.add('header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.remove('nested-header');
-                    this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('header');
+                if (this.headerTemplate && this.headerTitle) {
+                    textEle.classList.add('header');
                 }
-                if (showBack === true) {
-                    hedBackButton.style.display = '';
+                this.element.classList.add('e-has-header');
+                prepend([this.headerEle], this.element);
+            }
+            else if (this.headerEle) {
+                if (this.showHeader) {
+                    this.headerEle.style.display = '';
+                    var textEle = this.headerEle.querySelector('.' + classNames.headerText);
+                    var hedBackButton = this.headerEle.querySelector('.' + classNames.backIcon);
+                    if (this.enableHtmlSanitizer) {
+                        text = SanitizeHtmlHelper.sanitize(text);
+                    }
+                    textEle.innerHTML = text;
+                    if (this.headerTemplate && showBack) {
+                        textEle.parentElement.classList.remove('header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('nested-header');
+                    }
+                    if (this.headerTemplate && !showBack) {
+                        textEle.parentElement.classList.add('header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.remove('nested-header');
+                        this.headerEle.querySelector('.' + classNames.headerTemplateText).classList.add('header');
+                    }
+                    if (showBack === true) {
+                        hedBackButton.style.display = '';
+                    }
+                    else {
+                        hedBackButton.style.display = 'none';
+                    }
                 }
                 else {
-                    hedBackButton.style.display = 'none';
+                    this.headerEle.style.display = 'none';
                 }
-            }
-            else {
-                this.headerEle.style.display = 'none';
             }
         }
     };
     // Animation Related Functions
     ListView.prototype.switchView = function (fromView, toView, reverse) {
-        var _this = this;
+        var _this_1 = this;
         if (fromView && toView) {
             var fPos_1 = fromView.style.position;
             var overflow_1 = (this.element.style.overflow !== 'hidden') ? this.element.style.overflow : '';
@@ -1126,7 +1170,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 timingFunction: this.animation.easing,
                 end: function (model) {
                     fromView.style.display = 'none';
-                    _this.element.style.overflow = overflow_1;
+                    _this_1.element.style.overflow = overflow_1;
                     fromView.style.position = fPos_1;
                     fromView.classList.remove('e-view');
                 }
@@ -1137,7 +1181,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 duration: duration,
                 timingFunction: this.animation.easing,
                 end: function () {
-                    _this.trigger('actionComplete');
+                    _this_1.trigger('actionComplete');
                 }
             });
             this.curUL = toView;
@@ -1380,6 +1424,11 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.setSelectLI(li, e);
             }
+            if (e.target.closest('li')) {
+                if (e.target.closest('li').classList.contains('e-has-child') && !e.target.parentElement.classList.contains('e-listview-checkbox')) {
+                    e.target.closest('li').classList.add(classNames.disable);
+                }
+            }
         }
     };
     ListView.prototype.removeElement = function (element) {
@@ -1458,7 +1507,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return siblingLI;
     };
     ListView.prototype.arrowKeyHandler = function (e, prev) {
-        var _this = this;
+        var _this_1 = this;
         e.preventDefault();
         if (Object.keys(this.dataSource).length && this.curUL) {
             var siblingLI = this.onArrowKeyDown(e, prev);
@@ -1492,8 +1541,8 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             }
             else if (this.enableVirtualization && prev && this.virtualizationModule.uiFirstIndex) {
                 this.onUIScrolled = function () {
-                    _this.onArrowKeyDown(e, prev);
-                    _this.onUIScrolled = undefined;
+                    _this_1.onArrowKeyDown(e, prev);
+                    _this_1.onUIScrolled = undefined;
                 };
                 heightDiff = this.virtualizationModule.listItemHeight;
                 this.isWindow ? window.scroll(0, pageYOffset - heightDiff) :
@@ -1779,30 +1828,30 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return this.findItemFromDS(curDS, fields);
     };
     ListView.prototype.findItemFromDS = function (dataSource, fields, parent) {
-        var _this = this;
+        var _this_1 = this;
         var resultJSON;
         if (dataSource && dataSource.length && fields) {
             dataSource.some(function (data) {
-                var fieldData = getFieldValues(data, _this.listBaseOption.fields);
+                var fieldData = getFieldValues(data, _this_1.listBaseOption.fields);
                 //(!(fid) || id === fid) && (!(ftext) || text === ftext) && (!!fid || !!ftext)
-                if ((fields[_this.fields.id] || fields[_this.fields.text]) &&
-                    (!fields[_this.fields.id] || (!isNullOrUndefined(fieldData[_this.fields.id]) &&
-                        fieldData[_this.fields.id].toString()) === fields[_this.fields.id].toString()) &&
-                    (!fields[_this.fields.text] || fieldData[_this.fields.text] === fields[_this.fields.text])) {
+                if ((fields[_this_1.fields.id] || fields[_this_1.fields.text]) &&
+                    (!fields[_this_1.fields.id] || (!isNullOrUndefined(fieldData[_this_1.fields.id]) &&
+                        fieldData[_this_1.fields.id].toString()) === fields[_this_1.fields.id].toString()) &&
+                    (!fields[_this_1.fields.text] || fieldData[_this_1.fields.text] === fields[_this_1.fields.text])) {
                     resultJSON = (parent ? dataSource : data);
                 }
                 else if (typeof data !== 'object' && dataSource.indexOf(data) !== -1) {
                     resultJSON = (parent ? dataSource : data);
                 }
-                else if (!isNullOrUndefined(fields[_this.fields.id]) && isNullOrUndefined(fieldData[_this.fields.id])) {
-                    var li = _this.element.querySelector('[data-uid="'
-                        + fields[_this.fields.id] + '"]');
-                    if (li && li.innerText.trim() === fieldData[_this.fields.text]) {
+                else if (!isNullOrUndefined(fields[_this_1.fields.id]) && isNullOrUndefined(fieldData[_this_1.fields.id])) {
+                    var li = _this_1.element.querySelector('[data-uid="'
+                        + fields[_this_1.fields.id] + '"]');
+                    if (li && li.innerText.trim() === fieldData[_this_1.fields.text]) {
                         resultJSON = data;
                     }
                 }
-                else if (fieldData.hasOwnProperty(_this.fields.child) && fieldData[_this.fields.child].length) {
-                    resultJSON = _this.findItemFromDS(fieldData[_this.fields.child], fields, parent);
+                else if (fieldData.hasOwnProperty(_this_1.fields.child) && fieldData[_this_1.fields.child].length) {
+                    resultJSON = _this_1.findItemFromDS(fieldData[_this_1.fields.child], fields, parent);
                 }
                 return !!resultJSON;
             });
@@ -1853,22 +1902,25 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return this.curUL.classList.contains('.e-animate');
     };
     ListView.prototype.setLocalData = function () {
-        var _this = this;
+        var _this_1 = this;
         this.trigger('actionBegin');
+        var _this = this;
         if (this.dataSource instanceof DataManager) {
             this.dataSource.executeQuery(this.getQuery()).then(function (e) {
-                if (_this.isDestroyed) {
+                if (_this_1.isDestroyed) {
                     return;
                 }
-                _this.localData = e.result;
-                _this.removeElement(_this.contentContainer);
-                _this.renderList();
-                _this.trigger('actionComplete', e);
+                _this_1.localData = e.result;
+                if (_this.enableVirtualization || !_this_1.isServerRendered || (!isBlazor())) {
+                    _this.removeElement(_this.contentContainer);
+                }
+                _this_1.renderList();
+                _this_1.trigger('actionComplete', e);
             }).catch(function (e) {
-                if (_this.isDestroyed) {
+                if (_this_1.isDestroyed) {
                     return;
                 }
-                _this.trigger('actionFailure', e);
+                _this_1.trigger('actionFailure', e);
             });
         }
         else if (!this.dataSource || !this.dataSource.length) {
@@ -1888,16 +1940,18 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.reRender = function () {
-        this.resetBlazorTemplates();
-        this.removeElement(this.headerEle);
-        this.removeElement(this.ulElement);
-        this.removeElement(this.contentContainer);
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
-            this.element.innerHTML = '';
+        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+            this.resetBlazorTemplates();
+            this.removeElement(this.headerEle);
+            this.removeElement(this.ulElement);
+            this.removeElement(this.contentContainer);
+            if (Object.keys(window).indexOf('ejsInterop') === -1) {
+                this.element.innerHTML = '';
+            }
+            this.headerEle = this.ulElement = this.liCollection = undefined;
+            this.header();
         }
-        this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
-        this.header();
     };
     ListView.prototype.resetCurrentList = function () {
         this.resetBlazorTemplates();
@@ -1953,7 +2007,27 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this, resetExistingElements);
         }
     };
+    ListView.prototype.exceptionEvent = function (e) {
+        this.trigger('actionFailure', e);
+    };
+    ListView.prototype.UpdateCurrentUL = function () {
+        this.ulElement = this.curUL = this.element.querySelector('.' + classNames.parentItem);
+        if (this.curUL) {
+            // tslint:disable
+            this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+            // tslint:enable
+        }
+    };
+    ListView.prototype.renderingNestedList = function () {
+        var ul = closest(this.liElement.parentNode, '.' + classNames.parentItem);
+        var ctrlId = this.element.id;
+        var ulElement = document.getElementById(ctrlId);
+        var currentListItem = ulElement.getElementsByTagName('UL')[ulElement.getElementsByTagName('UL').length - 1];
+        this.switchView(ul, currentListItem);
+        this.liElement = null;
+    };
     ListView.prototype.renderSubList = function (li) {
+        this.liElement = li;
         var uID = li.getAttribute('data-uid');
         if (li.classList.contains(classNames.hasChild) && uID) {
             var ul = closest(li.parentNode, '.' + classNames.parentItem);
@@ -1962,15 +2036,24 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 var data = this.curViewDS;
-                ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
-                var lists = ele.querySelectorAll('.' + classNames.listItem);
-                this.setAttributes(lists);
-                ele.setAttribute('pID', uID);
-                ele.style.display = 'none';
-                this.renderIntoDom(ele);
-                this.updateBlazorTemplates(true);
+                if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('ListChildDataSource', data);
+                    // tslint:enable
+                }
+                else {
+                    ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                    var lists = ele.querySelectorAll('.' + classNames.listItem);
+                    this.setAttributes(lists);
+                    ele.setAttribute('pID', uID);
+                    ele.style.display = 'none';
+                    this.renderIntoDom(ele);
+                    this.updateBlazorTemplates(true);
+                }
             }
-            this.switchView(ul, ele);
+            if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                this.switchView(ul, ele);
+            }
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {
                 var fieldData = getFieldValues(this.selectedItems.data, this.listBaseOption.fields);
@@ -1984,21 +2067,31 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     ListView.prototype.renderList = function (data) {
         this.setViewDataSource(data);
-        if (this.enableVirtualization) {
-            if (Object.keys(this.dataSource).length) {
-                if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                    this.listBaseOption.template = null;
-                    this.listBaseOption.groupTemplate = null;
-                    this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
-                }
-                this.virtualizationModule.uiVirtualization();
-            }
+        if (isBlazor() && this.isServerRendered && !this.enableVirtualization && this.itemReRender) {
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('ListDynamicDataSource', this.localData);
+            this.itemReRender = false;
+            // tslint:enable
         }
         else {
-            this.createList();
-            this.contentContainer = this.createElement('div', { className: classNames.content });
-            this.element.appendChild(this.contentContainer);
-            this.renderIntoDom(this.ulElement);
+            if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+                if (this.enableVirtualization) {
+                    if (Object.keys(this.dataSource).length) {
+                        if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                            this.listBaseOption.template = null;
+                            this.listBaseOption.groupTemplate = null;
+                            this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                        }
+                        this.virtualizationModule.uiVirtualization();
+                    }
+                }
+                else {
+                    this.createList();
+                    this.contentContainer = this.createElement('div', { className: classNames.content });
+                    this.element.appendChild(this.contentContainer);
+                    this.renderIntoDom(this.ulElement);
+                }
+            }
         }
     };
     ListView.prototype.getElementUID = function (obj) {
@@ -2015,20 +2108,36 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      * It is used to Initialize the control rendering.
      */
     ListView.prototype.render = function () {
-        this.element.classList.add(classNames.root);
-        attributes(this.element, { role: 'listbox', tabindex: '0' });
-        this.setCSSClass();
-        this.setEnableRTL();
-        this.setEnable();
-        this.setSize();
-        this.wireEvents();
-        this.header();
-        this.setLocalData();
-        this.setHTMLAttribute();
+        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+            this.element.classList.add(classNames.root);
+            attributes(this.element, { role: 'list', tabindex: '0' });
+            this.setCSSClass();
+            this.setEnableRTL();
+            this.setEnable();
+            this.setSize();
+            this.wireEvents();
+            this.header();
+            this.setLocalData();
+            this.setHTMLAttribute();
+        }
+        else {
+            this.initBlazor(true);
+        }
         this.rippleFn = rippleEffect(this.element, {
             selector: '.' + classNames.listItem
         });
         this.renderComplete();
+    };
+    ListView.prototype.initBlazor = function (firstRender) {
+        if (firstRender === null) {
+            firstRender = false;
+        }
+        this.setLocalData();
+        this.setViewDataSource(this.localData);
+        this.contentContainer = this.element.querySelector('.' + classNames.content);
+        if (firstRender) {
+            this.wireEvents();
+        }
     };
     /**
      * It is used to destroy the ListView component.
@@ -2070,6 +2179,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.switchView(fromUL, toUL, true);
         this.removeFocus();
         var li = this.element.querySelector('[data-uid=\'' + pID + '\']');
+        li.classList.remove(classNames.disable);
         li.classList.add(classNames.focused);
         if (this.showCheckBox && li.querySelector('.' + classNames.checkboxIcon).classList.contains(classNames.checked)) {
             li.setAttribute('aria-selected', 'true');
@@ -2390,7 +2500,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
-     * @blazorArgsType data|List<TValue>,fields|TValue
+     * @blazorArgsType data|object,fields|object
      */
     ListView.prototype.addItem = function (data, fields) {
         if (fields === void 0) { fields = undefined; }
@@ -2513,7 +2623,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.removeItemFromList = function (obj, listDataSource) {
-        var _this = this;
+        var _this_1 = this;
         var curViewDS = this.curViewDS;
         var fields = obj instanceof Element ? this.getElementUID(obj) : obj;
         var dataSource;
@@ -2542,7 +2652,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             }
             // tslint:disable-next-line:no-any
             var foundData = (dataSource.length - 1) <= 0
-                ? this.findParent(this.localData, this.fields.id, function (value) { return value === data_1[_this.fields.id]; }, null) : null;
+                ? this.findParent(this.localData, this.fields.id, function (value) { return value === data_1[_this_1.fields.id]; }, null) : null;
             var dsIndex = dataSource.indexOf(data_1);
             dataSource.splice(dsIndex, 1);
             this.setViewDataSource(listDataSource);
@@ -3818,19 +3928,26 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             var dropInst = _this.getSortableInstance(_this.curTarget);
             var prevIdx;
             var curIdx;
+            var handled;
             prevIdx = _this.getIndex(_this.target);
             if (_this.isPlaceHolderPresent(dropInst)) {
                 var curIdx_1 = _this.getIndex(dropInst.placeHolderElement, dropInst);
                 var args = { previousIndex: prevIdx, currentIndex: curIdx_1, target: e.target, droppedElement: _this.target,
-                    helper: e.helper, cancel: false };
+                    helper: e.helper, cancel: false, handled: false };
                 _this.trigger('beforeDrop', args, function (observedArgs) {
                     if (!observedArgs.cancel) {
+                        handled = observedArgs.handled;
                         _this.updateItemClass(dropInst);
+                        if (observedArgs.handled) {
+                            var ele = _this.target.cloneNode(true);
+                            _this.target.classList.remove('e-grabbed');
+                            _this.target = ele;
+                        }
                         dropInst.element.insertBefore(_this.target, dropInst.placeHolderElement);
                         var curIdx_2 = _this.getIndex(_this.target, dropInst);
                         prevIdx = _this === dropInst && (prevIdx - curIdx_2) > 1 ? prevIdx - 1 : prevIdx;
                         _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx_2,
-                            target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
+                            target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope, handled: handled });
                     }
                     remove(dropInst.placeHolderElement);
                 });

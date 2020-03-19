@@ -55,16 +55,16 @@ function accentTabInteraction(theme: String) {
 function defaultTabFocusInteraction(theme: String) {
     let navEle: ElementArrayFinder = element.all(By.css('.e-tab .e-tab-header .e-toolbar-items .e-toolbar-item .e-tab-wrap'));
     if (browser.browserName === 'MicrosoftEdge') { load_delay(300, 'sleep') }
-    browser.compareScreen(element(By.id('defaultTab')), 'default_tab_1stitem_active_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_1stitem_active_' + theme);
     browser.actions().mouseDown(navEle.get(0)).mouseUp(navEle.get(0)).perform();
     element(By.tagName('body')).click();
     navEle.get(0).sendKeys(Key.RIGHT);
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('defaultTab')), 'default_tab_item_focus_2ndItem' + theme);
+    browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_item_focus_2ndItem' + theme);
     navEle.get(1).sendKeys(Key.ENTER);
     if (browser.browserName != 'MicrosoftEdge') { load_delay(400, 'sleep') }
     else { load_delay(700, 'sleep') }
-    browser.compareScreen(element(By.id('defaultTab')), 'default_tab_2nditem_active_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_2nditem_active_' + theme);
 }
 
 function defaultTabHoverActiveInteraction(theme: String) {
@@ -72,21 +72,21 @@ function defaultTabHoverActiveInteraction(theme: String) {
     element(By.tagName('body')).click();
     browser.actions().mouseMove(navEle.get(2)).perform();
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('defaultTab')), 'default_tab_item_hover_3rdtItem_' + theme);   
+    browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_item_hover_3rdtItem_' + theme);   
     browser.actions().mouseMove(navEle.get(3)).perform();
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('defaultTab')), 'default_tab_item_hover_4thItem_' + theme);  
+    browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_item_hover_4thItem_' + theme);  
 }
 
 function fillTabFocusInteraction(theme: String) {
     let navEle: ElementArrayFinder = element.all(By.css('.e-fill .e-tab-header .e-toolbar-items .e-toolbar-item .e-tab-wrap'));
     if (browser.browserName === 'MicrosoftEdge') { load_delay(300, 'sleep') }
-    browser.compareScreen(element(By.id('fillTab')), 'fill_tab_1stitem_active_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_1stitem_active_' + theme);
     browser.actions().mouseDown(navEle.get(0)).mouseUp(navEle.get(0)).perform();
     element(By.tagName('body')).click();
     navEle.get(0).sendKeys(Key.RIGHT);
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('fillTab')), 'fill_tab_item_focus_2ndItem' + theme);
+    browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_item_focus_2ndItem' + theme);
 }
 
 function fillTabHoverActiveInteraction(theme: String) {
@@ -94,57 +94,57 @@ function fillTabHoverActiveInteraction(theme: String) {
     element(By.tagName('body')).click();
     browser.actions().mouseMove(navEle.get(2)).perform();
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('fillTab')), 'fill_tab_item_hover_3rdItem_' + theme);   
+    browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_item_hover_3rdItem_' + theme);   
     browser.actions().mouseMove(navEle.get(3)).perform();
     load_delay(400, 'sleep')
-    browser.compareScreen(element(By.id('fillTab')), 'fill_tab_item_hover_4thItem_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_item_hover_4thItem_' + theme);
 }
 
 function backgroundTabFocusInteraction(theme: String) {
     let navEle: ElementArrayFinder = element.all(By.css('.e-background .e-tab-header .e-toolbar-items .e-toolbar-item .e-tab-wrap'));
     if (browser.browserName === 'MicrosoftEdge') { load_delay(300, 'sleep') }
-    browser.compareScreen(element(By.id('backgroundTab')), 'background_tab_1stitem_active_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_1stitem_active_' + theme);
     browser.actions().mouseDown(navEle.get(0)).perform();
     navEle.get(0).sendKeys(Key.RIGHT);
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('backgroundTab')), 'background_tab_item_focus_2ndItem' + theme);
+    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_item_focus_2ndItem' + theme);
     navEle.get(1).sendKeys(Key.ENTER);
     if (browser.browserName != 'MicrosoftEdge') { load_delay(400, 'sleep') }
     else { load_delay(700, 'sleep') }
-    browser.compareScreen(element(By.id('backgroundTab')), 'background_tab_2nditem_active_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_2nditem_active_' + theme);
 }
 
 function backgroundTabHoverActiveInteraction(theme: String) {
     let navEle: ElementArrayFinder = element.all(By.css('.e-background .e-tab-header .e-toolbar-items .e-toolbar-item .e-tab-wrap'));
     browser.actions().mouseMove(navEle.get(2)).perform();
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('backgroundTab')), 'background_tab_item_hover_3rdItem_' + theme);   
+    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_item_hover_3rdItem_' + theme);   
     browser.actions().mouseMove(navEle.get(3)).perform();
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('backgroundTab')), 'background_tab_item_hover_4thItem_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_item_hover_4thItem_' + theme);
 }
 
 function accentTabFocusInteraction(theme: String) {
     let navEle: ElementArrayFinder = element.all(By.css('.e-accent .e-tab-header .e-toolbar-items .e-toolbar-item .e-tab-wrap'));
-    browser.compareScreen(element(By.id('accentTab')), 'accent_tab_1stitem_active_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_1stitem_active_' + theme);
     browser.actions().mouseDown(navEle.get(0)).perform();
     navEle.get(0).sendKeys(Key.RIGHT);
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('accentTab')), 'accent_tab_item_focus_2ndItem' + theme);
+    browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_item_focus_2ndItem' + theme);
     navEle.get(1).sendKeys(Key.ENTER);
     if (browser.browserName != 'MicrosoftEdge') { load_delay(400, 'sleep') }
     else { load_delay(600, 'sleep') }
-    browser.compareScreen(element(By.id('accentTab')), 'accent_tab_2ndtitem_active_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_2ndtitem_active_' + theme);
 }
 
 function accentTabHoverActiveInteraction(theme: String) {
     let navEle: ElementArrayFinder = element.all(By.css('.e-accent .e-tab-header .e-toolbar-items .e-toolbar-item .e-tab-wrap'));
     browser.actions().mouseMove(navEle.get(2)).perform();
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('accentTab')), 'accent_tab_item_hover_3rdItem_' + theme);   
+    browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_item_hover_3rdItem_' + theme);   
     browser.actions().mouseMove(navEle.get(3)).perform();
     load_delay(300, 'sleep')
-    browser.compareScreen(element(By.id('accentTab')), 'accent_tab_item_hover_4thItem_' + theme);
+    browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_item_hover_4thItem_' + theme);
 }
 
 describe('Default-Tab Theme Wise UI Testing', function () {
@@ -186,79 +186,118 @@ describe('Default-Tab Theme Wise UI Testing', function () {
             defaultTabInteraction('Bootstrap');
             fillTabInteraction('Bootstrap');
     },1200000);
+    it('UI Interactions Focus Tab Testing-Highcontrast', function () {
+        browser.load('/demos/tab/default-header-styles.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_high').click();")
+            if (browser.browserName === 'MicrosoftEdge') {
+                load_delay(300, 'sleep') }
+            defaultTabInteraction('Highcontrast');
+            fillTabInteraction('Highcontrast');
+        browser.load('/demos/tab/default-header-styles-02.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_high').click();")
+            if (browser.browserName === 'MicrosoftEdge') {
+                load_delay(300, 'sleep') }
+            backgroundTabInteraction('Highcontrast');    
+    },1200000);
  });
 
  describe('Default tab with icons', function () {
     it('default tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_material_theme');
     },1200000);
     it('default tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_fabric_theme');
     },1200000);
     it('default tab with icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_bootstrap_theme');
+    },1200000);
+    it('default tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_close_button_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with icons in and material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with icons and material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in default tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'default_tab_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -266,73 +305,97 @@ describe('Default tab with default icons', function () {
     it('default tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_material_theme');
     },1200000);
     it('default tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_fabric_theme');
     },1200000);
     it('default tab with default icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_bootstrap_theme');
+    },1200000);
+    it('default tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_close_button_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in default tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with default icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with default icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with default icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'default_tab_default_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_default_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -341,40 +404,46 @@ describe('Fill tab with icons', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_material_theme');
     },1200000);
     it('fill tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_fabric_theme');
     },1200000);
     it('fill tab with icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_bootstrap_theme');
+    },1200000);
+    it('fill tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in fill tab with icons in fabric theme', function () {
@@ -382,21 +451,21 @@ describe('Fill tab with icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with icons in bootstrap theme', function () {
@@ -404,21 +473,43 @@ describe('Fill tab with icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_close_btn_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'fill_tab_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -427,40 +518,46 @@ describe('Fill tab with default icons', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_material_theme');
     },1200000);
     it('fill tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_fabric_theme');
     },1200000);
     it('fill tab with default icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_bootstrap_theme');
+    },1200000);
+    it('fill tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in fill tab with default icons in fabric theme', function () {
@@ -468,21 +565,21 @@ describe('Fill tab with default icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with default icons in bootstrap theme', function () {
@@ -490,21 +587,43 @@ describe('Fill tab with default icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_close_btn_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with default icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with default icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'fill_tab_default_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_default_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -513,34 +632,40 @@ describe('Background tab with icons', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('icons')), 'background_tab_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_material_theme');
     },1200000);
     it('background tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('icons')), 'background_tab_icons_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_fabric_theme');
+    },1200000);
+    it('background tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'background_tab_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'background_tab_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'background_tab_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in background tab with icons in fabric theme', function () {
@@ -548,22 +673,45 @@ describe('Background tab with icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'background_tab_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with icons in fabric theme', function () {
-    //    browser.load('/demos/tab/icons-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    browser.executeScript("document.getElementById('btn_bg').click();")
-    //    browser.executeScript("document.getElementById('btn_enableRtl').click();")
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('icons')), 'background_tab_icons_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with icons in fabric theme', function () {
+        browser.load('/demos/tab/icons-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")            
-        browser.compareScreen(element(By.id('icons')), 'background_tab_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")            
+        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -572,34 +720,40 @@ describe('Background tab with default icons', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_material_theme');
     },1200000);
     it('background tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_fabric_theme');
+    },1200000);
+    it('background tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in background tab with default icons in fabric theme', function () {
@@ -607,21 +761,43 @@ describe('Background tab with default icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in background tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in background tab with default icons in fabric theme', function () {
         browser.load('/demos/tab/icons-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")            
-        browser.compareScreen(element(By.id('iconsDefault')), 'background_tab_default_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with default icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")            
+        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_default_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -630,28 +806,28 @@ describe('Accent tab with icons', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
-        browser.compareScreen(element(By.id('icons')), 'accent_tab_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_icons_material_theme');
     },1200000);
     it('enable close button in accent tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('icons')), 'accent_tab_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('icons')), 'accent_tab_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('icons')), 'accent_tab_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_icons_orientation_material_theme');
     },1200000);
 });
 
@@ -660,28 +836,28 @@ describe('Accent tab with default icons', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'accent_tab_default_icons_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_default_icons_material_theme');
     },1200000);
     it('enable close button in accent tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'accent_tab_default_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_default_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'accent_tab_default_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_default_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with default icons in material theme', function () {
         browser.load('/demos/tab/icons.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('iconsDefault')), 'accent_tab_default_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_default_icons_orientation_material_theme');
     },1200000);
 });
 
@@ -689,73 +865,97 @@ describe('Default tab with bottom icons', function () {
     it('default tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_material_theme');
     },1200000);
     it('default tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_fabric_theme');
     },1200000);
     it('default tab with bottom icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bottom-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_bootstrap_theme');
+    },1200000);
+    it('default tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in default tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with bottom icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bottom-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with bottom icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bottom-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with bottom icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bottom-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_bottom_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_bottom_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -764,40 +964,46 @@ describe('Fill tab with bottom icons', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_material_theme');
     },1200000);
     it('fill tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_fabric_theme');
     },1200000);
     it('fill tab with bottom icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bottom-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_bootstrap_theme');
+    },1200000);
+    it('fill tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with bottom icons in fabric theme', function () {
@@ -805,21 +1011,21 @@ describe('Fill tab with bottom icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with bottom icons in bootstrap theme', function () {
@@ -827,21 +1033,43 @@ describe('Fill tab with bottom icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_close_btn_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with bottom icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bottom-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with bottom icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-bottom-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_bottom_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_bottom_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -850,34 +1078,40 @@ describe('Background tab with bottom icons', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_material_theme');
     },1200000);
     it('background tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_fabric_theme');
+    },1200000);
+    it('background tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in background tab with bottom icons in fabric theme', function () {
@@ -885,22 +1119,45 @@ describe('Background tab with bottom icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with bottom icons in fabric theme', function () {
-    //    browser.load('/demos/tab/icons-bottom-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    browser.executeScript("document.getElementById('btn_bg').click();")
-    //    browser.executeScript("document.getElementById('btn_enableRtl').click();")
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with bottom icons in fabric theme', function () {
+        browser.load('/demos/tab/icons-bottom-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with bottom icons in fabric theme', function () {
         browser.load('/demos/tab/icons-bottom-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")            
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_bottom_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with bottom icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-bottom-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")            
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_bottom_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -909,28 +1166,28 @@ describe('Accent tab with bottom icons', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_bottom_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_bottom_icons_material_theme');
     },1200000);
     it('enable close button in accent tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_bottom_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_bottom_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_bottom_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_bottom_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with bottom icons in material theme', function () {
         browser.load('/demos/tab/icons-bottom.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_bottom_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_bottom_icons_orientation_material_theme');
     },1200000);
 });
 
@@ -938,73 +1195,97 @@ describe('Default tab with top icons', function () {
     it('default tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_material_theme');
     },1200000);
     it('default tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_fabric_theme');
     },1200000);
     it('default tab with top icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-top-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_bootstrap_theme');
+    },1200000);
+    it('default tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_orientation_material_theme');
     },1200000);
 
     it('enable close button in default tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with top icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-top-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with top icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-top-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with top icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-top-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_top_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_top_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1013,26 +1294,32 @@ describe('Fill tab with top icons', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_material_theme');
     },1200000);
     it('fill tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_fabric_theme');
     },1200000);
     it('fill tab with top icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-top-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_bootstrap_theme');
+    },1200000);
+    it('fill tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
@@ -1040,14 +1327,14 @@ describe('Fill tab with top icons', function () {
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
         
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with top icons in fabric theme', function () {
@@ -1055,21 +1342,21 @@ describe('Fill tab with top icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with top icons in bootstrap theme', function () {
@@ -1077,21 +1364,43 @@ describe('Fill tab with top icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_close_btn_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with top icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-top-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with top icons in bootstrap theme', function () {
         browser.load('/demos/tab/icons-top-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_top_icons_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_top_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1100,34 +1409,40 @@ describe('Background tab with top icons', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_material_theme');
     },1200000);
     it('background tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_fabric_theme');
+    },1200000);
+    it('background tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with top icons in fabric theme', function () {
@@ -1135,22 +1450,45 @@ describe('Background tab with top icons', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with top icons in fabric theme', function () {
-    //    browser.load('/demos/tab/icons-top-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    browser.executeScript("document.getElementById('btn_bg').click();")
-    //    browser.executeScript("document.getElementById('btn_enableRtl').click();")
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with top icons in fabric theme', function () {
+        browser.load('/demos/tab/icons-top-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with top icons in fabric theme', function () {
         browser.load('/demos/tab/icons-top-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")            
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_top_icons_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with top icons in highcontrast theme', function () {
+        browser.load('/demos/tab/icons-top-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")            
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_top_icons_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1159,28 +1497,28 @@ describe('Accent tab with top icons', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_top_icons_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_top_icons_material_theme');
     },1200000);
     it('enable close button in accent tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_top_icons_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_top_icons_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_top_icons_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_top_icons_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with top icons in material theme', function () {
         browser.load('/demos/tab/icons-top.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_top_icons_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_top_icons_orientation_material_theme');
     },1200000);
 });
 
@@ -1194,7 +1532,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_material_theme');
     },1200000);
     it('default tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
@@ -1205,7 +1543,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_fabric_theme');
     },1200000);
     it('default tab with popup open in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
@@ -1216,7 +1554,18 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_bootstrap_theme');
+    },1200000);
+    it('default tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1228,7 +1577,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1240,7 +1589,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1252,7 +1601,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with popup open in fabric theme', function () {
@@ -1265,7 +1614,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
@@ -1277,7 +1626,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
@@ -1289,7 +1638,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with popup open in bootstrap theme', function () {
@@ -1302,7 +1651,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with popup open in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
@@ -1314,7 +1663,7 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with popup open in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
@@ -1326,7 +1675,44 @@ describe('Default tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_open_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_open_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1341,7 +1727,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_material_theme');
     },1200000);
     it('fill tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
@@ -1353,7 +1739,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_fabric_theme');
     },1200000);
     it('fill tab with popup open in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
@@ -1365,7 +1751,19 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_bootstrap_theme');
+    },1200000);
+    it('fill tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1378,7 +1776,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1391,7 +1789,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1404,7 +1802,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with popup open in fabric theme', function () {
@@ -1418,7 +1816,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
@@ -1431,7 +1829,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
@@ -1444,7 +1842,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with popup open in bootstrap theme', function () {
@@ -1458,7 +1856,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_close_btn_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with popup open in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
@@ -1471,7 +1869,7 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with popup open in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
@@ -1484,7 +1882,47 @@ describe('Fill tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_open_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_open_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1499,7 +1937,7 @@ describe('Background tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_material_theme');
     },1200000);
     it('background tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
@@ -1511,7 +1949,19 @@ describe('Background tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_fabric_theme');
+    },1200000);
+    it('background tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1524,7 +1974,7 @@ describe('Background tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1537,7 +1987,7 @@ describe('Background tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1550,7 +2000,7 @@ describe('Background tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with popup open in fabric theme', function () {
@@ -1564,21 +2014,21 @@ describe('Background tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with popup open in fabric theme', function () {
-    //    browser.load('/demos/tab/popup-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    browser.executeScript("document.getElementById('btn_bg').click();")
-    //    browser.executeScript("document.getElementById('btn_enableRtl').click();")
-    //    browser.executeScript("document.querySelector('.e-hor-nav').click();")
-	//	if (browser.browserName === 'internet explorer') {
-    //        browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
-    //        browser.executeScript("document.getElementById('_popup').style.display = 'block'");
-    //    }
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with popup open in fabric theme', function () {
+        browser.load('/demos/tab/popup-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with popup open in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
@@ -1590,7 +2040,47 @@ describe('Background tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }		
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_open_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+		if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with popup open in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.executeScript("document.querySelector('.e-hor-nav').click();")
+        if (browser.browserName === 'internet explorer') {
+            browser.executeScript("document.getElementById('ej2Tab1').style.height = '900px'");
+            browser.executeScript("document.getElementById('_popup').style.display = 'block'");
+        }		
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_open_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1605,7 +2095,7 @@ describe('Accent tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_open_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_open_material_theme');
     },1200000);
     it('enable close button in accent tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1618,7 +2108,7 @@ describe('Accent tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_open_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_open_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1631,7 +2121,7 @@ describe('Accent tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_open_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_open_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with popup open in material theme', function () {
         browser.load('/demos/tab/popup.html');
@@ -1644,7 +2134,7 @@ describe('Accent tab with popup open', function () {
             browser.executeScript("document.getElementById('_popup').style.display = 'block'");
         }
         load_delay(300, 'sleep')
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_open_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_open_orientation_material_theme');
     },1200000);
 });
 
@@ -1652,73 +2142,97 @@ describe('Default tab with popup close', function () {
     it('default tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_material_theme');
     },1200000);
     it('default tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_fabric_theme');
     },1200000);
     it('default tab with popup close in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_bootstrap_theme');
+    },1200000);
+    it('default tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with popup close in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with popup close in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with popup close in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'default_tab_popup_close_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_popup_close_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1727,40 +2241,46 @@ describe('Fill tab with popup close', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_material_theme');
     },1200000);
     it('fill tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_fabric_theme');
     },1200000);
     it('fill tab with popup close in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_bootstrap_theme');
+    },1200000);
+    it('fill tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_orientation_material_theme');
     },1200000);
    
     it('enable close button in fill tab with popup close in fabric theme', function () {
@@ -1768,21 +2288,21 @@ describe('Fill tab with popup close', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with popup close in bootstrap theme', function () {
@@ -1790,21 +2310,43 @@ describe('Fill tab with popup close', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_btn_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with popup close in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with popup close in bootstrap theme', function () {
         browser.load('/demos/tab/popup-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'fill_tab_popup_close_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_popup_close_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1813,34 +2355,40 @@ describe('Background tab with popup close', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_material_theme');
     },1200000);
     it('background tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_fabric_theme');
+    },1200000);
+    it('background tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with popup close in fabric theme', function () {
@@ -1848,22 +2396,45 @@ describe('Background tab with popup close', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with popup close in fabric theme', function () {
-    //    browser.load('/demos/tab/popup-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    browser.executeScript("document.getElementById('btn_bg').click();")
-    //    browser.executeScript("document.getElementById('btn_enableRtl').click();")
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with popup close in fabric theme', function () {
+        browser.load('/demos/tab/popup-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with popup close in fabric theme', function () {
         browser.load('/demos/tab/popup-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")            
-        browser.compareScreen(element(By.id('ej2Tab1')), 'background_tab_popup_close_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with popup close in highcontrast theme', function () {
+        browser.load('/demos/tab/popup-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_popup_close_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1872,28 +2443,28 @@ describe('Accent tab with popup close', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_close_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_close_material_theme');
     },1200000);
     it('enable close button in accent tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_close_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_close_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with popup close in material theme', function () {
         browser.load('/demos/tab/popup.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab1')), 'accent_tab_popup_close_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_popup_close_orientation_material_theme');
     },1200000);
 });
 
@@ -1901,73 +2472,109 @@ describe('Default tab with default scroll mode', function () {
     it('default tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_material_theme');
     },1200000);
     it('default tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_fabric_theme');
     },1200000);
     it('default tab with default scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_bootstrap_theme');
+    },1200000);
+    it('default tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_close_button_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_rtl_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_orientation_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_close_button_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_rtl_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_orientation_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with default scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_close_button_bootstrap_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with default scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_rtl_bootstrap_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with default scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_default_scroll_orientation_bootstrap_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_default_scroll_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -1976,40 +2583,53 @@ describe('Fill tab with default scroll mode', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_material_theme');
     },1200000);
     it('fill tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_fabric_theme');
     },1200000);
     it('fill tab with default scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_bootstrap_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_bootstrap_theme');
+    },1200000);
+    it('fill tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_close_btn_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_rtl_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_orientation_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_orientation_material_theme');
     },1200000);
    
     it('enable close button in fill tab with default scroll in fabric theme', function () {
@@ -2017,21 +2637,24 @@ describe('Fill tab with default scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_close_btn_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_rtl_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_orientation_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with default scroll in bootstrap theme', function () {
@@ -2039,21 +2662,49 @@ describe('Fill tab with default scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_close_btn_bootstrap_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with default scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_rtl_bootstrap_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with default scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_fill').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_default_scroll_orientation_bootstrap_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_fill').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_default_scroll_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -2062,34 +2713,46 @@ describe('Background tab with default scroll mode', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_material_theme');
     },1200000);
     it('background tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_fabric_theme');
+    },1200000);
+    it('background tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_close_btn_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_rtl_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_orientation_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with default scroll in fabric theme', function () {
@@ -2097,22 +2760,49 @@ describe('Background tab with default scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_close_btn_fabric_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with default scroll in fabric theme', function () {
-    //    browser.load('/demos/tab/scrollable-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    browser.executeScript("document.getElementById('btn_bg').click();")
-    //    browser.executeScript("document.getElementById('btn_enableRtl').click();")
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with default scroll in fabric theme', function () {
+        browser.load('/demos/tab/scrollable-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with default scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_bg').click();")
-        browser.executeScript("document.getElementById('btn_orientation').click();")            
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_default_scroll_orientation_fabric_theme');
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        load_delay(2000, 'sleep');         
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_closeButton').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_enableRtl').click();")
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with default scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('btn_bg').click();")
+        browser.executeScript("document.getElementById('btn_orientation').click();")
+        load_delay(2000, 'sleep');   
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_default_scroll_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -2121,28 +2811,32 @@ describe('Accent tab with default scroll mode', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_default_scroll_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_default_scroll_material_theme');
     },1200000);
     it('enable close button in accent tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_closeButton').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_default_scroll_close_btn_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_default_scroll_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_enableRtl').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_default_scroll_rtl_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_default_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with default scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         browser.executeScript("document.getElementById('btn_accent').click();")
         browser.executeScript("document.getElementById('btn_orientation').click();")
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_default_scroll_orientation_material_theme');
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_default_scroll_orientation_material_theme');
     },1200000);
 });
 
@@ -2151,55 +2845,63 @@ describe('Default tab with active scroll mode', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_material_theme');
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_material_theme');
     },1200000);
     it('default tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_fabric_theme');
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_fabric_theme');
     },1200000);
     it('default tab with active scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_bootstrap_theme');
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_bootstrap_theme');
+    },1200000);
+    it('default tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_close_button_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_rtl_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_orientation_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with active scroll in fabric theme', function () {
@@ -2207,30 +2909,30 @@ describe('Default tab with active scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_close_button_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_rtl_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_orientation_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with active scroll in bootstrap theme', function () {
@@ -2238,20 +2940,20 @@ describe('Default tab with active scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_close_button_bootstrap_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with active scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_rtl_bootstrap_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with active scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
@@ -2259,9 +2961,40 @@ describe('Default tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_active_scroll_orientation_bootstrap_theme');
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_active_scroll_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -2271,30 +3004,40 @@ describe('Fill tab with active scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_fill').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_material_theme');
     },1200000);
     it('fill tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_fabric_theme');
     },1200000);
     it('fill tab with active scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_bootstrap_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_bootstrap_theme');
+    },1200000);
+    it('fill tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2302,11 +3045,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_close_btn_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2314,11 +3057,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_rtl_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2326,11 +3069,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_orientation_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with active scroll in fabric theme', function () {
@@ -2339,11 +3082,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_close_btn_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
@@ -2351,11 +3094,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_rtl_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
@@ -2363,11 +3106,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_orientation_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with active scroll in bootstrap theme', function () {
@@ -2376,11 +3119,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_close_btn_bootstrap_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_close_btn_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with active scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
@@ -2388,11 +3131,11 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_rtl_bootstrap_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with active scroll in bootstrap theme', function () {
         browser.load('/demos/tab/scrollable-bootstrap.html');
@@ -2400,11 +3143,48 @@ describe('Fill tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_active_scroll_orientation_bootstrap_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_active_scroll_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -2414,20 +3194,30 @@ describe('Background tab with active scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_bg').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_material_theme');
     },1200000);
     it('background tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_fabric_theme');
+    },1200000);
+    it('background tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2435,11 +3225,11 @@ describe('Background tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_bg').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_close_btn_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2447,11 +3237,11 @@ describe('Background tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_bg').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_rtl_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2459,11 +3249,11 @@ describe('Background tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_bg').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_orientation_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with active scroll in fabric theme', function () {
@@ -2472,38 +3262,72 @@ describe('Background tab with active scroll mode', function () {
         let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_close_btn_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with active scroll in fabric theme', function () {
-    //    browser.load('/demos/tab/scrollable-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
-    //    let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
-    //    let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-    //    browser.executeScript(tab_ctn1)
-    //    browser.executeScript(tab_ctn2)
-    //    browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-    //    browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-    //    browser.executeScript(rightArrow); browser.executeScript(rightArrow);
-    //    browser.executeScript(rightArrow);
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with active scroll in fabric theme', function () {
+        browser.load('/demos/tab/scrollable-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with active scroll in fabric theme', function () {
         browser.load('/demos/tab/scrollable-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(tab_ctn2)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_active_scroll_orientation_fabric_theme');
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with active scroll in highcontrast theme', function () {
+        browser.load('/demos/tab/scrollable-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(tab_ctn2);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_active_scroll_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -2513,10 +3337,10 @@ describe('Accent tab with active scroll mode', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_accent').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_active_scroll_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_active_scroll_material_theme');
     },1200000);
     it('enable close button in accent tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2524,11 +3348,11 @@ describe('Accent tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_accent').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_active_scroll_close_btn_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_active_scroll_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2536,11 +3360,11 @@ describe('Accent tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_accent').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_active_scroll_rtl_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_active_scroll_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with active scroll in material theme', function () {
         browser.load('/demos/tab/scrollable.html');
@@ -2548,11 +3372,11 @@ describe('Accent tab with active scroll mode', function () {
         let tab_ctn: string = "document.getElementById('btn_accent').click();" ;
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         let rightArrow: string = "document.querySelector('.e-nav-right-arrow').click();" ;
-        browser.executeScript(tab_ctn)
-        browser.executeScript(tab_ctn1)
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.executeScript(rightArrow);browser.executeScript(rightArrow);
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_active_scroll_orientation_material_theme');
+        browser.executeScript(tab_ctn);
+        browser.executeScript(tab_ctn1);
+        browser.executeScript(rightArrow);
+        load_delay(2000, 'sleep');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_active_scroll_orientation_material_theme');
     },1200000);
 });
 
@@ -2562,21 +3386,28 @@ describe('Default tab - public method testing', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btnDisableTab').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_material_theme');
     },1200000);
     it('disable tab public method in default tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnDisableTab').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_fabric_theme');
     },1200000);
     it('disable tab public method in default tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnDisableTab').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_bootstrap_theme');
+    },1200000);
+    it('disable tab public method in default tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisableTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with disable tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2585,7 +3416,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with disable tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2594,7 +3425,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with disable tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2603,7 +3434,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with disable tab public method in fabric theme', function () {
@@ -2613,7 +3444,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with disable tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2622,7 +3453,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with disable tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2631,7 +3462,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with disable tab public method in bootstrap theme', function () {
@@ -2641,7 +3472,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with disable tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2650,7 +3481,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with disable tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2659,7 +3490,35 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_tab_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with disable tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisableTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with disable tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisableTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with disable tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisableTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('add tab public method in default tab with material theme', function () {
@@ -2667,21 +3526,28 @@ describe('Default tab - public method testing', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_material_theme');
     },1200000);
     it('add tab public method in default tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_fabric_theme');
     },1200000);
     it('add tab public method in default tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_bootstrap_theme');
+    },1200000);
+    it('add tab public method in default tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2699,7 +3565,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2708,7 +3574,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_orientation_material_theme');
     },1200000);
 
     it('enable close button in default tab with add tab public method in fabric theme', function () {
@@ -2718,7 +3584,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with add tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2727,7 +3593,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with add tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2736,7 +3602,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with add tab public method in bootstrap theme', function () {
@@ -2746,7 +3612,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with add tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2755,7 +3621,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with add tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2764,7 +3630,35 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_add_tab_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_add_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('remove tab public method in default tab with material theme', function () {
@@ -2772,21 +3666,28 @@ describe('Default tab - public method testing', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_material_theme');
     },1200000);
     it('remove tab public method in default tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_fabric_theme');
     },1200000);
     it('remove tab public method in default tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_bootstrap_theme');
+    },1200000);
+    it('remove tab public method in default tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2795,8 +3696,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2805,7 +3705,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2814,7 +3714,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with remove tab public method in fabric theme', function () {
@@ -2824,7 +3724,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with remove tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2833,7 +3733,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with remove tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2842,7 +3742,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with remove tab public method in bootstrap theme', function () {
@@ -2852,7 +3752,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with remove tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2861,7 +3761,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with remove tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2870,7 +3770,35 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_remove_tab_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_remove_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('disable display method in default tab with material theme', function () {
@@ -2878,21 +3806,28 @@ describe('Default tab - public method testing', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_material_theme');
     },1200000);
     it('disable display method in default tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_fabric_theme');
     },1200000);
     it('disable display method in default tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_bootstrap_theme');
+    },1200000);
+    it('disable display method in default tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2901,7 +3836,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2910,7 +3845,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -2919,7 +3854,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with disable display method in fabric theme', function () {
@@ -2929,7 +3864,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with disable display method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2938,7 +3873,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with disable display method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2947,7 +3882,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with disable display method in bootstrap theme', function () {
@@ -2957,7 +3892,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with disable display method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2966,7 +3901,7 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with disable display method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -2975,7 +3910,35 @@ describe('Default tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'default_tab_disable_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_disable_method_orientation_highcontrast_theme');
     },1200000);
 }); 
 
@@ -2987,7 +3950,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnDisableTab').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_material_theme');
     },1200000);
     it('disable tab public method in fill tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -2996,7 +3959,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnDisableTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_fabric_theme');
     },1200000);
     it('disable tab public method in fill tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3005,7 +3968,16 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnDisableTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_bootstrap_theme');
+    },1200000);
+    it('disable tab public method in fill tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisableTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with disable tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3016,7 +3988,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in fill tab with disable tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3027,7 +3999,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with disable tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3038,7 +4010,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with disable tab public method in fabric theme', function () {
@@ -3050,7 +4022,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with disable tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3061,7 +4033,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with disable tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3072,7 +4044,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with disable tab public method in bootstrap theme', function () {
@@ -3084,7 +4056,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with disable tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3095,7 +4067,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with disable tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3106,7 +4078,41 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_tab_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with disable tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisableTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with disable tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisableTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with disable tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisableTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('add tab public method in fill tab with material theme', function () {
@@ -3116,7 +4122,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_material_theme');
     },1200000);
     it('add tab public method in fill tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3125,7 +4131,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_fabric_theme');
     },1200000);
     it('add tab public method in fill tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3134,7 +4140,16 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_bootstrap_theme');
+    },1200000);
+    it('add tab public method in fill tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3145,7 +4160,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in fill tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3156,7 +4171,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3167,7 +4182,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with add tab public method in fabric theme', function () {
@@ -3179,7 +4194,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with add tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3190,7 +4205,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with add tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3201,7 +4216,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with add tab public method in bootstrap theme', function () {
@@ -3213,7 +4228,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with add tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3224,7 +4239,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with add tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3235,7 +4250,41 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_add_tab_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_add_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('remove tab public method in fill tab with material theme', function () {
@@ -3245,7 +4294,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_material_theme');
     },1200000);
     it('remove tab public method in fill tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3254,7 +4303,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_fabric_theme');
     },1200000);
     it('remove tab public method in fill tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3263,7 +4312,16 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_bootstrap_theme');
+    },1200000);
+    it('remove tab public method in fill tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3274,7 +4332,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in fill tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3285,7 +4343,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3296,7 +4354,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with remove tab public method in fabric theme', function () {
@@ -3308,7 +4366,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with remove tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3319,7 +4377,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with remove tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3330,7 +4388,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with remove tab public method in bootstrap theme', function () {
@@ -3342,7 +4400,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with remove tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3353,7 +4411,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with remove tab public method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3364,7 +4422,41 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_remove_tab_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_remove_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('disable display method in fill tab with material theme', function () {
@@ -3374,7 +4466,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_material_theme');
     },1200000);
     it('disable display method in fill tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3383,7 +4475,7 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_fabric_theme');
     },1200000);
     it('disable display method in fill tab with bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3392,7 +4484,16 @@ describe('Fill tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_bootstrap_theme');
+    },1200000);
+    it('disable display method in fill tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3403,7 +4504,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_close_button_material_theme');
     },1200000);
     it('enable RTL in fill tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3414,7 +4515,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3425,7 +4526,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in fill tab with disable display method in fabric theme', function () {
@@ -3437,7 +4538,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_close_button_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with disable display method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3448,7 +4549,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with disable display method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3459,7 +4560,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with disable display method in bootstrap theme', function () {
@@ -3471,7 +4572,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in fill tab with disable display method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3482,7 +4583,7 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with disable display method in bootstrap theme', function () {
         browser.load('/demos/tab/methods-bootstrap.html');
@@ -3493,7 +4594,41 @@ describe('Fill tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'fill_tab_disable_method_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_disable_method_orientation_highcontrast_theme');
     },1200000);
 }); 
 
@@ -3505,7 +4640,7 @@ describe('Background tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_add_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_material_theme');
     },1200000);
     it('add tab public method in background tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3514,7 +4649,16 @@ describe('Background tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_add_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_fabric_theme');
+    },1200000);
+    it('add tab public method in background tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3525,7 +4669,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_add_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in background tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3536,7 +4680,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_add_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3547,7 +4691,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_add_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with add tab public method in fabric theme', function () {
@@ -3559,20 +4703,20 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'baackground_tab_add_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'baackground_tab_add_tab_method_close_button_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with add tab public method in fabric theme', function () {
-    //    browser.load('/demos/tab/methods-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
-    //    let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
-    //    let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
-    //    browser.executeScript(tab_ctn1)
-    //    browser.executeScript(tab_ctn2)
-    //    browser.executeScript(tab_ctn3)
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_add_tab_method_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with add tab public method in fabric theme', function () {
+        browser.load('/demos/tab/methods-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with add tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
@@ -3582,7 +4726,42 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_add_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'baackground_tab_add_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with add tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnAddTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_add_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('remove tab public method in background tab with material theme', function () {
@@ -3592,7 +4771,7 @@ describe('Background tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_material_theme');
     },1200000);
     it('remove tab public method in background tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3601,7 +4780,16 @@ describe('Background tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_fabric_theme');
+    },1200000);
+    it('remove tab public method in background tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3612,7 +4800,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in background tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3623,7 +4811,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3634,7 +4822,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_orientation_material_theme');
     },1200000);
     it('enable close button in background tab with remove tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3645,20 +4833,20 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_close_button_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with remove tab public method in fabric theme', function () {
-    //    browser.load('/demos/tab/methods-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
-    //    let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
-    //    let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
-    //    browser.executeScript(tab_ctn1)
-    //    browser.executeScript(tab_ctn2)
-    //    browser.executeScript(tab_ctn3)
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with remove tab public method in fabric theme', function () {
+        browser.load('/demos/tab/methods-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with remove tab public method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
@@ -3668,7 +4856,42 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_remove_tab_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with remove tab public method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnRemoveTab').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_remove_tab_method_orientation_highcontrast_theme');
     },1200000);
 
     it('disable display method in background tab with material theme', function () {
@@ -3678,7 +4901,7 @@ describe('Background tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_material_theme');
     },1200000);
     it('disable display method in background tab with fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
@@ -3687,7 +4910,16 @@ describe('Background tab - public method testing', function () {
         let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_fabric_theme');
+    },1200000);
+    it('disable display method in background tab with highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3698,7 +4930,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_close_button_material_theme');
     },1200000);
     it('enable RTL in background tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3709,7 +4941,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3720,7 +4952,7 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with disable display method in fabric theme', function () {
@@ -3732,20 +4964,20 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_close_button_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with disable display method in fabric theme', function () {
-    //    browser.load('/demos/tab/methods-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
-    //    let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
-    //    let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
-    //    browser.executeScript(tab_ctn1)
-    //    browser.executeScript(tab_ctn2)
-    //    browser.executeScript(tab_ctn3)
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with disable display method in fabric theme', function () {
+        browser.load('/demos/tab/methods-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with disable display method in fabric theme', function () {
         browser.load('/demos/tab/methods-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
@@ -3755,7 +4987,42 @@ describe('Background tab - public method testing', function () {
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
         browser.executeScript(tab_ctn3)
-        browser.compareScreen(element(By.id('ej2Tab')), 'background_tab_disable_method_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with disable display method in highcontrast theme', function () {
+        browser.load('/demos/tab/methods-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btnDisable').click();" ;
+        let tab_ctn3: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.executeScript(tab_ctn3)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_disable_method_orientation_highcontrast_theme');
     },1200000);
 }); 
 
@@ -3767,7 +5034,7 @@ describe('Accent tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnAddTab').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_add_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_add_tab_method_material_theme');
     },1200000);
     it('enable close button in accent tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3778,7 +5045,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_add_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_add_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in accent tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3789,7 +5056,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_add_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_add_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with add tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3800,7 +5067,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_add_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_add_tab_method_orientation_material_theme');
     },1200000);
 
     it('remove tab public method in accent tab with material theme', function () {
@@ -3810,7 +5077,7 @@ describe('Accent tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnRemoveTab').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_remove_tab_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_remove_tab_method_material_theme');
     },1200000);
     it('enable close button in accent tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3821,7 +5088,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_remove_tab_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_remove_tab_method_close_button_material_theme');
     },1200000);
     it('enable RTL in accent tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3832,7 +5099,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_remove_tab_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_remove_tab_method_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with remove tab public method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3843,7 +5110,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_remove_tab_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_remove_tab_method_orientation_material_theme');
     },1200000);
 
     it('disable display method in accent tab with material theme', function () {
@@ -3853,7 +5120,7 @@ describe('Accent tab - public method testing', function () {
         let tab_ctn1: string = "document.getElementById('btnDisable').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_disable_method_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_disable_method_material_theme');
     },1200000);
     it('enable close button in accent tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3864,7 +5131,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_disable_method_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_disable_method_close_button_material_theme');
     },1200000);
     it('enable RTL in accent tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3875,7 +5142,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_disable_method_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_disable_method_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with disable display method in material theme', function () {
         browser.load('/demos/tab/methods.html');
@@ -3886,7 +5153,7 @@ describe('Accent tab - public method testing', function () {
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('ej2Tab')), 'accent_tab_disable_method_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_disable_method_orientation_material_theme');
     },1200000);
 });
 
@@ -3894,38 +5161,43 @@ describe('Default tab with template', function () {
     it('default tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_material_theme');
     },1200000);
     it('default tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_fabric_theme');
     },1200000);
     it('default tab with template in bootstrap theme', function () {
         browser.load('/demos/tab/template-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_bootstrap_theme');
+    },1200000);
+    it('default tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_highcontrast_theme');
     },1200000);
     it('enable close button in default tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_close_button_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_close_button_material_theme');
     },1200000);
     it('enable RTL in default tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_rtl_material_theme');
     },1200000);
     it('enable orientation in default tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_orientation_material_theme');
     },1200000);
     
     it('enable close button in default tab with template in fabric theme', function () {
@@ -3933,21 +5205,21 @@ describe('Default tab with template', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_close_button_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_close_button_fabric_theme');
     },1200000);
     it('enable RTL in default tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_rtl_fabric_theme');
     },1200000);
     it('enable orientation in default tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in default tab with template in bootstrap theme', function () {
@@ -3955,21 +5227,43 @@ describe('Default tab with template', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_close_button_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_close_button_bootstrap_theme');
     },1200000);
     it('enable RTL in default tab with template in bootstrap theme', function () {
         browser.load('/demos/tab/template-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in default tab with template in bootstrap theme', function () {
         browser.load('/demos/tab/template-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'default_tab_template_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in default tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_close_button_highcontrast_theme');
+    },1200000);
+    it('enable RTL in default tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in default tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'default_tab_template_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -3979,21 +5273,28 @@ describe('Fill tab with template', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_fill').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_material_theme');
     },1200000);
     it('fill tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_fabric_theme');
     },1200000);
     it('fill tab with template in bootstrap theme', function () {
         browser.load('/demos/tab/template-bootstrap.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_bootstrap_theme');
+    },1200000);
+    it('fill tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_highcontrast_theme');
     },1200000);
     it('enable close button in fill tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4002,7 +5303,7 @@ describe('Fill tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_close_btn_material_theme');
     },1200000);
     it('enable RTL in fill tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4011,7 +5312,7 @@ describe('Fill tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_rtl_material_theme');
     },1200000);
     it('enable orientation in fill tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4020,7 +5321,7 @@ describe('Fill tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_orientation_material_theme');
     },1200000);
 
     it('enable close button in fill tab with template in fabric theme', function () {
@@ -4030,7 +5331,7 @@ describe('Fill tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_close_btn_fabric_theme');
     },1200000);
     it('enable RTL in fill tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
@@ -4039,7 +5340,7 @@ describe('Fill tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_rtl_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_rtl_fabric_theme');
     },1200000);
     it('enable orientation in fill tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
@@ -4048,7 +5349,7 @@ describe('Fill tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_orientation_fabric_theme');
     },1200000);
 
     it('enable close button in fill tab with template in bootstrap theme', function () {
@@ -4058,7 +5359,7 @@ describe('Fill tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_close_btn_boot_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_close_btn_boot_theme');
     },1200000);
     it('enable RTL in fill tab with template in bootstrap theme', function () {
         browser.load('/demos/tab/template-bootstrap.html');
@@ -4067,7 +5368,7 @@ describe('Fill tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_rtl_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_rtl_bootstrap_theme');
     },1200000);
     it('enable orientation in fill tab with template in bootstrap theme', function () {
         browser.load('/demos/tab/template-bootstrap.html');
@@ -4076,7 +5377,35 @@ describe('Fill tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'fill_tab_template_orientation_bootstrap_theme');
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_orientation_bootstrap_theme');
+    },1200000);
+
+    it('enable close button in fill tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in fill tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in fill tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_fill').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'fill_tab_template_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -4086,14 +5415,21 @@ describe('Background tab with template', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_bg').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_material_theme');
     },1200000);
     it('background tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_fabric_theme');
+    },1200000);
+    it('background tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_highcontrast_theme');
     },1200000);
     it('enable close button in background tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4102,7 +5438,7 @@ describe('Background tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_close_btn_material_theme');
     },1200000);
     it('enable RTL in background tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4111,7 +5447,7 @@ describe('Background tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_rtl_material_theme');
     },1200000);
     it('enable orientation in background tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4120,7 +5456,7 @@ describe('Background tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_orientation_material_theme');
     },1200000);
     
     it('enable close button in background tab with template in fabric theme', function () {
@@ -4130,18 +5466,18 @@ describe('Background tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_close_btn_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_close_btn_fabric_theme');
     },1200000);
-    //it('enable RTL in background tab with template in fabric theme', function () {
-    //    browser.load('/demos/tab/template-fabric.html');
-    //    load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
-    //    let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
-    //    let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
-    //    browser.executeScript(tab_ctn1)
-    //    browser.executeScript(tab_ctn2)
-    //    load_delay(300, 'sleep')
-    //    browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_rtl_fabric_theme');
-    //},1200000);
+    it('enable RTL in background tab with template in fabric theme', function () {
+        browser.load('/demos/tab/template-fabric.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_rtl_fabric_theme');
+    },1200000);
     it('enable orientation in background tab with template in fabric theme', function () {
         browser.load('/demos/tab/template-fabric.html');
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
@@ -4149,7 +5485,36 @@ describe('Background tab with template', function () {
         let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn1)
         browser.executeScript(tab_ctn2)
-        browser.compareScreen(element(By.id('templateTab')), 'background_tab_template_orientation_fabric_theme');
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_orientation_fabric_theme');
+    },1200000);
+
+    it('enable close button in background tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_closeButton').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_close_btn_highcontrast_theme');
+    },1200000);
+    it('enable RTL in background tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_enableRtl').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        load_delay(300, 'sleep')
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_rtl_highcontrast_theme');
+    },1200000);
+    it('enable orientation in background tab with template in highcontrast theme', function () {
+        browser.load('/demos/tab/template-highcontrast.html');
+        load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
+        let tab_ctn1: string = "document.getElementById('btn_bg').click();" ;
+        let tab_ctn2: string = "document.getElementById('btn_orientation').click();" ;
+        browser.executeScript(tab_ctn1)
+        browser.executeScript(tab_ctn2)
+        browser.compareScreen(element(By.id('Tab')), 'background_tab_template_orientation_highcontrast_theme');
     },1200000);
 });
 
@@ -4159,7 +5524,7 @@ describe('Accent tab with template', function () {
         load_delay(2000, 'presence',element(By.css('.e-tab.e-keyboard.e-control')));
         let tab_ctn: string = "document.getElementById('btn_accent').click();" ;
         browser.executeScript(tab_ctn)
-        browser.compareScreen(element(By.id('templateTab')), 'accent_tab_template_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_template_material_theme');
     },1200000);
     it('enable close button in accent tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4168,7 +5533,7 @@ describe('Accent tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_closeButton').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'accent_tab_template_close_btn_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_template_close_btn_material_theme');
     },1200000);
     it('enable RTL in accent tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4177,7 +5542,7 @@ describe('Accent tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_enableRtl').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'accent_tab_template_rtl_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_template_rtl_material_theme');
     },1200000);
     it('enable orientation in accent tab with template in material theme', function () {
         browser.load('/demos/tab/template.html');
@@ -4186,6 +5551,6 @@ describe('Accent tab with template', function () {
         let tab_ctn1: string = "document.getElementById('btn_orientation').click();" ;
         browser.executeScript(tab_ctn)
         browser.executeScript(tab_ctn1)
-        browser.compareScreen(element(By.id('templateTab')), 'accent_tab_template_orientation_material_theme');
+        browser.compareScreen(element(By.id('Tab')), 'accent_tab_template_orientation_material_theme');
     },1200000);
 });

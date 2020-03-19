@@ -74,7 +74,6 @@ export class TreeMapTooltip {
                     || this.tooltipSettings.textStyle.color;
                 this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
                     || this.tooltipSettings.textStyle.opacity;
-
                 tootipArgs = {
                     cancel: false, name: tooltipRendering, item: item,
                     options: {
@@ -87,10 +86,10 @@ export class TreeMapTooltip {
                 if (this.treemap.isBlazor) {
                     const tooltipArgs : ITreeMapTooltipArgs = {
                         cancel : false,
-                        location :  tootipArgs.options['location'],
-                        text :  tootipArgs.options['text'],
+                        location : tootipArgs.options['location'],
+                        text : tootipArgs.options['text'],
                         textStyle :  tootipArgs.options['textStyle'],
-                        data :  tootipArgs.options['data'],
+                        data : this.treemap.isBlazor ? null : tootipArgs.options['data'],
                         template :  tootipArgs.options['template'],
                         name : tooltipRendering
                     };

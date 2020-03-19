@@ -39,7 +39,7 @@
     }
 
     .e-numericitem:hover:not(.e-np):not(.e-pp):not(.e-active) {
-      border: $pager-item-hover-borders-width solid $pager-item-hover-border-color;
+      border-left: $pager-item-hover-borders-width solid $pager-item-hover-border-color;
     }
 
     .e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {

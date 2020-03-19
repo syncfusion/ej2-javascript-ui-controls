@@ -1807,6 +1807,11 @@ let toolsLocale = {
  * Exports util methods used by RichTextEditor.
  */
 let undoRedoItems = ['Undo', 'Redo'];
+let inlineNode = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
+    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
+    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
 function getIndex(val, items) {
     let index = -1;
     items.some((item, i) => {
@@ -2077,20 +2082,49 @@ function getEditValue(value, rteObj) {
 function updateTextNode(value) {
     let tempNode = document.createElement('div');
     tempNode.innerHTML = value;
+    tempNode.setAttribute('class', 'tempDiv');
+    let resultElm = document.createElement('div');
     let childNodes = tempNode.childNodes;
     if (childNodes.length > 0) {
-        [].slice.call(childNodes).forEach((childNode) => {
-            if ((childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
-                && childNode.textContent.trim() !== '') || (childNode.nodeName === 'IMG' &&
-                childNode.parentNode === tempNode)) {
-                let defaultTag = document.createElement('p');
-                let parentNode = childNode.parentNode;
-                parentNode.insertBefore(defaultTag, childNode);
-                defaultTag.appendChild(childNode);
+        let isPreviousInlineElem;
+        let previousParent;
+        let paraElm;
+        while (tempNode.firstChild) {
+            if ((tempNode.firstChild.nodeName === '#text' &&
+                (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
+                inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0) {
+                if (!isPreviousInlineElem) {
+                    paraElm = createElement('p');
+                    resultElm.appendChild(paraElm);
+                    paraElm.appendChild(tempNode.firstChild);
+                }
+                else {
+                    previousParent.appendChild(tempNode.firstChild);
+                }
+                previousParent = paraElm;
+                isPreviousInlineElem = true;
             }
-        });
+            else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
+                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
+                detach(tempNode.firstChild);
+            }
+            else {
+                resultElm.appendChild(tempNode.firstChild);
+                isPreviousInlineElem = false;
+            }
+        }
+        let imageElm = resultElm.querySelectorAll('img');
+        for (let i = 0; i < imageElm.length; i++) {
+            if (!imageElm[i].classList.contains(CLS_RTE_IMAGE)) {
+                imageElm[i].classList.add(CLS_RTE_IMAGE);
+            }
+            if (!(imageElm[i].classList.contains(CLS_IMGINLINE) ||
+                imageElm[i].classList.contains(CLS_IMGBREAK))) {
+                imageElm[i].classList.add(CLS_IMGINLINE);
+            }
+        }
     }
-    return tempNode.innerHTML;
+    return resultElm.innerHTML;
 }
 function isEditableValueEmpty(value) {
     return (value === '<p><br></p>' || value === '&lt;p&gt;&lt;br&gt;&lt;/p&gt;' || value === '') ? true : false;
@@ -2655,6 +2689,10 @@ class BaseToolbar {
                                 this.parent.formatter.saveData();
                             }
                             callback.call(this);
+                            if ((this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1].text.trim()
+                                === this.parent.inputElement.innerHTML.trim())) {
+                                return;
+                            }
                             if (proxy.undo) {
                                 this.parent.formatter.saveData();
                             }
@@ -5642,9 +5680,6 @@ class Formatter {
             this.enableUndo(self);
             self.notify(execCommandCallBack, events);
         }
-        if (isBlazor()) {
-            delete events.elements;
-        }
         self.trigger(actionComplete, events, (callbackArgs) => {
             self.setPlaceHolder();
             if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {
@@ -7802,8 +7837,7 @@ const BLOCK_TAGS = ['address', 'article', 'aside', 'audio', 'blockquote',
     'canvas', 'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'li', 'main', 'nav',
     'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-    'thead', 'tr', 'ul', 'video', 'button', 'center', 'dir', 'frameset', 'iframe', 'isindex', 'map',
-    'menu', 'noframes', 'object'];
+    'thead', 'tr', 'ul', 'video'];
 /**
  * @hidden
  */
@@ -8906,7 +8940,19 @@ class Lists {
             }
         }
     }
+    enterList(e) {
+        let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let startNode = this.parent.domNode.getSelectedNode(range.startContainer, range.startOffset);
+        let endNode = this.parent.domNode.getSelectedNode(range.endContainer, range.endOffset);
+        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
+            startNode.textContent.charCodeAt(0) === 65279) {
+            startNode.textContent = '';
+        }
+    }
     keyDownHandler(e) {
+        if (e.event.which === 13) {
+            this.enterList(e);
+        }
         if (e.event.which === 32) {
             this.spaceList(e);
         }
@@ -9453,7 +9499,7 @@ class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, false);
                 if (fragment && fragment.childNodes.length > 0) {
                     let isEmpty = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && isNullOrUndefined(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node);
@@ -9474,7 +9520,7 @@ class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, true);
                 if (fragment && fragment.childNodes.length > 0) {
                     let isEmpty = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && isNullOrUndefined(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node, true);
@@ -9494,6 +9540,21 @@ class NodeCutter {
         else {
             return null;
         }
+    }
+    isImgElm(fragment) {
+        let result = true;
+        if (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG') {
+            let firstChild = fragment.childNodes[0];
+            for (let i = 0; !isNullOrUndefined(firstChild.childNodes) && i < firstChild.childNodes.length; i++) {
+                if (firstChild.childNodes[i].nodeName === 'IMG') {
+                    result = false;
+                }
+            }
+        }
+        else {
+            result = true;
+        }
+        return result;
     }
     spliceEmptyNode(fragment, isStart) {
         let len;
@@ -13493,6 +13554,7 @@ const IFRAMEHEADER = `
                 span.e-table-box { background-color: #ffffff; border: 1px solid #BDBDBD; }
                 span.e-table-box.e-rbox-select { background-color: #BDBDBD; border: 1px solid #BDBDBD; }
                 .e-table-rhelper { background-color: #4a90e2;}
+                .e-rtl { direction: rtl; }
             </style>
         </head>`;
 /* tslint:enable */
@@ -13527,6 +13589,9 @@ class IframeContentRender extends ContentRender {
         iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });
         iframe.contentDocument.write(iFrameContent);
         iframe.contentDocument.close();
+        if (rteObj.enableRtl) {
+            this.contentPanel.contentDocument.body.setAttribute('class', 'e-rtl');
+        }
     }
     setThemeColor(content, styles) {
         let fontColor = getComputedStyle(this.parent.element, '.e-richtexteditor').getPropertyValue('color');
@@ -19400,7 +19465,7 @@ let RichTextEditor = class RichTextEditor extends Component {
      * @param {string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs} value - Specifies the value that you want to execute.
      * @public
      */
-    executeCommand(commandName, value) {
+    executeCommand(commandName, value, option) {
         value = this.htmlPurifier(commandName, value);
         if (this.editorMode === 'HTML') {
             let range = this.getRange();
@@ -19414,7 +19479,16 @@ let RichTextEditor = class RichTextEditor extends Component {
             }
         }
         let tool = executeGroup[commandName];
+        if (option && option.undo) {
+            if (option.undo && this.formatter.getUndoRedoStack().length === 0) {
+                this.formatter.saveData();
+            }
+        }
         this.formatter.editorManager.execCommand(tool.command, tool.subCommand ? tool.subCommand : (value ? value : tool.value), null, null, (value ? value : tool.value), (value ? value : tool.value));
+        if (option && option.undo) {
+            this.formatter.saveData();
+            this.formatter.enableUndo(this);
+        }
         this.setPlaceHolder();
     }
     htmlPurifier(command, value) {
@@ -19762,8 +19836,8 @@ let RichTextEditor = class RichTextEditor extends Component {
                 this.valueContainer.removeAttribute('name');
                 detach(this.element);
                 if (this.originalElement.innerHTML.trim() !== '') {
-                    this.valueContainer.value = this.originalElement.innerHTML.trim();
                     if (!isBlazor()) {
+                        this.valueContainer.value = this.originalElement.innerHTML.trim();
                         this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
                     }
                 }
@@ -20290,7 +20364,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         return styleEle;
     }
     isBlazor() {
-        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
+        return (!isBlazor() ? false : true);
     }
     setValue() {
         if (this.valueTemplate) {

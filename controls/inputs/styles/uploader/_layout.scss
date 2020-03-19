@@ -84,6 +84,14 @@
           width: $remove-bigger-icon-width;
         }
 
+        & .e-file-remove-btn.e-icons.e-disabled,
+        & .e-file-delete-btn.e-icons.e-disabled {
+          color: $disabled-state;
+          cursor: not-allowed;
+          opacity: .4;
+          pointer-events: none;
+        }
+
         & .e-file-remove-btn.e-msie.e-icons,
         & .e-file-delete-btn.e-msie.e-icons,
         & .e-file-abort-btn.e-msie.e-icons,

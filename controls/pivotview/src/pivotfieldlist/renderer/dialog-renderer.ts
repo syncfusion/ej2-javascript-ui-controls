@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, addClass, removeClass, closest } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, addClass, removeClass, closest, isBlazor } from '@syncfusion/ej2-base';
 import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
@@ -8,6 +8,7 @@ import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations'
 import * as events from '../../common/base/constant';
 import { IDataOptions, IFieldListOptions } from '../../base/engine';
 import { IOlapField } from '../../base/olap/engine';
+import { PivotUtil } from '../../base/util';
 /**
  * Module to render Pivot Field List Dialog
  */
@@ -188,10 +189,16 @@ export class DialogRenderer {
     }
     private cancelButtonClick(): void {
         /* tslint:disable:align */
-        this.parent.
-            setProperties({
-                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
-            }, true);
+        if (isBlazor() && !this.parent.isPopupView) {
+            /* tslint:disable-next-line:max-line-length */
+            PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings((<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions));
+        } else {
+            this.parent.
+                setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                }, true);
+        }
+        /* tslint:enable:align */
         if (this.parent.dataType === 'olap') {
             this.parent.olapEngineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
             for (let name of Object.keys(this.parent.clonedFieldList)) {
@@ -249,7 +256,8 @@ export class DialogRenderer {
                 position: { X: 'center', Y: 'center' },
                 buttons: buttons,
                 target: document.body,
-                close: this.removeFieldListIcon.bind(this)
+                close: this.removeFieldListIcon.bind(this),
+                open: this.dialogOpen.bind(this)
             });
             this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
@@ -279,7 +287,7 @@ export class DialogRenderer {
                 width: this.parent.element.style.width,
                 position: { X: 'center', Y: this.parent.element.offsetTop },
                 footerTemplate: template,
-                closeOnEscape: true,
+                closeOnEscape: false,
                 target: !isNullOrUndefined(this.parent.target) ? ((typeof this.parent.target) === 'string') ?
                     <HTMLElement>document.querySelector(<string>this.parent.target) : <HTMLElement>this.parent.target : document.body,
                 close: this.removeFieldListIcon.bind(this)
@@ -292,6 +300,10 @@ export class DialogRenderer {
             setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_title') as HTMLElement, { 'width': '100%' });
             fieldListWrappper.querySelector('.' + cls.TITLE_HEADER_CLASS).appendChild(this.createCalculatedButton());
         }
+    }
+
+    private dialogOpen(): void {
+        this.adaptiveElement.refresh();
     }
 
     /**
@@ -395,9 +407,10 @@ export class DialogRenderer {
         }
     }
     private createCalculatedButton(): HTMLElement {
-        let calculatedButton: HTMLElement = createElement('div', {
+        let calculatedButton: HTMLElement = createElement('button', {
             id: this.parent.element.id + '_CalculatedField',
             attrs: {
+                'type': 'button',
                 'tabindex': '0',
                 'aria-disabled': 'false',
                 'aria-label': this.parent.localeObj.getConstant('CalculatedField')
@@ -494,10 +507,12 @@ export class DialogRenderer {
                 extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;
             this.parent.pivotGridModule.engineModule = this.parent.engineModule;
             this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
+            /* tslint:disable:align */
             this.parent.pivotGridModule.
                 setProperties({
                     dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
                 }, true);
+            /* tslint:enable:align */
             if (Object.keys(this.parent.clonedFieldList).length > 0) {
                 this.parent.dataType === 'olap' ? this.parent.olapEngineModule.fieldList =
                     extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions :
@@ -510,6 +525,18 @@ export class DialogRenderer {
     }
 
     private removeFieldListIcon(): void {
+        if (this.parent.isAdaptive && this.parent.allowCalculatedField && this.parent.calculatedFieldModule) {
+            if (this.adaptiveElement && this.adaptiveElement.selectedItem === 4) {
+                if (this.adaptiveElement.element.querySelector('#' + this.parent.element.id + 'droppable')) {
+                    /* tslint:disable */
+                    (this.parent.calculatedFieldModule as any)
+                        .updateAdaptiveCalculatedField(false);
+                    /* tslint:enable */
+                } else {
+                    this.parent.notify(events.initCalculatedField, { edit: false });
+                }
+            }
+        }
         if (!document.getElementById(this.parent.element.id + 'calculateddialog')) {
             removeClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
         }

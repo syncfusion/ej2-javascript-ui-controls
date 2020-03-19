@@ -144,7 +144,7 @@ describe("Resize - Actions Module", () => {
         beforeAll((done: Function) => {
             browseinfo = Browser.info.name;
             Browser.info.name = 'msie';
-            (window as any).ejsInterop={ renderComplete:()=> {return true;}};
+            (window as any).sfBlazor={ renderComplete:()=> {return true;}};
             (window as any).Blazor = null;
             rteObj = renderRTE({
                 enableResize: true
@@ -156,7 +156,7 @@ describe("Resize - Actions Module", () => {
         afterAll((done: Function) => {
             Browser.info.name = browseinfo;
             delete (window as any).Blazor;
-            delete (window as any).ejsInterop;
+            delete (window as any).sfBlazor;
             destroy(rteObj);
             done();
         });

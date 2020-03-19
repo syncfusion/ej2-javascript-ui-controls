@@ -91,7 +91,6 @@ export class KeyboardNavigation {
             if (isNavigate) {
                 this.scrollNavigation(scrollIdxes || actIdxes, scrollIdxes ? true : false);
                 sheet.activeCell = getRangeAddress(actIdxes);
-                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.parent.notify(cellNavigate, { range: actIdxes });
             }
         }

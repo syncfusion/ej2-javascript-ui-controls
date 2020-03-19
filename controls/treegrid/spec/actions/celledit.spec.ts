@@ -1,13 +1,12 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData2 } from '../base/datasource.spec';
+import { sampleData } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SaveEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ITreeData } from '../../src';
 
 /**
  * Grid Cell Edit spec 
@@ -667,103 +666,9 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
-  describe('EJ2-35521 - Issue with allowEditing', () => {
-    let gridObj: TreeGrid;
-    let actionBegin: () => void;
-    let actionComplete: () => void;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
-          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-          { field: 'taskName', headerText: 'Task Name' },
-          { field: 'progress', headerText: 'Progress' },
-          { field: 'startDate', headerText: 'Start Date' }
-          ]
-        },
-        done
-      );
-    });
-    it('checking allowEditing property - set to false', () => {
-      gridObj.editSettings.allowEditing = false;
-      gridObj.dataBind();
-      let event: MouseEvent = new MouseEvent('dblclick', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true
-      });
-      gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
-      expect(isNullOrUndefined(gridObj.element.getElementsByClassName("e-gridform")[0])).toBe(true);
-    });
-    it('checking allowEditing property - set to true', (done: Function) => {
-      gridObj.editSettings.allowEditing = true;
-      gridObj.dataBind();
-      let event: MouseEvent = new MouseEvent('dblclick', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true
-      });
-      gridObj.actionBegin = function(args){
-        if(args.type == "edit"){
-          expect(isNullOrUndefined(gridObj.element.getElementsByClassName("e-gridform")[0])).toBe(false);
-        }
-        done();
-      }
-      gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
-    });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
-  describe('EJ2-36093 - Issue with childRecords property', () => {
-    let gridObj: TreeGrid;
-    let actionBegin: () => void;
-    let actionComplete: () => void;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: projectData2,
-          idMapping: 'TaskID',
-          parentIdMapping: 'parentID',
-          allowPaging: true,
-          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
-          columns: [{ field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true },
-          { field: 'TaskName', headerText: 'Task Name' },
-          { field: 'Priority', headerText: 'Priority' },
-          ]
-        },
-        done
-      );
-    });
-    it('checking childRecords of TaskID 1', () => {
-      expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).childRecords.length == 3).toBe(true);
-      expect((<any>(<ITreeData>gridObj.getCurrentViewRecords()[0]).childRecords[2]).TaskID == 4).toBe(true);
-    });
-    it('Add new record below the child of TaskID 1', (done: Function) => {
-      gridObj.selectRow(1);
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "1111";
-      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[1].value = "sub Task 1";
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      gridObj.actionComplete = function(args){
-        if(args.requestType == "save"){
-          expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).childRecords.length == 4).toBe(true);
-          expect((<any>(<ITreeData>gridObj.getCurrentViewRecords()[0]).childRecords[2]).TaskID == "4").toBe(true);
-          expect((<any>(<ITreeData>gridObj.getCurrentViewRecords()[0]).childRecords[3]).TaskID == "1111").toBe(true);
-        }
-        done();
-      }
-    });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
+
+
+
 
 describe('EJ2-36694 - Cell Update with aggregates', () => {
     let gridObj: TreeGrid;

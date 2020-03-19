@@ -22,8 +22,8 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      * Defines the position of the Tooltip
      * @default 'TopLeft'
      * @aspDefaultValueIgnore
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.Position
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Popups.Position.TopLeft
+     * @blazorType Syncfusion.Blazor.Popups.Position
+     * @blazorDefaultValue Syncfusion.Blazor.Popups.Position.TopLeft
      * @isEnumeration true
      */
     @Property('TopLeft')
@@ -86,7 +86,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      * }
      * ```
      * @aspDefaultValueIgnore
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.AnimationModel
+     * @blazorType Syncfusion.Blazor.Popups.AnimationModel
      * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
      */
     @Property()

@@ -695,7 +695,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
      * @blazorDefaultValueIgnore
-     * @blazorDefaultValue  Syncfusion.EJ2.Blazor.Diagrams.Segments.Straight
+     * @blazorDefaultValue  Syncfusion.Blazor.Diagrams.Segments.Straight
      */
     type?: Segments;
 

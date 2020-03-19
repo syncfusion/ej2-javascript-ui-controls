@@ -1,10 +1,6 @@
-import {
-    isNullOrUndefined, addClass, createElement, append, EventHandler,
-    extend, remove
-} from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, createElement, append, EventHandler, extend, remove } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { EventFieldsMapping, EventRenderedArgs, TdData, CellTemplateArgs } from '../base/interface';
-import { DataManager, Query } from '@syncfusion/ej2-data';
 import { ResourcesModel } from '../models/resources-model';
 import { ViewBase } from '../renderer/view-base';
 import { Schedule } from '../base/schedule';
@@ -269,8 +265,7 @@ export class AgendaBase {
                 tContentCollection = tContentCollection.concat(tContent[w]);
             }
             level = (parentCollection.length > 0) ? 'parentColumnLevel_' + parentCollection.length : 'resourceColumn';
-            let rowSpanCollection: TdData[] = new DataManager({ json: tContentCollection }).executeLocal(new Query()
-                .where('type', 'equal', level)) as TdData[];
+            let rowSpanCollection: TdData[] = tContentCollection.filter((data: TdData) => data.type === level);
             for (let x: number = 0; x < rowSpanCollection.length; x++) {
                 rowSpan = rowSpan + rowSpanCollection[x].rowSpan;
             }

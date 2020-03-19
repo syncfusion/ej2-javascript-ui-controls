@@ -3,7 +3,7 @@ import { VisibleLabels, Size, VisibleRange, Rect, Align } from '../utils/helper'
 import { Font, Border } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
 import { RangeModel, PointerModel, LabelModel, TickModel, LineModel } from './axis-model';
-import { Point, Placement, MarkerType, Position, ExtraPosition } from '../utils/enum';
+import { Point, Placement, MarkerType, Position} from '../utils/enum';
 
 
 /** Options for customizing the axis line. */
@@ -84,7 +84,7 @@ export class Label extends ChildProperty<Label> {
      * @default Auto
      */
     @Property('Auto')
-    public position: ExtraPosition;
+    public position: Position;
 
 }
 
@@ -206,7 +206,7 @@ export class Tick extends ChildProperty<Tick> {
      * @default Auto
      */
     @Property('Auto')
-    public position: ExtraPosition;
+    public position: Position;
 
 }
 
@@ -319,7 +319,7 @@ export class Pointer extends ChildProperty<Pointer> {
      * @default Auto
      */
     @Property('Auto')
-    public position: ExtraPosition;
+    public position: Position;
 
     /**
      * Description of the pointer.

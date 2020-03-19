@@ -1087,4 +1087,47 @@ describe('Group', () => {
         });
     });
 
+    describe('Group - Properties', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group_child_rendering' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 50, height: 50, offsetX: 100,
+                    offsetY: 100,
+                }, {
+                    id: 'node2', width: 50, height: 50, offsetX: 200,
+                    offsetY: 200
+                },
+                { id: 'group', children: ['node1', 'node2'], rotateAngle: 45, offsetX: 300, offsetY: 300, style: {fill: 'orange', strokeColor: 'red' } },
+            ];
+
+            diagram = new Diagram({
+                width: '800px', height: '600px', nodes: nodes,
+            });
+            diagram.appendTo('#diagram_group_child_rendering');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it("Checking group's childern not visiblie issue - When group have own properties", (done: Function) => {
+            var group = document.getElementById(diagram.element.id + "_diagramLayer");
+            expect(group.children.length == 1).toBe(true);
+            done();
+        });
+    });
+
 });

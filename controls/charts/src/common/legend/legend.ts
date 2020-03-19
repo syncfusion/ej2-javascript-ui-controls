@@ -13,6 +13,8 @@ import { Legend } from '../../chart/legend/legend';
 import { AccumulationType } from '../../accumulation-chart/model/enum';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { AccumulationLegend } from '../../accumulation-chart/renderer/legend';
+import { BulletChart } from '../../bullet-chart/bullet-chart';
+import { BulletChartLegend } from '../../bullet-chart/legend/legend';
 import { Alignment } from '../utils/enum';
 /**
  * Configures the location for the legend.
@@ -193,7 +195,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 export class BaseLegend {
 
     // Internal variables
-    protected chart: Chart | AccumulationChart;
+    protected chart: Chart | AccumulationChart | BulletChart;
     protected legend: LegendSettingsModel;
     protected maxItemHeight: number;
     protected isPaging: boolean;
@@ -212,7 +214,9 @@ export class BaseLegend {
     private legendTranslateGroup: Element;
     protected currentPage: number = 1;
     private isChartControl: boolean;
-    protected library: Legend | AccumulationLegend;
+    private isBulletChartControl: boolean;
+    private accessbilityText: string;
+    protected library: Legend | AccumulationLegend | BulletChartLegend;
     /**  @private */
     public position: LegendPosition;
     /**
@@ -232,51 +236,59 @@ export class BaseLegend {
     protected totalNoOfPages: number;
     /** @private */
     public calTotalPage: boolean;
+    private bulletChart: BulletChart;
 
     /**
      * Constructor for the dateTime module.
      * @private
      */
-    constructor(chart?: Chart | AccumulationChart) {
+    constructor(chart?: Chart | AccumulationChart | BulletChart) {
         this.chart = chart;
         this.legend = chart.legendSettings;
         this.legendID = chart.element.id + '_chart_legend';
         this.isChartControl = (chart.getModuleName () === 'chart');
+        this.isBulletChartControl = (chart.getModuleName() === 'bulletChart');
+        this.bulletChart = this.chart as BulletChart;
     }
     /**
      * Calculate the bounds for the legends.
      * @return {void}
      * @private
      */
-    public calculateLegendBounds(rect: Rect, availableSize: Size): void {
+    public calculateLegendBounds(rect: Rect, availableSize: Size, maxLabelSize: Size): void {
         let legend: LegendSettingsModel = this.legend;
         this.getPosition(legend.position, availableSize);
         this.legendBounds = new Rect(rect.x, rect.y, 0, 0);
+        let defaultValue: string = (this.isBulletChartControl) ? '40%' : '20%';
         this.isVertical = (this.position === 'Left' || this.position === 'Right');
         if (this.isVertical) {
             this.legendBounds.height = stringToNumber(
                 legend.height, availableSize.height - (rect.y - this.chart.margin.top)) || rect.height;
-            this.legendBounds.width = stringToNumber(legend.width || '20%', availableSize.width);
+            this.legendBounds.width = stringToNumber(legend.width || defaultValue, availableSize.width);
         } else {
             this.legendBounds.width = stringToNumber(legend.width, availableSize.width) || rect.width;
-            this.legendBounds.height = stringToNumber(legend.height || '20%', availableSize.height);
+            this.legendBounds.height = stringToNumber(legend.height || defaultValue, availableSize.height);
         }
         this.library.getLegendBounds(availableSize, this.legendBounds, legend);
-        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize);
+        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize, maxLabelSize);
     }
     /**
      * To find legend position based on available size for chart and accumulation chart
      */
     private getPosition(position: LegendPosition, availableSize: Size): void {
-        if (this.isChartControl) {
+        let chart: Chart =  this.chart as Chart;
+        let accumulation: AccumulationChart = this.chart as AccumulationChart;
+        if (this.isChartControl || this.isBulletChartControl) {
             this.position = (position !== 'Auto') ? position : 'Bottom';
         } else {
-            if (position === 'Auto' && this.chart.visibleSeries &&
-            (this.chart.visibleSeries[0].type === 'Funnel' || this.chart.visibleSeries[0].type === 'Pyramid')) {
+            if (position === 'Auto' && ((chart || accumulation).visibleSeries && (
+                chart || accumulation).visibleSeries[0].type === 'Funnel' || (
+                    chart || accumulation).visibleSeries[0].type === 'Pyramid'
+            )) {
                 position = 'Top';
             }
             this.position = (position !== 'Auto') ? position :
-            (availableSize.width > availableSize.height ? 'Right' : 'Bottom');
+                (availableSize.width > availableSize.height ? 'Right' : 'Bottom');
         }
     }
     /**
@@ -292,28 +304,55 @@ export class BaseLegend {
     /**
      * To find legend location based on position, alignment for chart and accumulation chart
      */
-    private getLocation(position: LegendPosition, alignment: Alignment, legendBounds: Rect, rect: Rect, availableSize: Size): void {
-        let padding: number = this.legend.border.width ;
+    private getLocation(
+        position: LegendPosition, alignment: Alignment, legendBounds: Rect, rect: Rect, availableSize: Size, maxLabelSize: Size
+        ): void {
+        let padding: number = this.legend.border.width;
+        let isBulletChart: boolean = this.isBulletChartControl;
+        let bulletChart: BulletChart =  this.bulletChart;
+        let labelIns: boolean = bulletChart.labelPosition === 'Inside';
+        let ticklIns: boolean = bulletChart.tickPosition === 'Inside';
+        let isVertical: boolean = bulletChart.orientation === 'Vertical';
+        // tslint:disable-next-line:max-line-length
+        let categoryFieldValue: number = (isBulletChart && bulletChart.categoryField !== '') ? maxLabelSize.width + this.chart.border.width + padding * 3 : 0;
         let legendHeight: number = legendBounds.height + padding + this.legend.margin.top + this.legend.margin.bottom ;
         let legendWidth: number = legendBounds.width + padding + this.legend.margin.left + this.legend.margin.right ;
         let marginBottom: number = this.chart.margin.bottom;
         if (position === 'Bottom') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
+            // tslint:disable-next-line:max-line-length
             legendBounds.y = rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
+            legendBounds.y += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns
+            // tslint:disable-next-line:max-line-length
+            //tslint:disable-next-line:max-line-length
+            && !isVertical) ? bulletChart.majorTickLines.height + marginBottom + this.legend.border.width + padding * 2 :
+            (isVertical && bulletChart.categoryField !== '')  ? maxLabelSize.height + padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
         } else if (position === 'Top') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
             legendBounds.y = rect.y + padding + this.legend.margin.top;
+            legendBounds.y -= (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
+            // // tslint:disable-next-line:max-line-length
+            !isVertical) ? bulletChart.majorTickLines.height + this.chart.margin.top : 0;
+            legendHeight -= (isBulletChart) ? -padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
         } else if (position === 'Right') {
             legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom),
                                                        legendBounds.height, alignment);
+            legendWidth += (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
+            isVertical) ? (
+            this.chart.margin.left + this.chart.margin.right + bulletChart.majorTickLines.height) : 0;
             subtractThickness(rect, new Thickness(0, legendWidth, 0, 0));
         } else if (position === 'Left') {
             legendBounds.x = legendBounds.x + this.legend.margin.left;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom),
                                                        legendBounds.height, alignment);
+            legendWidth += (isBulletChart && !bulletChart.opposedPosition && !labelIns && !ticklIns  &&
+            // tslint:disable-next-line:max-line-length
+            // tslint:disable-next-line:max-line-length
+            isVertical) ?  (legendBounds.x - this.chart.margin.left + padding + bulletChart.majorTickLines.height) :
+            (bulletChart.orientation !== 'Vertical' && bulletChart.categoryField !== '')  ?  categoryFieldValue : 0;
             subtractThickness(rect, new Thickness(legendWidth, 0, 0, 0));
         } else {
             legendBounds.x = this.legend.location.x;
@@ -321,6 +360,7 @@ export class BaseLegend {
             subtractThickness(rect, new Thickness(0, 0, 0, 0));
         }
     }
+
     /**
      * To find legend alignment for chart and accumulation chart
      */
@@ -342,7 +382,7 @@ export class BaseLegend {
      * @private
      */
     public renderLegend(
-        chart: Chart | AccumulationChart, legend: LegendSettingsModel, legendBounds: Rect, redraw?: boolean
+        chart: Chart | AccumulationChart | BulletChart, legend: LegendSettingsModel, legendBounds: Rect, redraw?: boolean
     ): void {
         let firstLegend: number = this.findFirstLegendPosition(this.legendCollections);
         let padding: number = legend.padding;
@@ -357,7 +397,7 @@ export class BaseLegend {
                                       legendBounds.y + padding + this.maxItemHeight / 2);
             let textOptions: TextOption = new TextOption('', start.x, start.y, 'start');
             //  initialization for totalPages legend click totalpage again calculate
-            this.totalPages = this.isChartControl ? this.totalPages : 0;
+            this.totalPages = this.totalPages = (this.isChartControl || this.isBulletChartControl) ? this.totalPages : 0;
             let textPadding: number = legend.shapePadding + padding + legend.shapeWidth;
             let count: number = 0;
             this.pageXCollections = [];
@@ -365,15 +405,18 @@ export class BaseLegend {
             let previousLegend: LegendOptions = this.legendCollections[firstLegend];
             for (let legendOption of this.legendCollections) {
                 if (this.chart.getModuleName() === 'accumulationchart') {
-                    legendOption.fill = this.chart.visibleSeries[0].points[legendOption.pointIndex].color;
+                    // tslint:disable-next-line:max-line-length
+                    legendOption.fill = (this.chart as Chart || this.chart as AccumulationChart).visibleSeries[0].points[legendOption.pointIndex].color;
                 }
+                this.accessbilityText = (this.isBulletChartControl) ?  'Legend of bullet chart' + '' + legendOption.text
+                : 'Click to show or hide the ' + legendOption.text + ' series';
                 if (legendOption.render && legendOption.text !== '') {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', count)});
                     if  (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute('tabindex', legend.tabIndex.toString());
                         legendSeriesGroup.setAttribute('aria-label', legend.description ||
-                                    'Click to show or hide the ' + legendOption.text + ' series');
+                        this.accessbilityText);
                     }
                     this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, legendBounds, count, firstLegend);
 
@@ -383,9 +426,11 @@ export class BaseLegend {
 
                     if (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute(
-                            'style', 'cursor: ' + ((!legend.toggleVisibility && chart.selectionMode === 'None') ? 'auto' : 'pointer'));
+                            'style', 'cursor: ' + ((!legend.toggleVisibility && ((chart as Chart).selectionMode === 'None' ||
+                                (chart as Chart).highlightMode === 'None' ||
+                                (chart as AccumulationChart).selectionMode === 'None') || this.isBulletChartControl) ? 'auto' : 'pointer')
+                        );
                     }
-
                     if (legendTranslateGroup) {
                         legendTranslateGroup.appendChild(legendSeriesGroup);
                     }
@@ -417,8 +462,10 @@ export class BaseLegend {
     /**
      * To create legend rendering elements for chart and accumulation chart
      */
-    private createLegendElements(chart: Chart | AccumulationChart, legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel,
-                                 id: string, redraw?: boolean): Element {
+    private createLegendElements(
+    chart: Chart | AccumulationChart | BulletChart, legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel,
+    id: string, redraw?: boolean
+    ): Element {
         let padding: number = legend.padding;
         let options: RectOption = new RectOption(id + '_element', legend.background, legend.border, legend.opacity, legendBounds);
         legendGroup ? legendGroup.appendChild(chart.renderer.drawRectangle(options)) : chart.renderer.drawRectangle(options);
@@ -434,7 +481,9 @@ export class BaseLegend {
         let clippath: Element = chart.renderer.createClipPath({ id: id + '_clipPath' });
         options.y += padding;
         options.id += '_clipPath_rect';
-        options.width = (!this.isChartControl && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
+        options.width = (
+            (!this.isChartControl && chart.getModuleName() !== 'bulletChart'
+            ) && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
 
         if (!isCanvas) {
             this.clipRect = chart.renderer.drawRectangle(options);
@@ -453,12 +502,14 @@ export class BaseLegend {
      */
     protected renderSymbol(legendOption: LegendOptions, group: Element, i: number): void {
         let borderColor: string;
+        let control: BulletChart = this.isBulletChartControl ? this.chart as BulletChart : null;
         let symbolColor: string = legendOption.visible ? legendOption.fill : '#D3D3D3';
         let shape: string = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
         let isStrokeWidth: boolean = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
-        (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
-        let strokewidth: number  =  isStrokeWidth ? (this.chart as Chart).visibleSeries[i].width : 1;
+            (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
+        let strokewidth: number = isStrokeWidth ? (this.chart as Chart).visibleSeries[i].width :
+        (this.isBulletChartControl && legendOption.shape === 'Multiply') ? 4 : 1;
         let isCustomBorder: boolean = this.chart.getModuleName() === 'chart' &&
             (legendOption.type === 'Scatter' || legendOption.type === 'Bubble');
         if (isCustomBorder && i < (this.chart as Chart).visibleSeries.length) {
@@ -472,29 +523,42 @@ export class BaseLegend {
         let regionPadding: number;
         let isCanvas: boolean = (this.chart as Chart).enableCanvas;
         if (!isCanvas) {
-        group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
-                                     symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer));
+            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
+                // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line:align
+                symbolOption, this.accessbilityText , this.chart.renderer, null,
+                this.isBulletChartControl, control
+            ));
         } else {
             regionPadding = -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber);
             drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
-                       symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer,
-                       this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null);
-            this.legendRegions.push({rect: new Rect(legendOption.location.x, legendOption.location.y,
-                                                    this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: i});
+                // tslint:disable-next-line:align
+                symbolOption, this.accessbilityText, this.chart.renderer,
+                this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null, this.isBulletChartControl, control);
+            this.legendRegions.push({
+                rect: new Rect(legendOption.location.x, legendOption.location.y,
+                    // tslint:disable-next-line:align
+                    this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: i
+            });
         }
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||
-        legendOption.type === <AccumulationType>'Doughnut') {
+            legendOption.type === <AccumulationType>'Doughnut') {
             symbolOption.id = this.legendID + this.generateId(legendOption, '_shape_marker_', i);
             shape = legendOption.type === <AccumulationType>'Doughnut' ? 'Circle' : legendOption.markerShape;
             symbolOption.fill = legendOption.type === <AccumulationType>'Doughnut' ? '#FFFFFF' : symbolOption.fill;
             if (!isCanvas) {
-            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
-                                         '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
+                // tslint:disable-next-line:max-line-length
+                group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
+                    // tslint:disable-next-line:align
+                    '', symbolOption, this.accessbilityText, null, null,
+                    this.isBulletChartControl, control));
             } else {
                 drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
-                           '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer,
-                           this.currentPageNumber ?
-                            new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null);
+                    // tslint:disable-next-line:align
+                    '', symbolOption, this.accessbilityText, this.chart.renderer,
+                    this.currentPageNumber ?
+                        new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null,
+                    this.isBulletChartControl, control);
 
             }
         }
@@ -502,8 +566,9 @@ export class BaseLegend {
     /**
      * To render legend text for chart and accumulation chart
      */
-    protected renderText(chart: Chart | AccumulationChart, legendOption: LegendOptions, group: Element, textOptions: TextOption,
-                         i: number): void {
+    protected renderText(
+        chart: Chart | AccumulationChart | BulletChart, legendOption: LegendOptions, group: Element, textOptions: TextOption,
+        i: number): void {
         let legend: LegendSettingsModel = chart.legendSettings;
         let hiddenColor: string = '#D3D3D3';
         textOptions.id = this.legendID + this.generateId(legendOption, '_text_', i);
@@ -517,7 +582,7 @@ export class BaseLegend {
                     null, this.currentPageNumber &&  isCanvas ?
                     new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null);
         if (element) {
-            element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
+            element.setAttribute('aria-label', legend.description || this.accessbilityText);
         }
         if (isCanvas) {
             let textSize: Size = measureText(textOptions.text, legend.textStyle);
@@ -530,7 +595,8 @@ export class BaseLegend {
     /**
      * To render legend paging elements for chart and accumulation chart
      */
-    private renderPagingElements(chart: Chart | AccumulationChart, bounds: Rect, textOption: TextOption, legendGroup: Element): void {
+    private renderPagingElements(
+        chart: Chart | AccumulationChart | BulletChart, bounds: Rect, textOption: TextOption, legendGroup: Element): void {
         let paginggroup: Element = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
         this.pagingRegions = [];
         let isCanvas: boolean = (chart as Chart).enableCanvas;
@@ -540,7 +606,7 @@ export class BaseLegend {
         let grayColor: string = '#545454';
         let legend: LegendSettingsModel = chart.legendSettings; // to solve parameter lint error, legend declaration is here
         let padding: number = 8; // const padding for paging elements
-        if (this.isChartControl || !this.isVertical) {
+        if (this.isChartControl || this.isBulletChartControl || !this.isVertical) {
             this.totalPages = Math.ceil(this.totalPages / Math.max(1, this.rowCount - 1));
         } else {
             this.totalPages = Math.ceil(this.totalPages / this.maxColumns);
@@ -618,7 +684,7 @@ export class BaseLegend {
     protected translatePage(pagingText: Element, page: number, pageNumber: number): number {
         let size: number = (this.clipPathHeight) * page;
         let translate: string = 'translate(0,-' + size + ')';
-        if (!this.isChartControl && this.isVertical) {
+        if (!this.isChartControl && !this.bulletChart && this.isVertical) {
             let pageLength: number = page * this.maxColumns;
             size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
             size = size < 0 ? 0 : size; // to avoid small pixel variation

@@ -4,7 +4,7 @@ import { Axis, VisibleRangeModel } from '../axis/axis';
 import { SeriesModel } from '../series/chart-series-model';
 import { BorderModel, FontModel } from '../../common/model/base-model';
 import { Series, Points } from '../series/chart-series';
-import { LegendShape, ChartShape } from '../utils/enum';
+import { LegendShape, ChartShape, ChartTheme } from '../utils/enum';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
 import { ScrollbarSettingsRangeModel } from './chart-base-model';
 import { ChartLocation } from '../../common/utils/helper';
@@ -252,10 +252,7 @@ export interface ISelectionCompleteEventArgs extends IChartEventArgs {
 export interface ILoadedEventArgs extends IChartEventArgs {
     /** Defines the current chart instance */
     chart: Chart;
-}
-
-export interface IZoomingEventArgs extends IChartEventArgs {
-    axisCollection: IAxisData[];
+    theme ?: ChartTheme;
 }
 
 export interface IPrintEventArgs extends IChartEventArgs {
@@ -280,13 +277,6 @@ export interface IBoxPlotQuartile {
     lowerQuartile: number;
     average: number;
     median: number;
-}
-
-export interface IAxisData {
-    zoomFactor: number;
-    zoomPosition: number;
-    axisRange: VisibleRangeModel;
-    axisName: string;
 }
 
 /** @private */

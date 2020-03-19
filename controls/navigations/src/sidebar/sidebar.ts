@@ -581,14 +581,14 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private enableGestureHandler(args: SwipeEventArgs): void {
-        if (this.position === 'Left' && args.swipeDirection === 'Right' &&
+        if (!this.isOpen && this.position === 'Left' && args.swipeDirection === 'Right' &&
             (args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
             this.show();
-        } else if (this.position === 'Left' && args.swipeDirection === 'Left') {
+        } else if (this.isOpen && this.position === 'Left' && args.swipeDirection === 'Left') {
             this.hide();
-        } else if (this.position === 'Right' && args.swipeDirection === 'Right') {
+        } else if (this.isOpen && this.position === 'Right' && args.swipeDirection === 'Right') {
             this.hide();
-        } else if (this.position === 'Right' && args.swipeDirection === 'Left'
+        } else if (!this.isOpen && this.position === 'Right' && args.swipeDirection === 'Left'
             && (window.innerWidth - args.startX <= 20 && args.distanceX >= 50 && args.velocity >= 0.5)) {
             this.show();
         }
@@ -614,6 +614,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.mainContentEle) { this.mainContentEle.destroy(); }
         if (this.sidebarEle) { this.sidebarEle.destroy(); }
     }
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
     public onPropertyChanged(newProp: SidebarModel, oldProp: SidebarModel): void {
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
             (<HTMLElement>this.element.nextElementSibling);

@@ -29,7 +29,7 @@ $ddl-chip-mobile-content-padding: 7px 12px 7px 12px !default;
 $ddl-chip-bigger-content-padding: 7px 8px 7px 12px !default;
 $ddl-rtl-chip-mobile-content-padding: $ddl-chip-mobile-content-padding !default;
 $ddl-chip-padding: 0 !default;
-$ddl-closer-margin-top: -3.8em !default;
+$ddl-closer-margin-top: -2.9em !default;
 $ddl-closer-margin-top-bigger: -3.5em !default;
 $ddl-chip-close-top: 8px !default;
 $ddl-chip-close-left: 10px !default;
@@ -48,7 +48,7 @@ $ddl-control-bigger-height: 36px !default;
 $ddl-delimviewheight: 29px !default;
 $ddl-closer-hooker-font: 10px !default;
 $ddl-closer-hooker-font-bigger: 12px !default;
-$ddl-chip-hooker-square: 40px !default;
+$ddl-chip-hooker-square: 29px !default;
 $ddl-sel-hover-chip-bg-color: $gray-600 !default;
 $ddl-sel-chip-hover-font-color: $white !default;
 $ddl-chip-hooker-right: 0 !default;
@@ -71,8 +71,8 @@ $ddl-rtl-mob-sel-chip-content-padding: 12px 4px !default;
 $ddl-rtl-chip-padding: 0 8px 0 0 !default;
 $ddl-rtl-mob-sel-chip-padding: 0 8px 0 4px !default;
 $ddl-rtl-mob-chip-padding: 0 4px 0 8px !default;
-$ddl-overall-close-left: 15px !default;
-$ddl-overall-close-top: 17px !default;
+$ddl-overall-close-left: 10px !default;
+$ddl-overall-close-top: 10px !default;
 //$ddl-overall-bigger-close-top: 15px !default;
 $ddl-rtl-hooker-left: -15px !default;
 $ddl-chip-close-mob-top: 0 !default;
@@ -107,7 +107,7 @@ $ddl-popup-reorder-border: rgba($black, .15) !default;
 $ddl-check-right-margin: 8px !default;
 $ddl-bigger-check-right-margin: 12px !default;
 $ddl-selectall-font-size: 14px !default;
-$ddl-close-icon-left: 38px !default;
+$ddl-close-icon-left: 24px !default;
 $ddl-check-icon-top: 0 !default;
 $ddl-bigger-check-right: 25px !default;
 $ddl-multi-list-default-font-color: $gray-900 !default;
@@ -139,17 +139,18 @@ $ddl-small-chip-close-font: 8px !default;
 $ddl-control-small-height: 24px !default;
 $ddl-small-input-height: 24px !default;
 $ddl-delim-small-font-size: 12px !default;
-$ddl-small-closer-margin-top: -3.4em !default;
+$ddl-small-closer-margin-top: -2.4em !default;
 $ddl-chip-small-content-padding: 0 8px 0 8px !default;
 $ddl-chip-close-small-left: 6px !default;
 $ddl-chip-close-small-top: 5px !default;
-$ddl-chip-close-hooker-small-left: 0 !default;
+$ddl-chip-close-hooker-small-left: 4px !default;
+$ddl-chip-close-hooker-small-top: 7px !default;
 $ddl-delimviewheight-small: 24px !default;
 // Touch Small size
 $ddl-select-all-height-bigger-small: 34px !default;
 $ddl-bigger-small-chip-height: 30px !default;
 $ddl-chip-bigger-small-font-size: 15px !default;
-$ddl-bigger-small-chip-close-square: 30px !default;
+$ddl-bigger-small-chip-close-square: 24px !default;
 $ddl-bigger-small-chip-close-font: 10px !default;
 $ddl-control-bigger-small-height: 30px !default;
 $ddl-bigger-small-input-height: 34px !default;
@@ -158,7 +159,10 @@ $ddl-chip-close-bigger-left: 13px !default;
 $ddl-chip-close-bigger-top: 11px !default;
 $ddl-chip-bigger-content-padding: 7px 8px 7px 12px !default;
 $ddl-delimviewheight-bigger-small: 34px !default;
-$ddl-closer-margin-top-bigger-small: -3.4em !default;
+$ddl-closer-margin-top-bigger-small: -2.9em !default;
+$multiselect-closer-bigger-height: 36px !default;
+$multiselect-closer--bigger-margin-top: -3em !default;
+$multiselect-closer-bigger-width: 34px !default;
 
 @include export-module('multiselect-bootstrap4') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
@@ -204,6 +208,25 @@ $ddl-closer-margin-top-bigger-small: -3.4em !default;
 
   .e-small.e-bigger .e-multi-select-wrapper .e-chips {
     margin: 2px 4px 2px 0;
+  }
+
+  .e-multiselect.e-float-input input[readonly],
+  .e-multiselect.e-float-input.e-control-wrapper input[readonly] {
+    background: transparent;
+  }
+
+  .e-small .e-multi-select-wrapper .e-close-hooker::before {
+    top: $ddl-chip-close-hooker-small-top;
+  }
+
+  .e-bigger .e-multiselect .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    height: $multiselect-closer-bigger-height;
+    margin-top: $multiselect-closer--bigger-margin-top;
+    right: $multiselect-closer-bigger-width;
+  }
+
+  .e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    right: $multiselect-closer-bigger-width;
   }
 
 }

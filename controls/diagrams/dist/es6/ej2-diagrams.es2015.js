@@ -17187,11 +17187,12 @@ function updateCloneProp(properties, obj) {
             'maxWidth', 'pivot', 'margin', 'flip', 'wrapper', 'constraints', 'style', 'annotations', 'ports', 'isExpanded', 'expandIcon'];
     }
     else if (obj instanceof Connector) {
-        prop = ['constraints', 'sourcePadding', 'targetPadding', 'cornerRadius', 'flip', 'sourceID',
+        prop = ['constraints', 'sourcePadding', 'targetPadding', 'cornerRadius', 'flip', 'type', 'targetDecorator', 'sourceDecorator',
+            'sourceID', 'shape', 'bridgeSpace', 'annotations', 'segments', 'hitPadding', 'tooltip', 'previewSize', 'dragSize', 'style',
             'sourcePortID', 'targetID', 'targetPortID', 'visible'];
     }
     else if (obj instanceof Decorator) {
-        prop = ['height', 'width'];
+        prop = ['height', 'width', 'shape', 'style', 'pivot', 'pathData'];
     }
     else if (obj instanceof Shape || obj instanceof IconShape) {
         prop.push('shape');
@@ -21316,7 +21317,7 @@ class DeepDiffMapper {
         else {
             for (let key in obj2) {
                 if (this.isFunction(obj2[key]) || diff[key] !== undefined) {
-                    if (diff[key].type && diff[key].type !== this.valueUpdated) {
+                    if (diff[key].type && ((diff[key].type !== this.valueUpdated) && (diff[key].type !== this.valueDeleted))) {
                         delete diff[key];
                     }
                     continue;
@@ -21369,7 +21370,7 @@ class DeepDiffMapper {
                 }
             }
             else {
-                if (key != 'type') {
+                if ((key != 'type') || (key == 'type' && (obj[key] !== this.valueUpdated && obj[key] !== this.valueUnchanged && obj[key] !== this.valueDeleted && obj[key] !== this.valueCreated))) {
                     if (this.isFunction(obj[key])) {
                         continue;
                     }
@@ -21765,12 +21766,19 @@ class ConnectTool extends ToolBase {
             if (isBlazor()) {
                 let trigger = DiagramEvent.connectionChange;
                 let temparg;
+                this.tempArgs.state = 'Changed';
+                let connector = args.source.connectors[0];
+                let nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+                let portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+                this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
+                    { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
+                    { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
                 temparg = (yield this.commandHandler.triggerEvent(trigger, this.tempArgs));
                 if (temparg) {
                     this.commandHandler.updateConnectorValue(temparg);
                 }
             }
-            if (this.isConnected && args.source.connectors) {
+            if (!isBlazor() && this.isConnected && args.source.connectors) {
                 let connector = args.source.connectors[0];
                 let nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                 let portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
@@ -22543,7 +22551,7 @@ class ResizeTool extends ToolBase {
             let object;
             this.commandHandler.updateSelector();
             object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-            if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
+            if (!isBlazor() && (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
                 let deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
                 this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
                 let oldValue = {
@@ -22775,7 +22783,9 @@ class ConnectorDrawingTool extends ConnectTool {
             args.source = this.drawingObject;
             if ((args.target || (args.actualObject && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target)))) {
+                this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);
+                this.commandHandler.diagram.allowServerDataBinding = true;
             }
             this.endPoint = 'ConnectorTargetEnd';
         }
@@ -23521,6 +23531,7 @@ class ConnectorEditing extends ToolBase {
             }
         }
         else {
+            this.commandHandler.enableServerDataBinding(false);
             let index = this.findIndex(connector, point);
             if (connector.segments && connector.segments[index] && connector.segments[index].type === 'Straight') {
                 let segment = connector.segments[index];
@@ -23531,6 +23542,7 @@ class ConnectorEditing extends ToolBase {
                 connector.segments.splice(index, 0, newseg);
                 updateSeg = true;
             }
+            this.commandHandler.enableServerDataBinding(true);
         }
         if (updateSeg) {
             this.commandHandler.updateEndPoint(connector, oldValues);
@@ -24988,11 +25000,13 @@ class DiagramEventHandler {
                                     }
                                 }
                                 if (command.execute) {
-                                    // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
-                                    //     command.execute()
-                                    // } else {
-                                    let execute = getFunction(command.execute);
-                                    execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter });
+                                    if (this.diagram.tool !== DiagramTools.ZoomPan) {
+                                        // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
+                                        //     command.execute()
+                                        // } else {
+                                        let execute = getFunction(command.execute);
+                                        execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter });
+                                    }
                                     // }
                                 }
                                 if (isBlazor()) {
@@ -25173,7 +25187,9 @@ class DiagramEventHandler {
         }
         if (!this.lastObjectUnderMouse && this.eventArgs.source || (this.lastObjectUnderMouse !== this.eventArgs.actualObject)) {
             this.lastObjectUnderMouse = this.eventArgs.actualObject;
-            this.diagram.triggerEvent(DiagramEvent.mouseEnter, arg);
+            if (this.eventArgs.actualObject !== undefined) {
+                this.diagram.triggerEvent(DiagramEvent.mouseEnter, arg);
+            }
         }
         if (this.eventArgs.actualObject) {
             this.diagram.triggerEvent(DiagramEvent.mouseOver, arg);
@@ -26802,12 +26818,12 @@ class CommandHandler {
         }
     }
     UpdateBlazorDiagramModelLayers(layer) {
-        let ejsInterop = 'ejsInterop';
+        let blazorInterop = 'sfBlazor';
         let updatedModel = cloneBlazorObject(layer);
         let blazor = 'Blazor';
         if (window && window[blazor]) {
             let obj = { 'methodName': 'UpdateBlazorDiagramModelLayers', 'diagramobj': JSON.stringify(updatedModel) };
-            window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+            window[blazorInterop].updateBlazorProperties(obj, this.diagram);
         }
     }
     /** @private */
@@ -27465,6 +27481,12 @@ class CommandHandler {
     /**
      * @private
      */
+    enableServerDataBinding(enable) {
+        this.diagram.enableServerDataBinding(enable);
+    }
+    /**
+     * @private
+     */
     addText(obj, currentPosition) {
         let annotation = this.diagram.findElementUnderMouse(obj, currentPosition);
         this.diagram.startTextEdit(obj, annotation instanceof TextElement ? (annotation.id).split('_')[1] : undefined);
@@ -27598,11 +27620,11 @@ class CommandHandler {
             for (let i = 0; i < this.diagram.selectedItems.connectors.length; i++) {
                 diff.connectors.push(this.diagram.selectedItems.connectors[i].id);
             }
-            let ejsInterop = 'ejsInterop';
+            let blazorInterop = 'sfBlazor';
             let blazor = 'Blazor';
             if (window && window[blazor]) {
                 let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': { selectedItems: diff } };
-                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         }
     }
@@ -27748,8 +27770,8 @@ class CommandHandler {
         return id;
     }
     updateBlazorSelectorModel(oldItemsCollection, clearSelection) {
-        let ejsInterop = 'ejsInterop';
-        if (window && window[ejsInterop]) {
+        let blazorInterop = 'sfBlazor';
+        if (window && window[blazorInterop]) {
             let i = 0;
             let nodes = [];
             let connectors = [];
@@ -27763,8 +27785,8 @@ class CommandHandler {
             connectors = this.getObjectCollectionId(false, clearSelection);
             let items = { nodes: nodes, connectors: connectors };
             let newItems = cloneBlazorObject(items);
-            if (window[ejsInterop].updateDiagramCollection) {
-                window[ejsInterop].updateDiagramCollection.call(this.diagram, 'selectedItems', newItems, oldItems, false, true);
+            if (window[blazorInterop].updateDiagramCollection) {
+                window[blazorInterop].updateDiagramCollection.call(this.diagram, 'selectedItems', newItems, oldItems, false, true);
             }
         }
     }
@@ -28177,18 +28199,18 @@ class CommandHandler {
     }
     /**   @private  */
     updateBlazorProperties(isObjectInteraction) {
-        let ejsInterop = 'ejsInterop';
+        let blazorInterop = 'sfBlazor';
         let blazor = 'Blazor';
         if (!isObjectInteraction) {
             if (window && window[blazor]) {
                 let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         }
         else {
             if (window && window[blazor]) {
                 let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
             }
         }
         this.diagram.enableServerDataBinding(true);
@@ -29808,7 +29830,9 @@ class CommandHandler {
         this.diagram.preventNodesUpdate = preventNodesUpdate;
         this.diagram.preventConnectorsUpdate = false;
         if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule) {
+            this.diagram.allowServerDataBinding = false;
             this.layoutAnimateModule.expand(this.diagram.layout.enableAnimation, objects, node, this.diagram);
+            this.diagram.allowServerDataBinding = true;
         }
         else {
             let arg = {
@@ -29983,12 +30007,12 @@ class CommandHandler {
             if (isBlazor()) {
                 this.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
                 this.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-                let ejsInterop = 'ejsInterop';
+                let blazorInterop = 'sfBlazor';
                 let blazor = 'Blazor';
                 let diagramObject = { nodes: changeNodes, connectors: changeConnectors };
                 if (window && window[blazor] && (changeConnectors.length + changeNodes.length)) {
                     let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                    window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                    window[blazorInterop].updateBlazorProperties(obj, this.diagram);
                 }
             }
             this.diagram.protectPropertyChange(false);
@@ -31588,6 +31612,8 @@ class Diagram extends Component {
         this.deleteVirtualObject = false;
         this.changedConnectorCollection = [];
         this.changedNodesCollection = [];
+        this.previousNodeCollection = [];
+        this.previousConnectorCollection = [];
         this.crudDeleteNodes = [];
         this.diagramid = 88123;
         /** @private */
@@ -31595,6 +31621,8 @@ class Diagram extends Component {
         this.renderTimer = null;
         let child;
         let node;
+        let blazor = 'Blazor';
+        let canCloneObject = isBlazor() && window && window[blazor] && !this.dataSourceSettings.dataSource;
         this.ignoreCollectionWatch = true;
         for (let i = 0; options && options.nodes && i < options.nodes.length; i++) {
             child = options.nodes[i];
@@ -31614,6 +31642,9 @@ class Diagram extends Component {
                 setSwimLaneDefaults(child, node);
             }
             if (this.nodeDefaults) {
+                if (canCloneObject) {
+                    this.previousNodeCollection.push(cloneObject(node, undefined, undefined, true));
+                }
                 updateDefaultValues(node, child, this.nodeDefaults);
             }
             this.updateAnnotationText(node.annotations);
@@ -31622,6 +31653,9 @@ class Diagram extends Component {
             for (let i = 0; options && options.connectors && i < options.connectors.length; i++) {
                 child = options.connectors[i];
                 node = this.connectors[i];
+                if (canCloneObject) {
+                    this.previousConnectorCollection.push(cloneObject(node, undefined, undefined, true));
+                }
                 updateDefaultValues(node, child, this.connectorDefaults);
                 this.updateAnnotationText(node.annotations);
             }
@@ -32051,12 +32085,12 @@ class Diagram extends Component {
             for (let i = 0; i < this.changedConnectorCollection.length; i++) {
                 changedConnectors.push(this.commandHandler.deepDiffer.removeEmptyValues(this.changedConnectorCollection[i]));
             }
-            let ejsInterop = 'ejsInterop';
+            let blazorInterop = 'sfBlazor';
             let blazor = 'Blazor';
             let diagramObject = { nodes: changedNodes, connectors: changedConnectors };
             if (window && window[blazor] && !this.dataSourceSettings.dataSource) {
                 let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this);
+                window[blazorInterop].updateBlazorProperties(obj, this);
             }
         }
         if (this.dataSourceSettings.crudAction.read) {
@@ -32084,12 +32118,12 @@ class Diagram extends Component {
                     updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
                 this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-                let ejsInterop = 'ejsInterop';
+                let blazorInterop = 'sfBlazor';
                 let blazor = 'Blazor';
                 let diagramObject = { nodes: [], connectors: changeConnectors };
                 if (window && window[blazor]) {
                     let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                    window[ejsInterop].updateBlazorProperties(obj, this);
+                    window[blazorInterop].updateBlazorProperties(obj, this);
                 }
             }
         }
@@ -33320,12 +33354,12 @@ class Diagram extends Component {
                 updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
             }
             this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-            let ejsInterop = 'ejsInterop';
+            let blazorInterop = 'sfBlazor';
             let blazor = 'Blazor';
             let diagramObject = { nodes: [], connectors: changeConnectors };
             if (window && window[blazor]) {
                 let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this);
+                window[blazorInterop].updateBlazorProperties(obj, this);
             }
         }
     }
@@ -33497,7 +33531,7 @@ class Diagram extends Component {
     }
     /** @private */
     UpdateBlazorDiagramModelCollection(obj, copiedObject, multiSelectDelete) {
-        let ejsInterop = 'ejsInterop';
+        let blazorInterop = 'sfBlazor';
         let updatedModel = cloneBlazorObject(obj);
         let blazor = 'Blazor';
         if (window && window[blazor] && (!this.isServerUpdate || multiSelectDelete)) {
@@ -33552,11 +33586,11 @@ class Diagram extends Component {
                     'connectorObj': JSON.stringify(connectorModelCollection)
                 }
             };
-            window[ejsInterop].updateBlazorProperties(dgmObj, this);
+            window[blazorInterop].updateBlazorProperties(dgmObj, this);
         }
     }
     UpdateBlazorDiagramModel(obj, objectType, removalIndex, annotationNodeIndex) {
-        let ejsInterop = 'ejsInterop';
+        let blazorInterop = 'sfBlazor';
         let updatedModel = cloneBlazorObject(obj);
         let blazor = 'Blazor';
         if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
@@ -33569,7 +33603,7 @@ class Diagram extends Component {
                     'annotationIndex': annotationNodeIndex, 'connectorObj': undefined
                 }
             };
-            window[ejsInterop].updateBlazorProperties(dgmObj, this);
+            window[blazorInterop].updateBlazorProperties(dgmObj, this);
         }
     }
     /**
@@ -33586,19 +33620,19 @@ class Diagram extends Component {
                 connectorCollection.push(cloneObject(this.connectors[i], undefined, undefined, true));
             }
         }
-        let ejsInterop = 'ejsInterop';
+        let blazorInterop = 'sfBlazor';
         let blazor = 'Blazor';
         if (window && window[blazor]) {
             let obj = {
                 'methodName': 'AddBlazorObjects',
                 'diagramobj': { 'nodeObj': JSON.stringify(nodesCollection), 'isConnector': false }
             };
-            window[ejsInterop].updateBlazorProperties(obj, this);
+            window[blazorInterop].updateBlazorProperties(obj, this);
             obj = {
                 'methodName': 'AddBlazorObjects',
                 'diagramobj': { 'nodeObj': JSON.stringify(connectorCollection), 'isConnector': true }
             };
-            window[ejsInterop].updateBlazorProperties(obj, this);
+            window[blazorInterop].updateBlazorProperties(obj, this);
         }
     }
     removeNodeEdges(elementId, id, isOutEdges) {
@@ -33762,16 +33796,16 @@ class Diagram extends Component {
     }
     /* tslint:enable */
     updateBlazorCollectionChange(newObject, isAdding) {
-        let ejsInterop = 'ejsInterop';
-        if (window && window[ejsInterop]) {
+        let blazorInterop = 'sfBlazor';
+        if (window && window[blazorInterop]) {
             let newNode = {};
             let object = newObject instanceof Node ? 'nodes' : 'connectors';
             let index;
             index = (object === 'nodes') ? this.nodes.indexOf(newObject).toString()
                 : this.connectors.indexOf(newObject).toString();
             newNode[index] = cloneObject(newObject);
-            if (window[ejsInterop].updateDiagramCollection) {
-                window[ejsInterop].updateDiagramCollection.call(this, object, newNode, {}, !isAdding, false);
+            if (window[blazorInterop].updateDiagramCollection) {
+                window[blazorInterop].updateDiagramCollection.call(this, object, newNode, {}, !isAdding, false);
             }
         }
     }
@@ -34273,7 +34307,7 @@ class Diagram extends Component {
      * @param id Defines annotation id to be edited in the node
      */
     startTextEdit(node, id) {
-        if (!canZoomPan(this) || canSingleSelect(this)) {
+        if ((!canZoomPan(this) && !canMultiSelect(this)) || canSingleSelect(this)) {
             this.textEditing = true;
             let transform = this.scroller.transform;
             let scale = canZoomTextEdit(this) ? transform.scale : 1;
@@ -35165,7 +35199,7 @@ class Diagram extends Component {
         let hasLayers = this.layers.length > 1;
         let connectors = [];
         let blazor = 'Blazor';
-        let canCloneObject = window && window[blazor] && this.diagramActions && !this.dataSourceSettings.dataSource;
+        let canCloneObject = window && window[blazor] && !this.dataSourceSettings.dataSource;
         let tempTabel = {};
         let bpmnTable = {};
         let groups = [];
@@ -35176,12 +35210,8 @@ class Diagram extends Component {
         let changeNodes = [];
         let changeConnectors = [];
         if (isBlazor() && canCloneObject) {
-            for (let obj of this.nodes) {
-                previousNodeObject.push(cloneObject(obj, undefined, undefined, true));
-            }
-            for (let obj of this.connectors) {
-                previousConnectorObject.push(cloneObject(obj, undefined, undefined, true));
-            }
+            previousNodeObject = this.previousNodeCollection;
+            previousConnectorObject = this.previousConnectorCollection;
         }
         for (let obj of this.nodes) {
             obj.id = obj.id || randomId();
@@ -35254,13 +35284,13 @@ class Diagram extends Component {
             }
             this.commandHandler.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
             this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-            let ejsInterop = 'ejsInterop';
+            let blazorInterop = 'sfBlazor';
             let diagramObject = { nodes: changeNodes, connectors: changeConnectors };
             let obj = {
                 'methodName': 'UpdateBlazorProperties',
                 'diagramobj': diagramObject
             };
-            window[ejsInterop].updateBlazorProperties(obj, this);
+            window[blazorInterop].updateBlazorProperties(obj, this);
         }
     }
     addToLayer(obj, hasLayers) {
@@ -35579,6 +35609,8 @@ class Diagram extends Component {
             this.initObjectExtend(obj, layer, independentObj);
             this.nameTable[obj.id] = obj;
             if (obj instanceof Node && obj.children) {
+                this.preventNodesUpdate = true;
+                this.preventConnectorsUpdate = true;
                 if (!group && !obj.container) {
                     this.updateGroupOffset(obj, true);
                 }
@@ -35592,6 +35624,8 @@ class Diagram extends Component {
                 if (!this.isLoading && obj.rotateAngle && !obj.container) {
                     this.commandHandler.rotateObjects(obj, [obj], obj.rotateAngle, { x: obj.offsetX, y: obj.offsetY }, false);
                 }
+                this.preventNodesUpdate = false;
+                this.preventConnectorsUpdate = false;
             }
             if (this['enterObject'] === undefined) {
                 this.updateQuad(obj);
@@ -40640,7 +40674,8 @@ class DiagramContextMenu {
             }
             this.eventArgs = args.event;
             if (isBlazor()) {
-                diagramArgs = (yield this.parent.trigger(contextMenuOpen, diagramArgs));
+                diagramArgs =
+                    (yield this.parent.trigger(contextMenuOpen, diagramArgs)) || diagramArgs;
                 if (typeof diagramArgs === 'string') {
                     diagramArgs = JSON.parse(diagramArgs);
                 }
@@ -46141,8 +46176,10 @@ class LayoutAnimation {
             if (animation) {
                 this.updateOpacity(node, opacity, diagram);
                 setIntervalObjects[x] = setInterval(() => {
+                    diagram.allowServerDataBinding = false;
                     opacity <= 1 ? this.updateOpacity(node, opacity, diagram) : clearInterval(setIntervalObjects[0]);
                     opacity += .2;
+                    diagram.allowServerDataBinding = true;
                 }, 20);
             }
         }

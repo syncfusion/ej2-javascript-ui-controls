@@ -48,6 +48,9 @@ export class Legend extends BaseLegend {
     private mouseMove(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
             this.move(e);
+            if ((<Chart>this.chart).highlightModule && (<Chart>this.chart).highlightMode !== 'None') {
+                this.click(e);
+            }
         }
     }
     /**
@@ -167,7 +170,7 @@ export class Legend extends BaseLegend {
         legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
     }
     /** @private */
-    public LegendClick(seriesIndex: number): void {
+    public LegendClick(seriesIndex: number, event: Event | PointerEvent): void {
         let chart: Chart = <Chart>this.chart;
         let series: Series = chart.visibleSeries[seriesIndex];
         let legend: LegendOptions = this.legendCollections[seriesIndex];
@@ -212,10 +215,7 @@ export class Legend extends BaseLegend {
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
             chart.refreshAxis();
-            // No need to refresh the trendline series in legend click.
-            if (!(series.category === 'TrendLine')) {
-                series.refreshAxisLabel();
-            }
+            series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
@@ -223,9 +223,14 @@ export class Legend extends BaseLegend {
                 chart.selectionModule.selectedDataIndexes = selectedDataIndexes;
                 chart.selectionModule.redrawSelection(chart, chart.selectionMode);
             }
+            if (chart.highlightModule && chart.highlightMode !== 'None') {
+                chart.highlightModule.redrawSelection(chart, chart.highlightMode);
+            }
             chart.redraw = false;
         } else if (chart.selectionModule) {
-            chart.selectionModule.legendSelection(chart, seriesIndex);
+            chart.selectionModule.legendSelection(chart, seriesIndex, event);
+        } else if (chart.highlightModule) {
+            chart.highlightModule.legendSelection(chart, seriesIndex, event);
         }
         series.chart[changeDetection] = false;
     }
@@ -274,7 +279,7 @@ export class Legend extends BaseLegend {
         for (let id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 seriesIndex = parseInt(targetId.split(id)[1], 10);
-                this.LegendClick(seriesIndex);
+                this.LegendClick(seriesIndex, event);
                 break;
             }
         }
@@ -292,7 +297,7 @@ export class Legend extends BaseLegend {
                                  region.rect));
         });
         if (legendRegion.length && (this.chart as Chart).enableCanvas) {
-            this.LegendClick(legendRegion[0].index);
+            this.LegendClick(legendRegion[0].index, event);
         }
     }
     /**

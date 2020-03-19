@@ -819,7 +819,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.trigger(gaugeMouseMove, args, (observedArgs: IMouseEventArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
-            let dragArgs: IPointerDragEventArgs; let currentPointerDrag : Boolean = false;
+            let dragArgs: IPointerDragEventArgs;
             let dragBlazorArgs: IPointerDragEventArgs;
             if (args.target && !args.cancel) {
                 if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
@@ -827,9 +827,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                         current = this.moveOnPointer(args.target as HTMLElement);
                         if (!(isNullOrUndefined(current)) && current.pointer) {
                             this.element.style.cursor = current.style;
-                            currentPointerDrag = current.pointer;
                         }
-                        if (this.activePointer && currentPointerDrag) {
+                        if (this.activePointer) {
                             this.isDrag = true;
                             let dragPointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
                             let dragAxisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
@@ -998,9 +997,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 this.activeAxis = null;
                 this.activePointer = null;
                 this.isDrag = false;
-                if (!isNullOrUndefined(this.mouseElement)) {
-                    this.triggerDragEvent(this.mouseElement);
-                }
+                this.triggerDragEvent(e.target as Element);
             }
         }
         if (!isNullOrUndefined(this.mouseElement)) {

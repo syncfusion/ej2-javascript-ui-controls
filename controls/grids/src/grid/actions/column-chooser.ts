@@ -695,6 +695,9 @@ export class ColumnChooser implements IAction {
     }
 
     private beforeOpenColumnChooserEvent(): object {
+        if (isBlazor() && this.parent.isServerRendered && this.parent.columnChooserSettings.operator === 'none') {
+            this.parent.columnChooserSettings.operator = 'startsWith';
+        }
         let args1: { requestType: string, element?: Element, columns?: Column[], cancel: boolean, searchOperator: string } = {
             requestType: 'beforeOpenColumnChooser', element: this.parent.element,
             columns: this.getColumns() as Column[], cancel: false,

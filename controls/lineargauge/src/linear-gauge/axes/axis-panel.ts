@@ -388,8 +388,9 @@ export class AxisLayoutPanel {
                 colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
                 range.interior = range.color ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {
-                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 : position === 'Outside' ?
-                        -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
+                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
+                        (position === 'Outside' || position === 'Auto') ?
+                        - (line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
                     pointY = (valueToCoefficient(end, axis, orientation, visibleRange) * line.height) + line.y;
                     height = (valueToCoefficient(start, axis, orientation, visibleRange) * line.height) + line.y;
                     height -= pointY;
@@ -405,7 +406,7 @@ export class AxisLayoutPanel {
                 } else {
                     pointX = (valueToCoefficient(end, axis, orientation, visibleRange) * line.width) + line.x;
                     pointY = axis.lineBounds.y + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
-                        position === 'Outside' ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
+                        (position === 'Outside' || position === 'Auto') ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
                     width = (valueToCoefficient(start, axis, orientation, visibleRange) * line.width) + line.x;
                     width = pointX - width;
                     startVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + startWidth) : position === 'Cross' ?

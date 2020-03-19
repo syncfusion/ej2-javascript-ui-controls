@@ -4,6 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { Series } from '../../../src/chart/series/chart-series';
+import { Highlight } from '../../../src/chart/user-interaction/high-light';
 import { SeriesModel } from '../../../src/chart/series/chart-series-model';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { BarSeries } from '../../../src/chart/series/bar-series';
@@ -24,7 +25,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, SplineSeries, Legend, StepLineSeries, AreaSeries, StackingAreaSeries, StackingColumnSeries, ColumnSeries,
-    ScatterSeries, BarSeries, Selection);
+    ScatterSeries, BarSeries, Selection, Highlight);
 let i: number; let currentPoint: Points; let value: number = 0; let data: Points[] = []; let seriesCollection: SeriesModel[] = [];
 let colors: string[] = ['#663AB6', '#EB3F79', '#F8AB1D', '#B82E3D', '#049CB1', '#F2424F', '#C2C924', '#3DA046', '#074D67', '#02A8F4'];
 let toggle: boolean = true;
@@ -158,6 +159,23 @@ describe('Chart Legend', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('legend highlight with patterns', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                legendElement = document.getElementById(legendId + '_text_0');
+                trigger.mousemoveEvent(legendElement, 0, 0, 387, 309.25);
+                let selectedId: string = id + '_ej2_chart_highlight_series_0';
+                expect(document.getElementsByClassName(selectedId).length).toBe(3);
+                done();
+            };
+            chartObj.legendSettings = { width: '80', toggleVisibility: false };
+            chartObj.series[0].name = 'Series one';
+            chartObj.series[1].name = 'Series two';
+            chartObj.highlightMode = 'Point';
+            chartObj.highlightPattern = 'HorizontalDash';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
         it('Style fill, height, width', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
@@ -176,9 +194,12 @@ describe('Chart Legend', () => {
                 border: { color: 'red', width: 1 },
                 shapePadding: 8, shapeHeight: 10, shapeWidth: 10,
                 height: '100', width: '240',
-                position: 'Right'
+                position: 'Right',
+                toggleVisibility: true
             };
             chartObj.loaded = loaded;
+            chartObj.highlightMode = 'None';
+            chartObj.highlightPattern = 'None';
             chartObj.refresh();
         });
         it('Style font, background, padding', (done: Function) => {
@@ -715,11 +736,11 @@ describe('Chart Legend', () => {
                 legendElement = document.getElementById(legendId + '_text_' + 4);
                 trigger.clickEvent(legendElement);
                 selectedElement = document.getElementsByClassName(selection + 4);
-                expect(selectedElement.length).not.toBe(0);
+                expect(selectedElement.length).toBe(0);
                 legendElement = document.getElementById(legendId + '_text_' + 1);
                 trigger.clickEvent(legendElement);
                 selectedElement = document.getElementsByClassName(selection + 1);
-                expect(selectedElement.length).not.toBe(0);
+                expect(selectedElement.length).toBe(0);
                 done();
             };
             chartObj.selectionMode = 'Point';
@@ -846,39 +867,6 @@ describe('Chart Legend', () => {
                 position: 'Custom', location: { x: 200, y: 20 },
                 width: '240', margin: { top: 20, bottom: 30, right: 20, left: 40 }
             };
-            chartObj.loaded = loaded;
-            chartObj.refresh();
-        });
-        it('Suport Subscript legend text', (done: Function) => {
-            loaded = (args: Object): void => {
-                chartObj.loaded = null;
-                legendElement = document.getElementById(legendId + '_text_0');
-                expect(legendElement.textContent).toEqual("H₂₃₄O₂,CO₄₅₆₂H₃");
-                done();
-            };
-            chartObj.series[0].name = 'H~234~O~2~,CO~4562~H~3~';
-            chartObj.loaded = loaded;
-            chartObj.refresh();
-        });
-        it('Suport Superscript legend text', (done: Function) => {
-            loaded = (args: Object): void => {
-                chartObj.loaded = null;
-                legendElement = document.getElementById(legendId + '_text_0');
-                expect(legendElement.textContent).toEqual("H²³⁴O²,CO⁴⁵⁶²H³");
-                done();
-            };
-            chartObj.series[0].name = 'H^234^O^2^,CO^4562^H^3^';
-            chartObj.loaded = loaded;
-            chartObj.refresh();
-        });
-        it('Suport Subscript and Superscript legend text', (done: Function) => {
-            loaded = (args: Object): void => {
-                chartObj.loaded = null;
-                legendElement = document.getElementById(legendId + '_text_0');
-                expect(legendElement.textContent).toEqual("H₂₃₄O²,CO⁴⁵⁶²H₃");
-                done();
-            };
-            chartObj.series[0].name = 'H~234~O^2^,CO^4562^H~3~';
             chartObj.loaded = loaded;
             chartObj.refresh();
         });

@@ -19,7 +19,7 @@ export interface TaskFieldsModel {
 
     /**
      * To map parent id of task from data source.
-     * @default null     
+     * @default null
      */
     parentID?: string;
 
@@ -106,5 +106,17 @@ export interface TaskFieldsModel {
      * @default null
      */
     notes?: string;
+
+    /**
+     * To map work of task from data source.
+     * @default null
+     */
+    work?: string;
+
+    /**
+     * To map schedule mode of task from data source.
+     * @default null      
+     */
+    manual?: string;
 
 }

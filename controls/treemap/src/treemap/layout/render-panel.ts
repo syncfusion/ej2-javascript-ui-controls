@@ -473,7 +473,7 @@ export class LayoutPanel {
             template = isLeafItem ? leaf.labelTemplate : levels[index].headerTemplate;
             item['options'] = { border: border, opacity: opacity, fill: fill };
             eventArgs = {
-                cancel: false, name: itemRendering, treemap: this.treemap,
+                cancel: false, name: itemRendering, treemap: this.treemap, text : renderText,
                 currentItem: item, RenderItems: this.renderItems, options: item['options']
             };
             if (this.treemap.isBlazor) {
@@ -488,8 +488,11 @@ export class LayoutPanel {
                     let path: Element = this.renderer.drawPath(pathOptions);
                     itemGroup.appendChild(path);
                     if (txtVisible) {
+                        if (eventArgs.text !== renderText) {
+                            eventArgs.text = textFormatter(eventArgs.text, item['data'], this.treemap) || levelName;
+                        }
                         this.renderItemText(
-                            renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill,
+                            eventArgs.text.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill,
                             position as LabelPosition, connectorText
                         );
                     }

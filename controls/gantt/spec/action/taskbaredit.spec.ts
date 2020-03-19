@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
-import { baselineData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 describe('Gantt taskbar editing', () => {
     describe('Gantt taskbar edit action', () => {
@@ -452,4 +452,71 @@ describe('Gantt taskbar editing', () => {
             }
         });
     });
+    describe('Schedule mode', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: scheduleModeData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                enableContextMenu: true,
+                splitterSettings: {
+                    columnIndex: 8
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Manual parent task-right resizing', () => {
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+                expect(args.taskBarEditAction).toBe('ParentResizing');
+            };
+            ganttObj.dataBind();
+            expect(ganttObj.flatData[0].ganttProperties.duration).toBe(5);
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-gantt-manualparenttaskbar-right') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[0].ganttProperties.duration).toBe(9);
+        });
+        it('Manual parent task-dragging', () => {
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+                expect(args.taskBarEditAction).toBe('ManualParentDrag');
+            };
+            ganttObj.dataBind();   
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy')).toBe('03/04/2017');
+            };
+            ganttObj.dataBind();
+            expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('02/27/2017');
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+    })
 });

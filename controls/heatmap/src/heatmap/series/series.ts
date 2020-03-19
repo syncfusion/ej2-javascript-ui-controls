@@ -182,8 +182,10 @@ export class Series {
                 } else if (!isNullOrUndefined(this.text) && (cellSetting.bubbleType === 'Size' || cellSetting.bubbleType === 'SizeAndColor')
                     && this.text.toString() !== '') { // Bubble by same color and different size Series
                     if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
-                        this.heatMap.minColorValue = this.heatMap.dataSourceMinValue;
-                        this.heatMap.maxColorValue = this.heatMap.dataSourceMaxValue;
+                        this.heatMap.minColorValue = !isFinite(this.heatMap.minColorValue) ?
+                            this.heatMap.dataSourceMinValue : this.heatMap.minColorValue;
+                        this.heatMap.maxColorValue = !isFinite(this.heatMap.maxColorValue) ?
+                            this.heatMap.dataSourceMaxValue : this.heatMap.maxColorValue;
                     }
                     let tempCircleRadius: number = this.getRadiusBypercentage(
                         parseFloat(this.text.toString()), heatMap.dataSourceMinValue, heatMap.dataSourceMaxValue, circleRadius);

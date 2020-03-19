@@ -95,7 +95,7 @@ export class Filter {
      */
     private isInValidFilterRange(sheet: SheetModel): boolean {
         let selectedRange: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-        return selectedRange[0] > sheet.usedRange.rowIndex - 1 || selectedRange[1] > sheet.usedRange.colIndex;
+        return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex;
     }
 
     /**
@@ -154,7 +154,7 @@ export class Filter {
         if (predicates) {
             let range: number[] = this.filterRange.get(sheetIdx).slice();
             range[0] = range[0] + 1; // to skip first row.
-            range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+            range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
                 this.filterSuccessHandler(
                     new DataManager(jsonData), { action: 'filtering', filterCollection: predicates, field: predicates[0].field });
@@ -174,7 +174,7 @@ export class Filter {
     private processRange(sheet: SheetModel, sheetIdx: number, filterRange?: string): void {
         let range: number[] = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
-            range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex - 1; range[3] = sheet.usedRange.colIndex;
+            range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
         }
         this.filterRange.set(sheetIdx, range);
         this.filterCollection.set(sheetIdx, []);
@@ -213,7 +213,7 @@ export class Filter {
 
         let range: number[] = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         let field: string = getColumnHeaderText(cell[1] + 1);
         let type: string = this.getColumnType(sheet, cell[1] + 1, range);
         let predicates: PredicateModel[] = [{
@@ -397,7 +397,7 @@ export class Filter {
         let filterCell: CellModel = getCell(range[0], colIndex - 1, sheet);
         let displayName: string = this.parent.getDisplayText(filterCell);
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
             //to avoid undefined array data
             let checkBoxData: DataManager;
@@ -447,7 +447,7 @@ export class Filter {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let range: number[] = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
-        range[2] = sheet.usedRange.rowIndex - 1; //filter range should be till used range.
+        range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: sortOrder } }, range: getRangeAddress(range) });
 
         let cell: number[] = getIndexesFromAddress(sheet.activeCell);
@@ -500,7 +500,7 @@ export class Filter {
             datasource: dataSource,
             predicates: this.getPredicates(sheetIdx),
         };
-        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex - 1; //extend the range if filtered
+        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex; //extend the range if filtered
         this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)));
     }
 
@@ -540,7 +540,7 @@ export class Filter {
      */
     private getColumnType(sheet: SheetModel, colIndex: number, range: number[]): string {
         let num: number = 0; let str: number = 0; let date: number = 0; let time: number = 0;
-        for (let i: number = range[0]; i <= sheet.usedRange.rowIndex - 1; i++) {
+        for (let i: number = range[0]; i <= sheet.usedRange.rowIndex; i++) {
             let cell: CellModel = getCell(i, colIndex - 1, sheet);
             if (cell) {
                 if (cell.format) {

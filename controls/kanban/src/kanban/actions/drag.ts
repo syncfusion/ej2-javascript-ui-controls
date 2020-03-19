@@ -1,6 +1,5 @@
-import {
-    Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, removeClass, classList, remove, MouseEventArgs
-} from '@syncfusion/ej2-base';
+import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs } from '@syncfusion/ej2-base';
+import { removeClass, classList, remove, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
 import * as cls from '../base/css-constant';
@@ -14,6 +13,7 @@ export class DragAndDrop {
     private parent: Kanban;
     private dragObj: DragArgs;
     private dragEdges: DragEdges;
+    public isDragging: Boolean;
     /**
      * Constructor for drag and drop module
      * @private
@@ -26,6 +26,7 @@ export class DragAndDrop {
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
+        this.isDragging = false;
     }
 
     public wireDragEvents(element: HTMLElement): void {
@@ -63,7 +64,7 @@ export class DragAndDrop {
         return this.dragObj.cloneElement;
     }
 
-    private dragStart(e: MouseEvent & TouchEvent): void {
+    private dragStart(e: MouseEvent & TouchEvent & BlazorDragEventArgs): void {
         this.dragObj.selectedCards = this.dragObj.element;
         if (this.dragObj.element.classList.contains(cls.CARD_SELECTION_CLASS)) {
             let className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS + ':not(.' + cls.CLONED_CARD_CLASS + ')';
@@ -76,7 +77,7 @@ export class DragAndDrop {
             this.dragObj.cardDetails = [this.parent.getCardDetails(this.dragObj.element)];
         }
         let dragArgs: DragEventArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
-        this.parent.trigger(events.dragStart, dragArgs, (dragEventArgs: DragEventArgs) => {
+        this.parent.trigger(events.dragStart, dragArgs, (dragEventArgs: DragEventArgs & BlazorDragEventArgs) => {
             if (dragEventArgs.cancel) {
                 this.removeElement(this.dragObj.cloneElement);
                 this.dragObj = {
@@ -84,6 +85,9 @@ export class DragAndDrop {
                     targetClone: null, draggedClone: null, targetCloneMulti: null
                 };
                 return;
+            }
+            if (this.parent.isBlazorRender()) {
+                e.bindEvents(e.dragElement);
             }
             if (this.dragObj.element.classList.contains(cls.CARD_SELECTION_CLASS)) {
                 (<HTMLElement[]>this.dragObj.selectedCards).forEach((element: HTMLElement) => { this.draggedClone(element); });
@@ -95,6 +99,7 @@ export class DragAndDrop {
                     });
                     this.dragObj.cloneElement.appendChild(drag);
                     classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [cls.CARD_SELECTION_CLASS]);
+                    this.parent.layoutModule.disableAttributeSelection(this.dragObj.cloneElement);
                     this.dragObj.cloneElement.style.width = '90px';
                 }
             } else {
@@ -126,13 +131,12 @@ export class DragAndDrop {
             let targetKey: string = this.getColumnKey(contentCell);
             let keys: string[] = targetKey.split(',');
             this.multiCloneRemove();
-            let isDrag: boolean = false;
-            if ((targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + cls.CONTENT_CELLS_CLASS)))) {
-                isDrag = true;
-            }
+            let isDrag: boolean = (targetKey === this.getColumnKey(closest(this.dragObj.draggedClone, '.' + cls.CONTENT_CELLS_CLASS)))
+                ? true : false;
             if (keys.length === 1 || isDrag) {
                 if (target.classList.contains(cls.CARD_CLASS)) {
-                    let insertClone: InsertPosition = isNullOrUndefined(target.previousElementSibling) ? 'beforebegin' : 'afterend';
+                    let insertClone: InsertPosition = (isNullOrUndefined(target.previousElementSibling) &&
+                        ((this.dragObj.pageY - target.offsetTop) / 2) < 25) ? 'beforebegin' : 'afterend';
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.CONTENT_CELLS_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)) {
                     target.querySelector('.' + cls.CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
@@ -273,6 +277,10 @@ export class DragAndDrop {
             this.removeElement(this.dragObj.cloneElement);
             let dragMultiClone: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.DRAGGED_CLONE_CLASS));
             dragMultiClone.forEach((clone: HTMLElement) => remove(clone));
+            if (this.parent.isBlazorRender()) {
+                this.dragObj.element.style.removeProperty('width');
+                this.multiCloneRemove();
+            }
             removeClass([this.dragObj.element], cls.DRAGGED_CARD_CLASS);
             clearInterval(this.dragObj.navigationInterval);
             this.dragObj.navigationInterval = null;
@@ -286,6 +294,7 @@ export class DragAndDrop {
                 this.parent.touchModule.tabHold = false;
             }
             this.dragObj.cardDetails = this.dragObj.modifiedData = [];
+            this.isDragging = false;
         });
     }
 
@@ -331,7 +340,8 @@ export class DragAndDrop {
     }
 
     private toggleVisible(target: HTMLElement, tColumn?: HTMLElement): void {
-        let lists: HTMLTableHeaderCellElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.HEADER_CELLS_CLASS));
+        let headerCells: string = '.' + cls.HEADER_CELLS_CLASS + ':not(.' + cls.STACKED_HEADER_CELL_CLASS + ')';
+        let lists: HTMLTableHeaderCellElement[] = [].slice.call(this.parent.element.querySelectorAll(headerCells));
         lists.forEach((list: HTMLTableHeaderCellElement) => {
             if (this.getColumnKey(list) === this.getColumnKey(tColumn || target)) {
                 this.parent.actionModule.columnToggle(list);
@@ -365,6 +375,10 @@ export class DragAndDrop {
         let eventArgs: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
         this.dragObj.pageY = eventArgs.pageY;
         this.dragObj.pageX = eventArgs.pageX;
+        this.isDragging = true;
+        if (this.parent.isAdaptive && this.parent.tooltipModule) {
+            this.parent.tooltipModule.tooltipObj.close();
+        }
     }
 
     private getPageCoordinates(e: MouseEvent & TouchEvent): (MouseEvent & TouchEvent) | Touch {
@@ -374,7 +388,7 @@ export class DragAndDrop {
     }
 
     private getColumnKey(target: HTMLElement | Element): string {
-        if (target) {
+        if (target && target.getAttribute('data-key')) {
             return target.getAttribute('data-key').trim();
         }
         return '';

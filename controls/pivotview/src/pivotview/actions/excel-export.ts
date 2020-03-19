@@ -42,7 +42,7 @@ export class ExcelExport {
         /** Event trigerring */
         let clonedValues: IPivotValues;
         let currentPivotValues: IPivotValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
-        if (this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
+        if (this.parent.exportAllPages && this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
             let pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings);
             this.parent.applyFormatting(this.engine.pivotValues);
@@ -151,7 +151,7 @@ export class ExcelExport {
      * @returns void
      * @hidden
      */
-    /* tslint:disable:no-empty */
+    /* tslint:disable-next-line:no-empty */
     public destroy(): void {
     }
 }

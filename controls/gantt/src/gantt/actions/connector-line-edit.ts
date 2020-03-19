@@ -218,7 +218,7 @@ export class ConnectorLineEdit {
 
     private predecessorValidation(predecessor: string[], record: ITaskData): boolean {
 
-        let recordId: string = record.taskId;
+        let recordId: string = record.rowUniqueID;
         let currentId: string;
         let currentRecord: ITaskData;
         for (let count: number = 0; count < predecessor.length; count++) {
@@ -238,12 +238,13 @@ export class ConnectorLineEdit {
 
                     if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                         currentRecord.predecessor.forEach((value: IPredecessor) => {
-                            if (currentRecord.taskId.toString() !== value.from) {
+                            if (currentRecord.rowUniqueID.toString() !== value.from) {
                                 currentIdArray.push(value.from.toString());
                             }
                         });
                     }
-                    if (recordId.toString() === currentRecord.taskId.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
+                    /* tslint:disable-next-line */
+                    if (recordId.toString() === currentRecord.rowUniqueID.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
                         return false;
                     }
                     visitedIdArray.push(currentId);
@@ -268,7 +269,7 @@ export class ConnectorLineEdit {
      */
     public validatePredecessorRelation(ganttRecord: IGanttData, predecessorString: string): boolean {
         let flag: boolean = true;
-        let recordId: string = ganttRecord.ganttProperties.taskId;
+        let recordId: string = ganttRecord.ganttProperties.rowUniqueID;
         let predecessorIdArray: string[];
         let currentId: string;
         if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
@@ -312,14 +313,14 @@ export class ConnectorLineEdit {
                         //  let currentPredecessor='';
                         if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
                             currentRecord.predecessor.forEach((value: IPredecessor, index: number) => {
-                                if (currentRecord.taskId.toString() !== value.from) {
+                                if (currentRecord.rowUniqueID.toString() !== value.from) {
                                     currentIdArray.push(value.from.toString());
                                     currentIdIndex = index;
                                 }
                             });
                             //    currentPredecessor=currentRecord.predecessor[0].from
                         }
-                        if (recordId.toString() === currentRecord.taskId.toString() ||
+                        if (recordId.toString() === currentRecord.rowUniqueID.toString() ||
                             currentIdArray.indexOf(recordId.toString()) !== -1) {
                             //cycylic occurs//break;
                             return false;
@@ -416,7 +417,7 @@ export class ConnectorLineEdit {
         }
         for (let p: number = 0; p < predecessorIdArray.length; p++) {
             let record: IGanttData[] = this.parent.currentViewData.filter((item: IGanttData) => {
-                return item && item.ganttProperties.taskId.toString() === predecessorIdArray[p].toString();
+                return item && item.ganttProperties.rowUniqueID.toString() === predecessorIdArray[p].toString();
             });
             if (record[0] && record[0].hasChildRecords) {
                 return false;

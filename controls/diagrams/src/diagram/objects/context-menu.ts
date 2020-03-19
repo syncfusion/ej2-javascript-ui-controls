@@ -249,11 +249,11 @@ export class DiagramContextMenu {
     }
 
     private async contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): Promise<void> {
-        if ( !this.parent.checkMenu &&
-            ( window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1 )) {
+        if (!this.parent.checkMenu &&
+            (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
             this.parent.checkMenu = args.cancel = true;
         }
-        if ( this.parent.checkMenu) { this.hiddenItems = []; }
+        if (this.parent.checkMenu) { this.hiddenItems = []; }
         let diagramArgs: DiagramBeforeMenuOpenEventArgs = args as DiagramBeforeMenuOpenEventArgs;
         diagramArgs.hiddenItems = [];
         for (let item of args.items) {
@@ -266,7 +266,8 @@ export class DiagramContextMenu {
         }
         this.eventArgs = args.event;
         if (isBlazor()) {
-            diagramArgs = await this.parent.trigger(contextMenuOpen, diagramArgs) as DiagramBeforeMenuOpenEventArgs;
+            diagramArgs =
+                (await this.parent.trigger(contextMenuOpen, diagramArgs) as DiagramBeforeMenuOpenEventArgs) || diagramArgs;
             if (typeof diagramArgs === 'string') {
                 diagramArgs = JSON.parse(diagramArgs);
             }

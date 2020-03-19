@@ -20,7 +20,7 @@ export class TaskFields extends ChildProperty<TaskFields> {
 
     /**
      * To map parent id of task from data source.
-     * @default null     
+     * @default null
      */
     @Property(null)
     public parentID: string;
@@ -115,4 +115,16 @@ export class TaskFields extends ChildProperty<TaskFields> {
      */
     @Property(null)
     public notes: string;
+    /**
+     * To map work of task from data source.
+     * @default null
+     */
+    @Property(null)
+    public work: string;
+    /** 
+     * To map schedule mode of task from data source.
+     * @default null      
+     */
+    @Property(null)
+    public manual: string;
 }

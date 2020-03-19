@@ -38,6 +38,7 @@ export interface SwimlaneSettingsModel {
     /**
      * Defines the swimlane row template
      * @default null
+     * @deprecated
      */
     template?: string;
 

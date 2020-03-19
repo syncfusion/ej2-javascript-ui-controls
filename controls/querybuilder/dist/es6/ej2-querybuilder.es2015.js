@@ -703,26 +703,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         format = this.getFormat(column.format);
         let valueColl = [];
         for (let i = 0, iLen = tempColl.length; i < iLen; i++) {
-            if (tempColl[i].nextElementSibling) {
-                if (tempColl[i].nextElementSibling.className.indexOf('e-check') > -1) {
-                    valueColl.push(tempColl[i].textContent);
-                }
-                else {
-                    if (column.type === 'date' && value[i] instanceof Date) {
-                        valueColl.push(this.intl.formatDate(value[i], format));
-                    }
-                    else {
-                        valueColl.push(value[i]);
-                    }
-                }
+            if (column.type === 'date' && value[i] instanceof Date) {
+                valueColl.push(this.intl.formatDate(value[i], format));
             }
             else {
-                if (column.type === 'date' && value[i] instanceof Date) {
-                    valueColl.push(this.intl.formatDate(value[i], format));
-                }
-                else {
-                    valueColl.push(value[i]);
-                }
+                valueColl = value;
             }
         }
         if (column.type === 'date') {
@@ -1504,7 +1489,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     parentElem.style.width = '100%';
                 }
                 else {
-                    parentElem.style.minWidth = '200px';
+                    parentElem.style.width = '200px';
                 }
             }
             else {
@@ -1652,12 +1637,15 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (this.allowValidation && rule.rules[index].operator && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
             }
-            if (inputElem.length > 1) {
+            if (inputElem.length > 1 && !(inputElem[0].className.indexOf('e-template') > -1)) {
                 rule.rules[index].value = [];
             }
             for (let i = 0; i < inputElem.length; i++) {
                 if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
                     rule.rules[index].value = null;
+                    continue;
+                }
+                else if (inputElem[i].classList.contains('e-template')) {
                     continue;
                 }
                 this.updateValues(inputElem[i], rule.rules[index]);
@@ -1689,7 +1677,8 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (rule.rules[index].operator) {
                 oper = rule.rules[index].operator.toLowerCase();
             }
-            if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number') {
+            if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number' &&
+                !(target.className.indexOf('e-template') > -1)) {
                 let selVal = [];
                 let dupSelectedValue = selectedValue;
                 for (let k = 0, kLen = dupSelectedValue.length; k < kLen; k++) {
@@ -1702,17 +1691,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             if (target.className.indexOf('e-template') > -1) {
-                if (selectedValue instanceof Array) {
-                    if (arrOperator.indexOf(oper) > -1) {
-                        rule.rules[index].value = selectedValue;
-                    }
-                    else {
-                        rule.rules[index].value = selectedValue[0];
-                    }
-                }
-                else {
-                    rule.rules[index].value = selectedValue;
-                }
+                rule.rules[index].value = selectedValue;
                 eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value, type: 'value' };
                 if (!this.isImportRules) {
                     this.trigger('change', eventsArgs);
@@ -1928,8 +1907,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                 this.element.style.width = '100%';
                 this.element.classList.add('e-device');
             }
-            removeClass(document.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-            addClass(document.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
+            removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
+            addClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
             this.displayMode = 'Vertical';
         }
         else {
@@ -1953,7 +1932,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
             this.notGroupRtl();
-            let buttons = document.querySelectorAll('label.e-btn');
+            let buttons = this.element.querySelectorAll('label.e-btn');
             let button;
             for (let i = 0; i < buttons.length; i++) {
                 button = buttons.item(i);
@@ -2564,7 +2543,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let predicate = this.getPredicate(this.getValidRules(this.rule));
         let dataManagerQuery;
         dataManagerQuery = isNullOrUndefined(predicate) ? new Query() : new Query().where(predicate);
-        if (this.isBlazor()) {
+        if (isBlazor()) {
             let adaptr = new UrlAdaptor();
             let dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
             let state = adaptr.processQuery(dm, dataManagerQuery);

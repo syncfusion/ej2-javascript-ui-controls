@@ -502,59 +502,6 @@ describe('Summary with Sorting', () => {
       destroy(TreegridObj);
     });
   });
-  
-    describe('ChildSummary with type checkbox', () => {
-    let TreegridObj: TreeGrid;
-    beforeAll((done: Function) => {
-      TreegridObj = createGrid(
-        {
-          dataSource: [ {
-            taskID: 1,
-            taskName: 'Planning',
-            startDate: new Date('02/03/2017'),
-            endDate: new Date('02/07/2017'),
-            progress: 100,
-            duration: 5,
-            priority: 'Normal',
-            approved: false,
-            isInExpandState: true,
-            subtasks: [
-                { taskID: 2, taskName: 'Plan timeline', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Normal', approved: false },
-            ]
-        }],
-          childMapping: 'subtasks',
-          treeColumnIndex: 1,
-          aggregates: [{
-            showChildSummary: true,
-            columns: [{
-                type: 'Sum',
-                field: 'duration',
-                columnName: 'taskName',
-                format: 'C2',
-                footerTemplate: 'Sum: ${Sum}'
-             }]
-          }],
-          columns: [
-            { type: 'checkbox', width: 50},
-            { field: 'taskID', headerText: 'Order ID', width: 120 },
-            { field: 'taskName', headerText: 'Customer ID', width: 150 },
-            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
-            { field: 'progress', headerText: 'Ship Name', width: 150 },
-            { field: 'startDate', headerText: 'start Date', type: "datetime", format: 'yMd', width: 150 }
-          ]
-        },done);
-    });
-    it('Summary Row Rendering', () => {
-       expect(TreegridObj.getRows()[2].cells[0].innerText === '').toBe(true);
-       (<HTMLElement>TreegridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
-       (<HTMLElement>TreegridObj.element.querySelectorAll('.e-row')[1].querySelector('.e-rowcell')).click();
-       expect(TreegridObj.getHeaderTable().querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-check')).toBe(true);
-    });
-    afterAll(() => {
-      destroy(TreegridObj);
-    });
-  });
-
 
   it('memory leak', () => {
     profile.sample();

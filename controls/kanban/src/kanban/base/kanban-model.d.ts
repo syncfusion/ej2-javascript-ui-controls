@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { Data } from './data';import { SwimlaneSettings } from '../models/swimlane-settings';import { CardSettings } from '../models/card-settings';import { Columns } from '../models/columns';import { StackedHeaders } from '../models/stacked-headers';import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel } from '../models/index';import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ColumnRenderedEventArgs } from './interface';import { ReturnType, ConstraintType } from './type';import { Action } from '../actions/action';import { Crud } from '../actions/crud';import { DragAndDrop } from '../actions/drag';import { Keyboard } from '../actions/keyboard';import { KanbanTooltip } from '../actions/tooltip';import { KanbanTouch } from '../actions/touch';import { LayoutRender } from './layout-render';import * as events from '../base/constant';import * as cls from './css-constant';
+import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType, isBlazor } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { Data } from './data';import { SwimlaneSettings } from '../models/swimlane-settings';import { CardSettings } from '../models/card-settings';import { DialogSettings } from '../models/dialog-settings';import { Columns } from '../models/columns';import { StackedHeaders } from '../models/stacked-headers';import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel, DialogSettingsModel } from '../models/index';import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs } from './interface';import { QueryCellInfoEventArgs, DialogEventArgs } from './interface';import { ReturnType, ConstraintType, CurrentAction } from './type';import { Action } from '../actions/action';import { Crud } from '../actions/crud';import { DragAndDrop } from '../actions/drag';import { KanbanDialog } from '../actions/dialog';import { Keyboard } from '../actions/keyboard';import { KanbanTooltip } from '../actions/tooltip';import { KanbanTouch } from '../actions/touch';import { LayoutRender } from './layout-render';import * as events from '../base/constant';import * as cls from './css-constant';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -38,6 +38,7 @@ export interface KanbanModel extends ComponentModel{
      * With the remote data assigned to dataSource, check the available
      *  [adaptors](http://ej2.syncfusion.com/documentation/data/adaptors.html) to customize the data processing.
      * @default []
+     * @isGenericType true
      */
     dataSource?: Object[] | DataManager;
 
@@ -45,6 +46,7 @@ export interface KanbanModel extends ComponentModel{
      * Defines the external [`query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will be executed along with the data processing.
      * @default null
+     * @blazorType Syncfusion.EJ2.Blazor.Data.Query
      */
     query?: Query;
 
@@ -94,6 +96,13 @@ export interface KanbanModel extends ComponentModel{
     cardSettings?: CardSettingsModel;
 
     /**
+     * Defines the dialog settings such as template and fields.
+     * @deprecated
+     * @default {}
+     */
+    dialogSettings?: DialogSettingsModel;
+
+    /**
      * Enables or disables the drag and drop actions in Kanban.
      * @default true
      */
@@ -106,7 +115,15 @@ export interface KanbanModel extends ComponentModel{
     enableTooltip?: boolean;
 
     /**
+     * Enables or disables the persisting component's state between page reloads. 
+     * If enabled, columns, dataSource properties will be persisted in kanban.
+     * @deprecated
+     */
+    enablePersistence?: boolean;
+
+    /**
      * Defines the template content to card’s tooltip. The property works by enabling the ‘enableTooltip’ property.
+     * @deprecated
      * @default null
      */
     tooltipTemplate?: string;
@@ -163,7 +180,7 @@ export interface KanbanModel extends ComponentModel{
      * Triggers before each column of the Kanban rendering on the page.
      * @event
      */
-    columnRendered?: EmitType<ColumnRenderedEventArgs>;
+    queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
 
     /**
      * Triggers before each card of the Kanban rendering on the page.
@@ -188,5 +205,19 @@ export interface KanbanModel extends ComponentModel{
      * @event
      */
     dragStop?: EmitType<DragEventArgs>;
+
+    /**
+     * Triggers before the dialog opens.
+     * @deprecated
+     * @event
+     */
+    dialogOpen?: EmitType<DialogEventArgs>;
+
+    /**
+     * Triggers before the dialog closes.
+     * @deprecated
+     * @event
+     */
+    dialogClose?: EmitType<DialogEventArgs>;
 
 }

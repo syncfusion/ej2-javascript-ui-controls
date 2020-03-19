@@ -64,6 +64,7 @@ const BIGGER: string = 'e-bigger';
 const SMALL: string = 'e-small';
 const CHILD: string = 'e-has-child';
 const ITEM_ANIMATION_ACTIVE: string = 'e-animation-active';
+const DISABLED: string = 'e-disabled';
 
 const treeAriaAttr: TreeAriaAttr = {
     treeRole: 'tree',
@@ -504,6 +505,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /* Internal variables */
     private cloneElement: HTMLElement;
     private initialRender: boolean;
+    private blazorInitialRender: boolean;
     private treeData: { [key: string]: Object }[];
     private rootData: { [key: string]: Object }[];
     private groupedData: { [key: string]: Object }[][];
@@ -620,6 +622,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public cssClass: string;
 
     /**
+     * Specifies a value that indicates whether the TreeView component is disabled or not. 
+     * When set to true, user interaction will not be occurred in TreeView. 
+     * @default false
+     */
+    @Property(false)
+    public disabled: boolean;
+
+    /**
      * Defines whether to allow the cross-scripting site or not.
      * @default false
      */
@@ -733,6 +743,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public autoCheck: boolean;
+
+    /**
+     * If this property is set to true, then the entire TreeView node will be navigate-able instead of text element.
+     * @default false
+     */
+    @Property(false)
+    public fullRowNavigable: boolean;
 
     /** 
      * Triggers when any TreeView action failed to fetch the desired results. 
@@ -926,6 +943,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Initialize the event handler
      */
     protected preRender(): void {
+        this.isBlazorPlatform = (isBlazor() && this.isServerRendered);
         this.checkActionNodes = [];
         this.dragStartAction = false;
         this.isAnimate = false;
@@ -966,7 +984,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             itemCreated: (e: ItemCreatedArgs) => {
                 this.beforeNodeCreate(e);
             },
-            enableHtmlSanitizer: this.enableHtmlSanitizer
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
+            itemNavigable: this.fullRowNavigable,
         };
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
@@ -1005,28 +1024,43 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     protected render(): void {
         this.initialRender = true;
+        this.blazorInitialRender = false;
         this.initialize();
         this.setDataBinding();
+        this.setDisabledMode();
         this.setExpandOnType();
-        this.setRipple();
+        if (!this.disabled) {
+            this.setRipple();
+        }
         this.wireEditingEvents(this.allowEditing);
         this.setDragAndDrop(this.allowDragAndDrop);
-        this.wireEvents();
-        this.initialRender = false;
+        if (!this.disabled) {
+            this.wireEvents();
+        }
+        if (!this.isBlazorPlatform) {
+            this.initialRender = false;
+        }
         this.renderComplete();
     }
 
     private initialize(): void {
-        this.element.setAttribute('role', 'tree');
-        this.element.setAttribute('tabindex', '0');
-        this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
-        this.isBlazorPlatform = isBlazor();
-        this.setCssClass(null, this.cssClass);
-        this.setEnableRtl();
-        this.setFullRow(this.fullRowSelect);
+        if (!this.isBlazorPlatform) {
+            this.element.setAttribute('role', 'tree');
+            this.element.setAttribute('tabindex', '0');
+            this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
+            this.setCssClass(null, this.cssClass);
+            this.setEnableRtl();
+            this.setFullRow(this.fullRowSelect);
+        }
         this.nodeTemplateFn = this.templateComplier(this.nodeTemplate);
     }
-
+    private setDisabledMode(): void {
+        if (this.disabled) {
+            this.element.classList.add(DISABLED);
+        } else {
+            this.element.classList.remove(DISABLED);
+        }
+    }
     private setEnableRtl(): void {
         this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
     }
@@ -1166,28 +1200,35 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderItems(isSorted: boolean): void {
-        this.listBaseOption.ariaAttributes.level = 1;
-        this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData),
-                                             this.listBaseOption);
-        this.element.appendChild(this.ulElement);
-        if (this.loadOnDemand === false) {
-            let rootNodes: NodeListOf<Element> = this.ulElement.querySelectorAll('.e-list-item');
-            let i: number = 0;
-            while (i < rootNodes.length) {
-                this.renderChildNodes(rootNodes[i], true, null, true);
-                i++;
+        // tslint:disable
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor'))) {
+            this.listBaseOption.ariaAttributes.level = 1;
+            let sortedData : { [key: string]: Object }[] = this.getSortedData(this.rootData);
+            this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : sortedData, this.listBaseOption);
+            this.element.appendChild(this.ulElement);
+            if (this.loadOnDemand === false) {
+                let rootNodes: NodeListOf<Element> = this.ulElement.querySelectorAll('.e-list-item');
+                let i: number = 0;
+                while (i < rootNodes.length) {
+                    this.renderChildNodes(rootNodes[i], true, null, true);
+                    i++;
+                }
+            } else {
+                this.finalizeNode(this.element);
             }
-        } else {
-            this.finalizeNode(this.element);
         }
-        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-            this.updateBlazorTemplate();
-        }
+        this.updateTemplateForBlazor();
         this.parentNodeCheck = [];
         this.parentCheckData = [];
         this.updateCheckedStateFromDS();
         if (this.autoCheck && this.showCheckBox && !this.isLoaded) {
             this.updateParentCheckState();
+        }
+    }
+
+    private updateTemplateForBlazor(): void {
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+            this.updateBlazorTemplate();
         }
     }
     /**
@@ -1236,8 +1277,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
             } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
-                    !this.loadOnDemand)) {
+                this.fields.dataSource.dataSource.offline)) {
                 for (let index: number = 0; index < this.treeData.length; index++) {
                     let fieldId: string = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -1732,8 +1772,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
-               !this.loadOnDemand)) {
+            this.fields.dataSource.dataSource.offline)) {
             let id: string;
             let parentElement: Element;
             let check: Element;
@@ -1903,6 +1942,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isPrevent) {
             if (!isNOU(ariaState)) {
                 wrapper.setAttribute('aria-checked', ariaState);
+                this.updateServerProperties("check");
                 eventArgs.data[0].checked = ariaState;
                 this.trigger('nodeChecked', eventArgs);
                 this.checkActionNodes = [];
@@ -1947,6 +1987,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let eUids: string[] = this.expandedNodes;
         if (this.isInitalExpand && eUids.length > 0) {
             this.setProperties({ expandedNodes: [] }, true);
+            if (this.isBlazorPlatform && !this.initialRender) {
+                return;
+            }
               // tslint:disable
             if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
                 this.expandGivenNodes(eUids);
@@ -1999,8 +2042,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private afterFinalized(): void {
-        this.doSelectionAction();
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && !this.initialRender)) {
+            this.doSelectionAction();
+        }
         this.updateCheckedProp();
+        if (this.isBlazorPlatform) { 
+            if(this.initialRender) {            
+                this.setCheckedNodes(this.checkedNodes);
+            }
+            this.updateInstance();
+            this.initialRender = false;
+        }
         this.isAnimate = true;
         this.isInitalExpand = false;
         if (!this.isLoaded || this.isFieldChange) {
@@ -2170,6 +2222,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         currLi.style.height = '';
         removeClass([icon], PROCESS);
         this.addExpand(currLi);
+        this.updateServerProperties("expand");
         if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
             this.trigger('nodeExpanded', this.expandArgs);
@@ -2181,11 +2234,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         removeClass([liEle], NODECOLLAPSED);
         let id: string = liEle.getAttribute('data-uid');
         if (!isNOU(id) && this.expandedNodes.indexOf(id) === -1) {
-            if (this.isBlazorPlatform) {
-                this.setProperties({ expandedNodes: [].concat([], this.expandedNodes, [id]) }, true);
-                } else {
-                     this.expandedNodes.push(id);
-                }
+            this.expandedNodes.push(id);
         }
     }
 
@@ -2266,13 +2315,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         let index: number = this.expandedNodes.indexOf(liEle.getAttribute('data-uid'));
         if (index > -1) {
-            if (this.isBlazorPlatform) {
-                let removeVal: string[] = this.expandedNodes.slice(0);
-                removeVal.splice(index, 1);
-                this.setProperties({ expandedNodes: [].concat([], removeVal) }, true);
-            } else {
-                this.expandedNodes.splice(index, 1);
-            }
+            this.expandedNodes.splice(index, 1);
         }
     }
 
@@ -2312,15 +2355,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 return;
             }
             this.treeList.push('false');
-            if ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) ||
-                    (this.fields.dataSource instanceof DataManager && !this.loadOnDemand)) {
+            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
                        this.treeList.pop();
                        childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                        this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
-                       if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-                            this.updateBlazorTemplate();
-                        }
-            } else if (this.fields.dataSource instanceof DataManager && this.loadOnDemand) {
+                       this.updateTemplateForBlazor();
+            } else {
                     (mapper.dataSource as DataManager).executeQuery(this.getQuery(mapper,
                                                                                   parentLi.getAttribute('data-uid'))).then((e: Object) => {
                     this.treeList.pop();
@@ -2329,9 +2369,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         this.dataType = 2;
                     }
                     this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
-                    if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-                        this.updateBlazorTemplate();
-                    }
+                    this.updateTemplateForBlazor();
                 }).catch((e: Object) => {
                     this.trigger('actionFailure', { error: e });
                 });
@@ -2344,8 +2382,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.removeExpand(parentLi, true);
                 return;
             } else {
-                this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
-                parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
+                if (!this.isBlazorPlatform || !this.initialRender) {
+                    this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
+                    parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
+                }
                 this.expandNode(parentLi, eicon, loaded);
                 this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
@@ -2564,6 +2604,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.updateServerProperties("select");
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -2586,6 +2627,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.updateServerProperties("select");
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -2891,6 +2933,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.ensureStateChange(li, doCheck);
         }
+        this.updateServerProperties("check");
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     }
 
@@ -3361,7 +3404,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let txtEle: HTMLElement = closest(target, '.' + LISTTEXT) as HTMLElement;
         let liEle: Element = closest(target, '.' + LISTITEM);
         detach(this.inputObj.container);
-        this.appendNewText(liEle, txtEle, newText, true);
+        if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
+           this.crudOperation('update', null, liEle, newText, null, null, true);
+        } else {
+            this.appendNewText(liEle, txtEle, newText, true);
+        }
     }
 
     private appendNewText(liEle: Element, txtEle: HTMLElement, newText: string, isInput: boolean): void {
@@ -3462,7 +3509,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setDragAndDrop(toBind: boolean): void {
-        if (toBind) {
+        if (toBind && !this.disabled) {
             this.initializeDrag();
         } else {
             this.destroyDrag();
@@ -3760,7 +3807,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         if ((e.target.classList.contains('e-icon-expandable')) || (e.target.classList.contains('e-icon-collapsible'))) {
-            var target = e.target.closest('li');
+            let target:Element = e.target.closest('li');
             dropUl.insertBefore(dragLi, pre ? target : target.nextElementSibling);
         }
         else {
@@ -4132,6 +4179,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.updateList();
         this.updateSelectedNodes();
         this.updateExpandedNodes();
+        this.updateServerProperties("expand");
+        this.updateServerProperties("check");
+        this.updateServerProperties("select");
+    }
+
+    private updateServerProperties(action: string): void {
+        if(this.isBlazorPlatform ) {
+            this.allowServerDataBinding = true;
+            if(action == "expand") {
+                this.setProperties({ expandedNodes:  [] }, true);
+            }
+            else if(action == "check") {
+                this.setProperties({ checkedNodes: this.checkedNodes }, true);                             
+            }
+            else {
+                this.setProperties({ selectedNodes: this.selectedNodes }, true);                
+            }
+            this.serverDataBind();
+            this.allowServerDataBinding = false;
+        }
     }
 
     private updateList(): void {
@@ -4139,16 +4206,40 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private updateSelectedNodes(): void {
-        this.setProperties({ selectedNodes: [] }, true);
-        let sNodes: HTMLElement[] = selectAll('.' + ACTIVE, this.element);
-        this.selectGivenNodes(sNodes);
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && !this.initialRender)) {
+            this.setProperties({ selectedNodes: [] }, true);
+            let sNodes: HTMLElement[] = selectAll('.' + ACTIVE, this.element);
+            this.selectGivenNodes(sNodes);
+        }
+        else if(this.isBlazorPlatform && this.initialRender) {
+            let sNodes: HTMLElement[] = selectAll('.' + ACTIVE, this.element);
+            for(let a: number = 0; a < sNodes.length; a++)
+            {
+                let id : string = sNodes[a].getAttribute("data-uid").toString();
+                if (!isNOU(id) && this.selectedNodes.indexOf(id) === -1) {
+                    this.selectedNodes.push(id);
+                }
+            }           
+        }
     }
 
     private updateExpandedNodes(): void {
-        this.setProperties({ expandedNodes: [] }, true);
-        let eNodes: Element[] = selectAll('[aria-expanded="true"]', this.element);
-        for (let i: number = 0, len: number = eNodes.length; i < len; i++) {
-            this.addExpand(eNodes[i]);
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && !this.initialRender)) {
+            this.setProperties({ expandedNodes: [] }, true);
+            let eNodes: Element[] = selectAll('[aria-expanded="true"]', this.element);
+            for (let i: number = 0, len: number = eNodes.length; i < len; i++) {
+                this.addExpand(eNodes[i]);
+            }
+        }
+        else if(this.isBlazorPlatform && this.initialRender) {
+            let eNodes: Element[] = selectAll('[aria-expanded="true"]', this.element);
+            for(let a: number = 0; a < eNodes.length; a++)
+            {
+                let id : string = eNodes[a].getAttribute("data-uid").toString();
+                if (!isNOU(id) && this.expandedNodes.indexOf(id) === -1) {
+                    this.expandedNodes.push(id);
+                }
+            }
         }
     }
 
@@ -4217,6 +4308,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let refNode: Node = dropUl.childNodes[index];
         for (let i: number = 0; i < li.length; i++) {
             dropUl.insertBefore(li[i], refNode);
+        }
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+            this.updateBlazorTemplate();
         }
         let id: string = this.getId(dropLi);
         if (this.dataType === 1) {
@@ -4505,9 +4599,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private triggerEvent(): void {
-        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-            this.updateBlazorTemplate();
-        }
+        this.updateTemplateForBlazor();
         let eventArgs: DataSourceChangedEventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     }
@@ -4516,12 +4608,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this, false);
     }
 
+    private clientUpdateInitial(): void {
+        this.blazorInitialRender = true;
+    }
     private wireInputEvents(inpEle: Element): void {
         EventHandler.add(inpEle, 'blur', this.inputFocusOut, this);
     }
 
     private wireEditingEvents(toBind: boolean): void {
-        if (toBind) {
+        if (toBind && !this.disabled) {
             let proxy: TreeView = this;
             this.touchEditObj = new Touch(this.element, {
                 tap: (e: TapEventArgs) => {
@@ -4614,7 +4709,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(this.element, 'blur', this.focusOut);
         EventHandler.remove(this.element, 'mouseover', this.onMouseOver);
         EventHandler.remove(this.element, 'mouseout', this.onMouseLeave);
-        this.keyboardModule.destroy();
+        if (!this.disabled) {
+            this.keyboardModule.destroy();
+        }
     }
 
     private parents(element: Element | Node, selector: string): Element[] {
@@ -4804,6 +4901,126 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return found;
     }
 
+    private dynamicState(): void {
+        this.setDragAndDrop(this.allowDragAndDrop);
+        this.wireEditingEvents(this.allowEditing);
+        if (!this.disabled) {
+           this.wireEvents();
+           this.setRipple();
+        } else {
+           this.unWireEvents();
+           this.rippleFn();
+           this.rippleIconFn();
+        }
+    }
+
+    private crudOperation(operation: string, nodes?: string[] | Element[], target?: string | Element, newText?: string, newNode?: { [key: string]: Object }[], index?: number, prevent?: boolean): void {
+        let data: DataManager = this.fields.dataSource as DataManager;
+        let matchedArr: { [key: string]: Object }[] = [];
+        let query: Query = this.getQuery(this.fields);
+        let key: string = this.fields.id;
+        let crud: Promise<Object>;
+        let changes: { addedRecords: { [key: string]: Object }[], 
+        deletedRecords: { [key: string]: Object }[], 
+        changedRecords: { [key: string]: Object }[] } = {
+            addedRecords: [],
+            deletedRecords: [],
+            changedRecords: []
+        };
+        let nodesID: string[] = [];
+        if (nodes) {
+            nodesID = this.nodeType(nodes);
+        } else if (target) {
+            if (typeof target == "string") {
+                nodesID[0] = target.toString();
+            } else if (typeof target === "object") {
+                nodesID[0] = target.getAttribute("data-uid").toString();
+            }
+        }
+        for (let i:number = 0, len = nodesID.length; i < len; i++) {
+            let liEle:Element = this.getElement(nodesID[i]);
+            if (isNullOrUndefined(liEle)) {
+                continue;
+            }
+            let removedData: { [key: string]: Object } = this.getNodeObject(nodesID[i])
+            matchedArr.push(removedData);
+        }
+        switch (operation) {
+            case 'delete':
+                if (nodes.length == 1) {
+                    crud = data.remove(key, matchedArr[0], query.fromTable, query) as Promise<Object>;
+                } else {
+                    changes.deletedRecords = matchedArr;
+                    crud = data.saveChanges(changes, key, query.fromTable, query) as Promise<Object>;
+                }
+                crud.then((e: any) => this.deleteSuccess(nodesID))
+                    .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }));
+                break;
+            case 'update':
+                matchedArr[0][this.fields.text] = newText;
+                crud = data.update(key, matchedArr[0], query.fromTable, query) as Promise<Object>;
+                crud.then((e: any) => this.editSucess(target, newText,prevent))
+                    .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }));
+                break;
+            case 'insert':
+                if (newNode.length == 1) {
+                    crud = data.insert(newNode[0], query.fromTable, query) as Promise<Object>;
+                } else {
+                    let arr: { [key: string]: Object }[] = []
+                    for (let i:number = 0, len = newNode.length; i < len; i++) {
+                        arr.push(newNode[i])
+                    }
+                    changes.addedRecords = arr;
+                    crud = data.saveChanges( changes, key, query.fromTable, query) as Promise<Object>;
+                }
+                crud.then((e: any) => {
+                    let dropLi: Element = this.getElement(target);
+                    this.addSuccess(newNode, dropLi, index);
+                    this.preventExpand = false;
+                }).catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }));
+                break;
+        }
+    }
+
+    private deleteSuccess(nodes: string[] | Element[]): void {
+        for (let i: number = 0, len: number = nodes.length; i < len; i++) {
+            let liEle: Element = this.getElement(nodes[i]);
+            if (isNOU(liEle)) { continue; }
+            this.removeNode(liEle);
+        }
+        if (this.dataType === 1) {
+            this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
+        }
+        this.triggerEvent();
+    }
+
+    private editSucess(target: any, newText: string, prevent: boolean): void {
+        let liEle: Element = this.getElement(target);
+        let txtEle: HTMLElement = select('.' + LISTTEXT, liEle) as HTMLElement;
+        this.appendNewText(liEle, txtEle, newText, prevent);
+    }
+
+    private addSuccess(nodes: { [key: string]: Object }[], dropLi: Element, index?: number): void {
+        let dropUl: Element;
+        let icon: Element = dropLi ? dropLi.querySelector('.' + ICON) : null;
+        let proxy: TreeView = this;
+        if (dropLi && icon && icon.classList.contains(EXPANDABLE) &&
+            dropLi.querySelector('.' + PARENTITEM) === null) {
+            proxy.renderChildNodes(dropLi, null, () => {
+                dropUl = dropLi.querySelector('.' + PARENTITEM);
+                proxy.addGivenNodes(nodes, dropLi, index, true, dropUl);
+                proxy.triggerEvent();
+            });
+        } else {
+            this.addGivenNodes(nodes, dropLi, index, true);
+            this.triggerEvent();
+        }
+    }
+
+    private dmFailure(e: { result: Object[] }): void {
+        this.trigger('actionFailure', { error: e });
+    }
+
     /**
      * Called internally if any of the property value changed.
      * @param  {TreeView} newProp
@@ -4867,16 +5084,23 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 case 'expandOn':
                     this.wireExpandOnEvent(false);
                     this.setExpandOnType();
-                    if (this.expandOnType !== 'None') {
-                        this.wireExpandOnEvent(true);
-                    }
+                    if (this.expandOnType !== 'None' && !this.disabled) {
+                            this.wireExpandOnEvent(true);
+                        }
                     break;
+                case 'disabled':
+                    this.setDisabledMode();
+                    this.dynamicState();
+                     break;
                 case 'fields':
                     this.isAnimate = false;
                     this.isFieldChange = true;
                     this.initialRender = true;
                     this.updateListProp(this.fields);
-                    this.reRenderNodes();
+                    if(!this.blazorInitialRender) {
+                        this.reRenderNodes();
+                    }
+                    this.blazorInitialRender = false;
                     this.initialRender = false;
                     this.isAnimate = true;
                     this.isFieldChange = false;
@@ -4890,7 +5114,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         let nodes: NodeListOf<Element> = this.element.querySelectorAll('li');
                         let i: number = 0;
                         while (i < nodes.length) {
-                            this.renderChildNodes(nodes[i], true, null, true);
+                            if (nodes[i].getAttribute('aria-expanded') !== 'true') {
+                                this.renderChildNodes(nodes[i], true, null, true);
+                            }
                             i++;
                         }
                         this.onLoaded = true;
@@ -4911,6 +5137,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 case 'sortOrder':
                     this.reRenderNodes();
                     break;
+                case 'fullRowNavigable':
+                    this.setProperties({ fullRowNavigable: newProp.fullRowNavigable }, true);
+                    this.listBaseOption.itemNavigable = newProp.fullRowNavigable;
+                    this.reRenderNodes();
+                    break;
             }
         }
     }
@@ -4924,15 +5155,22 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.element.removeAttribute('tabindex');
         this.unWireEvents();
         this.wireEditingEvents(false);
-        this.rippleFn();
-        this.rippleIconFn();
+        if (!this.disabled) {
+            this.rippleFn();
+            this.rippleIconFn();
+        }    
         this.setCssClass(this.cssClass, null);
         this.setDragAndDrop(false);
         this.setFullRow(false);
+        if (this.isBlazorPlatform) {
+            this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
+        }
         if (this.ulElement && this.ulElement.parentElement) {
             this.ulElement.parentElement.removeChild(this.ulElement);
         }
-        super.destroy();
+        if (!this.isBlazorPlatform) {
+            super.destroy();
+        }
     }
 
     /**
@@ -4952,19 +5190,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let dropLi: Element = this.getElement(target);
         this.preventExpand = preventTargetExpand;
         if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
-            let dropUl: Element;
-            let icon: Element = dropLi ? dropLi.querySelector('.' + ICON) : null;
-            let proxy: TreeView = this;
-            if (dropLi && icon && icon.classList.contains(EXPANDABLE) &&
-                dropLi.querySelector('.' + PARENTITEM) === null) {
-                    proxy.renderChildNodes(dropLi, null, () => {
-                        dropUl = dropLi.querySelector('.' + PARENTITEM);
-                        proxy.addGivenNodes(nodes, dropLi, index, true, dropUl);
-                        proxy.triggerEvent();
-                    });
+            if (!(this.fields.dataSource.dataSource.offline) ) {
+                this.crudOperation('insert', null, target, null, nodes, index, this.preventExpand);
             } else {
-                this.addGivenNodes(nodes, dropLi, index, true);
-                this.triggerEvent();
+                this.addSuccess(nodes, dropLi, index);
             }
         } else if (this.dataType === 2) {
             this.addGivenNodes(nodes, dropLi, index);
@@ -4998,11 +5227,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public beginEdit(node: string | Element): void {
         let ele: Element = this.getElement(node);
-        if (!isNOU(ele)) {
-            this.createTextbox(ele, null);
+        if (isNOU(ele) || this.disabled) {
+            return;
         }
+        this.createTextbox(ele, null);
     }
-
     /**
      * Checks all the unchecked nodes. You can also check specific nodes by passing array of unchecked nodes
      * as argument to this method.
@@ -5257,17 +5486,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public removeNodes(nodes: string[] | Element[]): void {
         if (!isNOU(nodes)) {
-            for (let i: number = 0, len: number = nodes.length; i < len; i++) {
-                let liEle: Element = this.getElement(nodes[i]);
-                if (isNOU(liEle)) {
-                    continue;
-                }
-                this.removeNode(liEle);
+            if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
+                this.crudOperation('delete', nodes);
+            } else {
+                this.deleteSuccess(nodes)
             }
-            if (this.dataType === 1) {
-                this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
-            }
-            this.triggerEvent();
         }
     }
 
@@ -5289,7 +5512,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, null, null);
         this.trigger('nodeEditing', eventArgs, (observedArgs: NodeEditEventArgs) => {
             if (!observedArgs.cancel) {
-                this.appendNewText(liEle, txtEle, newText, false);
+                if (this.fields.dataSource instanceof DataManager && !(this.fields.dataSource.dataSource.offline) && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
+                    
+                    this.crudOperation('update', null, target, newText, null, null, false);
+                } else {
+                    this.appendNewText(liEle, txtEle, newText, false);
+                }
             }
         });
     }

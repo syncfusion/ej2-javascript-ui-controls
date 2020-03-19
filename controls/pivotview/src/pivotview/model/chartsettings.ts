@@ -129,6 +129,8 @@ export class Font extends ChildProperty<Font> {
      /**
       * text alignment
       * @default 'Center'
+      * @blazorType PivotChartAlignment
+      * @blazorDefaultValue PivotChartAlignment.Center
       */
      @Property('Center')
      public textAlignment: Alignment;
@@ -163,6 +165,7 @@ export class Margin extends ChildProperty<Margin> {
      /**
       * Left margin in pixels.
       * @default 10
+      * @blazorType int
       */
      @Property(10)
      public left: number;
@@ -170,6 +173,7 @@ export class Margin extends ChildProperty<Margin> {
      /**
       * Right margin in pixels.
       * @default 10
+      * @blazorType int
       */
      @Property(10)
      public right: number;
@@ -204,6 +208,7 @@ export class Border extends ChildProperty<Border> {
      /**
       * The width of the border in pixels.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -218,6 +223,7 @@ export class Offset extends ChildProperty<Offset> {
      /**
       * x value of the marker position
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public x: number;
@@ -225,6 +231,7 @@ export class Offset extends ChildProperty<Offset> {
      /**
       * y value of the marker position
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public y: number;
@@ -240,6 +247,7 @@ export class Indexes extends ChildProperty<Indexes> {
       * Specifies the series index
       * @default 0
       * @aspType int
+      * @blazorType int
       */
      @Property(0)
      public series: number;
@@ -248,6 +256,7 @@ export class Indexes extends ChildProperty<Indexes> {
       * Specifies the point index
       * @default 0
       * @aspType int
+      * @blazorType int
       */
      @Property(0)
      public point: number;
@@ -275,6 +284,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
      /**
       * The opacity for background.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public opacity: number;
@@ -319,6 +329,8 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
       * * Vertical: Shows the vertical line.
       * * Horizontal: Shows the horizontal line.
       * @default Both
+      * @blazorType PivotChartLineType
+      * @blazorDefaultValue PivotChartLineType.Both
       */
      @Property('Both')
      public lineType: LineType;
@@ -366,6 +378,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      /**
       * Specifies angle for data label.
       * @default 0
+      * @blazorType int
       */
 
      @Property(0)
@@ -395,6 +408,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      /**
       * The roundedCornerX for the data label. It requires `border` values not to be null.
       * @default 5
+      * @blazorType int
       */
      @Property(5)
      public rx: number;
@@ -402,6 +416,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      /**
       * The roundedCornerY for the data label. It requires `border` values not to be null.
       * @default 5
+      * @blazorType int
       */
      @Property(5)
      public ry: number;
@@ -491,6 +506,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      /**
       * The width of the marker in pixels.
       * @default 5
+      * @blazorType int
       */
 
      @Property(5)
@@ -499,6 +515,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      /**
       * The height of the marker in pixels.
       * @default 5
+      * @blazorType int
       */
 
      @Property(5)
@@ -553,6 +570,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
      /**
       * The width of the error bar in pixels.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -561,6 +579,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
      /**
       * The length of the error bar in pixels.
       * @default 10
+      * @blazorType int
       */
 
      @Property(10)
@@ -577,6 +596,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
      /**
       * The opacity of the cap.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -636,6 +656,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      /**
       * The vertical error of the error bar.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -652,6 +673,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      /**
       * The stroke width of the error bar..
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -660,6 +682,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      /**
       * The horizontal error of the error bar.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -668,6 +691,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      /**
       * The vertical negative error of the error bar.
       * @default 3
+      * @blazorType int
       */
 
      @Property(3)
@@ -676,6 +700,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      /**
       * The vertical positive error of the error bar.
       * @default 3
+      * @blazorType int
       */
 
      @Property(3)
@@ -684,6 +709,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      /**
       * The horizontal negative error of the error bar.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -692,6 +718,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      /**
       * The horizontal positive error of the error bar.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -735,6 +762,7 @@ export class Trendline extends ChildProperty<Trendline> {
      /**
       * Defines the period, the price changes over which will be considered to predict moving average trend line
       * @default 2
+      * @blazorType int
       */
      @Property(2)
      public period: number;
@@ -749,6 +777,7 @@ export class Trendline extends ChildProperty<Trendline> {
      /**
       * Defines the period, by which the trend has to backward forecast
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public backwardForecast: number;
@@ -756,6 +785,7 @@ export class Trendline extends ChildProperty<Trendline> {
      /**
       * Defines the period, by which the trend has to forward forecast
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public forwardForecast: number;
@@ -763,6 +793,7 @@ export class Trendline extends ChildProperty<Trendline> {
      /**
       * Defines the polynomial order of the polynomial trendline
       * @default 2
+      * @blazorType int
       */
      @Property(2)
      public polynomialOrder: number;
@@ -797,6 +828,7 @@ export class Trendline extends ChildProperty<Trendline> {
      /**
       * Defines the width of the trendline
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -805,6 +837,8 @@ export class Trendline extends ChildProperty<Trendline> {
       * Defines the intercept of the trendline
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
+      * @blazorType int
       */
      @Property(null)
      public intercept: number;
@@ -853,24 +887,28 @@ export class CornerRadius extends ChildProperty<CornerRadius> {
      /**
       * Specifies the top left corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public topLeft: number;
      /**
       * Specifies the top right corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public topRight: number;
      /**
       * Specifies the bottom left corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public bottomLeft: number;
      /**
       * Specifies the bottom right corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public bottomRight: number;
@@ -929,6 +967,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * Start value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public start: number | Date;
@@ -937,6 +976,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * End value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public end: number | Date;
@@ -945,6 +985,8 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * Size of the strip line, when it starts from the origin.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
+      * @blazorType int
       */
      @Property(null)
      public size: number;
@@ -960,6 +1002,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * Dash Array of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public dashArray: string;
@@ -983,6 +1026,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * repeatEvery value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public repeatEvery: number | Date;
@@ -991,6 +1035,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * repeatUntil value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public repeatUntil: number | Date;
@@ -999,6 +1044,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * isSegmented value of the strip line
       * @default false
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(false)
      public isSegmented: boolean;
@@ -1007,6 +1053,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * segmentStart value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public segmentStart: number | Date;
@@ -1015,6 +1062,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * segmentEnd value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public segmentEnd: number | Date;
@@ -1023,6 +1071,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * segmentAxisName of the strip line.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
       */
      @Property(null)
      public segmentAxisName: string;
@@ -1044,6 +1093,8 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
       * The angle to which the strip line text gets rotated.
       * @default null
       * @aspDefaultValueIgnore
+      * @blazorDefaultValueIgnore
+      * @blazorType int
       */
      @Property(null)
      public rotation: number;
@@ -1106,6 +1157,7 @@ export class LabelBorder extends ChildProperty<LabelBorder> {
      /**
       * The width of the border in pixels.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -1133,6 +1185,7 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
      /**
       * The width of the line in pixels.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -1191,6 +1244,7 @@ export class AxisLine extends ChildProperty<AxisLine> {
      /**
       * The width of the line in pixels.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -1220,6 +1274,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
      /**
       * The width of the tick lines in pixels.
       * @default 1
+      * @blazorType int
       */
 
      @Property(1)
@@ -1228,6 +1283,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
      /**
       * The height of the ticks in pixels.
       * @default 5
+      * @blazorType int
       */
 
      @Property(5)
@@ -1257,6 +1313,7 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
      /**
       * The height of the ticks in pixels.
       * @default 5
+      * @blazorType int
       */
 
      @Property(5)
@@ -1284,6 +1341,7 @@ export class PivotChartSeriesBorder {
      /**
       * The width of the border in pixels.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -1299,6 +1357,7 @@ export class PivotChartSeriesAnimation {
      /**
       * The duration of animation in milliseconds.
       * @default 1000
+      * @blazorType int
       */
      @Property(1000)
      public duration: number;
@@ -1306,6 +1365,7 @@ export class PivotChartSeriesAnimation {
      /**
       * The option to delay animation of the series.
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public delay: number;
@@ -1359,6 +1419,7 @@ export class PivotChartSeriesMarkerSettings {
       * * Image
       * @blazorType PivotChartShape
       * @default 'Circle'
+      * @blazorDefaultValue PivotChartShape.Circle
       */
      @Property('Circle')
      public shape: ChartShape;
@@ -1374,6 +1435,7 @@ export class PivotChartSeriesMarkerSettings {
      /**
       * The height of the marker in pixels.
       * @default 5
+      * @blazorType int
       */
      @Property(5)
      public height: number;
@@ -1381,6 +1443,7 @@ export class PivotChartSeriesMarkerSettings {
      /**
       * The width of the marker in pixels.
       * @default 5
+      * @blazorType int
       */
      @Property(5)
      public width: number;
@@ -1429,6 +1492,7 @@ export class PivotChartSeriesErrorSettings {
       * * Custom -Renders a custom type error bar.
       * @blazorType PivotChartErrorBarType
       * @default 'Fixed'
+      * @blazorDefaultValue PivotChartErrorBarType.Fixed
       */
      @Property('Fixed')
      public type: ErrorBarType;
@@ -1440,6 +1504,7 @@ export class PivotChartSeriesErrorSettings {
       * * plus - Renders plus direction error bar.
       * @blazorType PivotChartErrorBarDirection
       * @default 'Both'
+      * @blazorDefaultValue PivotChartErrorBarDirection.Both
       */
      @Property('Both')
      public direction: ErrorBarDirection;
@@ -1451,6 +1516,7 @@ export class PivotChartSeriesErrorSettings {
       * * Both - Renders both side error bar.
       * @blazorType PivotChartErrorBarMode
       * @default 'Vertical'
+      * @blazorDefaultValue PivotChartErrorBarMode.Vertical
       */
      @Property('Vertical')
      public mode: ErrorBarMode;
@@ -1465,6 +1531,7 @@ export class PivotChartSeriesErrorSettings {
      /**
       * The vertical error of the error bar.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public verticalError: number;
@@ -1472,6 +1539,7 @@ export class PivotChartSeriesErrorSettings {
      /**
       * The stroke width of the error bar..
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -1479,6 +1547,7 @@ export class PivotChartSeriesErrorSettings {
      /**
       * The horizontal error of the error bar.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public horizontalError: number;
@@ -1486,6 +1555,7 @@ export class PivotChartSeriesErrorSettings {
      /**
       * The vertical positive error of the error bar.
       * @default 3
+      * @blazorType int
       */
      @Property(3)
      public verticalPositiveError: number;
@@ -1493,6 +1563,7 @@ export class PivotChartSeriesErrorSettings {
      /**
       * The vertical negative error of the error bar.
       * @default 3
+      * @blazorType int
       */
      @Property(3)
      public verticalNegativeError: number;
@@ -1500,6 +1571,7 @@ export class PivotChartSeriesErrorSettings {
      /**
       * The horizontal positive error of the error bar.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public horizontalPositiveError: number;
@@ -1507,6 +1579,7 @@ export class PivotChartSeriesErrorSettings {
      /**
       * The horizontal negative error of the error bar.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public horizontalNegativeError: number;
@@ -1529,6 +1602,7 @@ export class PivotChartSeriesTrendline {
       * Defines the type of the trendline
       * @blazorType PivotChartTrendlineTypes
       * @default 'Linear'
+      * @blazorDefaultValue PivotChartTrendlineTypes.Linear
       */
      @Property('Linear')
      public type: TrendlineTypes;
@@ -1536,6 +1610,7 @@ export class PivotChartSeriesTrendline {
      /**
       * Defines the period, the price changes over which will be considered to predict moving average trend line
       * @default 2
+      * @blazorType int
       */
      @Property(2)
      public period: number;
@@ -1543,6 +1618,7 @@ export class PivotChartSeriesTrendline {
      /**
       * Defines the polynomial order of the polynomial trendline
       * @default 2
+      * @blazorType int
       */
      @Property(2)
      public polynomialOrder: number;
@@ -1550,6 +1626,7 @@ export class PivotChartSeriesTrendline {
      /**
       * Defines the period, by which the trend has to backward forecast
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public backwardForecast: number;
@@ -1557,6 +1634,7 @@ export class PivotChartSeriesTrendline {
      /**
       * Defines the period, by which the trend has to forward forecast
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public forwardForecast: number;
@@ -1586,6 +1664,7 @@ export class PivotChartSeriesTrendline {
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
+      * @blazorType int
       */
      @Property(null)
      public intercept: number;
@@ -1600,6 +1679,7 @@ export class PivotChartSeriesTrendline {
      /**
       * Defines the width of the trendline
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -1608,6 +1688,7 @@ export class PivotChartSeriesTrendline {
       * Sets the legend shape of the trendline
       * @blazorType PivotChartLegendShape
       * @default 'SeriesType'
+      * @blazorDefaultValue PivotChartLegendShape.SeriesType
       */
      @Property('SeriesType')
      public legendShape: LegendShape;
@@ -1631,6 +1712,7 @@ export class PivotChartSeriesEmptyPointSettings {
       * To customize the mode of empty points.
       * @blazorType PivotChartEmptyPointMode
       * @default Gap
+      * @blazorDefaultValue PivotChartEmptyPointMode.Gap
       */
      @Property('Gap')
      public mode: EmptyPointMode | AccEmptyPointMode;
@@ -1639,6 +1721,7 @@ export class PivotChartSeriesCornerRadius {
      /**
       * Specifies the top left corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public topLeft: number;
@@ -1646,6 +1729,7 @@ export class PivotChartSeriesCornerRadius {
      /**
       * Specifies the top right corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public topRight: number;
@@ -1653,6 +1737,7 @@ export class PivotChartSeriesCornerRadius {
      /**
       * Specifies the bottom left corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public bottomLeft: number;
@@ -1660,6 +1745,7 @@ export class PivotChartSeriesCornerRadius {
      /**
       * Specifies the bottom right corner radius value
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public bottomRight: number;
@@ -1701,6 +1787,7 @@ export class PivotChartAxisFont {
       * text alignment
       * @blazorType PivotChartAlignment
       * @default 'Center'
+      * @blazorDefaultValue PivotChartAlignment.Center
       */
      @Property('Center')
      public textAlignment: Alignment;
@@ -1714,6 +1801,7 @@ export class PivotChartAxisFont {
      /**
       * Opacity for the text.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public opacity: number;
@@ -1722,6 +1810,7 @@ export class PivotChartAxisFont {
       * Specifies the chart title text overflow
       * @blazorType PivotChartTextOverflow
       * @default 'Trim'
+      * @blazorDefaultValue PivotChartTextOverflow.Trim
       */
      @Property('Trim')
      public textOverflow: TextOverflow;
@@ -1751,6 +1840,7 @@ export class PivotChartAxisMajorTickLines {
      /**
       * The width of the tick lines in pixels.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -1758,6 +1848,7 @@ export class PivotChartAxisMajorTickLines {
      /**
       * The height of the ticks in pixels.
       * @default 5
+      * @blazorType int
       */
      @Property(5)
      public height: number;
@@ -1773,6 +1864,7 @@ export class PivotChartAxisMajorGridLines {
      /**
       * The width of the line in pixels.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -1802,6 +1894,7 @@ export class PivotChartAxisMinorTickLines {
      /**
       * The height of the ticks in pixels.
       * @default 5
+      * @blazorType int
       */
      @Property(5)
      public height: number;
@@ -1839,6 +1932,7 @@ export class PivotChartAxisAxisLine {
      /**
       * The width of the line in pixels.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -1859,21 +1953,21 @@ export class PivotChartAxisAxisLine {
 }
 export class PivotChartAxisStripLineSettings {
      /**
-      * If set true, strip line for axis renders.
+      * If set true, strip line for pivot chart axis renders.
       * @default true
       */
      @Property(true)
      public visible: boolean;
 
      /**
-      *  If set true, strip line get render from axis origin.
+      *  If set true, strip line get render from  pivot chart axis origin.
       *  @default false
       */
      @Property(false)
      public startFromAxis: boolean;
 
      /**
-      * Start value of the strip line.
+      * Start value of the  pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1882,7 +1976,7 @@ export class PivotChartAxisStripLineSettings {
      public start: number | Date;
 
      /**
-      * End value of the strip line.
+      * End value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1891,23 +1985,24 @@ export class PivotChartAxisStripLineSettings {
      public end: number | Date;
 
      /**
-      * Size of the strip line, when it starts from the origin.
+      * Size of the pivot chart strip line, when it starts from the origin.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
+      * @blazorType int
       */
      @Property(null)
      public size: number;
 
      /**
-      * Color of the strip line.
+      * Color of the pivot chart strip line.
       * @default '#808080'
       */
      @Property('#808080')
      public color: string;
 
      /**
-      * Dash Array of the strip line.
+      * Dash Array of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1916,15 +2011,16 @@ export class PivotChartAxisStripLineSettings {
      public dashArray: string;
 
      /**
-      * Size type of the strip line
+      * Size type of the pivot chart strip line
       * @blazorType PivotChartSizeType
       * @default Auto
+      * @blazorDefaultValue PivotChartSizeType.Auto
       */
      @Property('Auto')
      public sizeType: SizeType;
 
      /**
-      * isRepeat value of the strip line.
+      * isRepeat value of the  pivot chart strip line.
       * @default false
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1933,7 +2029,7 @@ export class PivotChartAxisStripLineSettings {
      public isRepeat: boolean;
 
      /**
-      * repeatEvery value of the strip line.
+      * repeatEvery value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1942,7 +2038,7 @@ export class PivotChartAxisStripLineSettings {
      public repeatEvery: number | Date;
 
      /**
-      * repeatUntil value of the strip line.
+      * repeatUntil value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1951,7 +2047,7 @@ export class PivotChartAxisStripLineSettings {
      public repeatUntil: number | Date;
 
      /**
-      * isSegmented value of the strip line
+      * isSegmented value of the pivot chart strip line
       * @default false
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1960,7 +2056,7 @@ export class PivotChartAxisStripLineSettings {
      public isSegmented: boolean;
 
      /**
-      * segmentStart value of the strip line.
+      * segmentStart value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1969,7 +2065,7 @@ export class PivotChartAxisStripLineSettings {
      public segmentStart: number | Date;
 
      /**
-      * segmentEnd value of the strip line.
+      * segmentEnd value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1978,7 +2074,7 @@ export class PivotChartAxisStripLineSettings {
      public segmentEnd: number | Date;
 
      /**
-      * segmentAxisName of the strip line.
+      * segmentAxisName of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1987,7 +2083,7 @@ export class PivotChartAxisStripLineSettings {
      public segmentAxisName: string;
 
      /**
-      * Border of the strip line.
+      * Border of the  pivot chart strip line.
       */
      @Complex<PivotChartBorderModel>({ color: 'transparent', width: 1 }, Border)
      public border: PivotChartBorderModel;
@@ -2015,6 +2111,7 @@ export class PivotChartAxisStripLineSettings {
       * * End: Places the strip line text at the end.
       * @blazorType PivotChartAnchor
       * @default 'Middle'
+      * @blazorDefaultValue PivotChartAnchor.Middle
       */
      @Property('Middle')
      public horizontalAlignment: Anchor;
@@ -2026,6 +2123,7 @@ export class PivotChartAxisStripLineSettings {
       * * End: Places the strip line text at the end.
       * @blazorType PivotChartAnchor
       * @default 'Middle'
+      * @blazorDefaultValue PivotChartAnchor.Middle
       */
      @Property('Middle')
      public verticalAlignment: Anchor;
@@ -2042,6 +2140,7 @@ export class PivotChartAxisStripLineSettings {
       * * Over: Places the strip line over the series elements.
       * @blazorType PivotChartZIndex
       * @default 'Behind'
+      * @blazorDefaultValue PivotChartZIndex.Behind
       */
      @Property('Behind')
      public zIndex: ZIndex;
@@ -2064,6 +2163,7 @@ export class PivotChartAxisLabelBorder {
      /**
       * The width of the border in pixels.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public width: number;
@@ -2078,6 +2178,7 @@ export class PivotChartAxisLabelBorder {
       * * CurlyBrace
       * @blazorType PivotChartBorderType
       * @default 'Rectangle'
+      * @blazorDefaultValue PivotChartBorderType.Rectangle
       */
      @Property('Rectangle')
      public type: BorderType;
@@ -2136,6 +2237,7 @@ export class PivotChartSettingsCrosshairSettings {
       * * Horizontal: Shows the horizontal line.
       * @blazorType PivotChartLineType
       * @default Both
+      * @blazorDefaultValue PivotChartLineType.Both
       */
      @Property('Both')
      public lineType: LineType;
@@ -2194,6 +2296,7 @@ export class PivotChartSettingsLegendSettings {
       * * Custom: Displays the legend  based on the given x and y values.
       * @blazorType PivotChartLegendPosition
       * @default 'Auto'
+      * @blazorDefaultValue PivotChartLegendPosition.Auto
       */
      @Property('Auto')
      public position: LegendPosition;
@@ -2201,6 +2304,7 @@ export class PivotChartSettingsLegendSettings {
      /**
       * Option to customize the padding between legend items.
       * @default 8
+      * @blazorType int
       */
      @Property(8)
      public padding: number;
@@ -2212,6 +2316,7 @@ export class PivotChartSettingsLegendSettings {
       * * Far: Aligns the legend to the right of the chart.
       * @blazorType PivotChartAlignment
       * @default 'Center'
+      * @blazorDefaultValue PivotChartAlignment.Center
       */
      @Property('Center')
      public alignment: Alignment;
@@ -2225,6 +2330,7 @@ export class PivotChartSettingsLegendSettings {
      /**
       * Shape height of the legend in pixels.
       * @default 10
+      * @blazorType int
       */
      @Property(10)
      public shapeHeight: number;
@@ -2232,6 +2338,7 @@ export class PivotChartSettingsLegendSettings {
      /**
       * Shape width of the legend in pixels.
       * @default 10
+      * @blazorType int
       */
      @Property(10)
      public shapeWidth: number;
@@ -2251,6 +2358,7 @@ export class PivotChartSettingsLegendSettings {
      /**
       * Padding between the legend shape and text.
       * @default 5
+      * @blazorType int
       */
      @Property(5)
      public shapePadding: number;
@@ -2286,6 +2394,7 @@ export class PivotChartSettingsLegendSettings {
      /**
       * TabIndex value for the legend.
       * @default 3
+      * @blazorType int
       */
      @Property(3)
      public tabIndex: number;
@@ -2392,6 +2501,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
       *  'SplineArea'
       * @blazorType PivotChartDrawType
       * @default 'Line'
+      * @blazorDefaultValue PivotChartDrawType.Line
       */
      @Property('Line')
      public drawType: ChartDrawType;
@@ -2511,6 +2621,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
       * * HorizontalLine
       * @blazorType PivotChartLegendShape
       * @default 'SeriesType'
+      * @blazorDefaultValue PivotChartLegendShape.SeriesType
       */
 
      @Property('SeriesType')
@@ -2534,6 +2645,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
       * Defines type of spline to be rendered.
       * @blazorType PivotChartSplineType
       * @default 'Natural'
+      * @blazorDefaultValue PivotChartSplineType.Natural
       */
      @Property('Natural')
      public splineType: SplineType;
@@ -2577,6 +2689,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      /**
       * To render the column series points with particular column spacing. It takes value from 0 - 1.
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public columnSpacing: number;
@@ -2595,6 +2708,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
       * * Hide: Hides the label when it intersects.
       * @blazorType PivotChartLabelIntersectAction
       * @default Rotate45
+      * @blazorDefaultValue PivotChartLabelIntersectAction.Rotate45
       */
      @Property('Rotate45')
      public labelIntersectAction: LabelIntersectAction;
@@ -2642,6 +2756,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      /**
       * Left and right padding for the plot area in pixels.
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public plotOffset: number;
@@ -2653,6 +2768,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
       * * Hide: Edge label will be hidden.     
       * @blazorType PivotChartEdgeLabelPlacement
       * @default 'None'
+      * @blazorDefaultValue PivotChartEdgeLabelPlacement.None
       */
      @Property('None')
      public edgeLabelPlacement: EdgeLabelPlacement;
@@ -2663,6 +2779,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
       * * betweenTicks: Renders the label between the ticks.
       * @blazorType PivotChartLabelPlacement
       * @default 'BetweenTicks'
+      * @blazorDefaultValue PivotChartLabelPlacement.BetweenTicks
       */
      @Property('BetweenTicks')
      public labelPlacement: LabelPlacement;
@@ -2673,6 +2790,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
       * * inside: Renders the ticks inside to the axis line.
       * @blazorType PivotChartAxisPosition
       * @default 'Outside'
+      * @blazorDefaultValue PivotChartAxisPosition.Outside
       */
      @Property('Outside')
      public tickPosition: AxisPosition;
@@ -2697,6 +2815,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
       * * inside: Renders the labels inside to the axis line.
       * @blazorType PivotChartAxisPosition
       * @default 'Outside'
+      * @blazorDefaultValue PivotChartAxisPosition.Outside
       */
      @Property('Outside')
      public labelPosition: AxisPosition;
@@ -2704,6 +2823,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      /**
       * The angle to which the axis label gets rotated.
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public labelRotation: number;
@@ -2711,6 +2831,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      /**
       * Specifies the number of minor ticks per interval.
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public minorTicksPerInterval: number;
@@ -2732,6 +2853,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      /**
       * Specifies the maximum width of an axis label.
       * @default 34.
+      * @blazorType int
       */
      @Property(34)
      public maximumLabelWidth: number;
@@ -2741,6 +2863,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
+      * @blazorType int
       */
      @Property(null)
      public interval: number;
@@ -2799,6 +2922,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      /**
       * The start angle for the series.
       * @default 0
+      * @blazorType int
       */
      @Property(0)
      public startAngle: number;
@@ -2806,6 +2930,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      /**
       * The polar radar radius position.
       * @default 100
+      * @blazorType int
       */
      @Property(100)
      public coefficient: number;
@@ -2819,6 +2944,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      /**
       * TabIndex value for the axis.
       * @default 2
+      * @blazorType int
       */
      @Property(2)
      public tabIndex: number;
@@ -2969,6 +3095,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
       * ...
       * @blazorType PivotChartZoomMode
       * @default 'XY'
+      * @blazorDefaultValue PivotChartZoomMode.XY
       */
      @Property('XY')
      public mode: ZoomMode;
@@ -3039,6 +3166,13 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      @Property(false)
      public enableMultiAxis: boolean;
 
+     /**     
+      * Enable or disable scroll bar while multiple axis.
+      * @default false
+      */
+     @Property(false)
+     public enableScrollOnMultiAxis: boolean;
+
      /**
       * Options for customizing the title of the Chart.
       */
@@ -3094,6 +3228,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
       * Specifies the theme for the chart.
       * @blazorType PivotChartTheme
       * @default 'Material'
+      * @blazorDefaultValue PivotChartTheme.Material
       */
      @Property('Material')
      public theme: ChartTheme;
@@ -3196,6 +3331,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * TabIndex value for the chart.
       * @default 1
+      * @blazorType int
       */
      @Property(1)
      public tabIndex: number;

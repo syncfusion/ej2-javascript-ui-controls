@@ -6498,7 +6498,7 @@ describe('MultiSelect', () => {
         });
 
         it('Checking the itemTemplate', (done) => {
-            (window as any).ejsInterop={ renderComplete:()=> {return true;}};
+            (window as any).sfBlazor={ renderComplete:()=> {return true;}};
             (window as any).Blazor = null;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
@@ -6515,7 +6515,7 @@ describe('MultiSelect', () => {
                 expect((<any>listObj).ulElement.firstElementChild.innerText).not.toBe("");
                 listObj.destroy();
                 delete (window as any).Blazor;
-                delete (window as any).ejsInterop;
+                delete (window as any).sfBlazor;
                 done();
             }, 100);
         });

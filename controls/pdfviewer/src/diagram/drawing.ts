@@ -1879,12 +1879,17 @@ export class Drawing {
         if (node.fillColor !== undefined) {
             actualObject.fillColor = node.fillColor;
             actualObject.wrapper.children[0].style.fill = node.fillColor;
-            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+            if ((actualObject.enableShapeLabel || actualObject.measureType) && actualObject.wrapper && actualObject.wrapper.children) {
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
                     if (children[i].textNodes) {
-                        actualObject.labelFillColor = node.fillColor;
-                        children[i].style.fill = node.labelFillColor;
+                        if (actualObject.enableShapeLabel) {
+                            actualObject.labelFillColor = node.fillColor;
+                            children[i].style.fill = node.fillColor;
+                        }
+                        if (actualObject.measureType) {
+                            children[i].style.fill = node.fillColor;
+                        }
                     }
                 }
             }

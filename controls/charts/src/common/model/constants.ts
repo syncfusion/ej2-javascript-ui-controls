@@ -49,8 +49,6 @@ export const chartMouseUp : string = 'chartMouseUp';
 /** @private */
 export const zoomComplete: string = 'zoomComplete';
 /** @private */
-export const onZooming: string = 'onZooming';
-/** @private */
 export const dragComplete: string = 'dragComplete';
 /** @private */
 export const selectionComplete: string = 'selectionComplete';
@@ -85,4 +83,4 @@ export const beforeExport : string = 'beforeExport';
 /** @private */
 export const afterExport : string = 'afterExport';
 /** @private */
-export const barRender: string = 'barRender';
+export const bulletChartMouseClick : string = 'chartMouseClick';
